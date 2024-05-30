@@ -19,19 +19,24 @@ return new class extends Migration
         
         Schema::create('stations', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('country');
-            $table->string('country_other');
-            $table->string('national_name');
-            $table->string('short_sample_code');
-            $table->string('sample_code');
-            $table->string('provider_code');
-            $table->string('code_ec_wise');
-            $table->string('code_ec_other');
-            $table->string('code_other');
-            $table->string('specific_locations');
-            $table->float('latitude', precision: 53);
-            $table->float('longitude', precision: 53);
+            $table->string('name')->nullable()->default(null);
+            $table->string('country')->nullable()->default(null);
+            $table->string('country_other')->nullable()->default(null);
+            $table->string('national_name')->nullable()->default(null);
+            $table->string('short_sample_code')->nullable()->default(null);
+            $table->string('sample_code')->nullable()->default(null);
+            $table->string('provider_code')->nullable()->default(null);
+            $table->string('code_ec_wise')->nullable()->default(null);
+            $table->string('code_ec_other')->nullable()->default(null);
+            $table->string('code_other')->nullable()->default(null);
+            $table->string('specific_locations')->nullable()->default(null);
+            $table->float('latitude', precision: 53)->nullable()->default(null);
+            $table->float('longitude', precision: 53)->nullable()->default(null);
+            $table->timestamps();
+        });
+
+        Schema::create('coordinate_precisions', function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
         });
         
@@ -61,7 +66,17 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('treatment_less', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
+
         Schema::create('availabilities', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
+
+        Schema::create('file_sources', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
         });
@@ -70,6 +85,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('substances');
             $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('stations');
+            $table->foreignId('coordinate_precision_id')->constrained()->nullable()->default(null)->references('id')->on('coordinate_precisions');
             $table->float('altitude', 10)->nullable()->default(null);
             $table->foreignId('matrix_id')->constrained()->nullable()->default(null)->references('id')->on('matrices');
             $table->foreignId('concentration_indicator_id')->constrained()->nullable()->default(null)->references('id')->on('concentration_indicators');
@@ -80,14 +96,16 @@ return new class extends Migration
             $table->unsignedSmallInteger('sampling_date_year')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_date_month')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_date_date')->nullable()->default(null);
-            $table->time('sampling_date_t')->nullable()->default(null);
+            $table->time('sampling_date_time')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_duration_day')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_duration_hour')->nullable()->default(null);
             $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('methods');
             $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('data_sources');
             $table->string('description')->nullable()->default(null);
             $table->json('remarks')->nullable()->default(null);
+            $table->foreignId('treatment_less_id')->nullable()->default(null)->references('id')->on('treatment_less');
             $table->foreignId('availability_id')->nullable()->default(null)->references('id')->on('availabilities');
+            $table->foreignId('file_source_id')->nullable()->default(null)->references('id')->on('file_sources');
             $table->foreignId('added_by')->nullable()->default(null)->references('id')->on('users');
             $table->timestamps();
         });
