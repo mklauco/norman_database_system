@@ -14,14 +14,14 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // create all roles:
-        $roleNames = ['super-admin', 'user'];
+        $roleNames = ['super_admin', 'user'];
         foreach($roleNames as $role){
             $roles[$role] = Role::firstOrCreate(['name' => $role]);
         }
 
         $users = \App\Models\User::whereIn('email', ['martin.klauco@stuba.sk', 'lubos.cirka@stuba.sk'])->get();
         foreach ($users as $user){
-            $user->assignRole($roles['super-admin']);   
+            $user->assignRole($roles['super_admin']);   
         }
     }
 }
