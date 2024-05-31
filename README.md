@@ -10,22 +10,28 @@ DB_HOST_MARIADB=127.0.0.1
 and by specifying the connection name `$connection = norman-mariadb` see line 62 in `config/database.php` and model `Models/MariaDB/*`
 * 
 * Databases to migrate:
-```
-bacteria
-bioactivity
-bioassay
-ecotox
-empodat
-factsheets
-indoor
-passive
-sars
-sle
-susdat
-suspect
-nds - users
-```
+
+| MariaDB - db name | prefix in Postgre |
+| ----------------- | ----------------- |
+| `bacteria   `     | ``                |
+| `bioactivity`     | ``                |
+| `bioassay   `     | ``                |
+| `ecotox     `     | ``                |
+| `empodat    `     | `empodat_`        |
+| `factsheets `     | ``                |
+| `indoor     `     | ``                |
+| `passive    `     | ``                |
+| `sars       `     | ``                |
+| `sle        `     | ``                |
+| `susdat     `     | `susdat_`         |
+| `suspect    `     | ``                |
+| `nds - users`     | ``                |
+
 * sample seeder for seeding small tables: `SupportingTableSeeder.php`
+
+## Naming convention
+* database prefixes are specified in previous section, and in the Postgre setup will be in one database
+* Naming of migrators is: `MariadbnameTablenameMigrator`, e.g. `SusdatSusdatMigrator` or `EmpodatDCTAnalysisMigrator`
 
 ## Migrators from database (not CSV)
 * update `composer.json`, key `autoload` with entry `"Database\\Seeders\\Migrators\\": "database/seeders/migrators/"`

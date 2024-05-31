@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\MariaDB\Susdat as OldData;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class susdat extends Seeder
+class SusdatSusdatMigrator extends Seeder
 {
     /**
      * Run the database seeds.
@@ -52,7 +52,7 @@ class susdat extends Seeder
 
 // php artisan make:seeder Migrators/susdat 
 // php artisan make:model MariaDB/Susdat 
-// php artisan db:seed --class=Database\Seeders\migrators\susdat
+// php artisan db:seed --class=Database\Seeders\migrators\SusdatSusdatMigrator
 
 // sus_id
 // sus_name

@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\MariaDB\DCTAnalysis as MariaDB_DCTAnalysis;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class DCTAnalysisMigrator extends Seeder
+class EmpodatDCTAnalysisMigrator extends Seeder
 {
     /**
      * Run the database seeds.
@@ -20,4 +20,4 @@ class DCTAnalysisMigrator extends Seeder
     }
 }
 
-// php artisan db:seed --class=Database\Seeders\migrators\DCTAnalysisMigrator
+// php artisan db:seed --class=Database\Seeders\migrators\EmpodatDCTAnalysisMigrator
