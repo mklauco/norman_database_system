@@ -1,5 +1,35 @@
 ## Main notes
+* connection to previous MariaDB is done via additional `.env` parameters
+```
+DB_DATABASE_MARIADB=norman
+DB_USERNAME_MARIADB=root
+DB_PASSWORD_MARIADB=root
+DB_PORT_MARIADB=3306
+DB_HOST_MARIADB=127.0.0.1
+```
+and by specifying the connection name `$connection = norman-mariadb` see line 62 in `config/database.php` and model `Models/MariaDB/*`
+* 
+* Databases to migrate:
+```
+bacteria
+bioactivity
+bioassay
+ecotox
+empodat
+factsheets
+indoor
+passive
+sars
+sle
+susdat
+suspect
+nds - users
+```
 * sample seeder for seeding small tables: `SupportingTableSeeder.php`
+
+## Migrators from database (not CSV)
+* update `composer.json`, key `autoload` with entry `"Database\\Seeders\\Migrators\\": "database/seeders/migrators/"`
+* manually run `php artisan db:seed --class=Database\Seeders\migrators\YYY`
 
 
 ## Exporting partial data
