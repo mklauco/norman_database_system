@@ -21,19 +21,19 @@ class DatabaseEntitySeeder extends Seeder
             'description'   => 'A database of substances',
             'image_path'    => 'substance_database.webp',
             'code'          => 'susdat',
-            'route_name'    => 'substancies',
+            'dashboard_route_name'    => 'substancies',
         ], [
             'name'          => 'Chemical Occurrence Data',
             'description'   => 'A database of chemical occurrences',
             'image_path'    => 'chemical_occurrence_data.webp',
             'code'          => 'empodat',
-            'route_name'    => 'route1',
+            'dashboard_route_name'    => 'route1',
         ], [
             'name'          => 'Ecotoxicology',
             'description'   => 'A database of ecotoxicology',
             'image_path'    => 'ecotoxicology.webp',
             'code'          => 'ecotox',
-            'route_name'    => 'route2',
+            'dashboard_route_name'    => 'route2',
         ]]);
     }
 }

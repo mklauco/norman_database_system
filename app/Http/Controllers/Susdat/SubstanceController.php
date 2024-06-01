@@ -4,19 +4,22 @@ namespace App\Http\Controllers\Susdat;
 
 use Illuminate\Http\Request;
 use App\Models\Susdat\Categories;
+use App\Models\Susdat\Substances;
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class SubstanceController extends Controller
 {
   /**
   * Display a listing of the resource.
   */
+
   public function index()
   {
     //
-    $categories = Categories::all();
+    $substances = Substances::all();
     return view('susdat.index', [
-      'categories' => $categories
+      'substances' => $substances
     ]);
   }
   
@@ -66,5 +69,29 @@ class SubstanceController extends Controller
   public function destroy(string $id)
   {
     //
+  }
+
+  public function filter()
+  {
+    //
+    $categories = Categories::all();
+    return view('susdat.filter', [
+      'categories' => $categories
+    ]);
+  }
+
+  public function search(Request $request)
+  {
+    // $categories = $request->input('category');
+    $categories = [1 => 1];
+    $substances = Substances::with(['categories' => function(Builder $query) use ($categories) {
+      $query->where('susdat_categories.id', 1);
+    }])->where('id', '<=', 10)->get();
+    // $substances = Substances::with(['categories'])->limit(1)->paginate(1);
+    // dd($substances);
+    return view('susdat.index', [
+      'substances' => $substances,
+      'request' => $request->all()
+    ]);
   }
 }

@@ -18,13 +18,19 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         
         Schema::create('susdat_substances', function (Blueprint $table) {
             $table->id();
             $table->string('code')->nullable()->default(null);
-            $table->string('name')->nullable()->default(null);
+            $table->text('name')->nullable()->default(null);
             $table->json('metadata')->nullable()->default(null);
+            $table->timestamps();
+        });
+
+        Schema::create('susdat_category_substance', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('category_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_categories');
             $table->timestamps();
         });
     }

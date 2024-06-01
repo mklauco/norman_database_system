@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('description')->nullable()->default(null);
             $table->string('image_path')->nullable()->default(null);
             $table->string('code')->nullable()->default(null);
-            $table->string('route_name')->nullable()->default(null);
+            $table->string('dashboard_route_name')->nullable()->default(null);
             $table->timestamps();
         });
     }

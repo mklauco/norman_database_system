@@ -66,3 +66,6 @@ INTO OUTFILE 'd:/db_testing/norman_single_column_files/dct_analysis_stations.csv
     ENCLOSED BY '"'
     LINES TERMINATED BY '\n';
 ```
+
+## Issues during migrations:
+* `susdat` is missing `id=8`, but `susdat_category_join` has this entry

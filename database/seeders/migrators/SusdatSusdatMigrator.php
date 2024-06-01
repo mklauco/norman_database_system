@@ -20,34 +20,54 @@ class SusdatSusdatMigrator extends Seeder
         $count = OldData::count();
         $batchSize = 1000;
         $batches = ceil($count / $batchSize);
+        $time_start = microtime(true);
+        $metaDataKeys = [
+            'Prob_of_GC',   
+            'Prob_RPLC',    
+            'Pred_Chromatography',  
+            'Prob_of_both_Ionization_Source',   
+            'Prob_EI',  
+            'Prob_ESI', 
+            'Pred_Ionization_source',   
+            'Prob_both_ESI_mode',   
+            'Prob_plusESI', 
+            'Prob_minusESI',    
+            'Pred_ESI_mode',    
+        ]; 
+        $batches = 10;
         for ($i = 0; $i < $batches; $i++) {
-            echo "Processing batch " . ($i + 1) . " of " . $batches . PHP_EOL;
+            $time_start_for = microtime(true); 
+            echo "Processing batch " . ($i + 1) . " of " . $batches;
             $batch = OldData::where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();        
             $p = [];
             foreach($batch as $item) {
-                $metaDataKeys = [
-                    'Prob_of_GC',   
-                    'Prob_RPLC',    
-                    'Pred_Chromatography',  
-                    'Prob_of_both_Ionization_Source',   
-                    'Prob_EI',  
-                    'Prob_ESI', 
-                    'Pred_Ionization_source',   
-                    'Prob_both_ESI_mode',   
-                    'Prob_plusESI', 
-                    'Prob_minusESI',    
-                    'Pred_ESI_mode',    
-                ];
                 $p[] = [
                     'id' => (int)ltrim($item->sus_id, '0'),
                     'code' => $item->sus_id,
+                    'name' => $item->sus_name,
                     'metadata' => json_encode($item->only($metaDataKeys)),
                 ];
             }
             Substances::insert($p);
+            $time_end_for = microtime(true);
+            $execution_time = $time_end_for- $time_start_for;
+            echo " | time taken: ".$execution_time." sec".PHP_EOL;
         }
-        
+        $time_end = microtime(true);
+        $execution_time = $time_end - $time_start;
+        echo 'Migrating Susdat took '.$execution_time.' sec'.PHP_EOL;
 
+
+        // missing id:
+        $missing_id = 8;
+        $p = [];
+        $p[] = [
+            'id' => $missing_id,
+            'code' => str_pad($missing_id, 8, "0", STR_PAD_LEFT),
+            'name' => 'missing id',
+            'metadata' => json_encode(['message '=> 'missing id']),
+        ];
+        Substances::insert($p);
     }
 }
 

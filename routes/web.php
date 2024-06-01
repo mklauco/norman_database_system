@@ -26,15 +26,19 @@ Route::prefix('databases')->middleware('auth')->group(function () {
 }); 
 
 Route::prefix('susdat')->middleware('auth')->group(function () {
+    Route::get('substancies/filter', [SubstanceController::class, 'filter'])->name('substancies.filter');
+    Route::get('substancies/search', [SubstanceController::class, 'search'])->name('substancies.search');
     Route::resource('substancies', SubstanceController::class);
 }); 
 
 Route::prefix('empodat')->middleware('auth')->group(function () {
     Route::resource('route1', EmpodatController::class);
+    Route::get('route1/filter', [SubstanceController::class, 'filter'])->name('route1.filter');
 }); 
 
 Route::prefix('ecotox')->middleware('auth')->group(function () {
     Route::resource('route2', EcotoxController::class);
+    Route::get('route2/filter', [SubstanceController::class, 'filter'])->name('route2.filter');
 }); 
 
 
