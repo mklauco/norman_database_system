@@ -3,6 +3,7 @@
 namespace Database\Seeders\Migrators;
 
 use Illuminate\Database\Seeder;
+use App\Models\Susdat\Substances;
 use Illuminate\Support\Facades\DB;
 use App\Models\MariaDB\Susdat as OldData;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -15,7 +16,7 @@ class SusdatSusdatMigrator extends Seeder
     public function run(): void
     {
         //
-        DB::table('substances')->delete();
+        Substances::query()->delete();
         $count = OldData::count();
         $batchSize = 1000;
         $batches = ceil($count / $batchSize);
@@ -43,7 +44,7 @@ class SusdatSusdatMigrator extends Seeder
                     'metadata' => json_encode($item->only($metaDataKeys)),
                 ];
             }
-            DB::table('substances')->insert($p);
+            Substances::insert($p);
         }
         
 

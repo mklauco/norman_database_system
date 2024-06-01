@@ -11,7 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('substances', function (Blueprint $table) {
+
+        Schema::create('susdat_categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->nullable()->default(null);
+            $table->timestamps();
+        });
+
+
+        
+        Schema::create('susdat_substances', function (Blueprint $table) {
             $table->id();
             $table->string('code')->nullable()->default(null);
             $table->string('name')->nullable()->default(null);
@@ -25,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('substances');
+        Schema::dropIfExists('susdat_substances');
     }
 };

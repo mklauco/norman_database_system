@@ -83,7 +83,7 @@ return new class extends Migration
         
         Schema::create('data_nests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('substances');
+            $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
             $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('stations');
             $table->foreignId('coordinate_precision_id')->constrained()->nullable()->default(null)->references('id')->on('coordinate_precisions');
             $table->float('altitude', 10)->nullable()->default(null);
