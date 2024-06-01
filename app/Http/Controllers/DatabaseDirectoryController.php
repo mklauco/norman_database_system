@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\DatabaseEntity;
 
 class DatabaseDirectoryController extends Controller
 {
@@ -10,6 +11,9 @@ class DatabaseDirectoryController extends Controller
 
     public function index()
     {
-        return view('databases.index');
+        $databases = DatabaseEntity::all();
+        return view('database_entities.index', [
+            'databases' => $databases
+        ]);
     }
 }

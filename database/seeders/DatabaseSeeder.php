@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminSeeder::class,
             RolesAndPermissionsSeeder::class,
+            DatabaseEntitySeeder::class,
 
             // SUSDAT
             SusdatCategorySeeder::class,
