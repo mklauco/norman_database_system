@@ -13,7 +13,9 @@
           <!-- Main Search form -->
           <div>
             
-            
+            <div class="text-gray-600">
+              <span>Number of matched records: </span><span class="font-bold">{{$substances->total()}}</span> of <span>{{$substancesCount}}</span>.
+            </div>
             <table class="table-auto w-full border-separate border-spacing-1">
               <thead>
                 <tr class="bg-gray-200">
@@ -24,15 +26,19 @@
               </thead>
               <tbody>
                 @foreach ($substances as $s)
-                <tr>
-                  <td class="bg-slate-100 p-1"> {{$s->code}} </td>
-                  <td class="bg-slate-100 p-1"> {{$s->name}} </td>
-                  <td class="bg-slate-100 p-1"> {{var_dump($s->categories->count())}} </td>
+                <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
+                  <td class="p-1"> {{$s->code}} </td>
+                  <td class="p-1"> {{$s->name}} </td>
+                  <td class="p-1">
+                    @foreach ($s->categories as $cat)
+                      {{$cat->name}}
+                    @endforeach
+                  </td>
                 </tr>
                 @endforeach
               </tbody>
             </table>
-            {{-- {{$substances->links('pagination::tailwind')}} --}}
+            {{$substances->links('pagination::tailwind')}}
             
             
           </div>

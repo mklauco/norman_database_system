@@ -8,7 +8,7 @@ use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('/dashboard', function () {
@@ -32,13 +32,13 @@ Route::prefix('susdat')->middleware('auth')->group(function () {
 }); 
 
 Route::prefix('empodat')->middleware('auth')->group(function () {
-    Route::resource('route1', EmpodatController::class);
-    Route::get('route1/filter', [SubstanceController::class, 'filter'])->name('route1.filter');
+    Route::resource('general_route', EmpodatController::class);
+    Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
 }); 
 
 Route::prefix('ecotox')->middleware('auth')->group(function () {
-    Route::resource('route2', EcotoxController::class);
-    Route::get('route2/filter', [SubstanceController::class, 'filter'])->name('route2.filter');
+    Route::resource('general_route', EcotoxController::class);
+    Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
 }); 
 
 

@@ -28,8 +28,14 @@
                 </div>
                 
                 
-                
-                <button type="submit" class="bg-gray-200 border-2 text-bold p-2 hover:bg-gray-50 hover:border-gray-400 hover:border-2"> Submit </button>
+                <div>
+                <button type="submit" class="bg-gray-200 border-2 text-bold p-2 hover:bg-gray-50 hover:border-gray-400 hover:border-2"> Submit 
+                </button>
+                <button class="bg-blue-100 border-2 text-bold p-2 hover:bg-gray-50 hover:border-blue-400 hover:border-2">
+                  <a href="{{route('substancies.index')}}" > 
+                    View all </a>
+                </button>
+                </div>
               </div>
               
               

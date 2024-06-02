@@ -17,9 +17,10 @@ class SubstanceController extends Controller
   public function index()
   {
     //
-    $substances = Substances::all();
+    $substances = Substances::paginate(50);
     return view('susdat.index', [
-      'substances' => $substances
+      'substances' => $substances,
+      'substancesCount' => $substances->total(),
     ]);
   }
   
@@ -82,16 +83,18 @@ class SubstanceController extends Controller
 
   public function search(Request $request)
   {
-    // $categories = $request->input('category');
-    $categories = [1 => 1];
-    $substances = Substances::with(['categories' => function(Builder $query) use ($categories) {
-      $query->where('susdat_categories.id', 1);
-    }])->where('id', '<=', 10)->get();
-    // $substances = Substances::with(['categories'])->limit(1)->paginate(1);
+    $substancesCount = Substances::count();
+    $categoriesSearch = $request->input('category');
+    $substances = Substances::wherehas('categories', function(Builder $query) use ($categoriesSearch) {
+      $query->whereIn('susdat_categories.id', $categoriesSearch);
+    })->paginate(50);
+
     // dd($substances);
     return view('susdat.index', [
       'substances' => $substances,
-      'request' => $request->all()
+      'substancesCount' => $substancesCount,
+      'request' => $request->all(),
+      'categories' => Categories::select('id', 'name')->get()->keyBy('id')->toArray()
     ]);
   }
 }

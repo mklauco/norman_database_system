@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\Migrators\SusdatSusdatMigrator;
+use Database\Seeders\Migrators\SusdatSusdatCategoryJoinSeeder;
 
 
 class DatabaseSeeder extends Seeder
@@ -29,6 +31,10 @@ class DatabaseSeeder extends Seeder
             SusdatCategorySeeder::class,
 
             StationSeeder::class,
+
+            // Migrators
+            SusdatSusdatMigrator::class,
+            SusdatSusdatCategoryJoinSeeder::class,
 
             
         ]);
