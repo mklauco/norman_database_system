@@ -1,0 +1,150 @@
+<?php
+
+namespace Database\Seeders\Migrators;
+
+use Illuminate\Database\Seeder;
+use App\Models\Susdat\Substances;
+use Illuminate\Support\Facades\DB;
+use App\Models\MariaDB\Susdat as OldData;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+class SusdatSusdatMigrator extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        //
+        Substances::query()->delete();
+        $count = OldData::count();
+        $batchSize = 1000;
+        $batches = ceil($count / $batchSize);
+        $time_start = microtime(true);
+        $metaDataKeys = [
+            'Prob_of_GC',   
+            'Prob_RPLC',    
+            'Pred_Chromatography',  
+            'Prob_of_both_Ionization_Source',   
+            'Prob_EI',  
+            'Prob_ESI', 
+            'Pred_Ionization_source',   
+            'Prob_both_ESI_mode',   
+            'Prob_plusESI', 
+            'Prob_minusESI',    
+            'Pred_ESI_mode',    
+        ]; 
+        $batches = 10;
+        for ($i = 0; $i < $batches; $i++) {
+            $time_start_for = microtime(true); 
+            echo "Processing batch " . ($i + 1) . " of " . $batches;
+            $batch = OldData::where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();        
+            $p = [];
+            foreach($batch as $item) {
+                $p[] = [
+                    'id' => (int)ltrim($item->sus_id, '0'),
+                    'code' => $item->sus_id,
+                    'name' => $item->sus_name,
+                    'metadata' => json_encode($item->only($metaDataKeys)),
+                ];
+            }
+            Substances::insert($p);
+            $time_end_for = microtime(true);
+            $execution_time = $time_end_for- $time_start_for;
+            echo " | time taken: ".$execution_time." sec".PHP_EOL;
+        }
+        $time_end = microtime(true);
+        $execution_time = $time_end - $time_start;
+        echo 'Migrating Susdat took '.$execution_time.' sec'.PHP_EOL;
+
+
+        // missing id:
+        $missing_id = 8;
+        $p = [];
+        $p[] = [
+            'id' => $missing_id,
+            'code' => str_pad($missing_id, 8, "0", STR_PAD_LEFT),
+            'name' => 'missing id',
+            'metadata' => json_encode(['message '=> 'missing id']),
+        ];
+        Substances::insert($p);
+    }
+}
+
+// php artisan make:seeder Migrators/susdat 
+// php artisan make:model MariaDB/Susdat 
+// php artisan db:seed --class=Database\Seeders\migrators\SusdatSusdatMigrator
+
+// sus_id
+// sus_name
+// Name Dashboard
+// Name ChemSpider
+// Name IUPAC
+// Synonyms ChemSpider
+// Reliability of Synonyms ChemSpider
+// sus_cas
+// CAS_RN Dashboard
+// CAS_RN PubChem
+// CAS_RN Cactus
+// CAS_RN ChemSpider
+// Reliability of CAS_ChemSpider
+// Validation Level
+// SMILES
+// SMILES Dashboard
+// StdInChI
+// StdInChIKey
+// MS_Ready_SMILES
+// MS_Ready_StdInChI
+// MS_Ready_StdInChIKey
+// Source
+// PubChem_CID
+// ChemSpiderID
+// DTXSID
+// Molecular_Formula
+// Monoiso_Mass
+// [M+H]+
+// [M-H]-
+// Pred_RTI_Positive_ESI
+// Uncertainty_RTI_pos
+// Pred_RTI_Negative_ESI
+// Uncertainty_RTI_neg
+// Tetrahymena_pyriformis_toxicity
+// IGC50_48_hr_ug/L
+// Uncertainty_Tetrahymena_pyriformis_toxicity
+// Daphnia_toxicity
+// LC50_48_hr_ug/L
+// Uncertainty_Daphnia_toxicity
+// Algae_toxicity
+// EC50_72_hr_ug/L
+// Uncertainty_Algae_toxicity
+// Pimephales_promelas_toxicity
+// LC50_96_hr_ug/L
+// Uncertainty_Pimephales_promelas_toxicity
+// logKow_EPISuite
+// Exp_logKow_EPISuite
+// ChemSpider ID based on InChIKey_19032018
+// alogp_ChemSpider
+// xlogp_ChemSpider
+// Lowest P-PNEC (QSAR) [ug/L]
+// Species
+// Uncertainty
+// ExposureScore_Water_KEMI
+// HazScore_EcoChronic_KEMI
+// ValidationLevel_KEMI
+// Prob_of_GC
+// Prob_RPLC
+// Pred_Chromatography
+// Prob_of_both_Ionization_Source
+// Prob_EI
+// Prob_ESI
+// Pred_Ionization_source
+// Prob_both_ESI_mode
+// Prob_plusESI
+// Prob_minusESI
+// Pred_ESI_mode
+// Preferable_Platform_by_decision_Tree
+// sus_synonyms
+// sus_remark
+// sus_name_20231115
+// sle_id
+// created_at

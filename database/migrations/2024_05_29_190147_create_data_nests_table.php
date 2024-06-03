@@ -12,11 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         
-        Schema::create('substances', function (Blueprint $table) {
-            $table->id();
-            $table->string('sus_code'); // NS00000000
-            $table->timestamps();
-        });
+        // Schema::create('substances', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->timestamps();
+        // });
         
         Schema::create('empodat_stations', function (Blueprint $table) {
             $table->id();
@@ -95,7 +94,7 @@ return new class extends Migration
         
         Schema::create('empodat_main', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('substances');
+            $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
             $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_stations');
             $table->foreignId('coordinate_precision_id')->constrained()->nullable()->default(null)->references('id')->on('list_coordinate_precisions');
             $table->float('altitude', 10)->nullable()->default(null);

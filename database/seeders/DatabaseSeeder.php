@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\EmpodatStationSeeder;
+use Database\Seeders\Migrators\SusdatSusdatMigrator;
+use Database\Seeders\Migrators\SusdatSusdatCategoryJoinSeeder;
 
 
 class DatabaseSeeder extends Seeder
@@ -25,6 +28,20 @@ class DatabaseSeeder extends Seeder
             ListCoordinatePrecisionSeeder::class,
             ListConcentrationIndicatorSeeder::class,
             ListSamplingTechniqueSeeder::class,
+            AdminSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            DatabaseEntitySeeder::class,
+
+            // SUSDAT
+            SusdatCategorySeeder::class,
+
+            StationSeeder::class,
+
+            // Migrators
+            SusdatSusdatMigrator::class,
+            SusdatSusdatCategoryJoinSeeder::class,
+
+            
         ]);
     }
 }
