@@ -19,7 +19,7 @@ class SusdatCategorySeeder extends Seeder
 
         $target_table_name = 'susdat_categories';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/susdat_category.csv';
+        $path = base_path() . '/database/seeders/seeds/susdat_category.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
         foreach($rows as $r) {

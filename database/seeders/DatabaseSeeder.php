@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Database\Seeders\EmpodatStationSeeder;
 use Database\Seeders\Migrators\SusdatSusdatMigrator;
-use Database\Seeders\Migrators\SusdatSusdatCategoryJoinSeeder;
+use Database\Seeders\SusdatSusdatCategoryJoinSeeder;
 
 
 class DatabaseSeeder extends Seeder

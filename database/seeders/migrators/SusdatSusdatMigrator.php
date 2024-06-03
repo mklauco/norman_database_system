@@ -34,7 +34,7 @@ class SusdatSusdatMigrator extends Seeder
             'Prob_minusESI',    
             'Pred_ESI_mode',    
         ]; 
-        $batches = 10;
+        // $batches = 10;
         for ($i = 0; $i < $batches; $i++) {
             $time_start_for = microtime(true); 
             echo "Processing batch " . ($i + 1) . " of " . $batches;

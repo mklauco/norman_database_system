@@ -19,7 +19,7 @@ class DatabaseEntitySeeder extends Seeder
 
         $target_table_name = 'database_entities';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/database_entities.csv';
+        $path = base_path() . '/database/seeders/seeds/database_entities.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
         foreach($rows as $r) {

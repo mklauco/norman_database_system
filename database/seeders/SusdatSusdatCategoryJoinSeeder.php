@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders\Migrators;
+namespace Database\Seeders;
 
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -19,7 +19,7 @@ class SusdatSusdatCategoryJoinSeeder extends Seeder
     {
         $target_table_name = 'susdat_category_substance';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/susdat_category_join.csv';
+        $path = base_path() . '/database/seeders/seeds/susdat_category_join.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
         $k = 0;
@@ -29,9 +29,9 @@ class SusdatSusdatCategoryJoinSeeder extends Seeder
                 'category_id'     => $r['sus_cat_id'],
             ];            
             $k++;
-            if($k >= 1001){
-                break;
-            }
+            // if($k >= 1001){
+            //     break;
+            // }
         }
 
         $chunkSize = 1000;
