@@ -4,7 +4,7 @@ namespace Database\Seeders\Migrators;
 
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use App\Models\Susdat\Substances;
+use App\Models\Susdat\Substance;
 use Illuminate\Support\Facades\DB;
 use App\Models\MariaDB\Susdat as OldData;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -17,9 +17,9 @@ class SusdatSusdatMigrator extends Seeder
     public function run(): void
     {
         //
-        Substances::query()->delete();
+        Substance::query()->delete();
         $count = OldData::count();
-        $batchSize = 500;
+        $batchSize = 2000;
         $batches = ceil($count / $batchSize);
         $time_start = microtime(true);
         $metadata_synonyms = [
@@ -105,17 +105,19 @@ class SusdatSusdatMigrator extends Seeder
                     'chemspider_id'     => $item->{'ChemSpiderID'},
                     'dtxid'             => $item->{'DTXSID'},
                     'molecular_formula' => $item->{'Molecular_Formula'},
-                    'mass_iso'          => $item->{'Monoiso_Mass'},
+                    'mass_iso'          => is_numeric($item->{'Monoiso_Mass'}) ? $item->{'Monoiso_Mass'} : null,
                     'metadata_synonyms' => json_encode($item->only($metadata_synonyms)),
                     'metadata_cas'      => json_encode($item->only($metadata_cas)),
                     'metadata_ms_ready' => json_encode($item->only($metadata_ms_ready)),
                     'metadata_general'  => json_encode($item->only($metadata_general)),
                     // 'created_at'        => $now,
-                    'created_at'        => $this->checkTimeStamp($item->{'created_at'}, $now), // TAKES TOO LONG TO PARSE
+                    'created_at'        => $this->checkTimeStamp($item->sus_id, $item->{'c_at'}, $now), // TAKES TOO LONG TO PARSE
                     'updated_at'        => $now,
                 ];
             }
-            Substances::insert($p);
+            Substance::insert($p);
+            unset($p);
+            unset($batch);
             $time_end_for = microtime(true);
             $execution_time = $time_end_for- $time_start_for;
             echo " | time taken: ".$execution_time." sec".PHP_EOL;
@@ -134,10 +136,10 @@ class SusdatSusdatMigrator extends Seeder
             'name' => 'missing id',
             'metadata_general' => json_encode(['message '=> 'missing id']),
         ];
-        Substances::insert($p);
+        Substance::insert($p);
     }
 
-    protected function checkTimeStamp($t, $now): string
+    protected function checkTimeStamp($id, $t, $now)
     {
         if (is_null($t)) {
             return $now;

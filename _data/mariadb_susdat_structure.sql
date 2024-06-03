@@ -500,7 +500,7 @@ CREATE TABLE `susdat_usepa_20240428` (
 
 CREATE TABLE `susdat_usepa_categories` (
   `sus_id` int(8) UNSIGNED ZEROFILL NOT NULL,
-  `categories` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'EXPOSURE / Product & Use Categories'
+  `categories` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'EXPOSURE / Product & Use Category'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -641,7 +641,7 @@ CREATE TABLE `susdat_usepa_fate_processing` (
 
 CREATE TABLE `susdat_usepa_functional` (
   `sus_id` int(8) UNSIGNED ZEROFILL NOT NULL,
-  `functional` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'EXPOSURE / Product & Use Categories'
+  `functional` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'EXPOSURE / Product & Use Category'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

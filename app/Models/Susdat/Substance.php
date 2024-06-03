@@ -5,7 +5,7 @@ namespace App\Models\Susdat;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Substances extends Model
+class Substance extends Model
 {
     use HasFactory;
 
@@ -13,6 +13,6 @@ class Substances extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Categories::class, 'susdat_category_substance', 'substance_id', 'category_id');
+        return $this->belongsToMany(Category::class, 'susdat_category_substance', 'substance_id', 'category_id');
     }
 }

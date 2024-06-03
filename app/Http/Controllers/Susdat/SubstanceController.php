@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Susdat;
 
 use Illuminate\Http\Request;
-use App\Models\Susdat\Categories;
-use App\Models\Susdat\Substances;
+use App\Models\Susdat\Category;
+use App\Models\Susdat\Substance;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
@@ -17,7 +17,7 @@ class SubstanceController extends Controller
   public function index()
   {
     //
-    $substances = Substances::paginate(50);
+    $substances = Substance::paginate(50);
     return view('susdat.index', [
       'substances' => $substances,
       'substancesCount' => $substances->total(),
@@ -75,7 +75,7 @@ class SubstanceController extends Controller
   public function filter()
   {
     //
-    $categories = Categories::all();
+    $categories = Category::all();
     return view('susdat.filter', [
       'categories' => $categories
     ]);
@@ -83,9 +83,9 @@ class SubstanceController extends Controller
 
   public function search(Request $request)
   {
-    $substancesCount = Substances::count();
+    $substancesCount = Substance::count();
     $categoriesSearch = $request->input('category');
-    $substances = Substances::wherehas('categories', function(Builder $query) use ($categoriesSearch) {
+    $substances = Substance::wherehas('categories', function(Builder $query) use ($categoriesSearch) {
       $query->whereIn('susdat_categories.id', $categoriesSearch);
     })->paginate(50);
 
@@ -94,7 +94,7 @@ class SubstanceController extends Controller
       'substances' => $substances,
       'substancesCount' => $substancesCount,
       'request' => $request->all(),
-      'categories' => Categories::select('id', 'name')->get()->keyBy('id')->toArray()
+      'categories' => Category::select('id', 'name')->get()->keyBy('id')->toArray()
     ]);
   }
 }
