@@ -21,7 +21,10 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            StationSeeder::class,
+            EmpodatStationSeeder::class,
+            ListCoordinatePrecisionSeeder::class,
+            ListConcentrationIndicatorSeeder::class,
+            ListSamplingTechniqueSeeder::class,
         ]);
     }
 }

@@ -19,7 +19,7 @@ class StationSeeder extends Seeder
     {
         $target_table_name = 'stations';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/dct_analysis_stations.csv';
+        $path = base_path() . '/database/seeders/seeds/dct_analysis_stations.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
         foreach($rows as $r) {

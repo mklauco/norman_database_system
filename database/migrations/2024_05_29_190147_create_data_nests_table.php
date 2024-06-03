@@ -14,10 +14,11 @@ return new class extends Migration
         
         Schema::create('substances', function (Blueprint $table) {
             $table->id();
+            $table->string('sus_code'); // NS00000000
             $table->timestamps();
         });
         
-        Schema::create('stations', function (Blueprint $table) {
+        Schema::create('empodat_stations', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable()->default(null);
             $table->string('country')->nullable()->default(null);
@@ -35,39 +36,50 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('coordinate_precisions', function (Blueprint $table) {
+        Schema::create('list_coordinate_precisions', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->timestamps();
         });
-        
-        Schema::create('matrices', function (Blueprint $table) {
+
+        Schema::create('list_proxy_pressures', function (Blueprint $table) { // cca
             $table->id();
             $table->string('name');
             $table->timestamps();
         });
         
-        Schema::create('concentration_indicators', function (Blueprint $table) {
+        Schema::create('list_matrices', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('unit');
+            $table->timestamps();
+        });
+        
+        Schema::create('list_concentration_indicators', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
             $table->timestamps();
         }); 
 
-        Schema::create('sampling_techniques', function (Blueprint $table) {
+        Schema::create('list_sampling_techniques', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('empodat_methods', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
         });
 
-        Schema::create('methods', function (Blueprint $table) {
+        Schema::create('empodat_data_sources', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
         });
 
-        Schema::create('data_sources', function (Blueprint $table) {
+        Schema::create('list_treatment_less', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
-        });
-
-        Schema::create('treatment_less', function (Blueprint $table) {
-            $table->id();
+            $table->string('name');
             $table->timestamps();
         });
 
@@ -81,17 +93,18 @@ return new class extends Migration
             $table->timestamps();
         });
         
-        Schema::create('data_nests', function (Blueprint $table) {
+        Schema::create('empodat_main', function (Blueprint $table) {
             $table->id();
             $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('substances');
-            $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('stations');
-            $table->foreignId('coordinate_precision_id')->constrained()->nullable()->default(null)->references('id')->on('coordinate_precisions');
+            $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_stations');
+            $table->foreignId('coordinate_precision_id')->constrained()->nullable()->default(null)->references('id')->on('list_coordinate_precisions');
             $table->float('altitude', 10)->nullable()->default(null);
-            $table->foreignId('matrix_id')->constrained()->nullable()->default(null)->references('id')->on('matrices');
-            $table->foreignId('concentration_indicator_id')->constrained()->nullable()->default(null)->references('id')->on('concentration_indicators');
+            $table->foreignId('proxy_pressure_id')->constrained()->nullable()->default(null)->references('id')->on('list_proxy_pressures'); // cca
+            $table->foreignId('matrix_id')->constrained()->nullable()->default(null)->references('id')->on('list_matrices');
+            $table->foreignId('concentration_indicator_id')->constrained()->nullable()->default(null)->references('id')->on('list_concentration_indicators');
             $table->float('concentration_value', 10)->nullable()->default(null);
             $table->string('unit_extra')->nullable()->default(null);
-            $table->foreignId('sampling_technique_id')->constrained()->nullable()->default(null)->references('id')->on('sampling_techniques');
+            $table->foreignId('sampling_technique_id')->constrained()->nullable()->default(null)->references('id')->on('list_sampling_techniques');
             $table->date('sampling_date')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_date_year')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_date_month')->nullable()->default(null);
@@ -99,11 +112,11 @@ return new class extends Migration
             $table->time('sampling_date_time')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_duration_day')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_duration_hour')->nullable()->default(null);
-            $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('methods');
-            $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('data_sources');
+            $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_methods');
+            $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_data_sources');
             $table->string('description')->nullable()->default(null);
             $table->json('remarks')->nullable()->default(null);
-            $table->foreignId('treatment_less_id')->nullable()->default(null)->references('id')->on('treatment_less');
+            $table->foreignId('treatment_less_id')->nullable()->default(null)->references('id')->on('list_treatment_less');
             $table->foreignId('availability_id')->nullable()->default(null)->references('id')->on('availabilities');
             $table->foreignId('file_source_id')->nullable()->default(null)->references('id')->on('file_sources');
             $table->foreignId('added_by')->nullable()->default(null)->references('id')->on('users');
@@ -116,7 +129,7 @@ return new class extends Migration
     */
     public function down(): void
     {
-        Schema::dropIfExists('stations');
-        Schema::dropIfExists('data_nests');
+        Schema::dropIfExists('empodat_stations');
+        Schema::dropIfExists('empodat_main');
     }
 };
