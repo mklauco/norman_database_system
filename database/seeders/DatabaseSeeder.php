@@ -35,8 +35,6 @@ class DatabaseSeeder extends Seeder
             // SUSDAT
             SusdatCategorySeeder::class,
 
-            StationSeeder::class,
-
             // Migrators
             SusdatSusdatMigrator::class,
             SusdatSusdatCategoryJoinSeeder::class,

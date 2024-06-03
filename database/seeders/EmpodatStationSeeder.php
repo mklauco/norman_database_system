@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
-class StationSeeder extends Seeder
+class EmpodatStationSeeder extends Seeder
 {
     
     /**
@@ -17,7 +17,7 @@ class StationSeeder extends Seeder
      */
     public function run(): void
     {
-        $target_table_name = 'stations';
+        $target_table_name = 'empodat_stations';
         $now = Carbon::now();
         $path = base_path() . '/database/seeders/seeds/dct_analysis_stations.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
