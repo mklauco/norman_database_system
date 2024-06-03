@@ -23,7 +23,23 @@ return new class extends Migration
             $table->id();
             $table->string('code')->nullable()->default(null);
             $table->text('name')->nullable()->default(null);
-            $table->json('metadata')->nullable()->default(null);
+            $table->text('name_dashboard')->nullable()->default(null);
+            $table->text('name_chemspider')->nullable()->default(null);
+            $table->text('name_iupac')->nullable()->default(null);
+            $table->text('cas_number')->nullable()->default(null);
+            $table->text('smiles')->nullable()->default(null);
+            $table->text('smiles_dashboard')->nullable()->default(null);
+            $table->text('stdinchi')->nullable()->default(null);
+            $table->text('stdinchikey')->nullable()->default(null);
+            $table->text('pubchem_cid')->nullable()->default(null);
+            $table->text('chemspider_id')->nullable()->default(null);
+            $table->text('dtxid')->nullable()->default(null);
+            $table->text('molecular_formula')->nullable()->default(null);
+            $table->float('mass_iso')->nullable()->default(null);
+            $table->json('metadata_synonyms')->nullable()->default(null);
+            $table->json('metadata_cas')->nullable()->default(null);
+            $table->json('metadata_ms_ready')->nullable()->default(null);
+            $table->json('metadata_general')->nullable()->default(null);
             $table->timestamps();
         });
 

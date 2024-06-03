@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Migrators;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use App\Models\Susdat\Substances;
 use Illuminate\Support\Facades\DB;
@@ -18,23 +19,70 @@ class SusdatSusdatMigrator extends Seeder
         //
         Substances::query()->delete();
         $count = OldData::count();
-        $batchSize = 1000;
+        $batchSize = 500;
         $batches = ceil($count / $batchSize);
         $time_start = microtime(true);
-        $metaDataKeys = [
-            'Prob_of_GC',   
-            'Prob_RPLC',    
-            'Pred_Chromatography',  
-            'Prob_of_both_Ionization_Source',   
-            'Prob_EI',  
-            'Prob_ESI', 
-            'Pred_Ionization_source',   
-            'Prob_both_ESI_mode',   
-            'Prob_plusESI', 
-            'Prob_minusESI',    
-            'Pred_ESI_mode',    
+        $metadata_synonyms = [
+            'Synonyms ChemSpider',
+            'Reliability of Synonyms ChemSpider',
+        ];
+        $metadata_ms_ready = [
+            'MS_Ready_SMILES',
+            'MS_Ready_StdInChI',
+            'MS_Ready_StdInChIKey',
+        ];
+        $metadata_cas = [
+            'CAS_RN Dashboard',
+            'CAS_RN PubChem',
+            'CAS_RN Cactus',
+            'CAS_RN ChemSpider',
+            'Reliability of CAS_ChemSpider',
+        ];
+        $metadata_general = [
+            '[M+H]+',
+            '[M-H]-',
+            'Pred_RTI_Positive_ESI',
+            'Uncertainty_RTI_pos',
+            'Pred_RTI_Negative_ESI',
+            'Uncertainty_RTI_neg',
+            'Tetrahymena_pyriformis_toxicity',
+            'IGC50_48_hr_ug/L',
+            'Uncertainty_Tetrahymena_pyriformis_toxicity',
+            'Daphnia_toxicity',
+            'LC50_48_hr_ug/L',
+            'Uncertainty_Daphnia_toxicity',
+            'Algae_toxicity',
+            'EC50_72_hr_ug/L',
+            'Uncertainty_Algae_toxicity',
+            'Pimephales_promelas_toxicity',
+            'LC50_96_hr_ug/L',
+            'Uncertainty_Pimephales_promelas_toxicity',
+            'logKow_EPISuite',
+            'Exp_logKow_EPISuite',
+            'ChemSpider ID based on InChIKey_19032018',
+            'alogp_ChemSpider',
+            'xlogp_ChemSpider',
+            'Lowest P-PNEC (QSAR) [ug/L]',
+            'Species',
+            'Uncertainty',
+            'ExposureScore_Water_KEMI',
+            'HazScore_EcoChronic_KEMI',
+            'ValidationLevel_KEMI',
+            'Prob_of_GC',
+            'Prob_RPLC',
+            'Pred_Chromatography',
+            'Prob_of_both_Ionization_Source',
+            'Prob_EI',
+            'Prob_ESI',
+            'Pred_Ionization_source',
+            'Prob_both_ESI_mode',
+            'Prob_plusESI',
+            'Prob_minusESI',
+            'Pred_ESI_mode',
+            'Preferable_Platform_by_decision_Tree',
         ]; 
-        // $batches = 10;
+        // $batches = 2;
+        $now = Carbon::now();
         for ($i = 0; $i < $batches; $i++) {
             $time_start_for = microtime(true); 
             echo "Processing batch " . ($i + 1) . " of " . $batches;
@@ -42,10 +90,29 @@ class SusdatSusdatMigrator extends Seeder
             $p = [];
             foreach($batch as $item) {
                 $p[] = [
-                    'id' => (int)ltrim($item->sus_id, '0'),
-                    'code' => $item->sus_id,
-                    'name' => $item->sus_name,
-                    'metadata' => json_encode($item->only($metaDataKeys)),
+                    'id'                => (int)ltrim($item->sus_id, '0'),
+                    'code'              => $item->sus_id,
+                    'name'              => $item->sus_name,
+                    'name_dashboard'    => $item->{'Name Dashboard'},
+                    'name_chemspider'   => $item->{'Name ChemSpider'},
+                    'name_iupac'        => $item->{'Name IUPAC'},
+                    'cas_number'        => $item->{'sus_cas'},
+                    'smiles'            => $item->{'SMILES'},
+                    'smiles_dashboard'  => $item->{'SMILES Dashboard'},
+                    'stdinchi'          => $item->{'StdInChI'},
+                    'stdinchikey'       => $item->{'StdInChIKey'},
+                    'pubchem_cid'       => $item->{'PubChem_CID'},
+                    'chemspider_id'     => $item->{'ChemSpiderID'},
+                    'dtxid'             => $item->{'DTXSID'},
+                    'molecular_formula' => $item->{'Molecular_Formula'},
+                    'mass_iso'          => $item->{'Monoiso_Mass'},
+                    'metadata_synonyms' => json_encode($item->only($metadata_synonyms)),
+                    'metadata_cas'      => json_encode($item->only($metadata_cas)),
+                    'metadata_ms_ready' => json_encode($item->only($metadata_ms_ready)),
+                    'metadata_general'  => json_encode($item->only($metadata_general)),
+                    // 'created_at'        => $now,
+                    'created_at'        => $this->checkTimeStamp($item->{'created_at'}, $now), // TAKES TOO LONG TO PARSE
+                    'updated_at'        => $now,
                 ];
             }
             Substances::insert($p);
@@ -65,9 +132,23 @@ class SusdatSusdatMigrator extends Seeder
             'id' => $missing_id,
             'code' => str_pad($missing_id, 8, "0", STR_PAD_LEFT),
             'name' => 'missing id',
-            'metadata' => json_encode(['message '=> 'missing id']),
+            'metadata_general' => json_encode(['message '=> 'missing id']),
         ];
         Substances::insert($p);
+    }
+
+    protected function checkTimeStamp($t, $now): string
+    {
+        if (is_null($t)) {
+            return $now;
+        } elseif ($t == '0000-00-00') {
+            return $now;
+        } elseif (Carbon::parse($t)->isValid()) {
+            return $now;
+        } else{
+            return Carbon::parse($t)->toDateTimeString();
+        }
+        
     }
 }
 
