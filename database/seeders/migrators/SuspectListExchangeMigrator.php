@@ -27,7 +27,7 @@ class SuspectListExchangeMigrator extends Seeder
     file_put_contents($logFileNameSub, '');
     SuspectListExchange::query()->delete();
     $count = OldData::count();
-    $batchSize = 1500;
+    $batchSize = 500;
     $batches = ceil($count / $batchSize);
     $time_start = microtime(true);
     $metadata_general = [
@@ -45,12 +45,12 @@ class SuspectListExchangeMigrator extends Seeder
       $batch = OldData::where('id', '>', $i * $batchSize)->where('id', '<=', ($i + 1) * $batchSize)->get();        
       $p = [];
       foreach($batch as $item) {
-        try{
+        // try{
           $source_id = $existingSourceids['S'.$item->{'sle'}]['id'];
-        } catch (\Exception $e) {
-          echo "Error: ".$e->getMessage().PHP_EOL;
-          continue;
-        }
+        // } catch (\Exception $e) {
+        //   echo "Error: ".$e->getMessage().PHP_EOL;
+        //   continue;
+        // }
         $substance_id = (int)ltrim($item->susdat_id, '0');
         $substance_ok = in_array($substance_id, $existingSubstanceids);
         if ($substance_id == 0 || !$substance_ok){
