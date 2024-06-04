@@ -19,3 +19,4 @@ yarn-error.log
 /.idea
 /.vscode
 database/seeders/seeds/*.log
+_dbdata/
