@@ -63,7 +63,7 @@ class SusdatSusdatCategoryJoinSeeder extends Seeder
             
         }
 
-        $chunkSize = 2000;
+        $chunkSize = 1000;
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;

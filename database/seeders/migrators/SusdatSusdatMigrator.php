@@ -113,6 +113,7 @@ class SusdatSusdatMigrator extends Seeder
                     // 'created_at'        => $now,
                     'created_at'        => $this->checkTimeStamp($item->sus_id, $item->{'c_at'}, $now), // TAKES TOO LONG TO PARSE
                     'updated_at'        => $now,
+                    'added_by'           => 1,
                 ];
             }
             Substance::insert($p);
@@ -125,18 +126,6 @@ class SusdatSusdatMigrator extends Seeder
         $time_end = microtime(true);
         $execution_time = $time_end - $time_start;
         echo 'Migrating Susdat took '.$execution_time.' sec'.PHP_EOL;
-
-
-        // missing id:
-        $missing_id = 8;
-        $p = [];
-        $p[] = [
-            'id' => $missing_id,
-            'code' => str_pad($missing_id, 8, "0", STR_PAD_LEFT),
-            'name' => 'missing id',
-            'metadata_general' => json_encode(['message '=> 'missing id']),
-        ];
-        Substance::insert($p);
     }
 
     protected function checkTimeStamp($id, $t, $now)

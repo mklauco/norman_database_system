@@ -40,6 +40,7 @@ return new class extends Migration
             $table->json('metadata_cas')->nullable()->default(null);
             $table->json('metadata_ms_ready')->nullable()->default(null);
             $table->json('metadata_general')->nullable()->default(null);
+            $table->foreignId('added_by')->constrained()->nullable()->default(null)->references('id')->on('users');
             $table->timestamps();
         });
 

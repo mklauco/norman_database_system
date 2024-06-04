@@ -23,10 +23,11 @@ class SusdatCategorySeeder extends Seeder
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
         foreach($rows as $r) {
-            $p[] = [
-                'name'                => $this->isEmptyThenNull($r['sus_cat_name']),
-                'created_at'          => $now,
-                'updated_at'          => $now,
+            $p[] = [  
+                'id'            => $r['sus_cat_id'],
+                'name'          => $this->isEmptyThenNull($r['sus_cat_name']),
+                'created_at'    => $now,
+                'updated_at'    => $now,
             ];
         }
 
