@@ -69,3 +69,8 @@ INTO OUTFILE 'd:/db_testing/norman_single_column_files/dct_analysis_stations.csv
 
 ## Issues during migrations:
 * `susdat` is missing `id=8`, but `susdat_category_join` has this entry
+
+## some other notes:
+* running `pg_export` and `pg_restore` greatly increases seeding DB with known structure/data
+* use path `C:/Program Files/PostgreSQL/16/bin/pg_dump.exe` or add it in PATH in environment variables
+* to ease up direct CSV seeding by `psql` command, store config file here `c:\Users\mk\AppData\Roaming\postgresql\pgpass.conf` with `localhost:5432:norman:postgres:root`
