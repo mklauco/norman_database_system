@@ -66,6 +66,32 @@ INTO OUTFILE 'd:/db_testing/norman_single_column_files/dct_analysis_stations.csv
     ENCLOSED BY '"'
     LINES TERMINATED BY '\n';
 ```
+* getting concatenated ids from joins:
+  ```
+        $substances = DB::select("SELECT
+      t.id,
+        STRING_AGG(
+            susdat_category_substance.category_id :: text,
+            '|'
+            ORDER BY
+              category_id
+          ) AS category_ids
+        FROM
+        (select
+          susdat_substances.id as id
+        from
+          susdat_substances
+          inner join susdat_category_substance on susdat_substances.id = susdat_category_substance.substance_id
+        where
+          susdat_category_substance.category_id in (5)
+        group by
+          susdat_substances.id
+        order by
+          id asc) t
+        JOIN susdat_category_substance on t.id = susdat_category_substance.substance_id
+        group by
+          t.id");
+  ```
 
 ## Issues during migrations:
 * `susdat` is missing `id=8`, but `susdat_category_join` has this entry
