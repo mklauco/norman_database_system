@@ -26,9 +26,9 @@ Route::prefix('databases')->middleware('auth')->group(function () {
 }); 
 
 Route::prefix('susdat')->middleware('auth')->group(function () {
-    Route::get('substancies/filter', [SubstanceController::class, 'filter'])->name('substancies.filter');
-    Route::get('substancies/search', [SubstanceController::class, 'search'])->name('substancies.search');
-    Route::resource('substancies', SubstanceController::class);
+    Route::get('substances/filter', [SubstanceController::class, 'filter'])->name('substances.filter');
+    Route::get('substances/search', [SubstanceController::class, 'search'])->name('substances.search');
+    Route::resource('substances', SubstanceController::class);
 }); 
 
 Route::prefix('empodat')->middleware('auth')->group(function () {

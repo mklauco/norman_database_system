@@ -1,5 +1,5 @@
 id,name,description,image_path,code,dashboard_route_name,created_at,updated_at
-1,Substance Database,A merged list of NORMAN substances; Central Database to access various lists of substances for suspect screening and prioritisation,substance_database.webp,susdat,substancies,,
+1,Substance Database,A merged list of NORMAN substances; Central Database to access various lists of substances for suspect screening and prioritisation,substance_database.webp,susdat,substances,,
 2,Chemical Occurrence Data,A database of geo-referenced monitoring data on emerging substances,chemical_occurrence_data.webp,empodat,general_route,,
 3,Ecotoxicology,A platform for systematic collection and evaluation of ecotoxicity studies for harmonised derivation of environmental quality standards,ecotoxicology.webp,ecotox,general_route,,
 4,Suspect List Exchange,Central Database to access various lists of substances for suspect screening and prioritisation,empty.webp,enpty_code,general_route,,

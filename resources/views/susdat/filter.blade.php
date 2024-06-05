@@ -5,7 +5,7 @@
       <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
         <div class="p-6 text-gray-900">
           
-          <form action="{{route('substancies.search')}}" method="GET"> 
+          <form action="{{route('substances.search')}}" method="GET"> 
             <!-- Main Search form -->
             <div class="grid grid-cols-2 gap-5">
               
@@ -32,7 +32,7 @@
                 <button type="submit" class="bg-gray-200 border-2 text-bold p-2 hover:bg-gray-50 hover:border-gray-400 hover:border-2"> Submit 
                 </button>
                 <button class="bg-blue-100 border-2 text-bold p-2 hover:bg-gray-50 hover:border-blue-400 hover:border-2">
-                  <a href="{{route('substancies.index')}}" > 
+                  <a href="{{route('substances.index')}}" > 
                     View all </a>
                 </button>
                 </div>
