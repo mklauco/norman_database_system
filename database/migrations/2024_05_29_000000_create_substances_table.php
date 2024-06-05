@@ -45,9 +45,10 @@ return new class extends Migration
         });
 
         Schema::create('susdat_category_substance', function (Blueprint $table) {
-            $table->id();
+            // $table->id();
             $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
             $table->foreignId('category_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_categories');
+            $table->primary(['substance_id', 'category_id']);
             $table->timestamps();
         });
     }

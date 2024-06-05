@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('susdat_source_substance', function (Blueprint $table) {
-            $table->id();
             $table->foreignId('source_id')->constrained()->nullable()->default(null)->references('id')->on('suspect_list_exchange_sources');
             $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->primary(['source_id', 'substance_id']);
             $table->timestamps();
         });
     }
