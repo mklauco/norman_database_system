@@ -8,6 +8,7 @@ use Illuminate\Database\Seeder;
 use Database\Seeders\EmpodatStationSeeder;
 use Database\Seeders\Migrators\SusdatSusdatMigrator;
 use Database\Seeders\SusdatSusdatCategoryJoinSeeder;
+use Database\Seeders\Migrators\SuspectListExchangeMigrator;
 
 
 class DatabaseSeeder extends Seeder
@@ -37,9 +38,9 @@ class DatabaseSeeder extends Seeder
             SuspectListExchangeSourceSeeder::class,
 
             // Migrators
-            // SusdatSusdatMigrator::class,
-            // SusdatSusdatCategoryJoinSeeder::class,
-
+            SusdatSusdatMigrator::class,
+            SusdatSusdatCategoryJoinSeeder::class,
+            SuspectListExchangeMigrator::class,
             
         ]);
     }

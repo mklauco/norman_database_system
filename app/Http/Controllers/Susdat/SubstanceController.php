@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Susdat;
 use Illuminate\Http\Request;
 use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
@@ -17,10 +18,11 @@ class SubstanceController extends Controller
   public function index()
   {
     //
-    $substances = Substance::paginate(50);
+    $substances = Substance::cursorPaginate(100);
+    // $substances = Substance::all();
     return view('susdat.index', [
       'substances' => $substances,
-      'substancesCount' => $substances->total(),
+      'substancesCount' => 0,
     ]);
   }
   
@@ -75,7 +77,7 @@ class SubstanceController extends Controller
   public function filter()
   {
     //
-    $categories = Category::all();
+    $categories = Category::orderBy('name', 'asc')->get();
     return view('susdat.filter', [
       'categories' => $categories
     ]);
@@ -85,11 +87,52 @@ class SubstanceController extends Controller
   {
     $substancesCount = Substance::count();
     $categoriesSearch = $request->input('category');
-    $substances = Substance::wherehas('categories', function(Builder $query) use ($categoriesSearch) {
-      $query->whereIn('susdat_categories.id', $categoriesSearch);
-    })->paginate(50);
+    // $substances = Substance::fullJoin('susdat_category_substance', 'susdat_substances.id', '=', 'susdat_category_substance.substance_id')->whereIn('susdat_category_substance.category_id', $categoriesSearch)
+    // ->orderBy('id', 'asc')
+    // ->select([
+    //   'susdat_substances.id AS id',
+    //   'susdat_substances.code',
+    //   'susdat_substances.name',
+    //   'susdat_substances.cas_number',
+    //   'susdat_substances.smiles',
+    //   'susdat_substances.stdinchikey',
+    //   'susdat_substances.dtxid',
+    //   'susdat_substances.pubchem_cid',
+    //   'susdat_substances.chemspider_id',
+    //   'susdat_substances.chemspider_id',
+    //   'susdat_substances.molecular_formula',
+    //   'susdat_substances.mass_iso',
+    //   ])->selectRaw("STRING_AGG(susdat_category_substance.category_id::text, '|' ORDER BY category_id) AS category_ids")
+    //   ->groupBy('susdat_substances.id')
+    //   ->paginate(50)
+    //   ->withQueryString();
 
+    $substances = DB::select("SELECT
+    t.id,
+      STRING_AGG(
+        susdat_category_substance.category_id :: text,
+        '|'
+        ORDER BY
+          category_id
+      ) AS category_ids
+    FROM
+    (select
+      susdat_substances.id as id
+    from
+      susdat_substances
+      inner join susdat_category_substance on susdat_substances.id = susdat_category_substance.substance_id
+    where
+      susdat_category_substance.category_id in (5)
+    group by
+      susdat_substances.id
+    order by
+      id asc) t
+    JOIN susdat_category_substance on t.id = susdat_category_substance.substance_id
+    group by
+      t.id");
     // dd($substances);
+
+    // dd($substances[0]);
     return view('susdat.index', [
       'substances' => $substances,
       'substancesCount' => $substancesCount,
@@ -98,3 +141,6 @@ class SubstanceController extends Controller
     ]);
   }
 }
+
+
+// SELECT suspect_list_exchanges.substance_id, STRING_AGG(suspect_list_exchange_sources.code, ',' ORDER BY source_id) AS source_ids FROM suspect_list_exchanges JOIN suspect_list_exchange_sources ON suspect_list_exchange_sources.id = suspect_list_exchanges.source_id WHERE substance_id IS NOT NULL GROUP BY substance_id

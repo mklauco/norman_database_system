@@ -96,7 +96,7 @@ class SusdatSusdatMigrator extends Seeder
                     'name_dashboard'    => $item->{'Name Dashboard'},
                     'name_chemspider'   => $item->{'Name ChemSpider'},
                     'name_iupac'        => $item->{'Name IUPAC'},
-                    'cas_number'        => $item->{'sus_cas'},
+                    'cas_number'        => ltrim($item->{'sus_cas'}, 'CAS_RN: '),
                     'smiles'            => $item->{'SMILES'},
                     'smiles_dashboard'  => $item->{'SMILES Dashboard'},
                     'stdinchi'          => $item->{'StdInChI'},
