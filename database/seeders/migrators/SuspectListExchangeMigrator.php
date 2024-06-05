@@ -65,7 +65,7 @@ class SuspectListExchangeMigrator extends Seeder
           'substance_id'        => $substance_id,
           'name'                => $item->{'name'},
           'name_iupac'          => $item->{'iupac_name'},
-          'cas_number'          => $item->{'cas'},
+          'cas_number'          => ltrim($item->{'cas'}, 'CAS_RN: '),
           'smiles'              => $item->{'smiles'},
           'stdinchi'            => $item->{'inchi'},
           'stdinchikey'         => $item->{'inchikey'},
