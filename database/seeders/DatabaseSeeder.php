@@ -25,15 +25,23 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            EmpodatStationSeeder::class,
+            // LISTs
+            ListCountrySeeder::class,
             ListCoordinatePrecisionSeeder::class,
             ListConcentrationIndicatorSeeder::class,
             ListSamplingTechniqueSeeder::class,
+            ListTreatmentLessSeeder::class,
+            ListTypeDataSourceSeeder::class,
+            ListTypeMonitoringSeeder::class,
+
+            //EmpodatStationSeeder::class,
             AdminSeeder::class,
             RolesAndPermissionsSeeder::class,
             DatabaseEntitySeeder::class,
 
+
             // SUSDAT
+<<<<<<< HEAD
             SusdatCategorySeeder::class,
             SuspectListExchangeSourceSeeder::class,
 
@@ -41,6 +49,14 @@ class DatabaseSeeder extends Seeder
             SusdatSusdatMigrator::class,
             SuspectListExchangeSourceJoinSeeder::class,
             SuspectListExchangeMigrator::class,
+=======
+            //SusdatCategorySeeder::class,
+
+            // Migrators
+            //SusdatSusdatMigrator::class,
+            //SusdatSusdatCategoryJoinSeeder::class,
+
+>>>>>>> feature/supporting_tables
             
         ]);
     }
