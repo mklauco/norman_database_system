@@ -16,12 +16,19 @@ return new class extends Migration
         //     $table->id();
         //     $table->timestamps();
         // });
+
+        Schema::create('list_countries', function (Blueprint $table) {
+            $table->id();
+            $table->string('code');
+            $table->string('name');
+            $table->timestamps();
+        });
         
         Schema::create('empodat_stations', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable()->default(null);
-            $table->string('country')->nullable()->default(null);
-            $table->string('country_other')->nullable()->default(null);
+            $table->foreignId('country_id')->constrained()->nullable()->default(null)->references('id')->on('list_countries'); // Country
+            $table->foreignId('country_other')->constrained()->nullable()->default(null)->references('id')->on('list_countries'); // Country - Other
             $table->string('national_name')->nullable()->default(null);
             $table->string('short_sample_code')->nullable()->default(null);
             $table->string('sample_code')->nullable()->default(null);
@@ -66,13 +73,48 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('empodat_methods', function (Blueprint $table) {
+        Schema::create('empodat_analytical_methods', function (Blueprint $table) {
             $table->id();
+            $table->double('lod');
+            $table->double('loq');
+            $table->decimal('uncertainty_loq', 4, 2); // Uncertainty at LoQ [%] ?? 5,3
             $table->timestamps();
         });
 
+        Schema::create('list_type_data_sources', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+        
+        Schema::create('list_type_monitorings', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_data_source_organisations', function (Blueprint $table) {
+            $table->id();
+            $table->string('name'); // English name
+            $table->string('local_name'); // Local name
+            $table->string('acronym'); // Acronym
+            //$table->string('department'); // Department - deprecated
+            $table->string('street'); // Address - Street
+            //$table->string('pobox'); // POBox - deprecated
+            $table->string('city'); // Address - City
+            $table->string('zip');           
+            $table->foreignId('country_id')->constrained()->nullable()->default(null)->references('id')->on('list_countries'); // Country
+
+            $table->timestamps();
+        });   
+
         Schema::create('empodat_data_sources', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('type_data_source_id')->constrained()->nullable()->default(null)->references('id')->on('list_type_data_sources'); // Type of data source
+            $table->foreignId('type_monitoring_id')->constrained()->nullable()->default(null)->references('id')->on('list_type_monitorings'); // Type of monitoring
+            $table->string('type_monitoring_other')->nullable()->default(null); // Type of monitoring - other
+            $table->string('project_title')->nullable()->default(null); // Title of project
+
             $table->timestamps();
         });
 
@@ -111,7 +153,7 @@ return new class extends Migration
             $table->time('sampling_date_time')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_duration_day')->nullable()->default(null);
             $table->unsignedSmallInteger('sampling_duration_hour')->nullable()->default(null);
-            $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_methods');
+            $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_analytical_methods');
             $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_data_sources');
             $table->string('description')->nullable()->default(null);
             $table->json('remarks')->nullable()->default(null);

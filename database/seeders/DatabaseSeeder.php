@@ -24,20 +24,27 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            EmpodatStationSeeder::class,
+            // LISTs
+            ListCountrySeeder::class,
             ListCoordinatePrecisionSeeder::class,
             ListConcentrationIndicatorSeeder::class,
             ListSamplingTechniqueSeeder::class,
+            ListTreatmentLessSeeder::class,
+            ListTypeDataSourceSeeder::class,
+            ListTypeMonitoringSeeder::class,
+
+            //EmpodatStationSeeder::class,
             AdminSeeder::class,
             RolesAndPermissionsSeeder::class,
             DatabaseEntitySeeder::class,
 
+
             // SUSDAT
-            SusdatCategorySeeder::class,
+            //SusdatCategorySeeder::class,
 
             // Migrators
-            SusdatSusdatMigrator::class,
-            SusdatSusdatCategoryJoinSeeder::class,
+            //SusdatSusdatMigrator::class,
+            //SusdatSusdatCategoryJoinSeeder::class,
 
             
         ]);
