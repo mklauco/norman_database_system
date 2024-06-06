@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
 
             // Migrators
             SusdatSusdatMigrator::class,
-            SusdatSusdatCategoryJoinSeeder::class,
+            SuspectListExchangeSourceJoinSeeder::class,
             SuspectListExchangeMigrator::class,
             
         ]);

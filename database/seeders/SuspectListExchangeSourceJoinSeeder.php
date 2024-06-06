@@ -10,7 +10,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 use App\Models\SLE\SuspectListExchangeSource;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class SusdatSourceSubstanceJoinSeeder extends Seeder
+class SuspectListExchangeSourceJoinSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -64,7 +64,7 @@ class SusdatSourceSubstanceJoinSeeder extends Seeder
         $count = ceil(count($p) / $chunkSize) - 1;
         foreach($chunks as $c){
             echo ($k++)."/".$count."; \n";
-            DB::table($target_table_name)->insert($c);
+            DB::table($target_table_name)->insertOrIgnore($c);
         }
     }
 }
