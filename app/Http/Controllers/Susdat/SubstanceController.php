@@ -7,6 +7,8 @@ use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\SLE\SuspectListExchange;
+use App\Models\SLE\SuspectListExchangeSource;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class SubstanceController extends Controller
@@ -109,6 +111,7 @@ class SubstanceController extends Controller
     $subquery = DB::table('susdat_substances')
     ->select($columns)
     ->join('susdat_category_substance', 'susdat_substances.id', '=', 'susdat_category_substance.substance_id')
+    ->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
     ->whereIn('susdat_category_substance.category_id', $categoriesSearch)
     ->groupBy('susdat_substances.id')
     ->orderBy('susdat_substances.id', 'asc');
@@ -117,17 +120,28 @@ class SubstanceController extends Controller
     ->mergeBindings($subquery)
     ->join('susdat_category_substance', 't.id', '=', 'susdat_category_substance.substance_id')
     ->select($columns)
-    ->selectRaw(("STRING_AGG(susdat_category_substance.category_id::text, '|' ORDER BY susdat_category_substance.category_id) AS category_ids")
-    )
+    ->selectRaw(("STRING_AGG(susdat_category_substance.category_id::text, '|' ORDER BY susdat_category_substance.category_id) AS category_ids"))
     ->groupBy($columns)
     ->paginate(10)->withQueryString();
     
+
+    $sourceIds = Substance::join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
+    ->whereIn('susdat_source_substance.substance_id', $substances->pluck('id'))
+    ->select([
+      'susdat_source_substance.substance_id AS id',
+      ])
+      ->selectRaw(("STRING_AGG(susdat_source_substance.source_id::text, '|' ORDER BY susdat_source_substance.source_id) AS source_ids"))
+      ->groupBy('substance_id')
+    ->get()->keyBy('id')->toArray();
+
     return view('susdat.index', [
       'columns' => $columns,
       'substances' => $substances,
       'substancesCount' => $substancesCount,
       'request' => $request->all(),
-      'categories' => Category::select('id', 'name')->get()->keyBy('id')->toArray()
+      'sourceIds' => $sourceIds,
+      'sources' => SuspectListExchangeSource::select('id', 'code')->get()->keyBy('id'),
+      'categories' => Category::select('id', 'abbreviation')->get()->keyBy('id')
     ]);
   }
 }

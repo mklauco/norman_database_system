@@ -26,6 +26,7 @@ class SusdatCategorySeeder extends Seeder
             $p[] = [  
                 'id'            => $r['sus_cat_id'],
                 'name'          => $this->isEmptyThenNull($r['sus_cat_name']),
+                'abbreviation'  => $this->extractStringBetweenParentheses($r['sus_cat_name']),
                 'created_at'    => $now,
                 'updated_at'    => $now,
             ];
@@ -43,5 +44,19 @@ class SusdatCategorySeeder extends Seeder
 
     protected function isEmptyThenNull($value) {
         return empty($value) ? null : $value;
+    }
+
+    function extractStringBetweenParentheses($text) {
+        // Define the regular expression pattern
+        $pattern = '/\(([^)]+)\)/';
+    
+        // Perform the regex match
+        if (preg_match($pattern, $text, $matches)) {
+            // Return the matched string without the parentheses
+            return $matches[1];
+        } else {
+            // Return null if no match found
+            return null;
+        }
     }
 }

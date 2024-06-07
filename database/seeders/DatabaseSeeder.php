@@ -41,22 +41,20 @@ class DatabaseSeeder extends Seeder
 
 
             // SUSDAT
-<<<<<<< HEAD
             SusdatCategorySeeder::class,
+            SusdatSusdatCategoryJoinSeeder::class,
             SuspectListExchangeSourceSeeder::class,
 
             // Migrators
             SusdatSusdatMigrator::class,
             SuspectListExchangeSourceJoinSeeder::class,
             SuspectListExchangeMigrator::class,
-=======
             //SusdatCategorySeeder::class,
 
             // Migrators
             //SusdatSusdatMigrator::class,
             //SusdatSusdatCategoryJoinSeeder::class,
 
->>>>>>> feature/supporting_tables
             
         ]);
     }
