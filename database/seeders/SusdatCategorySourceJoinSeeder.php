@@ -66,7 +66,7 @@ class SusdatCategorySourceJoinSeeder extends Seeder
         $count = ceil(count($p) / $chunkSize) - 1;
         foreach($chunks as $c){
             echo ($k++)."/".$count."; \n";
-            DB::table($target_table_name)->insertOrIgnore($c);
+            DB::table($target_table_name)->insertOrFail($c);
         }
     }
 }

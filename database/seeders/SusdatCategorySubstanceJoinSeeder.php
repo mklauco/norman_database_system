@@ -11,7 +11,7 @@ use App\Models\MariaDB\Susdat as OldData;
 use Spatie\SimpleExcel\SimpleExcelReader;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class SusdatSusdatCategoryJoinSeeder extends Seeder
+class SusdatCategorySubstanceJoinSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -40,7 +40,7 @@ class SusdatSusdatCategoryJoinSeeder extends Seeder
         $k = 0;
         foreach($rows as $r) {
             $substance_id = (int)ltrim($r['sus_id'], '0');
-            $category_id = $r['sus_cat_id'];
+            $category_id = (int)$r['sus_cat_id'];
             $substance_ok = in_array($substance_id, $existingSubstanceids);
             $category_ok = in_array($category_id, $existingCategoryids);
 
