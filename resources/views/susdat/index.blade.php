@@ -5,12 +5,37 @@
       <div class="bg-white shadow-lg sm:rounded-lg">
         <div class="p-6 text-gray-900">
           
-          <div>
-            @if(isset($request))
-            {{var_dump($request)}}
-            @endif
+          
+          @if(isset($request))
+          <div class="bg-gray-100 p-2">
+            <form action="{{route('substances.search')}}" method="GET"> 
+              <div class="flex space-x-2 items-center">
+                <div>
+                  <span class="text-sm font-bold">Search Category:</span>
+                </div>
+                <div id="select2">
+                  @include('_t.form-select2', ['tag' => 'category', 'list' => $categoriesList, 'active_ids' => $active_ids, 'label' => 'Category', 'space' => 'request'])
+                </div>
+
+                <div>
+                  <span class="text-sm font-bold">Order by:</span>
+                </div>
+                <div>
+                  @include('_t.form-select', ['tag' => 'order_by_column', 'list' => $columns, 'label' => 'Category', 'space' => 'filter'])
+                </div>
+                <div>
+                  @include('_t.form-select', ['tag' => 'order_by_direction', 'list' => $orderByDirection, 'label' => 'Category', 'space' => 'filter'])
+                </div>
+                
+                <div id="submit_button">
+                  <button type="submit" class="btn-submit"> Apply Filter 
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
-          <!-- Main Search form -->
+          @endif
+
           <div>
             
             <div class="text-gray-600">
@@ -42,7 +67,7 @@
                   <td class="p-1 text-right">{{$substance->mass_iso}}</td>
                   <td class="p-1 text-right">
                     @php
-                      $categoryList = explode('|', $substance->category_ids);
+                    $categoryList = explode('|', $substance->category_ids);
                     @endphp
                     @foreach ($categoryList  as $category)
                     {{$categories[(int)$category]->abbreviation}}@if(!$loop->last), @endif
@@ -50,7 +75,7 @@
                   </td>
                   <td class="p-1 text-right">
                     @php
-                      $sourceList = explode('|', $sourceIds[$substance->id]['source_ids'] ); 
+                    $sourceList = explode('|', $sourceIds[$substance->id]['source_ids'] ); 
                     @endphp
                     @foreach ($sourceList  as $source)
                     {{$sources[(int)$source]->code}}@if(!$loop->last), @endif

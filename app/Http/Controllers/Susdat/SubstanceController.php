@@ -121,8 +121,15 @@ class SubstanceController extends Controller
     ->join('susdat_category_substance', 't.id', '=', 'susdat_category_substance.substance_id')
     ->select($columns)
     ->selectRaw(("STRING_AGG(susdat_category_substance.category_id::text, '|' ORDER BY susdat_category_substance.category_id) AS category_ids"))
-    ->groupBy($columns)
-    ->paginate(10)->withQueryString();
+    ->groupBy($columns);
+
+    if(!is_null($request->input('order_by_column')) && !is_null($request->input('order_by_direction'))){
+      $substances = $substances->orderBy('t.'.$columns[$request->input('order_by_column')], $this->orderByList($request->input('order_by_direction')));
+    } else {
+      $substances = $substances->orderBy('t.id', 'desc');
+    }
+
+    $substances = $substances->paginate(10)->withQueryString();
     
 
     $sourceIds = Substance::join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
@@ -134,14 +141,22 @@ class SubstanceController extends Controller
       ->groupBy('substance_id')
     ->get()->keyBy('id')->toArray();
 
+    $filter['order_by_direction'] = $this->orderByList($request->input('order_by_direction')) ?? null;
+    $filter['order_by_column'] = $columns[$request->input('order_by_column')] ?? null;
+    // dd($filter);
+
     return view('susdat.index', [
       'columns' => $columns,
       'substances' => $substances,
       'substancesCount' => $substancesCount,
       'request' => $request->all(),
       'sourceIds' => $sourceIds,
+      'active_ids' => '['.implode(', ', $request->category).']',
       'sources' => SuspectListExchangeSource::select('id', 'code')->get()->keyBy('id'),
-      'categories' => Category::select('id', 'abbreviation')->get()->keyBy('id')
+      'categories' => Category::select('id', 'name', 'abbreviation')->get()->keyBy('id'),
+      'categoriesList' => Category::select('id', 'name')->get()->keyBy('id')->toArray(),
+      'orderByDirection' => $this->orderByList(),
+      'filter' => $filter,
     ]);
   }
 }
