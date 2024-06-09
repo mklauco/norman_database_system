@@ -1,17 +1,17 @@
 <x-app-layout>
   
   <div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
         <div class="p-6 text-gray-900">
           
           <form action="{{route('substances.search')}}" method="GET"> 
             <!-- Main Search form -->
-            <div class="grid grid-cols-2 gap-5">
+            <div class="grid grid-cols-3 gap-5">
               
-              <div>
-                <div class="text-sm border-b-2">
-                  Search Category
+              <div class="bg-gray-50 p-2">
+                <div class="text-lg font-bold:">
+                  Search Category:
                 </div>
                 <div>
                   <input type="hidden" value="1" name="search">
@@ -29,24 +29,44 @@
                 
                 
                 <div>
-                <button type="submit" class="bg-gray-200 border-2 text-bold p-2 hover:bg-gray-50 hover:border-gray-400 hover:border-2"> Submit 
-                </button>
-                <button class="bg-blue-100 border-2 text-bold p-2 hover:bg-gray-50 hover:border-blue-400 hover:border-2">
-                  <a href="{{route('substances.index')}}" > 
-                    View all </a>
-                </button>
+                  <button type="submit" class="btn-submit"> Apply Category Filter 
+                  </button>
+                  
                 </div>
               </div>
               
+              <div>
+                <div class="bg-gray-50 p-2">
+                  <div class="text-lg font-bold:">
+                    Search for specific substance:
+                  </div>                  
+                </div>
+              </div>
               
               <div>
-                asdf
+                <div class="bg-gray-50 p-2">
+                  <div class="text-lg font-bold:">
+                    Search according to source:
+                  </div>
+                  <form action="{{route('substances.search')}}" method="GET">
+                  <div class="w-full">
+                    <input type="hidden" value="1" name="search">
+                    @include('_t.form-select2', ['tag' => 'source', 'list' => $sourceList, 'active_ids' => null, 'space' => 'request'])
+                  </div>
+                  @include('_t.test')
+    
+                    
+
+                  <button type="submit" class="btn-submit"> Apply Source Filter</button>
+                  </form>
+                </div>
+                
               </div>
-            </div>
-            <!-- Main Search form -->
-          </form>
-        </div>        
+              <!-- Main Search form -->
+            </form>
+          </div>        
+        </div>
       </div>
     </div>
-  </div>
-</x-app-layout>
+  </x-app-layout>
+  

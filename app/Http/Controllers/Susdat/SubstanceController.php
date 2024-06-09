@@ -84,8 +84,16 @@ class SubstanceController extends Controller
   {
     //
     $categories = Category::orderBy('name', 'asc')->get();
+    $sources = SuspectListExchangeSource::orderBy('id', 'asc')->get();
+    $sourceList = [];
+    foreach($sources as $s){
+      $sourceList[$s->id] = $s->code. ' - ' . $s->name;
+    }
+
     return view('susdat.filter', [
-      'categories' => $categories
+      'categories' => $categories,
+      'sources' => $sources,
+      'sourceList' => $sourceList
     ]);
   }
   
