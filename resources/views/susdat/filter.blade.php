@@ -48,12 +48,14 @@
                   <div class="text-lg font-bold:">
                     Search according to source:
                   </div>
-                  <form action="{{route('substances.search')}}" method="GET">
+                  <form name="asdf" id="asdf" action="{{route('substances.search')}}" method="GET">
                   <div class="w-full">
-                    <input type="hidden" value="1" name="search">
-                    @include('_t.form-select2', ['tag' => 'source', 'list' => $sourceList, 'active_ids' => null, 'space' => 'request'])
+                    {{-- <input type="hidden" value="1" name="search"> --}}
+                    {{-- @include('_t.form-select2', ['tag' => 'source', 'list' => $sourceList, 'active_ids' => null, 'space' => 'request']) --}}
+                    @include('_t.test', ['tag' => 'source', 'list' => $sourceList])
+                    {{-- @include('_t.test') --}}
                   </div>
-                  @include('_t.test')
+                  
     
                     
 

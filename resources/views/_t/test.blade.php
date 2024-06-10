@@ -1,86 +1,119 @@
+<div class="w-full max-w-lg">
+    <!-- Start Component -->
+    <div
+    x-data="multiselect(
+      { 
+        items: [
+            {{-- { label: 'Magenta', value: '#ff00ff' }, 
+    { label: 'Blue', value:  '#0000FF' }, 
+    { label: 'Green', value: '#00FF00' },
+    { label: 'Red', value: '#FF0000', 'selected': true},
+    { label: 'Yellow', value: '#FFFF00' },
+    { label: 'Gray', value: '#CCC' },
+    { label: 'I am a very long value and will show a maximum of 50 chars!', value: '#FF0F0E' }, --}}
+    @foreach ($list as $key => $value)
+    @if(is_array($value))
+      { label: '{{$value['name']}}', value: '{{$value['id']}}'},
+    @else
+    { label: '{{$value}}', value: '{{$key}}'},
+    @endif
+    @endforeach
+    ],
+    size: 6,
+})"
+x-init="onInit"
+@focusout="handleBlur"
+class="relative"
+>
 
-<script type="text/javascript">
-  $(document).ready(function() {
-      $('.selectpicker').select2();
-  });
-</script>
+<input type="hidden" name="{{$tag}}" :value="JSON.stringify(selectedItems.map(item => item.value))">
 
-<script type="text/javascript">
-  $(document).ready(function() {
-      $('.js-example-basic-multiple').select2();
-  });
-</script>
+<!-- Start Item Tags And Input Field -->
+<div
+class="flex items-center justify-between px-1 border border-2 rounded-md relative pr-8 bg-white"
+>
+<ul class="flex flex-wrap items-center w-full">
+    <!-- Tags (Selected) -->
+    <template x-for="(selectedItem, idx) in selectedItems">
+        
+        <li
+        x-text="shortenedLabel(selectedItem.label, maxTagChars)"
+        @click="removeElementByIdx(idx)"
+        @keyup.backspace="removeElementByIdx(idx)"
+        @keyup.delete="removeElementByIdx(idx)"
+        tabindex="0"
+        class="relative m-1 px-2 py-1.5 border rounded-md cursor-pointer hover:bg-red-100 after:content-['x'] after:ml-1.5 after:text-red-300 outline-none focus:outline-none ring-0 focus:ring-2 focus:ring-amber-300 ring-inset transition-all"
+        ></li>
+        
+    </template>
+    
+    <!-- Search Input -->
+    <input
+    x-ref="searchInput"
+    x-model="search"
+    @click="expanded = true"
+    @focusin="expanded = true"
+    @input="expanded = true"
+    @keyup.arrow-down="expanded = true; selectNextItem()"
+    @keyup.arrow-up="expanded = true; selectPrevItem()"
+    @keyup.escape="reset"
+    @keyup.enter="addActiveItem"
+    :placeholder="searchPlaceholder"
+    type="text"
+    class="flex-grow py-2 px-2 mx-1 my-1.5 outline-none focus:outline-none focus:ring-amber-300 focus:ring-2 ring-inset transition-all rounded-md w-24"
+    />
+    
+    <!-- Arrow Icon -->
+    <svg
+    @click="expanded = !expanded; expanded && $refs.searchInput.focus()"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    stroke-width="0"
+    fill="#ccc"
+    :class="expanded && 'rotate-180'"
+    class="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none"
+    tabindex="-1"
+    >
+    <path
+    d="M12 17.414 3.293 8.707l1.414-1.414L12 14.586l7.293-7.293 1.414 1.414L12 17.414z"
+    />
+</svg>
+</ul>
+</div>
+<!-- End Item Tags And Input Field -->
 
-<div class="flex justify-center h-screen p-4 px-3 py-10 bg-white dark:bg-black">
-  <div class="w-full max-w-lg bg-white dark:bg-black">
-      
-      <div class="shadow-drop-center bg-white dark:bg-black">
-          <div class="py-4 text-gray-700 dark:text-gray-400 text-center text-xl tracking-wider">
-              Tailwind CSS and Select2 single example
-          </div>
-          <form class="bg-white dark:bg-black border dark:border-slate-500 rounded px-8 pt-6 pb-8 mb-4"
-              method="POST"
-              autocomplete="on"
-              novalidate
-          >
-
-              <div class="mb-4">
-                  <label class="block text-gray-700 dark:text-gray-400 text-md font-bold mb-2" for="pair">
-                      Choose your city:
-                  </label>
-                  <select
-                      class="selectpicker" style="width: 100%" 
-                      data-placeholder="Select a city..."
-                      data-allow-clear="false"
-                      title="Select city...">
-                      <option>Amsterdam</option>
-                      <option>Rotterdam</option>
-                      <option>Den Haag</option>
-                  </select>
-              </div>
-              <div class="flex items-center justify-between">
-                  <a class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" href="#"> Submit
-                  </a>
-                  
-                  <a class="bg-transparent hover:bg-blue-600 active:bg-blue-700 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded focus:outline-none focus:shadow-outline" href="#"> Cancel
-                  </a>
-              </div>
-          </form>
-      </div>
-
-      <div class="shadow-drop-center bg-white dark:bg-black mt-8">
-          <div class="py-4 text-gray-700 dark:text-gray-400 text-center text-xl tracking-wider">
-              Tailwind CSS and Select2 multiple example
-          </div>
-          <form class="bg-white dark:bg-black border dark:border-slate-500 rounded px-8 pt-6 pb-8 mb-4"
-              method="POST"
-              autocomplete="on"
-              novalidate
-          >
-
-              <div class="mb-4">
-                  <label class="block text-gray-700 dark:text-gray-400 text-md font-bold mb-2" for="pair">
-                      Choose your cities:
-                  </label>
-                  <select
-                      class="js-example-basic-multiple" style="width: 100%" 
-                      data-placeholder="Select one or more cities..."
-                      data-allow-clear="false"
-                      multiple="multiple"
-                      title="Select city...">
-                      <option>Amsterdam</option>
-                      <option>Rotterdam</option>
-                      <option>Den Haag</option>
-                  </select>
-              </div>
-              <div class="flex items-center justify-between">
-                  <a class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" href="#"> Submit
-                  </a>
-                  
-                  <a class="bg-transparent hover:bg-blue-600 active:bg-blue-700 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded focus:outline-none focus:shadow-outline" href="#"> Cancel
-                  </a>
-              </div>
-          </form>
-      </div>
-  </div>
+<!-- Start Items List -->
+<template x-if="expanded">
+    <ul
+    x-ref="listBox"
+    class="w-full list-none border border-2 border-t-0 rounded-md focus:outline-none overflow-y-auto outline-none focus:outline-none bg-blue-100 absolute left-0 bottom-100"
+    tabindex="0"
+    :style="listBoxStyle"
+    >
+    <!-- Item Element -->
+    <template x-if="filteredItems.length">
+        <template x-for="(filteredItem, idx) in filteredItems">
+            <li
+            x-text="shortenedLabel(filteredItem.label, maxItemChars)"
+            @click="handleItemClick(filteredItem)"
+            :class="idx === activeIndex && 'bg-amber-200'"
+            :title="filteredItem.label"
+            class="hover:bg-amber-200 cursor-pointer px-2 py-2"
+            ></li>
+        </template>
+    </template>
+    
+    <!-- Empty Text -->
+    <template x-if="!filteredItems.length">
+        <li
+        x-text="emptyText"
+        class="cursor-pointer px-2 py-2 text-gray-400"
+        ></li>
+    </template>
+</ul>
+</template>
+<!-- End Items List -->
+</div>
+<!-- End Component -->
 </div>
