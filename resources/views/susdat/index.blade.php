@@ -14,7 +14,7 @@
                   <span class="text-sm font-bold">Search Category:</span>
                 </div>
                 <div id="select2">
-                  @include('_t.form-select2', ['tag' => 'category', 'list' => $categoriesList, 'active_ids' => $active_ids, 'label' => 'Category', 'space' => 'request'])
+                  @include('_t.form-apline-multiselect', ['tag' => 'category', 'list' => $categories, 'active_ids' => $active_ids, 'label' => 'Category', 'space' => 'request'])
                 </div>
 
                 <div>
@@ -30,6 +30,10 @@
                 <div id="submit_button">
                   <button type="submit" class="btn-submit"> Apply Filter 
                   </button>
+                </div>
+                <div id="submit_button">
+                  <a href="{{route('substances.filter')}}" class="btn-submit"> Cancel Search
+                  </a>
                 </div>
               </div>
             </form>
@@ -70,7 +74,7 @@
                     $categoryList = explode('|', $substance->category_ids);
                     @endphp
                     @foreach ($categoryList  as $category)
-                    {{$categories[(int)$category]->abbreviation}}@if(!$loop->last), @endif
+                    {{$categories[(int)$category]['abbreviation']}}@if(!$loop->last), @endif
                     @endforeach
                   </td>
                   <td class="p-1 text-right">

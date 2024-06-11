@@ -99,9 +99,14 @@ class SubstanceController extends Controller
   
   public function search(Request $request)
   {
-    dd($request->all());
+    
     $substancesCount = Substance::count();
-    $categoriesSearch = $request->input('category');
+    if(is_array($request->input('category'))){
+      $categoriesSearch = $request->input('category');
+    } else{
+      $categoriesSearch = json_decode($request->input('category'));
+    }
+    
     
     $columns = [
       'id',
@@ -153,17 +158,16 @@ class SubstanceController extends Controller
     $filter['order_by_direction'] = $this->orderByList($request->input('order_by_direction')) ?? null;
     $filter['order_by_column'] = $columns[$request->input('order_by_column')] ?? null;
     // dd($filter);
-
+// $a = Category::select('id', 'name', 'abbreviation')->get()->keyBy('id')->toArray();
     return view('susdat.index', [
       'columns' => $columns,
       'substances' => $substances,
       'substancesCount' => $substancesCount,
       'request' => $request->all(),
       'sourceIds' => $sourceIds,
-      'active_ids' => '['.implode(', ', $request->category).']',
+      'active_ids' => $categoriesSearch,
       'sources' => SuspectListExchangeSource::select('id', 'code')->get()->keyBy('id'),
-      'categories' => Category::select('id', 'name', 'abbreviation')->get()->keyBy('id'),
-      'categoriesList' => Category::select('id', 'name')->get()->keyBy('id')->toArray(),
+      'categories' => Category::select('id', 'name', 'abbreviation')->get()->keyBy('id')->toArray(),
       'orderByDirection' => $this->orderByList(),
       'filter' => $filter,
     ]);

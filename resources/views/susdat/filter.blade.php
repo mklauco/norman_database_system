@@ -3,69 +3,73 @@
   <div class="py-12">
     <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+        
         <div class="p-6 text-gray-900">
           
-          <form action="{{route('substances.search')}}" method="GET"> 
-            <!-- Main Search form -->
-            <div class="grid grid-cols-3 gap-5">
-              
+          
+          <!-- Main Search form -->
+          <div class="grid grid-cols-3 gap-5">
+            
+            <div id="searchAccordingToCategoryForm">
+              <div class="bg-gray-50 p-2">
+                <form  name="searchAccordingToCategoryForm" id="searchAccordingToCategoryForm" action="{{route('substances.search')}}" method="GET"> <input type="hidden" value="1" name="searchCategory">
+                  <div class="text-lg font-bold:">
+                    Search Category:
+                  </div>
+                  <div>
+                    <input type="hidden" value="1" name="search">
+                    @foreach ($categories as $category)
+                    <div class="block p-1">
+                      <span>
+                        <input type="checkbox" name="category[]" value="{{$category->id}}">
+                      </span>
+                      <span class="ml-1">
+                        {{$category->name}} 
+                      </span>
+                    </div>
+                    @endforeach
+                  </div>
+                  
+                  
+                  <div class="flex justify-end m-2">
+                    <button type="submit" class="btn-submit"> Apply Category Filter 
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            
+            
+            
+            <div id="searchAccordingToSource">
               <div class="bg-gray-50 p-2">
                 <div class="text-lg font-bold:">
-                  Search Category:
+                  Search according to source:
                 </div>
-                <div>
-                  <input type="hidden" value="1" name="search">
-                  @foreach ($categories as $category)
-                  <div class="block p-1">
-                    <span>
-                      <input type="checkbox" name="category[]" value="{{$category->id}}">
-                    </span>
-                    <span class="ml-1">
-                      {{$category->name}} 
-                    </span>
-                  </div>
-                  @endforeach
-                </div>
-                
-                
-                <div>
-                  <button type="submit" class="btn-submit"> Apply Category Filter 
-                  </button>
-                  
-                </div>
-              </div>
-              
-              <div>
-                <div class="bg-gray-50 p-2">
-                  <div class="text-lg font-bold:">
-                    Search for specific substance:
-                  </div>                  
-                </div>
-              </div>
-              
-              <div>
-                <div class="bg-gray-50 p-2">
-                  <div class="text-lg font-bold:">
-                    Search according to source:
-                  </div>
-                  <form name="asdf" id="asdf" action="{{route('substances.search')}}" method="GET">
+                <form name="searchAccordingToSourceForm" id="searchAccordingToSourceForm" action="{{route('substances.search')}}" method="GET">
+                  <input type="hidden" value="1" name="searchSource">
                   <div class="w-full">
-                    {{-- <input type="hidden" value="1" name="search"> --}}
-                    {{-- @include('_t.form-select2', ['tag' => 'source', 'list' => $sourceList, 'active_ids' => null, 'space' => 'request']) --}}
-                    @include('_t.test', ['tag' => 'source', 'list' => $sourceList])
-                    {{-- @include('_t.test') --}}
+                    @include('_t.form-apline-multiselect', ['tag' => 'source', 'list' => $sourceList])
                   </div>
                   
-    
-                    
-
-                  <button type="submit" class="btn-submit"> Apply Source Filter</button>
-                  </form>
-                </div>
-                
+                  <div class="flex justify-end m-2">
+                    <button type="submit" class="btn-submit"> Apply Source Filter</button>
+                  </div>
+                </form>
               </div>
-              <!-- Main Search form -->
-            </form>
+              
+            </div>
+            
+            <div id="searchSpecificSubstance">
+              <div class="bg-gray-50 p-2">
+                <div class="text-lg font-bold:">
+                  Search for specific substance:
+                </div>                  
+              </div>
+            </div>              
+            
+            <!-- Main Search form -->
+            
           </div>        
         </div>
       </div>
