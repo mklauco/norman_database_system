@@ -24,7 +24,7 @@
   
   {{-- <script src="https://unpkg.com/slim-select@latest/dist/slimselect.min.js"></script> --}}
   {{-- <link href="https://unpkg.com/slim-select@latest/dist/slimselect.css" rel="stylesheet"></link> --}}
-  
+  @livewireStyles
 </head>
 <body class="font-sans antialiased">
   <div class="min-h-screen bg-gray-100">
@@ -215,6 +215,7 @@
         }
         
       </script>
+      @livewireScripts
     </body>
     </html>
     
