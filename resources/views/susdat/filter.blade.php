@@ -67,8 +67,11 @@
             <div id="searchSpecificSubstance">
               <div class="bg-gray-50 p-2">
                 <div class="text-lg font-bold:">
-                  Search for specific substance:
+                  Interactive search for a specific substance:
                 </div>                  
+                <div>
+                  @livewire('susdat.substance-search')
+                </div>
               </div>
             </div>              
             
