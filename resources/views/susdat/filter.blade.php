@@ -12,7 +12,8 @@
             
             <div id="searchAccordingToCategoryForm">
               <div class="bg-gray-50 p-2">
-                <form  name="searchAccordingToCategoryForm" id="searchAccordingToCategoryForm" action="{{route('substances.search')}}" method="GET"> <input type="hidden" value="1" name="searchCategory">
+                <form  name="searchAccordingToCategoryForm" id="searchAccordingToCategoryForm" action="{{route('substances.search')}}" method="GET">
+                  <input type="hidden" value="1" name="searchCategory">
                   <div class="text-lg font-bold:">
                     Search Category:
                   </div>
@@ -21,7 +22,7 @@
                     @foreach ($categories as $category)
                     <div class="block p-1">
                       <span>
-                        <input type="checkbox" name="category[]" value="{{$category->id}}">
+                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}">
                       </span>
                       <span class="ml-1">
                         {{$category->name}} 
@@ -49,7 +50,10 @@
                 <form name="searchAccordingToSourceForm" id="searchAccordingToSourceForm" action="{{route('substances.search')}}" method="GET">
                   <input type="hidden" value="1" name="searchSource">
                   <div class="w-full">
-                    @include('_t.form-apline-multiselect', ['tag' => 'source', 'list' => $sourceList])
+                    @include('_t.form-apline-multiselect', [
+                      'tag' => 'sourcesSearch', 'list' => $sourceList,
+                      'active_ids' => isset($request->sourcesSearch) ? $request->sourcesSearch : [],
+                      ])
                   </div>
                   
                   <div class="flex justify-end m-2">

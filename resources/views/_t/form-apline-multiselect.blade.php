@@ -13,12 +13,12 @@
     { label: 'Gray', value: '#CCC' },
     { label: 'I am a very long value and will show a maximum of 50 chars!', value: '#FF0F0E' }, --}}
     @foreach ($list as $key => $value)
-    {{-- {{var_dump(is_array($value), $value)}} --}}
+    {{-- {{var_dump($value->name)}} --}}
     @if(is_array($value))
       {{-- { label: '{{$value['name']}}', value: '{{$value['id']}}'}, --}}
       { label: '{{$value['name']}}', value: '{{$value['id']}}' @if (in_array($value['id'], $active_ids)) , selected: true @endif},
     @else
-    { label: '{{$value}}', value: '{{$key}}'},
+    { label: '{{$value}}', value: '{{$key}}'@if (in_array($key, $active_ids)) , selected: true @endif},
     @endif
     @endforeach
     ],

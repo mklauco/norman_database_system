@@ -8,15 +8,28 @@
           
           @if(isset($request))
           <div class="bg-gray-100 p-2">
-            <form action="{{route('substances.search')}}" method="GET"> 
+            <form action="{{route('substances.search')}}" method="GET">
+              
               <div class="flex space-x-2 items-center">
+                @if($request->input('searchCategory') == 1)
                 <div>
                   <span class="text-sm font-bold">Search Category:</span>
                 </div>
                 <div id="select2">
-                  @include('_t.form-apline-multiselect', ['tag' => 'category', 'list' => $categories, 'active_ids' => $active_ids, 'label' => 'Category', 'space' => 'request'])
+                  <input type="hidden" value="1" name="searchCategory">
+                  @include('_t.form-apline-multiselect', ['tag' => 'categoriesSearch', 'list' => $categoriesList, 'active_ids' => $activeCategoryids, 'label' => 'Category', 'space' => 'request'])
                 </div>
-
+                @elseif($request->input('searchSource') == 1)
+                <div>
+                  <span class="text-sm font-bold">Search Source:</span>
+                </div>
+                <div id="select2">
+                  <input type="hidden" value="1" name="searchSource">
+                  @include('_t.form-apline-multiselect', ['tag' => 'sourcesSearch', 'list' => $sourceList, 'active_ids' => $activeSourceids, 'label' => 'Category', 'space' => 'request'])
+                </div>
+                @else
+                ASDF
+                @endif
                 <div>
                   <span class="text-sm font-bold">Order by:</span>
                 </div>
@@ -39,7 +52,7 @@
             </form>
           </div>
           @endif
-
+          
           <div>
             
             <div class="text-gray-600">
@@ -74,7 +87,7 @@
                     $categoryList = explode('|', $substance->category_ids);
                     @endphp
                     @foreach ($categoryList  as $category)
-                    {{$categories[(int)$category]['abbreviation']}}@if(!$loop->last), @endif
+                    {{$categories[(int)$category]->abbreviation}}@if(!$loop->last), @endif
                     @endforeach
                   </td>
                   <td class="p-1 text-right">
