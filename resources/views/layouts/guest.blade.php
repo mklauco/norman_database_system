@@ -17,12 +17,11 @@
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
-                {{-- <a href="/"> --}}
-                    {{-- <x-application-logo class="w-20 h-20 fill-current text-gray-500" /> --}}
-                {{-- </a> --}}
-                <span class="text-gray-900 font-bold text-xl">Norman Database System</span>
+                <a href="/" class="d-flex justify-content-center">
+                    <img src="{{ asset('images/norman-logo.png') }}" alt="logo" class="block h-20 w-auto fill-current text-gray-800 d-flex justify-content-center">
+                </a>    
             </div>
-
+            <span class="text-gray-900 font-bold text-3xl">Norman Database System</span>
             <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
                 {{ $slot }}
             </div>
