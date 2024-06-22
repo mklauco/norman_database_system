@@ -1,0 +1,17 @@
+<x-nav-link-header :href="route('substances.filter')" :active="request()->is('*filter')">
+  Filter
+</x-nav-link-header>
+
+@if(request()->is('*filter') == true)
+<x-nav-link-header :href="route('substances.index')" :active="request()->is('*search')">
+  View
+</x-nav-link-header>
+@else
+<x-nav-link-header :href="request()->fullUrl()" :active="request()->is('*search')">
+  View
+</x-nav-link-header>
+@endif  
+
+<x-nav-link-header :href="route('duplicates.index')" :active="request()->is('*duplicates*')">
+  Duplicates
+</x-nav-link-header>

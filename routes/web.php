@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Empodat\EmpodatController;
+use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
 
@@ -29,6 +30,7 @@ Route::prefix('susdat')->middleware('auth')->group(function () {
     Route::get('substances/filter', [SubstanceController::class, 'filter'])->name('substances.filter');
     Route::get('substances/search', [SubstanceController::class, 'search'])->name('substances.search');
     Route::resource('substances', SubstanceController::class);
+    Route::resource('duplicates', DuplicateController::class);
 }); 
 
 Route::prefix('empodat')->middleware('auth')->group(function () {

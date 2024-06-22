@@ -20,12 +20,9 @@ class SubstanceController extends Controller
   public function index()
   {
     //
-    $substances = Substance::cursorPaginate(100);
-    // $substances = Substance::all();
-    return view('susdat.index', [
-      'substances' => $substances,
-      'substancesCount' => 0,
-    ]);
+    // $substances = Substance::cursorPaginate(100);
+    
+    return redirect()->route('substances.search');
   }
   
   /**
