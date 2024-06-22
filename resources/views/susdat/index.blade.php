@@ -28,7 +28,9 @@
                   @include('_t.form-apline-multiselect', ['tag' => 'sourcesSearch', 'list' => $sourceList, 'active_ids' => $activeSourceids, 'label' => 'Category', 'space' => 'request'])
                 </div>
                 @else
-                ASDF
+                {{-- <div class="">
+                  <span class="text-sm font-bold">List of specific substances |</span>
+                </div> --}}
                 @endif
                 <div>
                   <span class="text-sm font-bold">Order by:</span>

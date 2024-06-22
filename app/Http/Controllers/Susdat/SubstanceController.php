@@ -117,6 +117,12 @@ class SubstanceController extends Controller
     } else{
       $sourcesSearch = json_decode($request->input('sourcesSearch'));
     }
+
+    if(is_array($request->input('substancesSearch'))){
+      $substancesSearch = $request->input('substancesSearch');
+    } else{
+      $substancesSearch = json_decode($request->input('substancesSearch'));
+    }
     
     
     $columns = [
@@ -146,6 +152,10 @@ class SubstanceController extends Controller
       $subquery = $subquery->whereIn('susdat_category_substance.category_id', $allCategories);
       $subquery = $subquery->whereIn('susdat_source_substance.source_id', $sourcesSearch);
       $categoriesSearch = $allCategories;
+    } elseif ($request->input('searchSubstance') == 1){
+      $subquery = $subquery->whereIn('susdat_substances.id', $substancesSearch);
+      $categoriesSearch = $allCategories;
+      $sourcesSearch = $allSources;
     } else {
       $subquery = $subquery->whereIn('susdat_category_substance.category_id', $allCategories);
       $subquery = $subquery->whereIn('susdat_source_substance.source_id', $allSources);
@@ -168,6 +178,7 @@ class SubstanceController extends Controller
     }
     
     $substances = $substances->paginate(10)->withQueryString();
+    // dd($request->all(), $substancesSearch, $substances->count());
     
     
     $sourceIds = Substance::join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
