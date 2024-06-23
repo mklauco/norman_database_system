@@ -61,17 +61,26 @@ class SubstanceController extends Controller
     //
     $substance = Substance::findOrFail($id);
     $editables = [
-      // 'id',
-      'prefixed_code',
+      'code',
       'name',
+      'name_dashboard',
+      'name_chemspider',
+      'name_iupac',
       'cas_number',
       'smiles',
+      'smiles_dashboard',
+      'stdinchi',
       'stdinchikey',
-      'dtxid',
       'pubchem_cid',
       'chemspider_id',
+      'dtxid',
       'molecular_formula',
       'mass_iso',
+      'metadata_synonyms',
+      'metadata_cas',
+      'metadata_ms_ready',
+      'metadata_general',
+      'added_by',
     ];
     // dd($substance);
     $categories = Category::orderBy('name', 'asc')->get();
@@ -95,6 +104,13 @@ class SubstanceController extends Controller
   public function update(Request $request, string $id)
   {
     //
+    $substance = Substance::findOrFail($id);
+    try{
+      // $s = $substance->update($request->all());
+      return redirect()->route('substances.show', ['substance' => $id]);
+    } catch (\Exception $e){
+      return redirect()->route('substances.edit', ['substance' => $id])->with('error', $e->getMessage());
+    }
   }
   
   /**
