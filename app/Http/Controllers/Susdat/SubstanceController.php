@@ -59,6 +59,34 @@ class SubstanceController extends Controller
   public function edit(string $id)
   {
     //
+    $substance = Substance::findOrFail($id);
+    $editables = [
+      // 'id',
+      'prefixed_code',
+      'name',
+      'cas_number',
+      'smiles',
+      'stdinchikey',
+      'dtxid',
+      'pubchem_cid',
+      'chemspider_id',
+      'molecular_formula',
+      'mass_iso',
+    ];
+    // dd($substance);
+    $categories = Category::orderBy('name', 'asc')->get();
+    $sources = SuspectListExchangeSource::orderBy('id', 'asc')->get();
+    $sourceList = [];
+    foreach($sources as $s){
+      $sourceList[$s->id] = $s->code. ' - ' . $s->name;
+    }
+    return view('susdat.edit', [
+      'substance' => $substance,
+      'categories' => $categories,
+      'sources' => $sources,
+      'sourceList' => $sourceList,
+      'editables' => $editables
+    ]);
   }
   
   /**
@@ -155,8 +183,8 @@ class SubstanceController extends Controller
       $categoriesSearch = $allCategories;
       $sourcesSearch = $allSources;
     } else {
-      $subquery = $subquery->whereIn('susdat_category_substance.category_id', $allCategories);
-      $subquery = $subquery->whereIn('susdat_source_substance.source_id', $allSources);
+      // $subquery = $subquery->whereIn('susdat_category_substance.category_id', $allCategories);
+      // $subquery = $subquery->whereIn('susdat_source_substance.source_id', $allSources);
     }
     
     $subquery = $subquery->groupBy('susdat_substances.id')->orderBy('susdat_substances.id', 'asc');
@@ -180,7 +208,7 @@ class SubstanceController extends Controller
     $substances = $substances->paginate(10)->withQueryString();
    
     
-    $sourceIds = Substance::join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
+    $sourceIds = Substance::leftJoin('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
     ->whereIn('susdat_source_substance.substance_id', $substances->pluck('id'))
     ->select([
       'susdat_source_substance.substance_id AS id',

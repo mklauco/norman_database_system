@@ -4,11 +4,11 @@
 
 @if(request()->is('*filter') == true)
 <x-nav-link-header :href="route('substances.index')" :active="request()->is('*search')">
-  View
+  Full View
 </x-nav-link-header>
 @else
 <x-nav-link-header :href="request()->fullUrl()" :active="request()->is('*search')">
-  View
+  Current View
 </x-nav-link-header>
 @endif  
 
