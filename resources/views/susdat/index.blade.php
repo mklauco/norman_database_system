@@ -89,20 +89,28 @@
                   <td class="p-1 text-center">{{$substance->molecular_formula}}</td>
                   <td class="p-1 text-right">{{$substance->mass_iso}}</td>
                   <td class="p-1 text-right">
+                    @if(is_null($substance->category_ids) == false)
                     @php
                     $categoryList = explode('|', $substance->category_ids);
                     @endphp
                     @foreach ($categoryList  as $category)
                     {{$categories[(int)$category]->abbreviation}}@if(!$loop->last), @endif
                     @endforeach
+                    @else
+                    <span class="text-red-500">No category assigned</span>
+                    @endif
                   </td>
                   <td class="p-1 text-right">
+                    @if(array_key_exists($substance->id, $sourceIds) == true)
                     @php
                     $sourceList = explode('|', $sourceIds[$substance->id]['source_ids'] ); 
                     @endphp
                     @foreach ($sourceList  as $source)
                     {{$sources[(int)$source]->code}}@if(!$loop->last), @endif
                     @endforeach
+                    @else
+                    <span class="text-red-500">No source assigned</span>
+                    @endif
                   </td>
                 </tr>
                 @endforeach

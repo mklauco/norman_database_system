@@ -120,7 +120,7 @@ class SubstanceController extends Controller
     } else{
       $substancesSearch = json_decode($request->input('substancesSearch'));
     }
-    
+    // dd($substancesSearch);
     
     $columns = [
       'id',
@@ -138,9 +138,9 @@ class SubstanceController extends Controller
     
     $subquery = DB::table('susdat_substances')
     ->select($columns)
-    ->join('susdat_category_substance', 'susdat_substances.id', '=', 'susdat_category_substance.substance_id')
-    ->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id');
-    
+    ->leftJoin('susdat_category_substance', 'susdat_substances.id', '=', 'susdat_category_substance.substance_id')
+    ->leftJoin('susdat_source_substance', 'susdat_substances.id', '=', 'susdat_source_substance.substance_id')
+    ;
     if ($request->input('searchCategory') == 1){
       $subquery = $subquery->whereIn('susdat_category_substance.category_id', $categoriesSearch);
       $subquery = $subquery->whereIn('susdat_source_substance.source_id', $allSources);
@@ -151,6 +151,7 @@ class SubstanceController extends Controller
       $categoriesSearch = $allCategories;
     } elseif ($request->input('searchSubstance') == 1){
       $subquery = $subquery->whereIn('susdat_substances.id', $substancesSearch);
+      // 
       $categoriesSearch = $allCategories;
       $sourcesSearch = $allSources;
     } else {
@@ -158,16 +159,18 @@ class SubstanceController extends Controller
       $subquery = $subquery->whereIn('susdat_source_substance.source_id', $allSources);
     }
     
-    // ->whereIn('susdat_category_substance.category_id', $categoriesSearch)
     $subquery = $subquery->groupBy('susdat_substances.id')->orderBy('susdat_substances.id', 'asc');
     
+    // dd($substancesSearch, $subquery->toSql(), $subquery->get());
     $substances = DB::table(DB::raw('(' . $subquery->toSql() . ') as t'))
     ->mergeBindings($subquery)
-    ->join('susdat_category_substance', 't.id', '=', 'susdat_category_substance.substance_id')
+    ->leftJoin('susdat_category_substance', 't.id', '=', 'susdat_category_substance.substance_id')
     ->select($columns)
     ->selectRaw(("STRING_AGG(susdat_category_substance.category_id::text, '|' ORDER BY susdat_category_substance.category_id) AS category_ids"))
     ->groupBy($columns);
-    
+
+    // dd($substancesSearch, $subquery->toSql(), $substances->get());
+
     if(!is_null($request->input('order_by_column')) && !is_null($request->input('order_by_direction'))){
       $substances = $substances->orderBy('t.'.$columns[$request->input('order_by_column')], $this->orderByList($request->input('order_by_direction')));
     } else {
@@ -175,8 +178,7 @@ class SubstanceController extends Controller
     }
     
     $substances = $substances->paginate(10)->withQueryString();
-    // dd($request->all(), $substancesSearch, $substances->count());
-    
+   
     
     $sourceIds = Substance::join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
     ->whereIn('susdat_source_substance.substance_id', $substances->pluck('id'))
