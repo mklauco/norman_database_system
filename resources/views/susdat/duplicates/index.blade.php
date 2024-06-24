@@ -42,7 +42,7 @@
                     @if (empty($duplicate->$pivot) || is_null($duplicate->$pivot))
                     <span class="text-red-500"><span class="font-bold">{{$pivot}}</span> not assigned</span>
                     @else
-                    <a class="link-edit" href="{{route('duplicates.records', ['pivot' => $pivot, 'value' => $duplicate->$pivot])}}">{{$duplicate->$pivot}}</a>
+                    <a class="link-edit" href="{{route('duplicates.records', ['pivot' => $pivot, 'pivot_value' => $duplicate->$pivot])}}">{{$duplicate->$pivot}}</a>
                     @endif
                   </td>
                   <td class="border px-4 py-2">{{ $duplicate->count }}</td>

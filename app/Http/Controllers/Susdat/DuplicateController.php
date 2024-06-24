@@ -137,11 +137,16 @@ class DuplicateController extends Controller
     ]);
   }
 
-  public function records(Request $request, string $pivot, string $value){
-    $substances = Substance::where($pivot, $value)->get();
-    dd($substances);
+  public function records(Request $request, string $pivot, string $pivot_value){
+    $columns = $this->getSelectColumns();
+    $substances = Substance::where($pivot, $pivot_value)->select($columns)->paginate(10)->withQueryString();
+    // dd($substances);
     return view('susdat.duplicates.records', [
-      'substances' => $substances,
+      'substances'    => $substances,
+      'pivot'         => $pivot,
+      'pivot_value'   => $pivot_value,
+      'columns'       => $columns,
+      'substancesCount' => $substances->total(),
     ]);
   }
 
