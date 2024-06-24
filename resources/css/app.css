@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer components {
+
+  /* tables styling */
+  .table-standard {
+    @apply table-auto w-full border-separate border-spacing-1 text-xs;
+  }
+
   .btn-link-lime {
     @apply text-lime-600 hover:text-white hover:bg-lime-500 border-b-2 border-transparent hover:border-lime-500 px-2 py-1 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-lime-500;
   }

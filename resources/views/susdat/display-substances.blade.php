@@ -1,7 +1,7 @@
 <div class="text-gray-600">
   <span>Number of matched records: </span><span class="font-bold">{{$substances->total()}}</span> of <span>{{$substancesCount}}</span>.
 </div>
-<table class="table-auto w-full border-separate border-spacing-1 text-xs">
+<table class="table-standard">
   <thead>
     <tr class="bg-gray-600 text-white">
       @foreach ($columns as $c)
