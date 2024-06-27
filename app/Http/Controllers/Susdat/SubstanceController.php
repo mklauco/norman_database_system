@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Susdat;
 
+use Exception;
 use Illuminate\Http\Request;
 use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
@@ -49,7 +50,7 @@ class SubstanceController extends Controller
     //
     // dd(Substance::findOrFail($id));
     return view('susdat.show', [
-      'substance' => Substance::findOrFail($id)->toArray()
+      'substance' => Substance::findOrFail($id)
     ]);
   }
   
@@ -60,28 +61,7 @@ class SubstanceController extends Controller
   {
     //
     $substance = Substance::findOrFail($id);
-    $editables = [
-      'code',
-      'name',
-      'name_dashboard',
-      'name_chemspider',
-      'name_iupac',
-      'cas_number',
-      'smiles',
-      'smiles_dashboard',
-      'stdinchi',
-      'stdinchikey',
-      'pubchem_cid',
-      'chemspider_id',
-      'dtxid',
-      'molecular_formula',
-      'mass_iso',
-      'metadata_synonyms',
-      'metadata_cas',
-      'metadata_ms_ready',
-      'metadata_general',
-      'added_by',
-    ];
+    $editables = $this->getEditableColumns();
     // dd($substance);
     $categories = Category::orderBy('name', 'asc')->get();
     $sources = SuspectListExchangeSource::orderBy('id', 'asc')->get();
@@ -104,11 +84,27 @@ class SubstanceController extends Controller
   public function update(Request $request, string $id)
   {
     //
+    
     $substance = Substance::findOrFail($id);
+    $editables = $this->getEditableColumns();
+
+    foreach($editables as $key){
+      if($request->has($key)){
+        if(substr($key, 0, 8) == 'metadata'){
+          $substance->$key = json_encode($request->input($key));
+        } else {
+          $substance->$key = $request->input($key);
+        }
+      }
+    }
+
+
     try{
-      // $s = $substance->update($request->all());
+      $s = $substance->save();
+      session()->flash('success', 'Substance updated successfully');
       return redirect()->route('substances.show', ['substance' => $id]);
-    } catch (\Exception $e){
+    } catch (Exception $e){
+      session()->flash('failure', 'An error occurred while updating the substance. Please contact the administrator.'. $e->getMessage());
       return redirect()->route('substances.edit', ['substance' => $id])->with('error', $e->getMessage());
     }
   }
@@ -264,6 +260,30 @@ class SubstanceController extends Controller
         'orderByDirection' => $this->orderByList(),
         'filter' => $filter,
       ]);
+    }
+
+    protected function getEditableColumns(){
+      return [
+        'code',
+        'name',
+        'name_dashboard',
+        'name_chemspider',
+        'name_iupac',
+        'cas_number',
+        'smiles',
+        'smiles_dashboard',
+        'stdinchi',
+        'stdinchikey',
+        'pubchem_cid',
+        'chemspider_id',
+        'dtxid',
+        'molecular_formula',
+        'mass_iso',
+        'metadata_synonyms',
+        'metadata_cas',
+        'metadata_ms_ready',
+        'metadata_general',
+      ];
     }
   }
   

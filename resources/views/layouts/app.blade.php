@@ -6,7 +6,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   
   <title>{{ config('app.name', 'Laravel') }}</title>
-
+  
   <link rel="apple-touch-icon" sizes="180x180" href="{{asset('f/apple-touch-icon.png')}}">
   <link rel="icon" type="image/png" sizes="32x32" href="{{asset('f/favicon-32x32.png')}}">
   <link rel="icon" type="image/png" sizes="16x16" href="{{asset('f/favicon-16x16.png')}}">
@@ -38,12 +38,17 @@
     <!-- Page Heading -->
     @isset($header)
     <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto">
-      {{-- <div class="max-w-7xl mx-auto py-2 px-2 sm:px-6 lg:px-8"> --}}
+      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         {{ $header }}
       </div>
     </header>
     @endisset
+    
+    {{-- @isset($errors) --}}
+    <div class="max-w-6xl mx-auto">
+      @include('_t.errors')
+    </div>
+    {{-- @endisset --}}
     
     <!-- Page Content -->
     <main>

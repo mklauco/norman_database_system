@@ -17,7 +17,7 @@
 </x-nav-link-header>
 
 @if(request()->routeIs('substances.show') == true)
-<x-nav-link-header :href="route('substances.show', $substance['id'])" :active="request()->routeIs('substances.show')">
+<x-nav-link-header :href="route('substances.show', $substance->id)" :active="request()->routeIs('substances.show')">
   Showing Specific Substance
 </x-nav-link-header>
 @endif
