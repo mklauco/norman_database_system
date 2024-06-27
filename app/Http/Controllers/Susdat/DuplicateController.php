@@ -140,13 +140,17 @@ class DuplicateController extends Controller
   public function records(Request $request, string $pivot, string $pivot_value){
     $columns = $this->getSelectColumns();
     $substances = Substance::where($pivot, $pivot_value)->select($columns)->paginate(10)->withQueryString();
-    // dd($substances);
+    
+    // get data from external sources:
+    // $comptox = $this->getComptoxData($substances->pluck('dtxid')->toArray());
+// dd($comptox);
     return view('susdat.duplicates.records', [
-      'substances'    => $substances,
-      'pivot'         => $pivot,
-      'pivot_value'   => $pivot_value,
-      'columns'       => $columns,
-      'substancesCount' => $substances->total(),
+      'dtxsid'           => $substances->pluck('dtxid')->toArray(),
+      'substances'        => $substances,
+      'pivot'             => $pivot,
+      'pivot_value'       => $pivot_value,
+      'columns'           => $columns,
+      'substancesCount'   => $substances->total(),
     ]);
   }
 

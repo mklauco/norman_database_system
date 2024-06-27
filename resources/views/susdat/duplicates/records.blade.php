@@ -16,6 +16,16 @@
             @include('susdat.display-substances')
           </div>
 
+          <div class="flex space-x-2 items-center mt-2">
+            <span>
+              Information from external sources:
+            </span>
+          </div>
+
+          <div>
+            @livewire('susdat.duplicate-load-comptox', ['dtxsid' => $dtxsid])
+          </div>
+
         </div>
       </div>
     </div>
