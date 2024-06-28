@@ -85,4 +85,54 @@ abstract class Controller
             'monoisotopicMass'    => 'mass_iso',
         ];
     }
+    
+    public function getPubchemData(array $pubchemIds){
+        // foreach($pubchemIds as $pcid){
+            $client = new \GuzzleHttp\Client();
+            $url = 'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/'. implode(",", $pubchemIds) . '/property/MolecularFormula,MolecularWeight,InChIKey,IUPACName,Title,CanonicalSMILES,IsomericSMILES,InChI,MonoisotopicMass/JSON';
+            $response = $client->request('GET', $url);
+            $jsonData = json_decode($response->getBody())->PropertyTable->Properties;
+            $pubchem = [];
+            foreach($jsonData as $key => $value){
+                $pubchem[$value->CID] = collect($value)->mapWithKeys(function($value, $key){
+                    return [$this->remapPubchemToNorman()[$key] ?? null => $value];
+                });
+            }
+
+            return $pubchem;
+            
+            // $CID = $data->CID;
+            // $MolecularFormula = $data->MolecularFormula;
+            // $MolecularWeight = $data->MolecularWeight;
+            // $CanonicalSMILES = $data->CanonicalSMILES;
+            // $IsomericSMILES = $data->IsomericSMILES;
+            // $InChI = $data->InChI;
+            // $InChIKey = $data->InChIKey;
+            // $IUPACName = $data->IUPACName;
+            // $MonoisotopicMass = $data->MonoisotopicMass;
+            // $Title = $data->Title;
+            
+            // $CASRNarray = array();
+            // // $CASarray = getCas($pcid);
+            
+            // foreach($CASarray as $value)
+            // $CASRNarray[] = 'CAS_RN: ' . $value;
+            
+            // $DTXSIDarray = getDTXSID($pcid);
+        // }
+        
+    }
+
+    public function remapPubchemToNorman(){
+        return [
+            'Title'             => 'name',
+            // 'casrn'               => 'cas_number',
+            'CanonicalSMILES'   => 'smiles',
+            'InChIKey'          => 'stdinchikey',
+            'CID'               => 'pubchem_cid',
+            'MolecularFormula'  => 'molecular_formula',
+            'MonoisotopicMass'  => 'mass_iso',
+        ];
+    }
 }
+    

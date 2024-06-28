@@ -143,9 +143,11 @@ class DuplicateController extends Controller
     
     // get data from external sources:
     // $comptox = $this->getComptoxData($substances->pluck('dtxid')->toArray());
-// dd($comptox);
+    $pubchem = $this->getPubchemData($substances->pluck('pubchem_cid')->unique()->toArray());
+// dd($pubchem);
     return view('susdat.duplicates.records', [
-      'dtxsid'           => $substances->pluck('dtxid')->toArray(),
+      'dtxsIds'           => $substances->pluck('dtxid')->toArray(),
+      'pubchemIds'        => $substances->pluck('pubchem_cid')->unique()->toArray(),
       'substances'        => $substances,
       'pivot'             => $pivot,
       'pivot_value'       => $pivot_value,

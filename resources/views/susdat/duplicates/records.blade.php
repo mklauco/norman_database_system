@@ -17,13 +17,19 @@
           </div>
 
           <div class="flex space-x-2 items-center mt-2">
-            <span>
+            <span class="">
               Information from external sources:
             </span>
           </div>
 
-          <div>
-            @livewire('susdat.duplicate-load-comptox', ['dtxsid' => $dtxsid])
+          <div class="bg-sky-200 shadow-md mt-5">
+            <span class="text-sm font-bold"> Comptox Database: </span>
+            @livewire('susdat.duplicate-load-comptox', ['dtxsid' => $dtxsIds])
+          </div>
+
+          <div class="bg-emerald-100 shadow-md mt-5">
+            <span class="text-sm font-bold"> Pubchem Database: </span>
+            @livewire('susdat.duplicate-load-pubchem', ['pubchemIds' => $pubchemIds])
           </div>
 
         </div>
