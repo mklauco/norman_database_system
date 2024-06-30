@@ -31,6 +31,7 @@ Route::prefix('susdat')->middleware('auth')->group(function () {
     Route::get('substances/search', [SubstanceController::class, 'search'])->name('substances.search');
     Route::get('duplicates/filter/', [DuplicateController::class, 'filter'])->name('duplicates.filter');
     Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->name('duplicates.records');
+    Route::post('duplicates/records/handle', [DuplicateController::class, 'handleDuplicates'])->name('duplicates.handleDuplicates');
     Route::resource('substances', SubstanceController::class);
     Route::resource('duplicates', DuplicateController::class);
 }); 

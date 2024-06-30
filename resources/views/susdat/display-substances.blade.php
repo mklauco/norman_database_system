@@ -7,13 +7,25 @@
       @foreach ($columns as $c)
       <th class="py-1 px-2">{{$c}}</th>
       @endforeach
+      @if(($show['substances'] ?? false) == true)
       <th>categories</th>
+      @endif
+      @if(($show['sources'] ?? false) == true)
       <th>sources</th>
+      @endif
+      @if(($show['duplicates'] ?? false) == true)
+      <th>Duplicate management</th>
+      @endif
     </tr>
   </thead>
   <tbody>
     @foreach ($substances as $substance)
-    <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
+    @if($substance->trashed())
+    <tr class="bg-zinc-100 text-zinc-400">
+    @else
+    <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
+    @endif
+    
       <td class="p-1 flex justify-end">
         <div class="flex justify-right">
           <a class="btn-link-lime" href="{{route('substances.show', $substance->id)}}">{{$substance->id}}</a>
@@ -22,7 +34,7 @@
         {{-- <a class="btn-link-lime" href="{{route('substances.show', $substance->id)}}">{{$substance->id}}</a> --}}
         {{-- <a class="link-edit" href="{{route('substances.edit', $substance->id)}}">Edit</a> --}}
       </td>
-      <td class="p-1 text-center">NS{{$substance->code}}</td>
+      <td class="p-1 text-center @if($substance->trashed()) line-through @endif">NS{{$substance->code}}</td>
       <td class="p-1">{{$substance->name}}</td>
       <td class="p-1">{{$substance->cas_number}}</td>
       <td class="p-1">{{$substance->smiles}}</td>
@@ -32,6 +44,7 @@
       <td class="p-1 text-center"><a class="btn-link-lime" href="http://www.chemspider.com/Chemical-Structure.{{$substance->chemspider_id}}.html" target="_blank">{{$substance->chemspider_id}}</a></td>
       <td class="p-1 text-center">{{$substance->molecular_formula}}</td>
       <td class="p-1 text-right">{{$substance->mass_iso}}</td>
+      @if(($show['substances'] ?? false) == true)
       <td class="p-1 text-right">
         @if(is_null($substance->category_ids) == false)
         @php
@@ -44,6 +57,9 @@
         <span class="text-red-500">No category assigned</span>
         @endif
       </td>
+      @endif
+
+      @if(($show['sources'] ?? false) == true)
       <td class="p-1 text-right">
         @if(isset($sourceIds) && array_key_exists($substance->id, $sourceIds) == true)
         @php
@@ -56,6 +72,29 @@
         <span class="text-red-500">No source assigned</span>
         @endif
       </td>
+      @endif
+
+      @if(($show['duplicates'] ?? false) == true)
+      <td>
+        <div class="flex px-2">
+          @if($substance->trashed() == false)
+          <label class="inline-flex items-center">
+            <input type="radio" name="duplicateChoice[{{$substance->id}}]" value="1">
+            <span class="ml-2">activate</span>
+          </label>
+          <label class="inline-flex items-center ml-6">
+            <input type="radio" name="duplicateChoice[{{$substance->id}}]" value="0">
+            <span class="ml-2">deactivate</span>
+          </label>
+          @else
+          <label class="inline-flex items-center">
+            <input type="radio" name="duplicateRestore[{{$substance->id}}]" value="1">
+            <span class="ml-2 text-black">restore</span>
+          @endif
+        </div>
+      </td>
+      @endif
+
     </tr>
     @endforeach
   </tbody>

@@ -5,10 +5,12 @@ namespace App\Models\Susdat;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\SLE\SuspectListExchangeSource;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Substance extends Model
 {
     use HasFactory;
+    use SoftDeletes;
     
     protected $table = 'susdat_substances';
     

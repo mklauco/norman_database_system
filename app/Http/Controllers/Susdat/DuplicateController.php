@@ -7,6 +7,7 @@ use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
 use App\Http\Controllers\Controller;
 use App\Models\SLE\SuspectListExchangeSource;
+use Illuminate\Support\Facades\Redis;
 
 class DuplicateController extends Controller
 {
@@ -98,12 +99,12 @@ class DuplicateController extends Controller
   {
     //
   }
-
+  
   public function filter(Request $request){
     $pivot_id = $request->input('pivot_id');
     $pivot = $this->getPivotableColumns()[$pivot_id];
     
-
+    
     $substancesCount = Substance::count();
     
     $columns = $this->getSelectColumns();
@@ -136,15 +137,15 @@ class DuplicateController extends Controller
       'filter'            => $filter,
     ]);
   }
-
+  
   public function records(Request $request, string $pivot, string $pivot_value){
     $columns = $this->getSelectColumns();
-    $substances = Substance::where($pivot, $pivot_value)->select($columns)->paginate(10)->withQueryString();
-    
-    // get data from external sources:
+    $substances = Substance::where($pivot, $pivot_value)->orderBy('id')->withTrashed()->paginate(10)->withQueryString();
+    // $substances = Substance::withTrashed()->where($pivot, $pivot_value)->select()->orderBy('id')->paginate(10)->withQueryString();
+    // dd($substances);
+    // get data from external sources -> moved to Livewire components
     // $comptox = $this->getComptoxData($substances->pluck('dtxid')->toArray());
-    $pubchem = $this->getPubchemData($substances->pluck('pubchem_cid')->unique()->toArray());
-// dd($pubchem);
+    // $pubchem = $this->getPubchemData($substances->pluck('pubchem_cid')->unique()->toArray());
     return view('susdat.duplicates.records', [
       'dtxsIds'           => $substances->pluck('dtxid')->toArray(),
       'pubchemIds'        => $substances->pluck('pubchem_cid')->unique()->toArray(),
@@ -155,7 +156,28 @@ class DuplicateController extends Controller
       'substancesCount'   => $substances->total(),
     ]);
   }
-
+  
+  public function handleDuplicates(Request $request){
+    if(!is_null($request->input('duplicateChoice'))){
+      foreach($request->input('duplicateChoice') as $key => $choice){
+        if($choice == 0){
+          $substances = Substance::where('id', $key)->delete();  
+        }
+      }
+    }
+    
+    
+    if(!is_null($request->input('duplicateRestore'))){
+      foreach($request->input('duplicateRestore') as $key => $choice){
+        if($choice == 1){
+          $substances = Substance::where('id', $key)->restore();  
+        }
+      }
+    }
+    session()->flash('success', 'Duplicates were resolved.');
+    return redirect()->back();
+  }
+  
   private function getPivotableColumns(){
     return [
       'code',
@@ -168,7 +190,7 @@ class DuplicateController extends Controller
       'chemspider_id',
     ];
   }
-
+  
   private function getSelectColumns(){
     return [
       'id',
