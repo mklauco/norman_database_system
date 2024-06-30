@@ -20,6 +20,10 @@
                         {{ __('Databases index') }}
                     </x-nav-link>
 
+                    <x-nav-link :href="route('apiresources.index')" :active="request()->routeIs('apiresources.index')">
+                        {{ __('API Resources') }}
+                    </x-nav-link>
+
                     <!-- individual navigation links -->
                     @if(request()->is('susdat/*'))
                     <x-nav-link :href="route('substances.filter')" :active="request()->is('susdat/*')">
