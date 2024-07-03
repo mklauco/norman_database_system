@@ -174,6 +174,7 @@ class SubstanceController extends Controller
       'chemspider_id',
       'molecular_formula',
       'mass_iso',
+      'deleted_at',
     ];
     
     $subquery = DB::table('susdat_substances')
@@ -246,7 +247,7 @@ class SubstanceController extends Controller
       }
       
       return view('susdat.index', [
-        'columns' => $columns,
+        'columns' => $this->getViewColumns(),
         'substances' => $substances,
         'substancesCount' => $substancesCount,
         'request' => $request,
@@ -283,6 +284,38 @@ class SubstanceController extends Controller
         'metadata_cas',
         'metadata_ms_ready',
         'metadata_general',
+      ];
+    }
+
+    private function getSelectColumns(){
+      return [
+        'id',
+        'code',
+        'name',
+        'cas_number',
+        'smiles',
+        'stdinchikey',
+        'dtxid',
+        'pubchem_cid',
+        'chemspider_id',
+        'molecular_formula',
+        'mass_iso',
+      ];
+    }
+
+    private function getViewColumns(){
+      return [
+        'id',
+        'code',
+        'name',
+        'cas_number',
+        'smiles',
+        'stdinchikey',
+        'dtxid',
+        'pubchem_cid',
+        'chemspider_id',
+        'molecular_formula',
+        'mass_iso',
       ];
     }
   }

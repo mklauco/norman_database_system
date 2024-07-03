@@ -20,7 +20,7 @@
   </thead>
   <tbody>
     @foreach ($substances as $substance)
-    @if($substance->trashed())
+    @if(is_null($substance->deleted_at) == false)
     <tr class="bg-zinc-100 text-zinc-400">
     @else
     <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
@@ -34,7 +34,7 @@
         {{-- <a class="btn-link-lime" href="{{route('substances.show', $substance->id)}}">{{$substance->id}}</a> --}}
         {{-- <a class="link-edit" href="{{route('substances.edit', $substance->id)}}">Edit</a> --}}
       </td>
-      <td class="p-1 text-center @if($substance->trashed()) line-through @endif">NS{{$substance->code}}</td>
+      <td class="p-1 text-center @if(is_null($substance->deleted_at) == false)) line-through @endif">NS{{$substance->code}}</td>
       <td class="p-1">{{$substance->name}}</td>
       <td class="p-1">{{$substance->cas_number}}</td>
       <td class="p-1">{{$substance->smiles}}</td>
@@ -77,7 +77,7 @@
       @if(($show['duplicates'] ?? false) == true)
       <td>
         <div class="flex px-2">
-          @if($substance->trashed() == false)
+          @if((is_null($substance->deleted_at) == false) == false)
           <label class="inline-flex items-center">
             <input type="radio" name="duplicateChoice[{{$substance->id}}]" value="1">
             <span class="ml-2">activate</span>
