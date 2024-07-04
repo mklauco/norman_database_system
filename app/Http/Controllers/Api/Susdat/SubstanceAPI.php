@@ -11,7 +11,7 @@ class SubstanceAPI extends Controller
     //
 
     public function show($id){
-        $substance = Substance::findOrFail($id);
+        $substance = Substance::findOrFail(1);
         return response()->json($substance);
     }
 }
