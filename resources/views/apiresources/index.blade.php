@@ -9,7 +9,7 @@
           @if($user->tokens->count() > 0)
           @foreach ($user->tokens as $token)
           <span class="inline-block bg-slate-200 text-black text-sm font-semibold px-4 py-2 mt-2 rounded-full">
-            {{$token->token}}
+            {{var_dump($token)}}
           </span>
           
           @endforeach

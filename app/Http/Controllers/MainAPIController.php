@@ -14,7 +14,7 @@ class MainAPIController extends Controller
 
         $user = User::find(Auth::id());
 
-        
+        dd($user->tokens);
         return view('apiresources.index', [
             'user' => $user,
         ]);
@@ -25,6 +25,8 @@ class MainAPIController extends Controller
             'token_name' => 'required',
         ]);
         $token = $request->user()->createToken($request->token_name);
+        // dd($token->plainTextToken);
+        // 3|SlFIgwo8XBEbIYf6Xu0B39Hj4arD7SmSZBss5j1d98bd76c9
         return redirect()->route('apiresources.index');
     }
 }
