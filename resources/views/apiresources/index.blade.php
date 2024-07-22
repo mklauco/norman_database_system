@@ -8,8 +8,11 @@
           
           @if($user->tokens->count() > 0)
           @foreach ($user->tokens as $token)
+          <h2 class="text-lg font-medium text-gray-900">
+            {{ $token->name }}
+          </h2>
           <span class="inline-block bg-slate-200 text-black text-sm font-semibold px-4 py-2 mt-2 rounded-full">
-            {{var_dump($token)}}
+            {{$token->plain_text_token}}
           </span>
           
           @endforeach
