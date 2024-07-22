@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Empodat;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class EmpodatController extends Controller
+class EmpodatHomeController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,6 +13,7 @@ class EmpodatController extends Controller
     public function index()
     {
         //
+        return view('empodat.codhome.index');
     }
 
     /**
@@ -61,10 +62,5 @@ class EmpodatController extends Controller
     public function destroy(string $id)
     {
         //
-    }
-
-    public function filter()
-    {
-        return view('empodat.filter');
     }
 }

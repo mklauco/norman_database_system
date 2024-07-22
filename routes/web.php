@@ -9,6 +9,7 @@ use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
+use App\Http\Controllers\Empodat\EmpodatHomeController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -44,7 +45,10 @@ Route::prefix('susdat')->middleware('auth')->group(function () {
 }); 
 
 Route::prefix('empodat')->middleware('auth')->group(function () {
-    Route::resource('general_route', EmpodatController::class);
+    Route::get('codsearch/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
+    Route::get('codsearch/search/', [EmpodatController::class, 'filter'])->name('codsearch.search');
+    Route::resource('codhome', EmpodatHomeController::class);
+    Route::resource('codsearch', EmpodatController::class);
     Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
 }); 
 
