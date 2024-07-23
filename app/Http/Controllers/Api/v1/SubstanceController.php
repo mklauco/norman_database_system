@@ -11,6 +11,11 @@ class SubstanceController extends Controller
 {
     //
 
+     /**
+     * Get substances
+     *
+     * @authenticated
+     */
     public function index(){
         $substances = Substance::where('id' , '<', 10)->get();
         return SubstanceResource::collection($substances);
