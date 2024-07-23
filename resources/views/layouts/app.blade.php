@@ -36,7 +36,7 @@
   @livewireStyles
 </head>
 <body class="font-sans antialiased">
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen flex flex-col  bg-gray-100">
     @include('layouts.navigation')
     
     <!-- Page Heading -->
@@ -55,10 +55,17 @@
     {{-- @endisset --}}
     
     <!-- Page Content -->
-    <main>
+    <main class="flex-grow">
       {{ $slot }}
     </main>
+
+    @include('layouts.footer')
   </div>
+  {{-- @include('layouts.footer') --}}
+
+
+
+  
   <!-- Scripts -->
   
   <script>

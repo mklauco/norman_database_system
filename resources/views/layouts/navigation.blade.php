@@ -13,16 +13,22 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    @auth
+                    <x-nav-link :href="route('dashboard')" :active="(request()->routeIs('dashboard'))">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('databases.index')" :active="request()->routeIs('databases.index')">
+                    @endauth
+                    <x-nav-link :href="route('landing.index')" :active="(request()->routeIs('databases.index') || request()->is('landing'))">
                         {{ __('Databases index') }}
                     </x-nav-link>
 
+                    @auth
+                    @role('super-admin')
                     <x-nav-link :href="route('apiresources.index')" :active="request()->routeIs('apiresources.index')">
                         {{ __('API Resources') }}
                     </x-nav-link>
+                    @endrole
+                    @endauth
 
                     <!-- individual navigation links -->
                     @if(request()->is('susdat/*'))
@@ -36,10 +42,13 @@
                         Chemical Occurance Data
                     </x-nav-link>
                     @endif
+
+
                     <!-- end individual navigation links -->
                 </div>
             </div>
 
+            @auth
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
@@ -73,6 +82,13 @@
                     </x-slot>
                 </x-dropdown>
             </div>
+            @else
+            @guest
+            <x-nav-link :href="route('login')" :active="request()->is('empodat/*')">
+                Login / Register
+            </x-nav-link>
+            @endguest
+            @endauth
 
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
@@ -95,10 +111,10 @@
         </div>
 
         <!-- Responsive Settings Options -->
+        @auth
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
-                <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-base text-gray-800">{{ Auth::user()->full_name }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
@@ -118,5 +134,6 @@
                 </form>
             </div>
         </div>
+        @endauth
     </div>
 </nav>
