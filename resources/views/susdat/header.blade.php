@@ -1,3 +1,7 @@
+{{-- <span class="mr-12 font-bold text-lime-700">
+  Substance Database:
+</span> --}}
+
 <x-nav-link-header :href="route('substances.filter')" :active="request()->is('*filter')">
   Filter
 </x-nav-link-header>
