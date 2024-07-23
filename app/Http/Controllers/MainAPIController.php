@@ -34,4 +34,12 @@ class MainAPIController extends Controller
         // 3|SlFIgwo8XBEbIYf6Xu0B39Hj4arD7SmSZBss5j1d98bd76c9
         return redirect()->route('apiresources.index');
     }
+
+    public function destroy(Request $request){
+        $request->validate([
+            'token_id' => 'required',
+        ]);
+        $request->user()->tokens()->where('id', $request->token_id)->delete();
+        return redirect()->route('apiresources.index');
+    }
 }

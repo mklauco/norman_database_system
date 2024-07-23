@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/apiresources', [MainAPIController::class, 'index'])->name('apiresources.index');
     Route::post('/apiresources', [MainAPIController::class, 'store'])->name('apiresources.store');
+    Route::delete('/apiresources/destroy', [MainAPIController::class, 'destroy'])->name('apiresources.destroy');
 });
 
 Route::prefix('databases')->middleware('auth')->group(function () {
