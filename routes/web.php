@@ -12,8 +12,10 @@ use App\Http\Controllers\DatabaseDirectoryController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('landing.index');
 });
+
+Route::get('/landing', [DatabaseDirectoryController::class, 'index'])->name('landing.index');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -31,18 +33,21 @@ Route::middleware('auth')->group(function () {
     Route::delete('/apiresources/destroy', [MainAPIController::class, 'destroy'])->name('apiresources.destroy');
 });
 
-Route::prefix('databases')->middleware('auth')->group(function () {
-    Route::get('/', [DatabaseDirectoryController::class, 'index'])->name('databases.index');
-}); 
+// Route::prefix('databases')->middleware('auth')->group(function () {
+//     Route::get('/', [DatabaseDirectoryController::class, 'index'])->name('databases.index');
+// }); 
 
-Route::prefix('susdat')->middleware('auth')->group(function () {
+Route::prefix('susdat')->group(function () {
     Route::get('substances/filter', [SubstanceController::class, 'filter'])->name('substances.filter');
     Route::get('substances/search', [SubstanceController::class, 'search'])->name('substances.search');
     Route::get('duplicates/filter/', [DuplicateController::class, 'filter'])->name('duplicates.filter');
-    Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->name('duplicates.records');
-    Route::post('duplicates/records/handle', [DuplicateController::class, 'handleDuplicates'])->name('duplicates.handleDuplicates');
-    Route::resource('substances', SubstanceController::class);
-    Route::resource('duplicates', DuplicateController::class);
+    
+    Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->middleware('auth')->name('duplicates.records');
+    Route::post('duplicates/records/handle', [DuplicateController::class, 'handleDuplicates'])->middleware('auth')->name('duplicates.handleDuplicates');
+
+    Route::resource('substances', SubstanceController::class)->only(['index', 'show']);
+    Route::resource('substances', SubstanceController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::resource('duplicates', DuplicateController::class)->middleware('auth');
 }); 
 
 Route::prefix('empodat')->middleware('auth')->group(function () {
