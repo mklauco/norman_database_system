@@ -30,6 +30,12 @@
                         Substance Database
                     </x-nav-link>
                     @endif
+
+                    @if(request()->is('empodat/*'))
+                    <x-nav-link :href="route('substances.filter')" :active="request()->is('empodat/*')">
+                        Chemical Occurance Data
+                    </x-nav-link>
+                    @endif
                     <!-- end individual navigation links -->
                 </div>
             </div>
