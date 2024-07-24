@@ -18,8 +18,13 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     @endauth
+
                     <x-nav-link :href="route('landing.index')" :active="(request()->routeIs('databases.index') || request()->is('landing'))">
                         {{ __('Databases index') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="url('/').'/docs'" :active="request()->routeIs('apidoc')" target="_blank">
+                        API Documentation 
                     </x-nav-link>
 
                     @auth

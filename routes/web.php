@@ -50,11 +50,14 @@ Route::prefix('susdat')->group(function () {
     Route::resource('duplicates', DuplicateController::class)->middleware('auth');
 }); 
 
-Route::prefix('empodat')->middleware('auth')->group(function () {
+Route::prefix('empodat')->group(function () {
     Route::get('codsearch/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
     Route::get('codsearch/search/', [EmpodatController::class, 'filter'])->name('codsearch.search');
-    Route::resource('codhome', EmpodatHomeController::class);
+
+    Route::resource('codhome', EmpodatHomeController::class)->only(['index']);
+    Route::resource('codhome', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('codsearch', EmpodatController::class);
+
     Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
 }); 
 
