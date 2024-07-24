@@ -148,7 +148,7 @@ components:
     default:
       type: http
       scheme: bearer
-      description: 'You can retrieve your token by visiting your dashboard and clicking <b>Generate API token</b>.'
+      description: 'You can retrieve your token by loggin into a free account in the NORMAN DATABASE SYSTEM enviroment and generate an API token in you dashboard.'
 security:
   -
     default: []

@@ -2,6 +2,8 @@
 
 use Knuckles\Scribe\Extracting\Strategies;
 
+//  php artisan scribe:generate
+
 return [
     // The HTML <title> for the generated documentation. If this is empty, Scribe will infer it from config('app.name').
     'title' => null,
@@ -118,7 +120,7 @@ return [
         'placeholder' => '{YOUR_AUTH_KEY}',
 
         // Any extra authentication-related info for your users. Markdown and HTML are supported.
-        'extra_info' => 'You can retrieve your token by visiting your dashboard and clicking <b>Generate API token</b>.',
+        'extra_info' => 'You can retrieve your token by loggin into a free account in the NORMAN DATABASE SYSTEM enviroment and generate an API token in you dashboard.',
     ],
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
@@ -136,6 +138,8 @@ INTRO
     'example_languages' => [
         'bash',
         'javascript',
+        'php',
+        'python',
     ],
 
     // Generate a Postman collection (v2.1.0) in addition to HTML docs.

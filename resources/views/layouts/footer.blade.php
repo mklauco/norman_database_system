@@ -3,8 +3,9 @@
   
 
   <!-- Main container div: holds the entire content of the footer, including four sections (TW Elements, Products, Useful links, and Contact), with responsive styling and appropriate padding/margins. -->
-  <div class="mx-6 py-10 text-center md:text-left">
+  <div class="mx-6 py-5 text-center md:text-left">
     <div class="grid-1 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      <div></div>
       <!-- TW Elements section -->
       <div class="">
         <h6 class="mb-4 flex items-center justify-center font-semibold uppercase md:justify-start">
@@ -24,7 +25,7 @@
         </p>
       </div>
       <!-- Products section -->
-      <div>
+      {{-- <div>
         <h6
           class="mb-4 flex justify-center font-semibold uppercase md:justify-start">
           Products
@@ -41,9 +42,9 @@
         <p>
           <a href="#!">Laravel</a>
         </p>
-      </div>
+      </div> --}}
       <!-- Useful links section -->
-      <div>
+      {{-- <div>
         <h6
           class="mb-4 flex justify-center font-semibold uppercase md:justify-start">
           Useful links
@@ -60,7 +61,7 @@
         <p>
           <a href="#!">Help</a>
         </p>
-      </div>
+      </div> --}}
       <!-- Contact section -->
       <div>
         <h6
