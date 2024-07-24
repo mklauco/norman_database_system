@@ -16,23 +16,24 @@ class MainAPIController extends Controller
         $user = User::find(Auth::id());
 
         // dd($user->tokens);
-        return view('apiresources.index', [
+        return view('dashboard.apiresources.index', [
             'user' => $user,
         ]);
     }
 
     public function store(Request $request){
-        $request->validate([
-            'token_name' => 'required',
-        ]);
-        $token = $request->user()->createToken($request->token_name);
+
+        $user = User::find(Auth::id());
+        $tokenName = 'token_'.lcfirst($user->first_name).ucfirst($user->last_name).str_pad($user->tokens()->count()+1, 3, '0', STR_PAD_LEFT);
+
+        $token = $user->createToken($this->convertToAscii($tokenName));
         // dd($token->accessToken->id);
         // eloquent queiry to update the plaintexttoken to the database based on token id
         DB::table('personal_access_tokens')->where('id', $token->accessToken->id)->update([ 'plain_text_token' => $token->plainTextToken ]);
         
         // dd($token);
         // 3|SlFIgwo8XBEbIYf6Xu0B39Hj4arD7SmSZBss5j1d98bd76c9
-        return redirect()->route('apiresources.index');
+        return redirect()->back();
     }
 
     public function destroy(Request $request){

@@ -1,6 +1,8 @@
 <x-app-layout>
-  
-  
+  <x-slot name="header">
+    @include('dashboard.header')
+  </x-slot>
+
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
       <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
@@ -24,7 +26,7 @@
                 {{ $token->name }}
               </td>
               <td class="text-center">
-                <span class="inline-block bg-white text-black text-sm font-semibold p-2 m-2">
+                <span class="inline-block bg-white text-black text-sm font-semibold py-2 px-4 m-2 font-mono">
                   <div id="{{ $token->plain_text_token }}">{{ $token->plain_text_token }}</div>
                 </span>
                 <span class="btn-submit" onclick="copyToClipboard('{{ $token->plain_text_token }}')">
@@ -69,13 +71,12 @@
       
       <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
         <div class="max-w-xl">
-          <h2 class="text-lg font-medium text-gray-900">
+          <h2 class="text-lg font-medium text-gray-900 px-2">
             {{ 'Create a new API token'}}
           </h2>
           <form action="{{ route('apiresources.store') }}" method="POST" class="flex space-x-2">
             @csrf
             <input type="hidden" name="user_id" value="{{ $user->id }}">
-            <input type="text" name="token_name" value="" class="form-text p-1 border border-gray-300 rounded-md">
             <button type="submit" class="btn-submit">Create API token</button>
           </form>
         </div>

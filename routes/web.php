@@ -3,13 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Api\Susdat\SubstanceAPI;
 use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
+use App\Http\Controllers\Dashboard\DashboardMainController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return redirect()->route('landing.index');
@@ -17,9 +18,11 @@ Route::get('/', function () {
 
 Route::get('/landing', [DatabaseDirectoryController::class, 'index'])->name('landing.index');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::prefix('dashboard')->middleware('auth')->group(function () {
+    Route::get('overview', [DashboardMainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+    Route::resource('users', UserController::class);
+
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -44,7 +47,7 @@ Route::prefix('susdat')->group(function () {
     
     Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->middleware('auth')->name('duplicates.records');
     Route::post('duplicates/records/handle', [DuplicateController::class, 'handleDuplicates'])->middleware('auth')->name('duplicates.handleDuplicates');
-
+    
     Route::resource('substances', SubstanceController::class)->only(['index', 'show']);
     Route::resource('substances', SubstanceController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('duplicates', DuplicateController::class)->middleware('auth');
@@ -53,11 +56,11 @@ Route::prefix('susdat')->group(function () {
 Route::prefix('empodat')->group(function () {
     Route::get('codsearch/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
     Route::get('codsearch/search/', [EmpodatController::class, 'filter'])->name('codsearch.search');
-
+    
     Route::resource('codhome', EmpodatHomeController::class)->only(['index']);
     Route::resource('codhome', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('codsearch', EmpodatController::class);
-
+    
     Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
 }); 
 

@@ -14,7 +14,7 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     @auth
-                    <x-nav-link :href="route('dashboard')" :active="(request()->routeIs('dashboard'))">
+                    <x-nav-link :href="route('dashboard')" :active="(request()->is('dashboard*'))">
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     @endauth
@@ -26,14 +26,6 @@
                     <x-nav-link :href="url('/').'/docs'" :active="request()->routeIs('apidoc')" target="_blank">
                         API Documentation 
                     </x-nav-link>
-
-                    @auth
-                    @role('super-admin')
-                    <x-nav-link :href="route('apiresources.index')" :active="request()->routeIs('apiresources.index')">
-                        {{ __('API Resources') }}
-                    </x-nav-link>
-                    @endrole
-                    @endauth
 
                     <!-- individual navigation links -->
                     @if(request()->is('susdat/*'))
