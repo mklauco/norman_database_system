@@ -60,6 +60,11 @@ Route::prefix('empodat')->group(function () {
     
     Route::resource('codhome', EmpodatHomeController::class)->only(['index']);
     Route::resource('codhome', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('dctitems/dctupload/{dctitem_id}', [DCTItemController::class, 'uploadNewTemplate'])->name('dctitems.upload_new_template');
+    Route::post('dctitems/dctstore/{dctitem_id}', [DCTItemController::class, 'storeNewTemplate'])->name('dctitems.store_new_template');
+    Route::get('dctitems/dctdownload/{id}', [DCTItemController::class, 'downloadTemplate'])->name('dctitems.donwload_template');
+    Route::delete('dctitems/destroyfiles/{dctitem_id}', [DCTItemController::class, 'destroyFile'])->name('dctitems.delete_template');
+    Route::get('dctitems/files/{id}', [DCTItemController::class, 'indexFiles'])->name('dctitems.index_files');
     Route::resource('dctitems', DCTItemController::class)->only(['index']);
     Route::resource('dctitems', DCTItemController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('codsearch', EmpodatController::class);

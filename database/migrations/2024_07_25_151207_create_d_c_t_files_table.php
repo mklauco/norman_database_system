@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dct_items', function (Blueprint $table) {
+        Schema::create('dct_files', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable()->default(null);
-            $table->string('description')->nullable()->default(null);
+            $table->foreignId('dct_item_id')->references('id')->constrained()->on('dct_items');
+            $table->string('path');
+            $table->string('filename');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dct_items');
+        Schema::dropIfExists('dct_files');
     }
 };
