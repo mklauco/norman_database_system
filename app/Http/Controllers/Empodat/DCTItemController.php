@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Empodat;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\Empodat\DCTFile;
 use App\Models\Empodat\DCTItem;
 use App\Http\Controllers\Controller;
 
@@ -15,7 +16,7 @@ class DCTItemController extends Controller
     public function index()
     {
         //
-        $dctitems = DCTItem::all();
+        $dctitems = DCTItem::with('files')->orderBy('id', 'desc')->get();
         return view('empodat.dctitems.index', [
             'dctitems' => $dctitems
         ]);
@@ -62,11 +63,7 @@ class DCTItemController extends Controller
     public function update(Request $request, string $id)
     {
         //
-        if($request->hasFile('file')) {            
-            // $fileName = $request->file('file')->getClientOriginalName();
-            $fileName = 'dct_' . str_replace(' ', '', ucwords($request->name)) .'_'. Carbon::now()->format('Y-m-d') . '.' . $request->file('file')->extension();
-            $path = $request->file('file')->storeAs('empodat/data_collection_templates', $fileName);
-        }
+
         $dctitem = DCTItem::find($id);
         $dctitem->name = $request->name;
         $dctitem->file_path = $path;
@@ -84,5 +81,62 @@ class DCTItemController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function uploadNewTemplate($dctitem_id)
+    {
+        return view('empodat.dctitems.uploadNewTemplate', [
+            'dctitem' => DCTItem::find($dctitem_id)
+        ]);
+    }
+
+    public function storeNewTemplate(Request $request, $dctitem_id)
+    {
+
+        $dctitem = DCTItem::find($dctitem_id);
+
+        if($request->hasFile('file')) {            
+            // $fileName = $request->file('file')->getClientOriginalName();
+            $fileName = 'dct_' . lcfirst(str_replace(' ', '', ucwords($dctitem->name))) .'_'. Carbon::now()->format('Y-m-dTGis') . '.' . $request->file('file')->extension();
+            $path = $request->file('file')->storeAs('empodat/data_collection_templates', $fileName);
+        } else {
+            return redirect()->route('dctitems.index')->with('error', 'Data Collection Template could not be uploaded');
+        }
+
+        $dctFile = New DCTFile();
+
+        try {
+            $dctFile->create([
+                'dct_item_id'   => $dctitem_id,
+                'path'          => $path,
+                'filename'      => $fileName
+            ]);
+            return redirect()->route('dctitems.index')->with('success', 'Data Collection Template uploaded successfully');
+        } catch (\Exception $e) {
+            return redirect()->route('dctitems.index')->with('error', 'Data Collection Template could not be uploaded');
+        }
+
+        return redirect()->back();
+    }
+
+    public function downloadTemplate($id){
+        $dctFile = DCTFile::find($id);
+        return response()->download(storage_path('app/' . $dctFile->path));
+
+    }
+
+    public function indexFiles($dctitem_id){
+        $dctitem = DCTItem::find($dctitem_id);
+        $files = DCTFile::where('dct_item_id', $dctitem_id)->orderBy('updated_at', 'desc')->get();
+        return view('empodat.dctitems.indexFiles', [
+            'files' => $files,
+            'dctitem' => $dctitem
+        ]);
+    }
+
+    public function destroyFile($id){
+        $dctFile = DCTFile::find($id);
+        $dctFile->delete();
+        return redirect()->back();
     }
 }
