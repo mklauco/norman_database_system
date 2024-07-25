@@ -1,16 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Ecotox\EcotoxController;
+use App\Http\Controllers\Empodat\DCTItemController;
 use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
 use App\Http\Controllers\Dashboard\DashboardMainController;
-use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return redirect()->route('landing.index');
@@ -59,6 +60,8 @@ Route::prefix('empodat')->group(function () {
     
     Route::resource('codhome', EmpodatHomeController::class)->only(['index']);
     Route::resource('codhome', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::resource('dctitems', DCTItemController::class)->only(['index']);
+    Route::resource('dctitems', DCTItemController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('codsearch', EmpodatController::class);
     
     Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
