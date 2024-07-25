@@ -10,6 +10,10 @@
   Search
 </x-nav-link-header>
 
+<x-nav-link-header :href="route('dctitems.index')" :active="request()->is('*dctitems*')">
+  DCT Download
+</x-nav-link-header>
+
 {{-- @if(request()->is('*filter') == true)
 <x-nav-link-header :href="route('substances.index')" :active="request()->is('*search')">
   Full View
