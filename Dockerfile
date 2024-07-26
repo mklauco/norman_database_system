@@ -1,15 +1,16 @@
 FROM php:8.2-fpm
 
 # Copy composer.lock and composer.json
-COPY composer.lock composer.json /var/deployer/
+COPY composer.lock composer.json /var/www/
 
 # Set working directory
-WORKDIR /var/deployer
+WORKDIR /var/www
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
+    libwebp-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     locales \
@@ -27,8 +28,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install extensions
 # RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
 RUN docker-php-ext-install -j$(nproc) pdo_mysql mysqli zip
-RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
-RUN docker-php-ext-install gd
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -38,12 +39,12 @@ RUN groupadd -g 1000 deployer
 RUN useradd -u 1000 -ms /bin/bash -g deployer deployer
 
 # Copy existing application directory contents
-COPY . /var/deployer
+COPY . /var/www
 
 # Copy existing application directory permissions
-COPY --chown=deployer:deployer . /var/deployer
+COPY --chown=deployer:deployer . /var/www
 
-# Change current user to deployer
+# Change current user to www
 USER deployer
 
 # Expose port 9000 and start php-fpm server
