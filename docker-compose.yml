@@ -54,6 +54,8 @@ services:
 
 #Docker Networks
 networks:
-
+  default:
+    driver: custom-driver-1
+    
 volumes:
   db_data:
