@@ -16,6 +16,10 @@
   <link rel="preconnect" href="https://fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
   <!-- Scripts -->
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
   
   
   <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
@@ -32,7 +36,7 @@
   @livewireStyles
 </head>
 <body class="font-sans antialiased">
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen flex flex-col  bg-gray-100">
     @include('layouts.navigation')
     
     <!-- Page Heading -->
@@ -51,10 +55,17 @@
     {{-- @endisset --}}
     
     <!-- Page Content -->
-    <main>
+    <main class="flex-grow">
       {{ $slot }}
     </main>
+
+    @include('layouts.footer')
   </div>
+  {{-- @include('layouts.footer') --}}
+
+
+
+  
   <!-- Scripts -->
   
   <script>
