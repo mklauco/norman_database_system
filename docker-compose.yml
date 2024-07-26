@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   
   #PHP Service
@@ -6,7 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: digitalocean.com/php
+    image: laravel_php_fpm:8.2-fpm-bullseye
+    # image: digitalocean.com/php
     container_name: app
     restart: unless-stopped
     tty: true
