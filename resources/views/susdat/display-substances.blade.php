@@ -29,7 +29,9 @@
       <td class="p-1 flex justify-end">
         <div class="flex justify-right">
           <a class="btn-link-lime" href="{{route('substances.show', $substance->id)}}">{{$substance->id}}</a>
+          @auth
           <a class="link-edit" href="{{route('substances.edit', $substance->id)}}">Edit</a>
+          @endauth
         </div>
         {{-- <a class="btn-link-lime" href="{{route('substances.show', $substance->id)}}">{{$substance->id}}</a> --}}
         {{-- <a class="link-edit" href="{{route('substances.edit', $substance->id)}}">Edit</a> --}}

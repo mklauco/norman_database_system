@@ -1,9 +1,17 @@
+{{-- <span class="mr-12 font-bold text-lime-700">
+  Chemical Occurance Data:
+</span> --}}
+
 <x-nav-link-header :href="route('codhome.index')" :active="request()->is('*codhome*')">
   Home
 </x-nav-link-header>
 
 <x-nav-link-header :href="route('codsearch.filter')" :active="request()->is('*codsearch*')">
   Search
+</x-nav-link-header>
+
+<x-nav-link-header :href="route('dctitems.index')" :active="request()->is('*dctitems*')">
+  DCT Download
 </x-nav-link-header>
 
 {{-- @if(request()->is('*filter') == true)
