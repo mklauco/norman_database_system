@@ -54,9 +54,6 @@ services:
 
 #Docker Networks
 networks:
-  default:
-    aliases:
-      - "nds.mkassets.sk"
 
 volumes:
   db_data:
