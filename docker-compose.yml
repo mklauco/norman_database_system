@@ -54,8 +54,8 @@ services:
 
 #Docker Networks
 networks:
-  default:
-    driver: custom-driver-1
-    
+  app-network:
+    driver: bridge
+
 volumes:
   db_data:
