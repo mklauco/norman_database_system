@@ -33,6 +33,7 @@ services:
     volumes:
       - ./:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - /etc/letsencrypt/live/nds.mkassets.sk:/etc/letsencrypt/live/nds.mkassets.sk
     networks:
       - app-network
 
