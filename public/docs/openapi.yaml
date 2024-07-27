@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Laravel
+  title: 'Norman Database System'
   description: ''
   version: 1.0.0
 servers:
   -
-    url: 'http://localhost'
+    url: 'http://127.0.0.1:8000'
 paths:
   '/api/v1/substances/show/{substance_id}':
     get:
