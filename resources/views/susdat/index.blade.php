@@ -60,7 +60,7 @@
           @endif
           
           <div id="displaySubstancesDiv">
-            @include('susdat.display-substances')
+            @include('susdat.display-substances', ['show' => ['substances' => true, 'sources' => true, 'duplicates' => false] ])
           </div>
           
         </div>        
