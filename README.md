@@ -100,3 +100,11 @@ INTO OUTFILE 'd:/db_testing/norman_single_column_files/dct_analysis_stations.csv
 * running `pg_export` and `pg_restore` greatly increases seeding DB with known structure/data
 * use path `C:/Program Files/PostgreSQL/16/bin/pg_dump.exe` or add it in PATH in environment variables
 * to ease up direct CSV seeding by `psql` command, store config file here `c:\Users\mk\AppData\Roaming\postgresql\pgpass.conf` with `localhost:5432:norman:postgres:root`
+* ```
+pg_dump -h 127.0.0.1 -U postgres -d norman -F c -b -v -f "d:\norman_database_current_export\norman_db_2024-07-28.backup"
+
+pg_restore -h 138.197.182.100 -U app -d app --clean --no-owner -v "d:\norman_database_current_export\norman_db_2024-07-28.backup"
+
+pg_restore -h target_host -U target_user -d target_db --clean  -v /path/to/backup/source_db.backup
+
+```
