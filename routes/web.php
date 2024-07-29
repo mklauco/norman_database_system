@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EmailTestController;
 use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Empodat\DCTItemController;
 use App\Http\Controllers\Empodat\EmpodatController;
@@ -77,5 +78,7 @@ Route::prefix('ecotox')->middleware('auth')->group(function () {
     Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
 }); 
 
+
+Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail']);
 
 require __DIR__.'/auth.php';
