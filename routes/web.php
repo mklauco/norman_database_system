@@ -47,7 +47,7 @@ Route::prefix('susdat')->group(function () {
     Route::get('substances/search', [SubstanceController::class, 'search'])->name('substances.search');
     Route::get('duplicates/filter/', [DuplicateController::class, 'filter'])->name('duplicates.filter');
     
-    Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->middleware('auth')->name('duplicates.records');
+    Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->name('duplicates.records');
     Route::post('duplicates/records/handle', [DuplicateController::class, 'handleDuplicates'])->middleware('auth')->name('duplicates.handleDuplicates');
     
     Route::resource('substances', SubstanceController::class)->only(['index', 'show']);
@@ -79,6 +79,6 @@ Route::prefix('ecotox')->middleware('auth')->group(function () {
 }); 
 
 
-Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail']);
+Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
 
 require __DIR__.'/auth.php';
