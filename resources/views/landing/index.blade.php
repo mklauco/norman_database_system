@@ -1,6 +1,6 @@
 <x-app-layout>
   <div class="px-4">
-    <div class="max-w mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="2xl:w-2/3 xl:w-full mx-auto sm:px-6 lg:px-8 space-y-6">
       <div class="pb-4 sm:p-8 bg-white shadow sm:rounded-lg">
         <div class="text-center border-b-2 border-lime-400 p-2">
           NORMAN organises the development and maintenance of various web-based databases for the collection & evaluation of data / information on emerging substances in the environment
