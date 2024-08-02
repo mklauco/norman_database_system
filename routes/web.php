@@ -75,7 +75,7 @@ Route::prefix('empodat')->group(function () {
 
 Route::prefix('ecotox')->middleware('auth')->group(function () {
     Route::resource('general_route', EcotoxController::class);
-    Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
+    Route::get('general_route/filter', [DatabaseDirectoryController::class, 'index'])->name('general_route.filter');
 }); 
 
 
