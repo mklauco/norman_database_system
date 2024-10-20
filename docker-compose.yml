@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: laravel_php_fpm:8.2-fpm-bullseye
-    user: "${UID}:${GID}"
+    # user: "${UID}:${GID}"
     # image: digitalocean.com/php
     container_name: nds-app
     restart: unless-stopped
