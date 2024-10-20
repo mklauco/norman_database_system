@@ -30,9 +30,9 @@ services:
     environment:
       - VIRTUAL_HOST=nds.mkassets.sk
       - LETSENCRYPT_HOST=nds.mkassets.sk
-    ports:
-      - "80:80"
-      - "443:443"
+    # ports:
+    #   - "80:80"
+    #   - "443:443"
     volumes:
       - ./:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
@@ -61,7 +61,7 @@ services:
 #Docker Networks
 networks:
   mkassets_docker_network:
-    driver: bridge
+    external: true
 
 volumes:
   _postgres_data:
