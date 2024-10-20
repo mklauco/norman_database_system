@@ -23,6 +23,10 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpq-dev
 
+# Install Node.js and npm
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -37,8 +41,8 @@ RUN docker-php-ext-install -j$(nproc) pdo_pgsql
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Add user for laravel application
-RUN groupadd -g 1000 deployer
-RUN useradd -u 1000 -ms /bin/bash -g deployer deployer
+RUN groupadd -g 1002 deployer
+RUN useradd -u 1002 -ms /bin/bash -g deployer deployer
 
 # Copy existing application directory contents
 COPY . /var/www
