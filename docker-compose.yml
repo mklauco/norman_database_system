@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
     image: laravel_php_fpm:8.2-fpm-bullseye
     # image: digitalocean.com/php
-    container_name: app
+    container_name: nds-app
     restart: unless-stopped
     tty: true
     environment:
@@ -19,45 +19,50 @@ services:
         - ./:/var/www
         - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - app-network
+      - mkassets_docker_network
 
   #Nginx Service
   webserver:
     image: nginx:alpine
-    container_name: webserver
+    container_name: nds-webserver
     restart: unless-stopped
     tty: true
+    environment:
+      - VIRTUAL_HOST=nds.mkassets.sk
+      - LETSENCRYPT_HOST=nds.mkassets.sk
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
-      - /etc/letsencrypt/live/nds.mkassets.sk:/etc/letsencrypt/live/nds.mkassets.sk
-      - /etc/letsencrypt/archive/nds.mkassets.sk:/etc/letsencrypt/archive/nds.mkassets.sk:ro
-      - /etc/nginx/dhparam.pem:/etc/nginx/dhparam.pem:ro
+      # - /etc/letsencrypt/live/nds.mkassets.sk:/etc/letsencrypt/live/nds.mkassets.sk
+      # - /etc/letsencrypt/archive/nds.mkassets.sk:/etc/letsencrypt/archive/nds.mkassets.sk:ro
+      # - /etc/nginx/dhparam.pem:/etc/nginx/dhparam.pem:ro
     networks:
-      - app-network
+      - mkassets_docker_network
 
   #MySQL Service
   db:
-    image: postgres:latest
-    container_name: nds_test_db
+    image: postgres:16
+    container_name: nds-postgres
     restart: unless-stopped
+    env_file:
+      - .env.docker
     environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app_password
-      POSTGRES_DB: app
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: nds
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - mkassets_docker_network
 
 #Docker Networks
 networks:
-  app-network:
+  mkassets_docker_network:
     driver: bridge
 
 volumes:
