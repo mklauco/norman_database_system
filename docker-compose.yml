@@ -62,8 +62,8 @@ services:
     env_file:
       - .env.docker-compose
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: martin@klauco.com
+      PGADMIN_DEFAULT_PASSWORD_FILE: ./_secrets/pgadmin4
       VIRTUAL_HOST: adminer-nds.mkassets.sk
       LETSENCRYPT_HOST: adminer-nds.mkassets.sk
     ports:
