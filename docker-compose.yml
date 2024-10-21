@@ -7,8 +7,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: laravel_php_fpm:8.2-fpm-bullseye
-    # user: "${UID}:${GID}"
-    # image: digitalocean.com/php
     container_name: nds-app
     restart: unless-stopped
     tty: true
@@ -22,7 +20,8 @@ services:
     networks:
       - mkassets_docker_network
 
-  #Nginx Service
+  # Nginx Service behing reverse proxy
+  # see: https://github.com/nginx-proxy/acme-companion?tab=readme-ov-file
   webserver:
     image: nginx:alpine
     container_name: nds-webserver
@@ -31,19 +30,13 @@ services:
     environment:
       - VIRTUAL_HOST=nds.mkassets.sk
       - LETSENCRYPT_HOST=nds.mkassets.sk
-    # ports:
-    #   - "80:80"
-    #   - "443:443"
     volumes:
       - ./:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
-      # - /etc/letsencrypt/live/nds.mkassets.sk:/etc/letsencrypt/live/nds.mkassets.sk
-      # - /etc/letsencrypt/archive/nds.mkassets.sk:/etc/letsencrypt/archive/nds.mkassets.sk:ro
-      # - /etc/nginx/dhparam.pem:/etc/nginx/dhparam.pem:ro
     networks:
       - mkassets_docker_network
 
-  #MySQL Service
+  #Ppstgres Service
   db:
     image: postgres:16
     container_name: nds-postgres
@@ -61,6 +54,25 @@ services:
     networks:
       - mkassets_docker_network
 
+  # pgAdmin Service
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: nds-pgadmin
+    restart: unless-stopped
+    env_file:
+      - .env.docker-compose
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - VIRTUAL_HOST=adminer-nds.mkassets.sk
+      - LETSENCRYPT_HOST=adminer-nds.mkassets.sk
+    ports:
+      - "5434:80"
+    volumes:
+      - ./_pgadmin_data:/var/lib/pgadmin
+    networks:
+      - mkassets_docker_network
+
 #Docker Networks
 networks:
   mkassets_docker_network:
@@ -68,3 +80,4 @@ networks:
 
 volumes:
   _postgres_data:
+  _pgadmin_data:
