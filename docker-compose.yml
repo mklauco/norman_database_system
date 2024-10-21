@@ -63,9 +63,11 @@ services:
       - .env.docker-compose
     environment:
       PGADMIN_DEFAULT_EMAIL: martin@klauco.com
-      PGADMIN_DEFAULT_PASSWORD_FILE: ./_secrets/pgadmin4
+      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin4
       VIRTUAL_HOST: adminer-nds.mkassets.sk
       LETSENCRYPT_HOST: adminer-nds.mkassets.sk
+    secrets:
+      - pgadmin4
     ports:
       - "5434:80"
     volumes:
@@ -78,6 +80,12 @@ networks:
   mkassets_docker_network:
     external: true
 
+#secrets
+secrets:
+  pgadmin4:
+    file: ./_secrets/pgadmin4.password
+
+#volumes
 volumes:
   _postgres_data:
   _pgadmin_data:
