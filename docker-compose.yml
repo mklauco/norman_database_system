@@ -62,10 +62,10 @@ services:
     env_file:
       - .env.docker-compose
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-      - VIRTUAL_HOST=adminer-nds.mkassets.sk
-      - LETSENCRYPT_HOST=adminer-nds.mkassets.sk
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      VIRTUAL_HOST: adminer-nds.mkassets.sk
+      LETSENCRYPT_HOST: adminer-nds.mkassets.sk
     ports:
       - "5434:80"
     volumes:
