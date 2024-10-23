@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('empodat_search_countries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('country_id')->constrained()->nullable()->default(null)->references('id')->on('list_countries'); // Country
-            $table->foreignId('country_other')->constrained()->nullable()->default(null)->references('id')->on('list_countries'); // Country - Other
+            $table->foreignId('country_id')->nullable()->constrained()->default(null)->references('id')->on('list_countries'); // Country
+            $table->foreignId('country_other')->nullable()->constrained()->default(null)->references('id')->on('list_countries'); // Country - Other
         });
 
         Schema::create('empodat_search_matrices', function (Blueprint $table) {
