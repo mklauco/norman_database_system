@@ -39,19 +39,19 @@
                 </div>
                 
                 <div class="flex">
-                <div class="w-full">
-                  @include('_t.form-apline-multiselect', [
-                  'tag' => 'countrySearch', 'list' => $countryList,
-                  'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
-                  ])
-                </div>
-                
-                <div class="w-full">
-                  @include('_t.form-apline-multiselect', [
-                  'tag' => 'ecosystemSearch', 'list' => $ecosystemSearch,
-                  'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
-                  ])
-                </div>
+                  <div class="w-full">
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'countrySearch', 'list' => $countryList,
+                    'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
+                    ])
+                  </div>
+                  
+                  <div class="w-full">
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'ecosystemSearch', 'list' => $ecosystemSearch,
+                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    ])
+                  </div>
                 </div>
                 
               </div>
@@ -108,15 +108,19 @@
                 </div>
                 <div class="w-full">
                   <div class="grid grid-cols-2 gap-1">
-                  <input type="number" name="year_from" value="" class="form-text">
-                  <input type="number" name="year_to" value="" class="form-text">
+                    <input type="number" name="year_from" value="" class="form-text">
+                    <input type="number" name="year_to" value="" class="form-text">
                   </div>
                 </div>
-                <div class="w-full">
-                  @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
-                </div>
-                <div class="w-full">
-                  @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
+                <div class="flex">
+                  <div class="w-full">
+                    <span>Concentration data:</span>
+                    @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
+                  </div>
+                  <div class="w-full">
+                    <span>Concentration equal or higher than:</span>
+                    @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
+                  </div>
                 </div>
               </div>
             </div>
