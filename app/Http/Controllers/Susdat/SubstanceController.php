@@ -218,7 +218,7 @@ class SubstanceController extends Controller
       $substances = $substances->orderBy('t.id', 'desc');
     }
     
-    $substances = $substances->paginate(10)->withQueryString();
+    $substances = $substances->paginate(30)->withQueryString();
    
     
     $sourceIds = Substance::leftJoin('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'susdat_substances.id')
