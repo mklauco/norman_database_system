@@ -1,0 +1,5 @@
+"dsp_id","dsp_name"
+"1","z-score (according to ISO-13528) < 3"
+"2","z-score (according to ISO-13528) > 3"
+"3","Not known"
+"4","Not applicable"
