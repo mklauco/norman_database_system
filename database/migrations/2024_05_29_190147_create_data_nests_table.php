@@ -125,10 +125,13 @@ return new class extends Migration
             $table->string('data_accessibility_other')->nullable()->default(null); // Data accessibility - other
             $table->string('project_title')->nullable()->default(null); // Title of project
             //$table->string('id_laboratory')->nullable()->default(null); // Laboratory ID  - deprecated  
-            $table->foreignId('organisation_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_organisations'); // Country
+            //$table->foreignId('organisation_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_organisations'); // Organisation
+            $table->foreignId('organisation_id')->nullable()->default(null)->references('id')->on('list_data_source_organisations'); // Organisation
             // Question: 2*1:N OR 1*N:M ???
-            $table->foreignId('laboratory1_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 1
-            $table->foreignId('laboratory2_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 2
+            //$table->foreignId('laboratory1_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 1
+            //$table->foreignId('laboratory2_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 2
+            $table->foreignId('laboratory1_id')->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 1
+            $table->foreignId('laboratory2_id')->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 2
             $table->string('author')->nullable()->default(null); // Contact person - First name(s) Family name
             $table->string('email')->nullable()->default(null); // Contact person - e-mail
             $table->text('reference1')->nullable()->default(null); // Reference 1 (reference - website/DOI/etc.)

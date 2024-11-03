@@ -31,7 +31,7 @@ class EmpodatDataSourceSeeder extends Seeder
                 'data_accessibility_id'     => $r['dda_id'] ? $r['dda_id'] : null,
                 'data_accessibility_other'  => $r['dda_other'] ?? null,
                 'project_title'             => $r['title_project'] ?? null,
-                'id_laboratory'             => $r['laboratory_id'] ? $r['laboratory_id'] : null,
+                //'id_laboratory'             => $r['laboratory_id'] ?? null,   - deprecated  
                 'author'                    => $r['author'] ?? null,
                 'email'                     => $r['email'] ?? null,
                 'reference1'                => $r['literature1'] ?? null,
