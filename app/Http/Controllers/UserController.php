@@ -13,12 +13,13 @@ class UserController extends Controller
   public function index()
   {
     //
-    $users = User::with('roles', 'permissions')->orderBy('last_name', 'desc')->get();
+    $users = User::with('roles', 'permissions', 'projects')->orderBy('last_name', 'desc')->get();
     $usersWithTokens = [];
     foreach ($users as $user) {
       $tokensCount = $user->tokens()->count();
       $usersWithTokens[$user->id] = $tokensCount;
     }
+    // dd($users);
     return view('dashboard.users.index', [
       'users' => $users,
       'columns' => $this->getVisibleColumns(),
@@ -83,6 +84,7 @@ class UserController extends Controller
       'email',
       'roles',
       'number_of_api_tokens',
+      'projects',
     ];
   }
 }
