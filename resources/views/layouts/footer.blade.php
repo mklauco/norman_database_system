@@ -93,6 +93,16 @@
   <!--Copyright section-->
   <div class="bg-neutral-950 p-2 text-center">
     <span> @php echo date('Y', time()) @endphp © Copyright All Rights Reserved</span>
+    <span class="px-1">|</span>
     <a class="font-semibold link-lime" href="https://www.norman-network.com/">NORMAN website</a>
+    <span class="px-1">|</span>
+    Managed by
+    <a class="font-semibold link-lime" href="https://www.mkassets.sk/">MK Assets, s.r.o.</a>
+    <span class="px-1">|</span>
+    Last backend update:
+    @php
+    $S = \Carbon\Carbon::createFromTimestamp(exec("git log -1 --format=%at"), 'UTC');
+    @endphp
+    <span class="font-semibold">{{$S->toDateTimeString()}}</span>
   </div>
 </footer>
