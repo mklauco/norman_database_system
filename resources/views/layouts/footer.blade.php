@@ -103,6 +103,6 @@
     @php
     $S = \Carbon\Carbon::createFromTimestamp(exec("git log -1 --format=%at"), 'UTC');
     @endphp
-    <span class="font-semibold">{{$S->toDateTimeString()}}</span>
+    <span class="font-semibold">{{$S->tz('Europe/Berlin')->toDateTimeString()}}</span>
   </div>
 </footer>
