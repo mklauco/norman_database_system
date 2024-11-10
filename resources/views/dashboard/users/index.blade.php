@@ -14,6 +14,7 @@
                 @foreach ($columns as $c)
                 <th class="py-1 px-2">{{$c}}</th>
                 @endforeach
+                <th class="py-1 px-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -25,6 +26,14 @@
                 <td class="py-1 px-2">{{$user->email}}</td>
                 <td class="py-1 px-2">{{$user->getRoleNames()}}</td>
                 <td class="py-1 px-2">{{$usersWithTokens[$user->id]}}</td>
+                <td class="py-1 px-2">
+                  @foreach ($user->projects as $project)
+                  {{ $project->abbreviation }}@if (!$loop->last), @endif
+                  @endforeach
+                </td>
+                <td class="py-1 px-2">
+                  <a href="{{ route('users.edit', $user->id) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                </td>
               </tr>
               @endforeach
             </tbody>

@@ -6,6 +6,7 @@ use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmailTestController;
 use App\Http\Controllers\Ecotox\EcotoxController;
+use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Empodat\DCTItemController;
 use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Susdat\DuplicateController;
@@ -23,7 +24,8 @@ Route::get('/landing', [DatabaseDirectoryController::class, 'index'])->name('lan
 Route::prefix('dashboard')->middleware('auth')->group(function () {
     Route::get('overview', [DashboardMainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
     Route::resource('users', UserController::class);
-
+    Route::resource('projects', ProjectController::class);
+    
 });
 
 Route::middleware('auth')->group(function () {

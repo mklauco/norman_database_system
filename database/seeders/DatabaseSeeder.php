@@ -25,14 +25,20 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
+            // **************************************
             // LISTs
+            // **************************************
             ListCountrySeeder::class,
             ListCoordinatePrecisionSeeder::class,
             ListConcentrationIndicatorSeeder::class,
             ListSamplingTechniqueSeeder::class,
             ListTreatmentLessSeeder::class,
+            // Data source
             ListTypeDataSourceSeeder::class,
             ListTypeMonitoringSeeder::class,
+            ListDataAccessibilitySeeder::class,
+
+            //ListTypeStationSeeder::class,
 
             //EmpodatStationSeeder::class,
             AdminSeeder::class,
@@ -47,12 +53,16 @@ class DatabaseSeeder extends Seeder
             SuspectListExchangeSourceSeeder::class,
 
             // Migrators for SLE
-            SuspectListExchangeMigrator::class,
+            // SuspectListExchangeMigrator::class,
+            // SuspectListExchangeSourceJoinSeeder::class,
+            // SusdatSourceSubstanceJoinSeeder::class,
 
+            // EMPODAT
+            EmpodatDataSourceSeeder::class,
 
-            SuspectListExchangeSourceJoinSeeder::class,
-            SusdatSourceSubstanceJoinSeeder::class
-            
+            //Backend
+            ProjectSeeder::class, // testing data
+            ProjectSeeder::class, // testing data
         ]);
     }
 }
