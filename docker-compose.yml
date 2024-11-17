@@ -28,6 +28,8 @@ services:
     command: ["php", "artisan", "schedule:work"]
     stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
     container_name: nds-app-task
+    restart: unless-stopped
+    tty: true
     user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     working_dir: /var/www
     volumes:
