@@ -25,7 +25,7 @@ services:
       context: .
       dockerfile: Dockerfile-php-scheduler
     image: laravel_php_fpm:8.2-fpm-bullseye
-    # command: ["php", "artisan", "schedule:work"]
+    command: ["php", "artisan", "schedule:work"]
     stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
     container_name: nds-app-task
     user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
