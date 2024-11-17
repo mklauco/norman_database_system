@@ -6,7 +6,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["php-fpm"]
     image: laravel_php_fpm:8.2-fpm-bullseye
     container_name: nds-app
     restart: unless-stopped
@@ -48,7 +47,6 @@ services:
     environment:
       - VIRTUAL_HOST=nds.mkassets.sk
       - LETSENCRYPT_HOST=nds.mkassets.sk
-    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     volumes:
       - ./:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
