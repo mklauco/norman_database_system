@@ -15,4 +15,9 @@ class Category extends Model
     {
         return $this->belongsToMany(Substance::class, 'susdat_category_substance', 'category_id', 'substance_id');
     }
+
+    public function getNameAbbreviationAttribute()
+    {
+        return rtrim($this->name, " ") . ' (' . $this->abbreviation . ')';
+    }
 }

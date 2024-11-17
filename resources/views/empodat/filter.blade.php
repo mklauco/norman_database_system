@@ -85,7 +85,7 @@
                 <div class="font-bold mb-2">
                   Search Category:
                 </div>
-                <div>
+                <div class="grid grid-cols-3 gap-1">
                   <input type="hidden" value="1" name="search">
                   @foreach ($categories as $category)
                   <div class="block p-1">
@@ -93,7 +93,8 @@
                       <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}">
                     </span>
                     <span class="ml-1">
-                      {{$category->name}} 
+                      {{-- ensure non-breakable space before parentheses --}}
+                      {!! preg_replace('/\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
                     </span>
                   </div>
                   @endforeach
@@ -101,7 +102,7 @@
               </div>
             </div>
             
-            <div id="searchSource">
+            <div id="searchYear">
               <div class="bg-gray-100 p-2">
                 <div class="font-bold mb-2">
                   Year:
@@ -125,8 +126,86 @@
               </div>
             </div>
             
+            <div id="searchSource">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2">
+                    Type of data source:
+                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'sourcesList', 'list' => $sourcesList,
+                  'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                  ])
+                </div>
+                
+                <div class="w-full">
+                  <div class="font-bold mb-2">
+                    Organisation:
+                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'organisationList', 'list' => $ecosystemSearch,
+                  'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                  ])
+                </div>
+              </div>
+            </div>
             
+            <div id="searchLaboratory">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2">
+                    Laboratory:
+                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'laboratoryList', 'list' => $sourcesList,
+                  'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                  ])
+                </div>
+              </div>
+            </div>
             
+            <div id="searchQaQc">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg]</span>
+                  @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
+                  @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
+                </div>
+                <div class="w-full">
+                  <span>Limit of Quantification (LoQ) [µg/m3, µg/l or µg/kg]</span>
+                  @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
+                  @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
+                </div>
+              </div>
+            </div>
+
+            <div id="searchAnalyticaMethod">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2">
+                    Analytical method:
+                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'analyticalMethodList', 'list' => $sourcesList,
+                  'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                  ])
+                </div>
+              </div>
+            </div>
+            
+            <div id="searchQualityInformationCategory">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2">
+                    Quality information category:
+                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'qualityInformationCategoryList', 'list' => $sourcesList,
+                  'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                  ])
+                </div>
+              </div>
+            </div>
             
             
             
