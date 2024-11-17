@@ -15,6 +15,7 @@ services:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
     working_dir: /var/www
+    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     volumes:
         - ./:/var/www
         - ./_php/local.ini:/usr/local/etc/php/conf.d/local.ini
@@ -29,6 +30,7 @@ services:
     command: ["php", "artisan", "schedule:work"]
     stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
     container_name: nds-app-task
+    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     working_dir: /var/www
     # healthcheck:
     #   # This is our native healthcheck script for the scheduler
@@ -47,6 +49,7 @@ services:
     environment:
       - VIRTUAL_HOST=nds.mkassets.sk
       - LETSENCRYPT_HOST=nds.mkassets.sk
+    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     volumes:
       - ./:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
@@ -66,6 +69,7 @@ services:
       POSTGRES_DB: ${DB_DATABASE}
     ports:
       - "5433:5432"
+    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     volumes:
       - ./_postgres_data:/var/lib/postgresql/data
     networks:
@@ -87,6 +91,7 @@ services:
       - pgadmin4
     ports:
       - "5434:80"
+    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     volumes:
       - ./_pgadmin_data:/var/lib/pgadmin
     networks:
