@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm AS laravel-app
 
 # Copy composer.lock and composer.json
 COPY composer.lock composer.json /var/www/
