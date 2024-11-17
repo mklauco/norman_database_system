@@ -24,8 +24,8 @@ services:
       context: .
       dockerfile: scheduler.dockerfile
     # image: laravel-app
-    # command: ["php", "artisan", "schedule:work"]
-    command: ["php", "artisan", "schedule:run"]
+    command: ["php", "artisan", "schedule:work"]
+    # command: ["php", "artisan", "schedule:run"]
     stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
     container_name: nds-app-task
     restart: unless-stopped
