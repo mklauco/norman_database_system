@@ -89,8 +89,16 @@ services:
     ports:
       - "5434:80"
     # user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
+    user: "1002:1002"
     volumes:
       - ./_pgadmin_data:/var/lib/pgadmin
+      - ./_pgadmin_logs:/var/log/pgadmin
+    entrypoint: >
+      sh -c "
+      mkdir -p /var/lib/pgadmin /var/log/pgadmin &&
+      chown -R 1002:1002 /var/lib/pgadmin /var/log/pgadmin &&
+      /entrypoint.sh
+      "
     networks:
       - mkassets_docker_network
 
