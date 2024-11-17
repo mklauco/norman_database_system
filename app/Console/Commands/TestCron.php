@@ -29,7 +29,7 @@ class TestCron extends Command
         info("Cron Job running at ". now());
               
 
-          
+        echo "Cron Job running at ". now();
         $users = User::all();
       
         foreach ($users as $user) {
