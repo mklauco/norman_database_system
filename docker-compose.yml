@@ -30,14 +30,10 @@ services:
     container_name: nds-app-task
     restart: unless-stopped
     tty: true
-    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
+    # user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
     working_dir: /var/www
     volumes:
-        - ./:/var/www    
-    # healthcheck:
-    #   # This is our native healthcheck script for the scheduler
-    #   test: ["CMD", "healthcheck-schedule"]
-      # start_period: 10s
+        - ./:/var/www
     networks:
     - mkassets_docker_network
 

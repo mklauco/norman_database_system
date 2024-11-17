@@ -45,10 +45,10 @@ RUN groupadd -g 1002 deployer
 RUN useradd -u 1002 -ms /bin/bash -g deployer deployer
 
 # Copy existing application directory contents
-COPY . /var/www
+# COPY . /var/www
 
 # Copy existing application directory permissions
-COPY --chown=deployer:deployer . /var/www
+# COPY --chown=deployer:deployer . /var/www
 
 # Change current user to www
 # USER deployer
