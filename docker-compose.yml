@@ -97,7 +97,7 @@ services:
       sh -c "
       mkdir -p /var/lib/pgadmin /var/log/pgadmin &&
       chown -R 1002:1002 /var/lib/pgadmin /var/log/pgadmin &&
-      /entrypoint.sh
+      su-exec 1002:1002 /entrypoint.sh
       "
     networks:
       - mkassets_docker_network
