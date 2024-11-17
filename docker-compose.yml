@@ -23,7 +23,7 @@ services:
   task:
     build:
       context: .
-      dockerfile: Dockerfile-php-scheduler
+      dockerfile: scheduler.dockerfile
     image: laravel_php_fpm:8.2-fpm-bullseye
     command: ["php", "artisan", "schedule:work"]
     stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
