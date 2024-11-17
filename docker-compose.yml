@@ -66,7 +66,7 @@ services:
       POSTGRES_DB: ${DB_DATABASE}
     ports:
       - "5433:5432"
-    # user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
+    user: "1002:1002"
     volumes:
       - ./_postgres_data:/var/lib/postgresql/data
     networks:
