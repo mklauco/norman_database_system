@@ -1,0 +1,1 @@
+<input type="text" name="{{ $tag ?? 'emnty_tag' }}" value=" {{ $value ?? null }}" class="{{ $class ?? 'form-text' }}">

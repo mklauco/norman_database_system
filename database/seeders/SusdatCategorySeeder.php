@@ -43,7 +43,7 @@ class SusdatCategorySeeder extends Seeder
     }
 
     protected function isEmptyThenNull($value) {
-        return empty($value) ? null : $value;
+        return empty($value) ? null : $this->removeStringAfterParenthesis($value);
     }
 
     function extractStringBetweenParentheses($text) {
@@ -59,4 +59,12 @@ class SusdatCategorySeeder extends Seeder
             return null;
         }
     }
+
+    function removeStringAfterParenthesis($string) {
+        // Use a regular expression to find the opening parenthesis and remove everything after it
+        return preg_replace('/\s*\(.*$/', '', $string);
+    }
+    
 }
+
+// php artisan db:seed --class=SusdatCategorySeeder
