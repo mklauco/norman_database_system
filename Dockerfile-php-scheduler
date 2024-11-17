@@ -51,8 +51,8 @@ COPY . /var/www
 COPY --chown=deployer:deployer . /var/www
 
 # Change current user to www
-USER deployer
+# USER deployer
 
 # Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php", "artisan", "schedule:work"]
+# EXPOSE 9000
+# CMD ["php", "artisan", "schedule:work"]
