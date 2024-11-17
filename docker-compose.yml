@@ -29,6 +29,7 @@ services:
     command: ["php", "artisan", "schedule:work"]
     stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
     container_name: nds-app-task
+    working_dir: /var/www
     # healthcheck:
     #   # This is our native healthcheck script for the scheduler
     #   test: ["CMD", "healthcheck-schedule"]
