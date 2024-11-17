@@ -94,6 +94,7 @@ class EmpodatController extends Controller
       'categoriesList' => $categoriesList,
       'categories' => $categories,
       'selectList' => $selectList,
+      'getEqualitySigns' => $this->getEqualitySigns(),
     ]);
   }
 }
