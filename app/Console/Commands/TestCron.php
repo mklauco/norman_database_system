@@ -30,11 +30,11 @@ class TestCron extends Command
               
 
         echo "Cron Job running at ". now();
-        // $users = User::all();
+        $users = User::all();
       
-        // foreach ($users as $user) {
-        //     info($user->email);
-        //     echo $user->email;
-        // }
+        foreach ($users as $user) {
+            info($user->email);
+            echo $user->email;
+        }
     }
 }
