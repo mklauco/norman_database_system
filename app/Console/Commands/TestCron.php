@@ -34,6 +34,7 @@ class TestCron extends Command
       
         foreach ($users as $user) {
             info($user->email);
+            echo $user->email;
         }
     }
 }
