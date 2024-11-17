@@ -20,22 +20,22 @@ services:
     networks:
       - mkassets_docker_network
 
-  # task:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   image: laravel_php_fpm:8.2-fpm-bullseye
-  #   command: ["php", "artisan", "schedule:work"]
-  #   stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
-  #   container_name: nds-app-task
-  #   user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
-  #   working_dir: /var/www
-  #   # healthcheck:
-  #   #   # This is our native healthcheck script for the scheduler
-  #   #   test: ["CMD", "healthcheck-schedule"]
-  #     # start_period: 10s
-  #   networks:
-  #   - mkassets_docker_network
+  task:
+    build:
+      context: .
+      dockerfile: Dockerfile-php-scheduler
+    image: laravel_php_fpm:8.2-fpm-bullseye
+    # command: ["php", "artisan", "schedule:work"]
+    stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
+    container_name: nds-app-task
+    user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
+    working_dir: /var/www
+    # healthcheck:
+    #   # This is our native healthcheck script for the scheduler
+    #   test: ["CMD", "healthcheck-schedule"]
+      # start_period: 10s
+    networks:
+    - mkassets_docker_network
 
   # Nginx Service behing reverse proxy
   # see: https://github.com/nginx-proxy/acme-companion?tab=readme-ov-file
