@@ -53,55 +53,6 @@ services:
     networks:
       - mkassets_docker_network
 
-  #Ppstgres Service
-  db:
-    image: postgres:16
-    container_name: nds-postgres
-    restart: unless-stopped
-    env_file:
-      - .env.docker-compose
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_DB: ${DB_DATABASE}
-    ports:
-      - "5433:5432"
-    user: "1002:1002"
-    volumes:
-      - ./_postgres_data:/var/lib/postgresql/data
-    networks:
-      - mkassets_docker_network
-
-  # pgAdmin Service
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: nds-pgadmin
-    restart: unless-stopped
-    env_file:
-      - .env.docker-compose
-    environment:
-      PGADMIN_DEFAULT_EMAIL: martin@klauco.com
-      PGADMIN_DEFAULT_PASSWORD_FILE: /run/secrets/pgadmin4
-      VIRTUAL_HOST: adminer-nds.mkassets.sk
-      LETSENCRYPT_HOST: adminer-nds.mkassets.sk
-    secrets:
-      - pgadmin4
-    ports:
-      - "5434:80"
-    # user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
-    user: "1002:1002"
-    volumes:
-      - ./_pgadmin_data:/var/lib/pgadmin
-      - ./_pgadmin_logs:/var/log/pgadmin
-    # entrypoint: >
-    #   sh -c "
-    #   mkdir -p /var/lib/pgadmin /var/log/pgadmin &&
-    #   chown -R 1002:1002 /var/lib/pgadmin /var/log/pgadmin &&
-    #   su-exec 1002:1002 /entrypoint.sh
-    #   "
-    networks:
-      - mkassets_docker_network
-
 #Docker Networks
 networks:
   mkassets_docker_network:
@@ -114,6 +65,4 @@ secrets:
 
 #volumes
 volumes:
-  _postgres_data:
-  _pgadmin_data:
-  _pgadmin_logs:
+  
