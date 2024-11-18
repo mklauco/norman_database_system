@@ -57,12 +57,4 @@ services:
 networks:
   mkassets_docker_network:
     external: true
-
-#secrets
-secrets:
-  pgadmin4:
-    file: ./_secrets/pgadmin4.password
-
-#volumes
-volumes:
   
