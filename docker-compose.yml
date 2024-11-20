@@ -1,0 +1,60 @@
+# version: '3.9'
+services:
+  
+  #PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nds-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+        - ./:/var/www
+        - ./_php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - mkassets_docker_network
+
+  task:
+    build:
+      context: .
+      dockerfile: scheduler.dockerfile
+    # image: laravel-app
+    command: ["php", "artisan", "schedule:work"]
+    # command: ["php", "artisan", "schedule:run"]
+    stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
+    container_name: nds-app-task
+    restart: unless-stopped
+    tty: true
+    # user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
+    # working_dir: /var/www
+    volumes:
+        - ./:/var/www
+    networks:
+    - mkassets_docker_network
+
+  # Nginx Service behing reverse proxy
+  # see: https://github.com/nginx-proxy/acme-companion?tab=readme-ov-file
+  webserver:
+    image: nginx:alpine
+    container_name: nds-webserver
+    restart: unless-stopped
+    tty: true
+    environment:
+      - VIRTUAL_HOST=nds.mkassets.sk
+      - LETSENCRYPT_HOST=nds.mkassets.sk
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - mkassets_docker_network
+
+#Docker Networks
+networks:
+  mkassets_docker_network:
+    external: true
+  

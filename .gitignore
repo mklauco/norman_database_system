@@ -10,6 +10,7 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
+.env.docker-compose
 Homestead.json
 Homestead.yaml
 auth.json
@@ -20,3 +21,6 @@ yarn-error.log
 /.vscode
 database/seeders/seeds/*.log
 _dbdata/
+_postgres_data/
+_pgadmin_data/
+_secrets/*
