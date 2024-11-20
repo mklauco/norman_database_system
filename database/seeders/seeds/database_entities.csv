@@ -1,13 +1,13 @@
-id,name,description,image_path,code,dashboard_route_name,created_at,updated_at
-1,Substance Database,A merged list of NORMAN substances; Central Database to access various lists of substances for suspect screening and prioritisation,substance_database.webp,susdat,substances,,
-2,Chemical Occurrence Data,A database of geo-referenced monitoring data on emerging substances,chemical_occurrence_data.webp,empodat,general_route,,
-3,Ecotoxicology,A platform for systematic collection and evaluation of ecotoxicity studies for harmonised derivation of environmental quality standards,ecotoxicology.webp,ecotox,general_route,,
-4,Suspect List Exchange,Central Database to access various lists of substances for suspect screening and prioritisation,empty.webp,enpty_code,general_route,,
-5,Antibiotic Resistant Bacteria/Genes,A database of ARBs/ARGs in environmental matrices,empty.webp,enpty_code,general_route,,
-6,MassBank Europe,A database of mass spectra of emerging substances to support identification of unknown substances,empty.webp,enpty_code,general_route,,
-7,Digital Sample Freezing Platform,A database of mass chromatograms obtained by LC-HR-MS for retrospective screening of environmental samples,empty.webp,enpty_code,general_route,,
-8,Indoor Environment,A database of data in indoor environment matrices,empty.webp,enpty_code,general_route,,
-9,Passive Sampling,A database of data obtained with passive samplers,empty.webp,enpty_code,general_route,,
-10,Substance Factsheets,A summary information on individual substances from all NORMAN Database System modules,empty.webp,enpty_code,general_route,,
-11,Prioritisation,Results of prioritisation of NORMAN substances using the NORMAN Prioritisation Framework,empty.webp,enpty_code,general_route,,
-12,Bioassays Monitoring Data,A database of data obtained by analysis of environmental samples with bioassayss,empty.webp,enpty_code,general_route,,
+id,name,description,image_path,code,dashboard_route_name
+1,Substance Database,A merged list of NORMAN substances; Central Database to access various lists of substances for suspect screening and prioritisation,substance_database.webp,susdat,substances.filter
+2,Chemical Occurrence Data,A database of geo-referenced monitoring data on emerging substances,chemical_occurrence_data.webp,empodat,codhome.index
+3,Ecotoxicology,A platform for systematic collection and evaluation of ecotoxicity studies for harmonised derivation of environmental quality standards,ecotoxicology.webp,ecotox,general_route.index
+4,Suspect List Exchange,Central Database to access various lists of substances for suspect screening and prioritisation,empty.webp,enpty_code,general_route.index
+5,Antibiotic Resistant Bacteria/Genes,A database of ARBs/ARGs in environmental matrices,empty.webp,enpty_code,general_route.index
+6,MassBank Europe,A database of mass spectra of emerging substances to support identification of unknown substances,empty.webp,enpty_code,https://massbank.eu/MassBank/
+7,Digital Sample Freezing Platform,A database of mass chromatograms obtained by LC-HR-MS for retrospective screening of environmental samples,empty.webp,enpty_code,https://dsfp.norman-data.eu/
+8,Indoor Environment,A database of data in indoor environment matrices,empty.webp,enpty_code,general_route.index
+9,Passive Sampling,A database of data obtained with passive samplers,empty.webp,enpty_code,general_route.index
+10,Substance Factsheets,A summary information on individual substances from all NORMAN Database System modules,empty.webp,enpty_code,general_route.index
+11,Prioritisation,Results of prioritisation of NORMAN substances using the NORMAN Prioritisation Framework,empty.webp,enpty_code,general_route.index
+12,Bioassays Monitoring Data,A database of data obtained by analysis of environmental samples with bioassayss,empty.webp,enpty_code,general_route.index

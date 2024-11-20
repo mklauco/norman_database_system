@@ -1,0 +1,135 @@
+{
+    "variable": [
+        {
+            "id": "baseUrl",
+            "key": "baseUrl",
+            "type": "string",
+            "name": "string",
+            "value": "http:\/\/127.0.0.1:8000"
+        }
+    ],
+    "info": {
+        "name": "Norman Database System",
+        "_postman_id": "20519f0b-816a-45d0-8598-6421ed7cb925",
+        "description": "",
+        "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
+    },
+    "item": [
+        {
+            "name": "Endpoints",
+            "description": "",
+            "item": [
+                {
+                    "name": "GET api\/v1\/substances\/show\/{substance_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/substances\/show\/:substance_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/substances\/show\/:substance_id",
+                            "variable": [
+                                {
+                                    "id": "substance_id",
+                                    "key": "substance_id",
+                                    "value": "1",
+                                    "description": "The ID of the substance."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"code\":\"00000001\",\"prefixed_code\":\"NS00000001\",\"name\":\"Sulfaclozine\",\"name_dashboard\":\"Sulfaclozine\",\"name_chemspider\":\"Sulfaclozine\",\"name_iupac\":\"4-amino-N-(6-chloropyrazin-2-yl)benzenesulfonamide\",\"cas_number\":\"102-65-8\",\"smiles\":\"c1cc(ccc1N)S(=O)(=O)Nc2cncc(n2)Cl\",\"smiles_dashboard\":\"NC1=CC=C(C=C1)S(=O)(=O)NC1=CN=CC(Cl)=N1\",\"stdinchi\":\"InChI=1S\\\/C10H9ClN4O2S\\\/c11-9-5-13-6-10(14-9)15-18(16,17)8-3-1-7(12)2-4-8\\\/h1-6H,12H2,(H,14,15)\",\"stdinchikey\":\"QKLPUVXBJHRFQZ-UHFFFAOYSA-N\",\"pubchem_cid\":\"66890\",\"chemspider_id\":\"60252\",\"dtxid\":\"DTXSID60144515\",\"molecular_formula\":\"C10H9Cl1N4O2S1\",\"mass_iso\":\"284.013474\",\"metadata_synonyms\":\"{\\\"Synonyms ChemSpider\\\":\\\"N~1~-(6-chloropyrazinyl)sulfanilamide;4-amino-N-(6-chloropyrazin-2-yl)benzenesulfonamide;Sulfaclozine;203-044-0;Sulfachloropyrazine Sodium;Benzenesulfonamide, 4-amino-N-(6-chloro-2-pyrazinyl)-;4-Amino-N-(6-chloro-2-pyrazinyl)benzenesulfonamide;N(sup 1)-(6-Chloropyrazinyl)sulfanilamide;N1-(6-Chlor-2-pyrazinyl)sulfanilamid;Sulfaclozine [INN];Sulfachlorpyrazin;MFCD00868569;UNII:69YP7Z48CW;UNII-69YP7Z48CW;Sulfaclozinum [INN-Latin];Sulfaclozina [INN-Spanish];EINECS 203-044-0;Sulfaclozine sodium;4-azanyl-N-(6-chloranylpyrazin-2-yl)benzenesulfonamide;[(4-aminophenyl)sulfonyl](6-chloropyrazin-2-yl)amine;Sulfachloropyrazine\\\",\\\"Reliability of Synonyms ChemSpider\\\":\\\"4;4;4;3;2;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0\\\"}\",\"metadata_cas\":\"{\\\"CAS_RN Dashboard\\\":\\\"102-65-8\\\",\\\"CAS_RN PubChem\\\":\\\"102-65-8;27890-59-1\\\",\\\"CAS_RN Cactus\\\":\\\"33303-64-9;27890-59-1;102-65-8\\\",\\\"CAS_RN ChemSpider\\\":\\\"27890-59-1;102-65-8\\\",\\\"Reliability of CAS_ChemSpider\\\":\\\"5;5\\\"}\",\"metadata_ms_ready\":\"{\\\"MS_Ready_SMILES\\\":\\\"c1cc(ccc1N)S(=O)(=O)Nc1cncc(n1)Cl\\\",\\\"MS_Ready_StdInChI\\\":\\\"InChI=1S\\\\\\\/C10H9ClN4O2S\\\\\\\/c11-9-5-13-6-10(14-9)15-18(16,17)8-3-1-7(12)2-4-8\\\\\\\/h1-6H,12H2,(H,14,15)\\\",\\\"MS_Ready_StdInChIKey\\\":\\\"QKLPUVXBJHRFQZ-UHFFFAOYSA-N\\\"}\",\"metadata_general\":\"{\\\"[M+H]+\\\":\\\"285.020750\\\",\\\"[M-H]-\\\":\\\"283.006198\\\",\\\"Pred_RTI_Positive_ESI\\\":\\\"265.02\\\",\\\"Uncertainty_RTI_pos\\\":\\\"Covered by Model\\\",\\\"Pred_RTI_Negative_ESI\\\":\\\"199.22\\\",\\\"Uncertainty_RTI_neg\\\":\\\"Covered by Model\\\",\\\"Tetrahymena_pyriformis_toxicity\\\":\\\"3.62\\\",\\\"IGC50_48_hr_ug\\\\\\\/L\\\":\\\"68238.83\\\",\\\"Uncertainty_Tetrahymena_pyriformis_toxicity\\\":\\\"outside of Chemical space\\\",\\\"Daphnia_toxicity\\\":\\\"3.30\\\",\\\"LC50_48_hr_ug\\\\\\\/L\\\":\\\"141254.60\\\",\\\"Uncertainty_Daphnia_toxicity\\\":\\\"Covered by Model\\\",\\\"Algae_toxicity\\\":\\\"5.41\\\",\\\"EC50_72_hr_ug\\\\\\\/L\\\":\\\"1092.36\\\",\\\"Uncertainty_Algae_toxicity\\\":\\\"Covered by Model\\\",\\\"Pimephales_promelas_toxicity\\\":\\\"3.43\\\",\\\"LC50_96_hr_ug\\\\\\\/L\\\":\\\"105021.25\\\",\\\"Uncertainty_Pimephales_promelas_toxicity\\\":\\\"Covered by Model\\\",\\\"logKow_EPISuite\\\":\\\"0.31\\\",\\\"Exp_logKow_EPISuite\\\":\\\"NA\\\",\\\"ChemSpider ID based on InChIKey_19032018\\\":\\\"60252\\\",\\\"alogp_ChemSpider\\\":\\\"0.81\\\",\\\"xlogp_ChemSpider\\\":\\\"NA\\\",\\\"Lowest P-PNEC (QSAR) [ug\\\\\\\/L]\\\":\\\"1.09236\\\",\\\"Species\\\":\\\"Selenastrum capricornutum\\\",\\\"Uncertainty\\\":\\\"Covered by Model\\\",\\\"ExposureScore_Water_KEMI\\\":\\\"0.17\\\",\\\"HazScore_EcoChronic_KEMI\\\":\\\"0.13\\\",\\\"ValidationLevel_KEMI\\\":4,\\\"Prob_of_GC\\\":\\\"0\\\",\\\"Prob_RPLC\\\":\\\"1\\\",\\\"Pred_Chromatography\\\":\\\"RPLC\\\",\\\"Prob_of_both_Ionization_Source\\\":\\\"0\\\",\\\"Prob_EI\\\":\\\"0\\\",\\\"Prob_ESI\\\":\\\"1\\\",\\\"Pred_Ionization_source\\\":\\\"ESI\\\",\\\"Prob_both_ESI_mode\\\":\\\"0.928\\\",\\\"Prob_plusESI\\\":\\\"0.058\\\",\\\"Prob_minusESI\\\":\\\"0.014\\\",\\\"Pred_ESI_mode\\\":\\\"Both Polarities\\\",\\\"Preferable_Platform_by_decision_Tree\\\":\\\"RPLC_+ESI\\\"}\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Get substances",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/substances\/index",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/substances\/index"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"Unauthenticated.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "type": "string"
+            }
+        ]
+    }
+}

@@ -12,7 +12,7 @@ class DatabaseDirectoryController extends Controller
     public function index()
     {
         $databases = DatabaseEntity::orderby('id', 'asc')->get();
-        return view('database_entities.index', [
+        return view('landing.index', [
             'databases' => $databases
         ]);
     }

@@ -9,7 +9,7 @@
             
             <div class="grid lg:grid-cols-3 gap-10">
               @foreach ($databases as $d)
-              <a href="{{route($d->dashboard_route_name.'.filter')}}">
+              <a href="{{route($d->dashboard_route_name)}}">
               {{-- <a href="#"> --}}
                 <div class="bg-white border-gray-100 shadow-lg rounded-md overflow-hidden border-b-2 border-white hover:border-lime-400 hover:text-lime-500">
                   <img src="{{asset('images/databases/'.$d->image_path)}}" alt="Substance Database" class="w-full h-48 object-cover">

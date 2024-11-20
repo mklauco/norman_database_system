@@ -12,6 +12,7 @@
       <tbody>
         @foreach ($response as $r)
         <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
+          @if(sizeof($r) > 1)
           @foreach ($columns as $c)
           <td class="p-1">
             @if(is_null($r[$c]))
@@ -21,6 +22,9 @@
             @endif
           </td>
           @endforeach
+          @else
+          <td colspan="8">No data available at the Comptox database</td>
+          @endif
         </tr>
         @endforeach
       </tbody>
