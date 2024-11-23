@@ -188,7 +188,7 @@ return new class extends Migration
             // Filter: Concentration equal or higher than
             $table->foreignId('concentration_indicator_id')->constrained()->nullable()->default(null)->references('id')->on('list_concentration_indicators');
             $table->float('concentration_value', 10)->nullable()->default(null);
-            $table->string('unit_extra')->nullable()->default(null); // ???????????
+            // $table->string('unit_extra')->nullable()->default(null); // ???????????
 
             $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_analytical_methods');
             $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_data_sources');
