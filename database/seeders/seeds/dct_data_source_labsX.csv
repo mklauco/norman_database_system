@@ -1,0 +1,125 @@
+lab_id,name,city,country,country_old
+1,Environmental Institute,Koš,SK,Slovakia
+2,IES,Ispra,IT,Italy
+3,IIQAB-CSIC,Barcelona,ES,Spain
+4,Environmental Chemistry,Barcelona,ES,Spain
+5,ÖFZ,Seibersdorf,AT,Austria
+6,UBA,Berlin,DE,Germany
+7,Fraunhofer IME,Schmallenberg,DE,Germany
+8,"Jozef Stefan Institute, O-2",Ljubljana,SI,Slovenia
+9,BSH,Hamburg,DE,Germany
+10,"BRGM, MMA/ENV",Orléans,FR,France
+11,CNR-IRSA,Brugherio,IT,Italy
+12,Istituto Mario Negri,Milano,IT,Italy
+13,Ramboll Analytics Oy,Lahti,FI,Finland
+14,Ambiotica Laboratory,Institute of Environmental Research,FI,Finland
+15,"National Environmental Research Institute, Aarhus University",,DK,Denmark
+16,ALS/GBA,,SE,Sweden
+17,IVL,Stockholm,SE,Sweden
+18,ALS/GALAB,,SE,Sweden
+19,Analytica AB,GALAB,SE,Sweden
+20,ALS/OMEGAM,,SE,Sweden
+21,CARD,Llanelli,GB,UK
+22,Laboratory of National Public Health Institute,,,
+23,"Miljökemi, Umeå University",Umeå,SE,Sweden
+24,AnalyCen Nordic AB,Lidköping,SE,Sweden
+25,Analytica AB,Lule?,SE,Sweden
+26,"Analytisk kemi, Umeå University",Umeå,SE,Sweden
+27,ITM,Stockholm University,SE,Sweden
+28,Not specified in the database,,,
+29,Group of Bromatology from the Center of Pharmaceutical Studies of the University of Coimbra,Coimbra,PT,Portugal
+30,"IAREN - Water Institute of the Northern Region, Matosinhos",Porto,PT,Portugal
+31,"Joint Research Centre, Institute for Environment and Sustainability; RWER Chemical Monitoring Laboratory",Ispra,IT,Italy
+32,Water Research Institute T.G.M.,Prague,CZ,Czech Republic
+33,"Water Research Institute, Slovak National Water Reference Laboratory",Bratislava,SK,Slovakia
+34,"Vienna University, Faculty of Earth Sciences, Geography and Astronomy, Department for Environmental Geosciences, Laboratory for Organic Environmental Pollutants",Vienna,AT,Austria
+35,Umweltbundesamt,Vienna,AT,Austria
+36,"Research Center for Toxic Compound in the Environment (RECETOX), Masaryk University",Brno,CZ,Czech Republic
+37,"National Research and Development Institute for Environmental Protection, Heavy metals analysis laboratory",Bucharest,RO,Romania
+38,DVGW-Technologiezentrum Wasser (TZW),Karlsruhe,DE,Germany
+39,"Vienna University, Faculty of Earth Sciences, Department for Environmental Geosciences, Laboratory for Organic Environmental Pollutants",Vienna,AT,Austria
+40,"VITUKI Environmental Protection and Water Management Research Institute; Central Laboratory, Analitical Laboratory",Budapest,HU,Hungary
+41,Bavarian Environment Agency - Unit 72,Augsburg,DE,Germany
+42,"Laboratory for Organic Environmental Pollutants, Vienna University, Faculty of Earth Sciences, Geography and Astronomy, Department for Environmental Geosciences",Vienna,AT,Austria
+43,Water Research Institute T.G.M.,Brno/Prague,CZ,Czech Republic
+44,Bavarian Environment Agency,München,DE,Germany
+45,State General Laboratory,Nicosia,CY,Cyprus
+46,"JSI, O-2",Ljubljana,SI,SI
+47,Umeå University,Umeå,SE,Sweden
+48,ALS,,SE,Sweden
+49,Eurofins,,SE,Sweden
+50,Department of Chemistry and CESAM,,,
+51,Laboratory of Biogeochemistry of Organic Contaminants,Nantes,FR,France
+52,Laboratory of Analytical Chemistry,,,
+53Université de Lyon (CNRS - ISA),,,
+54Université de Pau et des Pays de l’Adour (IPREM),,,
+55Université Bordeaux I (LPTC),,,
+56Université Paris VI/EPHE (LHE),,,
+57,CARSO-LSEHL,,,
+58,IPL ATLANTIQUE,,,
+59,I.P.L. SANTE ENVIR. DURABLES LABORATOIRE ALSACE-FRANCHE COMTE,,,
+60,LABO DEPT. DES EAUX DES LANDES,,,
+61,LABO. DPT. DE LA DROME VALENCE,,,
+62,LABO. DPT. D'HYGIENE DU TARN ALBI,,,
+63,EUROFINS ENVIRONNEMENT,,,
+64,LABO. DEPT. D'EAU DE HTE GARONNE LAUNAGUET,,,
+65,LASAT,,,
+66,LABORATOIRE DEPARTEMENTAL DE LA CHARENTE,,,
+67,LABO. DEP. ANALYSE ET RECHERCHE DORDOGNE,,,
+68,LABO. VETE. DPT. DE LA CORREZE,,,
+69,LABORATOIRE DEPARTEMENTAL D'ANALYSES DU LOT,,,
+70,LABO. DPT. D'ANAL. DU CANTAL AURILLAC,,,
+71,EUROFINS IPL EST,,,
+72,S.G.S. MULTILAB,,,
+73,AVEYRON LABO,,,
+74,LABORATOIRES DES PYRENEES LAGOR,,,
+75,CARSO L.S.E.H. DE LYON,,,
+76,LABORATOIRE DEPARTEMENTAL DES EAUX DE L'ARIEGE - CAMP,,,
+77,A.M.P.,,,
+78,INSTITUT PASTEUR LILLE,,,
+79,CENTRE D'ANALYSES ET DE RECHERCHES,,,
+80,EUROFINS IPL NORD DURABLES NORD,,,
+81,D.D.T.M. DE LA CHARENTE MARITIME,,,
+82,LABORATOIRE DEPARTEMENTAL D'ANALYSES DE L'ALLIER,,,
+83,LABORATOIRE DES PYRENEES ET DES LANDES,,,
+84,CENTRE ANALYSES ET DE RECHERCHES,,,
+85,Sächsische Betriebsgesellschaft für Umwelt und Landwirtschaft (BfUL),,,
+86,The National Water Reference Laboratory in Slovakia,,,
+87,Umweltbetriebsgesellschaft (UBG),,,
+88,Slovak National Water Reference Laboratory,,,
+89,IVL,,,
+90,Unit 72,,,
+91,Central Water Management Laboratory,,,
+92,Unit 75,,,
+93,Sector for laboratory diagnostic and radiation protection,,,
+94,Laboratory of Chemical Analysis,,,
+95,LAEPS,,,
+96,CARSO,,,
+97,ISA,,,
+98,LABORATOIRE DE ROUEN,,,
+99,LDA 26,,,
+100,SAVOIE LABO,,,
+101,ASPOSAN,,,
+102,Laboratory for chemical-analytical studies,,,
+103,Laboratory of Analytical Chemistry,Athens,GR,Greece
+104,"Sustainable Resources, Unit D.02 Water and Marine Resources",Ispra,IT,Italy
+105,Effect-directed analysis,Leipzig,DE,Germany
+106,Bavarian Environment Agency,Augsburg,DE,Germany
+107,Laboratory for chemical-analytical studies,Odessa,UA,Ukraine
+108,AQ-BIOS,Bratislava,SK,Slovakia
+109,Water Research Institute (WRI),Bratislava,SK,Slovakia
+110,"Accredited Testing Laboratory for Environmental-, GMO - and Fuel Analysis",Vienna,AT,Austria
+111,LEESU,Paris,FR,France
+112,LPTC Bordeaux University,Bordeaux,FR,France
+113,Dublin,,,
+114,"Department of Chemistry 'Ugo Schiff', Sesto Fiorentino",Florence,IT,Italy
+115,Organic environmental chemistry,,,
+116,Sector for laboratory diagnostic and radiation protection,Podgorica,ME,Montenegro
+117,Fraunhofer Institute for Molecular Biology and Applied Ecology,Schmallenberg,DE,Germany
+118,University of Florence,Florence,IT,Italy
+119,UKCEH Lancaster,Lancaster,GB,United Kingdom
+120,Environmental Reference Laboratory,,,
+121,Sciensano,Brussels,BE,Belgium
+122,TU Wien E226.1,Vienna,AT,Austria
+123,ARPA VENETO,Verona,IT,Italy
+124,Eurofins,,,
