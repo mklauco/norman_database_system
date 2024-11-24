@@ -48,7 +48,7 @@ class DatabaseSeeder extends Seeder
 
 
             // Data source
-//            ListTypeDataSourceSeeder::class,
+           ListTypeDataSourceSeeder::class,
 //            ListTypeMonitoringSeeder::class,
 //            ListDataAccessibilitySeeder::class,
 
