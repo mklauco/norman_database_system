@@ -55,15 +55,99 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('empodat_analytical_methods', function (Blueprint $table) {
+        // ****************************************************************
+        // dct_analytical_methods
+        // ****************************************************************
+
+        Schema::create('list_coverage_factors', function (Blueprint $table) {
             $table->id();
-            $table->double('lod');
-            $table->double('loq');
-            $table->decimal('uncertainty_loq', 4, 2); // Uncertainty at LoQ [%] ?? 5,3
+            $table->string('name');
             $table->timestamps();
         });
 
+        Schema::create('list_sample_preparation_methods', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_analytical_methods', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_standardised_methods', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_validated_methods', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_yes_no_questions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_summary_performances', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_sampling_methods', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('list_sampling_collection_devices', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        Schema::create('empodat_analytical_methods', function (Blueprint $table) {
+            $table->id();
+            $table->double('lod')->nullable(); // Limit of Detection (LoD)
+            $table->double('loq')->nullable(); // Limit of Quantification (LoQ)
+            $table->decimal('uncertainty_loq')->nullable(); // Uncertainty at LoQ [%] 
+            $table->foreignId('coverage_factor_id')->nullable()->default(null)->references('id')->on('list_coverage_factors'); // Coverage factor
+            $table->foreignId('sample_preparation_method_id')->nullable()->default(null)->references('id')->on('list_sample_preparation_methods'); // Sample preparation method
+            $table->string('sample_preparation_method_other')->nullable(); // Sample preparation method - other
+            $table->foreignId('analytical_method_id')->nullable()->default(null)->references('id')->on('list_analytical_methods'); // Analytical method
+            $table->string('analytical_method_other')->nullable(); // Analytical method - other
+
+            $table->foreignId('standardised_method_id')->nullable()->default(null)->references('id')->on('list_standardised_methods'); // Has standardised analytical method been used? Code
+            $table->string('standardised_method_other')->nullable(); // Has standardised analytical method been used? Other
+            $table->string('standardised_method_number')->nullable(); // Has standardised analytical method been used? Number
+            $table->foreignId('validated_method_id')->nullable()->default(null)->references('id')->on('list_validated_methods'); // Has the used method been validated according to one of the below protocols?
+            $table->foreignId('corrected_recovery_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Have the results been corrected for extraction recovery?
+            $table->foreignId('field_blank_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Was a field blank checked?
+            $table->foreignId('iso_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Is the laboratory accredited according to ISO 17025?
+            $table->foreignId('given_analyte_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Is the laboratory accredited for the given analyte?
+            $table->foreignId('laboratory_participate_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Has the laboratory participated in any interlaboratory comparison study?
+            $table->foreignId('summary_performance_id')->nullable()->default(null)->references('id')->on('list_summary_performances'); // Summary of performance of the laboratory in interlaboratory study for the given determinand
+            $table->foreignId('control_charts_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Are control charts used?
+            $table->foreignId('internal_standards_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Are internal standards used?
+            $table->foreignId('authority_id')->nullable()->default(null)->references('id')->on('list_yes_no_questions'); // Are the data controlled by competent authority (apart from accreditation body)?
+            $table->integer('rating')->nullable(); // Rating
+            $table->text('remark')->nullable(); // Remark
+            $table->foreignId('sampling_method_id')->nullable()->default(null)->references('id')->on('list_sampling_methods'); // Sampling method (Outdoor Air)
+            $table->foreignId('sampling_collection_device_id')->nullable()->default(null)->references('id')->on('list_sampling_collection_devices'); // Sampling collection device (Outdoor Air)
+            $table->float('foa')->nullable(); // FOA <- UoA_EUDust_DCT_target_IndoorAir.xlsb           
+            $table->timestamps();
+        });
+
+        // ****************************************************************
         // dct_data_source
+        // ****************************************************************
 
         // Type of data source - data_type_source - dts_ + other
         Schema::create('list_type_data_sources', function (Blueprint $table) {

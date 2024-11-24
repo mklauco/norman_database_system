@@ -33,24 +33,38 @@ class DatabaseSeeder extends Seeder
             ListConcentrationIndicatorSeeder::class,
             ListSamplingTechniqueSeeder::class,
             ListTreatmentLessSeeder::class,
+            
+            // Analytical methods
+            ListCoverageFactorSeeder::class,
+            ListSamplePreparationMethodSeeder::class,
+            ListAnalyticalMethodSeeder::class,
+            ListStandardisedMethodSeeder::class,
+            ListValidatedMethodSeeder::class,
+            ListYesNoQuestionSeeder::class,
+            ListSummaryPerformanceSeeder::class,
+            ListSamplingMethodSeeder::class,
+            ListSamplingCollectionDeviceSeeder::class,
+            EmpodatAnalyticalMethodSeeder::class,
+
+
             // Data source
-            ListTypeDataSourceSeeder::class,
-            ListTypeMonitoringSeeder::class,
-            ListDataAccessibilitySeeder::class,
+//            ListTypeDataSourceSeeder::class,
+//            ListTypeMonitoringSeeder::class,
+//            ListDataAccessibilitySeeder::class,
 
             //ListTypeStationSeeder::class,
 
             //EmpodatStationSeeder::class,
-            AdminSeeder::class,
-            RolesAndPermissionsSeeder::class,
-            DatabaseEntitySeeder::class,
+//            AdminSeeder::class,
+//            RolesAndPermissionsSeeder::class,
+//            DatabaseEntitySeeder::class,
 
 
             // SUSDAT
-            SusdatSusdatMigrator::class,
-            SusdatCategorySeeder::class,
-            SusdatCategorySubstanceJoinSeeder::class,
-            SuspectListExchangeSourceSeeder::class,
+//            SusdatSusdatMigrator::class,
+//            SusdatCategorySeeder::class,
+//            SusdatCategorySubstanceJoinSeeder::class,
+//            SuspectListExchangeSourceSeeder::class,
 
             // Migrators for SLE
             // SuspectListExchangeMigrator::class,
@@ -58,11 +72,11 @@ class DatabaseSeeder extends Seeder
             // SusdatSourceSubstanceJoinSeeder::class,
 
             // EMPODAT
-            EmpodatDataSourceSeeder::class,
+//            EmpodatDataSourceSeeder::class,
 
             //Backend
-            ProjectSeeder::class, // testing data
-            ProjectSeeder::class, // testing data
+//            ProjectSeeder::class, // testing data
+//            ProjectSeeder::class, // testing data
         ]);
     }
 }
