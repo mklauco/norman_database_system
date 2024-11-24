@@ -24,8 +24,8 @@ class ListCountrySeeder extends Seeder
         $p = [];
         foreach($rows as $r) {
             $p[] = [
-                'code'                => $r['country'],
-                'name'                => $r['country_name'],
+                'code'                => $r['code'],
+                'name'                => $r['name'],
                 'created_at'          => $now,
                 'updated_at'          => $now,
             ];
