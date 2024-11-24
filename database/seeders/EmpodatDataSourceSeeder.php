@@ -25,11 +25,11 @@ class EmpodatDataSourceSeeder extends Seeder
             $p[] = [
                 'id'                        => $r['id_data'],
                 'type_data_source_id'       => $r['dts_id'] ? $r['dts_id'] : null,
-                'type_data_source_other'    => $r['dts_other'] ?? null,
+                'type_data_source_other'    => $r['dts_other']  ? $r['dts_other'] : null,
                 'type_monitoring_id'        => $r['dtm_id'] ? $r['dtm_id'] : null,
-                'type_monitoring_other'     => $r['dtm_other'] ?? null,
+                'type_monitoring_other'     => $r['dtm_other'] ? $r['dtm_other'] : null,
                 'data_accessibility_id'     => $r['dda_id'] ? $r['dda_id'] : null,
-                'data_accessibility_other'  => $r['dda_other'] ?? null,
+                'data_accessibility_other'  => $r['dda_other'] ? $r['dda_other'] : null,
                 'project_title'             => $r['title_project'] ?? null,
                 //'id_laboratory'             => $r['laboratory_id'] ?? null,   - deprecated  
                 'author'                    => $r['author'] ?? null,
@@ -38,9 +38,9 @@ class EmpodatDataSourceSeeder extends Seeder
                 'reference2'                => $r['literature2'] ?? null,
                 'created_at'                => $now,
                 'updated_at'                => $now,
-                // 'organisation_id'        => $r['organisation'],    -> move to EmpodatMainSeeder
-                // 'laboratory1_id'         => $r['laboratory_name'], -> move to EmpodatMainSeeder
-                // 'laboratory2_id'         => $r['laboratory_name'], -> move to EmpodatMainSeeder
+                'organisation_id'           => $r['organisation_id'] ? $r['organisation_id'] : null, // -> move to EmpodatMainSeeder ???
+                'laboratory1_id'            => $r['lab_id_1'] ? $r['lab_id_1'] : null, // -> move to EmpodatMainSeeder ???
+                'laboratory2_id'            => $r['lab_id_2'] ? $r['lab_id_2'] : null, // -> move to EmpodatMainSeeder ???
             ];
         }
 

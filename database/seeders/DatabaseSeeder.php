@@ -35,22 +35,25 @@ class DatabaseSeeder extends Seeder
             ListTreatmentLessSeeder::class,
             
             // Analytical methods
-            ListCoverageFactorSeeder::class,
-            ListSamplePreparationMethodSeeder::class,
-            ListAnalyticalMethodSeeder::class,
-            ListStandardisedMethodSeeder::class,
-            ListValidatedMethodSeeder::class,
-            ListYesNoQuestionSeeder::class,
-            ListSummaryPerformanceSeeder::class,
-            ListSamplingMethodSeeder::class,
-            ListSamplingCollectionDeviceSeeder::class,
-            EmpodatAnalyticalMethodSeeder::class,
+//            ListCoverageFactorSeeder::class,
+//            ListSamplePreparationMethodSeeder::class,
+//            ListAnalyticalMethodSeeder::class,
+//            ListStandardisedMethodSeeder::class,
+//            ListValidatedMethodSeeder::class,
+//            ListYesNoQuestionSeeder::class,
+//            ListSummaryPerformanceSeeder::class,
+//            ListSamplingMethodSeeder::class,
+//            ListSamplingCollectionDeviceSeeder::class,
+//            EmpodatAnalyticalMethodSeeder::class,
 
 
             // Data source
-           ListTypeDataSourceSeeder::class,
-//            ListTypeMonitoringSeeder::class,
-//            ListDataAccessibilitySeeder::class,
+            ListTypeDataSourceSeeder::class,
+            ListTypeMonitoringSeeder::class,
+            ListDataAccessibilitySeeder::class,
+            ListDataSourceLaboratorySeeder::class,
+            ListDataSourceOrganisationSeeder::class,
+            EmpodatDataSourceSeeder::class,
 
             //ListTypeStationSeeder::class,
 
@@ -72,7 +75,7 @@ class DatabaseSeeder extends Seeder
             // SusdatSourceSubstanceJoinSeeder::class,
 
             // EMPODAT
-//            EmpodatDataSourceSeeder::class,
+
 
             //Backend
 //            ProjectSeeder::class, // testing data

@@ -155,14 +155,7 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
-
-        // Data source - data_source - ds_ + other
-        Schema::create('list_data_sources', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->timestamps();
-        });
-        
+       
         // Type of monitoring - data_type_monitoring - dtm_ + other
         Schema::create('list_type_monitorings', function (Blueprint $table) {
             $table->id();
@@ -181,13 +174,13 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable()->default(null); // English name
             //$table->string('local_name')->nullable()->default(null); // Local name - deprecated
-            //$table->string('acronym')->nullable()->default(null); // Acronym - deprecated
+            $table->string('acronym')->nullable()->default(null); // Acronym
             //$table->string('department'); // Department - deprecated
             //$table->string('street')->nullable()->default(null); // Address - Street - deprecated
             //$table->string('pobox'); // POBox - deprecated
             $table->string('city')->nullable()->default(null); // Address - City
             //$table->string('zip')->nullable()->default(null); // Zip - deprecated       
-            $table->foreignId('country_id')->constrained()->nullable()->default(null)->references('id')->on('list_countries'); // Country
+            $table->foreignId('country_id')->nullable()->default(null)->references('id')->on('list_countries'); // Country
             $table->timestamps();
         });   
 
@@ -195,7 +188,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable()->default(null); // Laboratory - Name
             $table->string('city')->nullable()->default(null); // Laboratory - City      
-            $table->foreignId('country_id')->constrained()->nullable()->default(null)->references('id')->on('list_countries'); // Laboratory - Country
+            $table->foreignId('country_id')->nullable()->default(null)->references('id')->on('list_countries'); // Laboratory - Country
             $table->timestamps();
         });  
 
