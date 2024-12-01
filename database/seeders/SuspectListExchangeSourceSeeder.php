@@ -47,3 +47,4 @@ class SuspectListExchangeSourceSeeder extends Seeder
         return empty($value) ? null : $value;
     }
 }
+// php artisan db:seed --class=SuspectListExchangeSourceSeeder
