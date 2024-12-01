@@ -34,12 +34,13 @@
             
             <div id="searchGeography">
               <div class="bg-gray-100 p-2">
-                <div class="font-bold mb-2">
-                  Geography criteria:
-                </div>
+
                 
                 <div class="flex">
                   <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Geography criteria:
+                    </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'countrySearch', 'list' => $countryList,
                     'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
@@ -47,6 +48,20 @@
                   </div>
                   
                   <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Ecosystem criteria:
+                    </div>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'ecosystemSearch', 'list' => $ecosystemSearch,
+                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    ])
+                  </div>
+                </div>
+                <div class="flex">
+                  <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Sampling station:
+                    </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'ecosystemSearch', 'list' => $ecosystemSearch,
                     'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],

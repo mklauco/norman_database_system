@@ -38,8 +38,8 @@ return new class extends Migration
         
         Schema::create('list_matrices', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('unit');
+            $table->string('name')->nullable()->default(null);
+            $table->string('unit')->nullable()->default(null);;
             $table->timestamps();
         });
         
@@ -237,7 +237,9 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable()->default(null);
             $table->foreignId('country_id')->nullable()->default(null)->references('id')->on('list_countries'); // Country
-            $table->foreignId('country_other')->nullable()->default(null)->references('id')->on('list_countries'); // Country - Other
+            $table->foreignId('country_other_id')->nullable()->default(null)->references('id')->on('list_countries'); // Country - Other
+            $table->string('country')->nullable()->default(null);
+            $table->string('country_other')->nullable()->default(null);
             $table->string('national_name')->nullable()->default(null);
             $table->string('short_sample_code')->nullable()->default(null);
             $table->string('sample_code')->nullable()->default(null);
@@ -253,6 +255,7 @@ return new class extends Migration
         
         Schema::create('empodat_main', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('dct_analysis_id')->nullable()->default(0);
             // Filter:  Country, Sampling site/station 
             $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_stations');
             // Filter: Ecosystems/matrices
@@ -266,7 +269,6 @@ return new class extends Migration
             $table->foreignId('concentration_indicator_id')->constrained()->nullable()->default(null)->references('id')->on('list_concentration_indicators');
             $table->float('concentration_value', 10)->nullable()->default(null);
             // $table->string('unit_extra')->nullable()->default(null); // ???????????
-
             $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_analytical_methods');
             $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_data_sources');
         });

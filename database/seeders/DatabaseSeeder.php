@@ -14,17 +14,22 @@ use Database\Seeders\Migrators\SuspectListExchangeMigrator;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
-     */
+    * Seed the application's database.
+    */
     public function run(): void
     {
         // User::factory(10)->create();
-
+        
         // User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
+            
+            AdminSeeder::class,
+            RolesAndPermissionsSeeder::class,
+            DatabaseEntitySeeder::class,
+            
             // **************************************
             // LISTs
             // **************************************
@@ -35,18 +40,18 @@ class DatabaseSeeder extends Seeder
             ListTreatmentLessSeeder::class,
             
             // Analytical methods
-//            ListCoverageFactorSeeder::class,
-//            ListSamplePreparationMethodSeeder::class,
-//            ListAnalyticalMethodSeeder::class,
-//            ListStandardisedMethodSeeder::class,
-//            ListValidatedMethodSeeder::class,
-//            ListYesNoQuestionSeeder::class,
-//            ListSummaryPerformanceSeeder::class,
-//            ListSamplingMethodSeeder::class,
-//            ListSamplingCollectionDeviceSeeder::class,
-//            EmpodatAnalyticalMethodSeeder::class,
-
-
+            ListCoverageFactorSeeder::class,
+            ListSamplePreparationMethodSeeder::class,
+            ListAnalyticalMethodSeeder::class,
+            ListStandardisedMethodSeeder::class,
+            ListValidatedMethodSeeder::class,
+            ListYesNoQuestionSeeder::class,
+            ListSummaryPerformanceSeeder::class,
+            ListSamplingMethodSeeder::class,
+            ListSamplingCollectionDeviceSeeder::class,
+            EmpodatAnalyticalMethodSeeder::class,
+            
+            
             // Data source
             ListTypeDataSourceSeeder::class,
             ListTypeMonitoringSeeder::class,
@@ -54,32 +59,26 @@ class DatabaseSeeder extends Seeder
             ListDataSourceLaboratorySeeder::class,
             ListDataSourceOrganisationSeeder::class,
             EmpodatDataSourceSeeder::class,
-
+            
             //ListTypeStationSeeder::class,
-
-            //EmpodatStationSeeder::class,
-//            AdminSeeder::class,
-//            RolesAndPermissionsSeeder::class,
-//            DatabaseEntitySeeder::class,
-
-
+            
             // SUSDAT
-//            SusdatSusdatMigrator::class,
-//            SusdatCategorySeeder::class,
-//            SusdatCategorySubstanceJoinSeeder::class,
-//            SuspectListExchangeSourceSeeder::class,
-
+            SusdatSusdatMigrator::class,
+            SuspectListExchangeSourceSeeder::class,
+            SusdatCategorySeeder::class,
+            SusdatSourceSubstanceJoinSeeder::class,
+            SusdatCategorySubstanceJoinSeeder::class,
+            
+            
             // Migrators for SLE
             // SuspectListExchangeMigrator::class,
             // SuspectListExchangeSourceJoinSeeder::class,
-            // SusdatSourceSubstanceJoinSeeder::class,
-
+            
             // EMPODAT
-
-
+            EmpodatStationSeeder::class,
+            
             //Backend
-//            ProjectSeeder::class, // testing data
-//            ProjectSeeder::class, // testing data
+            ProjectSeeder::class, // testing data
         ]);
     }
 }

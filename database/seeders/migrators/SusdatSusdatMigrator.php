@@ -17,10 +17,12 @@ class SusdatSusdatMigrator extends Seeder
     public function run(): void
     {
         //
-        Substance::query()->delete();
-        $count = OldData::count();
+        DB::table('susdat_substances')->truncate();
+        $count = OldData::max('sus_id'); // max id instead of count.. lebo idecka su neusporiadane :(
+        // dd($count);
         $batchSize = 2000;
-        $batches = ceil($count / $batchSize);
+        $batches = ceil(($count / $batchSize) / 1000)*1000;
+        echo 'Max id: '.$count.' | '.'number of batches:'.$batches.PHP_EOL;
         $time_start = microtime(true);
         $metadata_synonyms = [
             'Synonyms ChemSpider',
@@ -83,9 +85,10 @@ class SusdatSusdatMigrator extends Seeder
         ]; 
         // $batches = 2;
         $now = Carbon::now();
-        for ($i = 0; $i < $batches; $i++) {
+        for ($i = 0; $i <= $batches; $i++) {
             $time_start_for = microtime(true); 
             echo "Processing batch " . ($i + 1) . " of " . $batches;
+            // $batch = OldData::select('sus_id', 'sus_name')->where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();        
             $batch = OldData::where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();        
             $p = [];
             foreach($batch as $item) {
@@ -113,7 +116,7 @@ class SusdatSusdatMigrator extends Seeder
                     // 'created_at'        => $now,
                     'created_at'        => $this->checkTimeStamp($item->sus_id, $item->{'c_at'}, $now), // TAKES TOO LONG TO PARSE
                     'updated_at'        => $now,
-                    'added_by'           => 1,
+                    'added_by'          => 1,
                 ];
             }
             Substance::insert($p);
@@ -121,11 +124,11 @@ class SusdatSusdatMigrator extends Seeder
             unset($batch);
             $time_end_for = microtime(true);
             $execution_time = $time_end_for- $time_start_for;
-            echo " | time taken: ".$execution_time." sec".PHP_EOL;
+            echo " | time taken: ".$execution_time.' sec | ID range: ['.($i * $batchSize).', '.($i + 1) * $batchSize.']'.PHP_EOL;
         }
         $time_end = microtime(true);
         $execution_time = $time_end - $time_start;
-        echo 'Migrating Susdat took '.$execution_time.' sec'.PHP_EOL;
+        echo 'Migrating Susdat took '.$execution_time.' sec '.PHP_EOL;
     }
 
     protected function checkTimeStamp($id, $t, $now)
