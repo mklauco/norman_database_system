@@ -17,9 +17,9 @@ class SusdatSusdatMigratorParticularID extends Seeder
   public function run(): void
   {
     //
-    // $id = 67141;
+    $id = 67141;
     // $id = 102736;
-    $id = 158751003;
+    // $id = 158751003;
     $p = [];
     
     $p[] = [
