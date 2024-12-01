@@ -58,6 +58,7 @@ class DatabaseSeeder extends Seeder
             ListDataAccessibilitySeeder::class,
             ListDataSourceLaboratorySeeder::class,
             ListDataSourceOrganisationSeeder::class,
+            ListMatricesSeeder::class,
             EmpodatDataSourceSeeder::class,
             
             //ListTypeStationSeeder::class,
