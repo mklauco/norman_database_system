@@ -13,16 +13,19 @@ class EmpodatStationSeeder extends Seeder
 {
     
     /**
-     * Run the database seeds.
-     */
+    * Run the database seeds.
+    */
     public function run(): void
     {
         $target_table_name = 'empodat_stations';
+        DB::table($target_table_name)->truncate();
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/dct_analysis_stations.csv';
+        $path = base_path() . '/database/seeders/seeds/stations.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
         foreach($rows as $r) {
+            
+            // dd($r);
             $p[] = [
                 'name'                => $this->isEmptyThenNull($r['station_name']),
                 'country'             => $this->isEmptyThenNull($r['country']),
@@ -34,15 +37,15 @@ class EmpodatStationSeeder extends Seeder
                 'code_ec_wise'        => $this->isEmptyThenNull($r['code_ec_wise']),
                 'code_ec_other'       => $this->isEmptyThenNull($r['code_ec_other']),
                 'code_other'          => $this->isEmptyThenNull($r['code_other']),
-                'longitude'           => $this->isEmptyThenNull($r['longitude_decimal']),
-                'latitude'            => $this->isEmptyThenNull($r['latitude_decimal']),
+                'longitude'           => (float) rtrim($this->isEmptyThenNull($r['longitude_decimal']), ','),
+                'latitude'            => (float) rtrim($this->isEmptyThenNull($r['latitude_decimal']), ','),
                 'specific_locations'  => $this->isEmptyThenNull($r['specific_locations']),
                 'created_at'          => $now,
                 'updated_at'          => $now,
             ];
         }
-
-        $chunkSize = 1000;
+        
+        $chunkSize = 2000;
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;
@@ -50,10 +53,12 @@ class EmpodatStationSeeder extends Seeder
             echo ($k++)."/".$count."; \n";
             DB::table($target_table_name)->insert($c);
         }
-
+        
     }
-
+    
     protected function isEmptyThenNull($value) {
-        return empty($value) ? null : $value;
+        // return empty($value) ? '' : $value;
+        return $value;
     }
 }
+// php artisan db:seed --class=EmpodatStationSeeder

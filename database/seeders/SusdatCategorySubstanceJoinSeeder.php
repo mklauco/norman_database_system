@@ -80,4 +80,4 @@ class SusdatCategorySubstanceJoinSeeder extends Seeder
 
 }
 
-// php artisan db:seed --class=Database\Seeders\SusdatSusdatCategoryJoinSeeder
+// php artisan db:seed --class=Database\Seeders\SusdatCategorySubstanceJoinSeeder

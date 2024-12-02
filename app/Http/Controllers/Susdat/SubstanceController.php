@@ -242,6 +242,7 @@ class SubstanceController extends Controller
       foreach($sources as $s){
         $sourceList[$s->id] = $s->code. ' - ' . $s->name;
       }
+
       foreach($categories as $s){
         $categoriesList[$s->id] = $s->name;
       }

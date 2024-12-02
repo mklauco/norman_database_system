@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Empodat;
 
 use Illuminate\Http\Request;
 use App\Models\Susdat\Category;
+use App\Models\Empodat\EmpodatMain;
 use App\Http\Controllers\Controller;
 use App\Models\Empodat\SearchCountries;
 use App\Models\SLE\SuspectListExchangeSource;
@@ -95,6 +96,23 @@ class EmpodatController extends Controller
       'categories' => $categories,
       'selectList' => $selectList,
       'getEqualitySigns' => $this->getEqualitySigns(),
+    ]);
+  }
+
+  public function search(Request $request){
+    // $empodats = EmpodatMain::where('empodat_main.id', 150000006)->get();
+    $empodats = EmpodatMain::
+    leftjoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')->
+    leftjoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')->
+    leftjoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')->
+    // where('empodat_main.id', 150000006)->
+    select('empodat_main.*', 'susdat_substances.name as substance_name', 'list_matrices.name as matrix_name', 'empodat_stations.name AS station_name', 'empodat_stations.country AS country')->
+    paginate(200);
+    $empodatsCount = EmpodatMain::count();
+  
+    return view('empodat.index', [
+      'empodats' => $empodats,
+      'empodatsCount' => $empodatsCount,
     ]);
   }
 }

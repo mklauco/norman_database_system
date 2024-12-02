@@ -59,7 +59,7 @@ Route::prefix('susdat')->group(function () {
 
 Route::prefix('empodat')->group(function () {
     Route::get('codsearch/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
-    Route::get('codsearch/search/', [EmpodatController::class, 'filter'])->name('codsearch.search');
+    Route::get('codsearch/search/', [EmpodatController::class, 'search'])->name('codsearch.search');
     
     Route::resource('codhome', EmpodatHomeController::class)->only(['index']);
     Route::resource('codhome', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
