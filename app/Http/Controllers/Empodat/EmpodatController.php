@@ -144,14 +144,15 @@ class EmpodatController extends Controller
     // where('empodat_main.id', 150000006)->
     select('empodat_main.*', 'susdat_substances.name as substance_name', 'list_matrices.name as matrix_name', 'empodat_stations.name AS station_name', 'empodat_stations.country AS country');
     
-    
-    $empodats = $empodats->orderby('id', 'asc')->paginate(200)->withQueryString();
+    $empodatTotal = $empodats->count('empodat_main.id');
+    $empodats = $empodats->orderby('empodat_main.id', 'asc')->simplePaginate(200)->withQueryString();
     // dd($empodats);
     $empodatsCount = DatabaseEntity::where('code', 'empodat')->first()->number_of_records;
   
     return view('empodat.index', [
       'empodats' => $empodats,
       'empodatsCount' => $empodatsCount,
+      'empodatTotal' => $empodatTotal,
     ]);
   }
 }
