@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Susdat\Category;
 use App\Models\Empodat\EmpodatMain;
 use App\Http\Controllers\Controller;
+use App\Models\DatabaseEntity;
 use App\Models\Empodat\SearchMatrix;
 use App\Models\Empodat\SearchCountries;
 use App\Models\SLE\SuspectListExchangeSource;
@@ -146,7 +147,7 @@ class EmpodatController extends Controller
     
     $empodats = $empodats->orderby('id', 'asc')->paginate(200)->withQueryString();
     // dd($empodats);
-    $empodatsCount = EmpodatMain::count();
+    $empodatsCount = DatabaseEntity::where('code', 'empodat')->first()->number_of_records;
   
     return view('empodat.index', [
       'empodats' => $empodats,
