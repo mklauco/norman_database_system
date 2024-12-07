@@ -11,6 +11,7 @@
           {{-- main div --}}
           <div class="text-gray-600">
             <span>Number of matched records: </span><span class="font-bold">{{$empodatTotal ?? ''}}</span> of <span>{{$empodatsCount}}</span>.
+            {{-- {{ $empodats->count() }} --}}
             {{-- <span>Number of matched records: </span><span class="font-bold"></span> of <span>{{$empodatsCount}}</span>. --}}
           </div>
           
