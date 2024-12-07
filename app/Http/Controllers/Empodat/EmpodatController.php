@@ -144,7 +144,7 @@ class EmpodatController extends Controller
     select('empodat_main.*', 'susdat_substances.name as substance_name', 'list_matrices.name as matrix_name', 'empodat_stations.name AS station_name', 'empodat_stations.country AS country');
     
     
-    $empodats = $empodats->paginate(200)->withQueryString();
+    $empodats = $empodats->orderby('id', 'asc')->paginate(200)->withQueryString();
     // dd($empodats);
     $empodatsCount = EmpodatMain::count();
   
