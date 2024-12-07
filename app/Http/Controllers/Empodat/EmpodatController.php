@@ -76,14 +76,14 @@ class EmpodatController extends Controller
     foreach($countries as $s){
       $countryList[$s->country_id] = $s->country->name.' - '.$s->country->code;
     }
-
+    
     $matrices = SearchMatrix::with('matrix')->orderBy('matrix_id', 'asc')->get();
     $matrixList = [];
     foreach($matrices as $s){
       $matrixList[$s->matrix_id] = $s->matrix->name;
     }
-
-
+    
+    
     $sources = SuspectListExchangeSource::select('id', 'code', 'name')->get()->keyBy('id');
     $sourcesList = [];
     foreach($sources as $s){
@@ -95,7 +95,7 @@ class EmpodatController extends Controller
     foreach($categories as $s){
       $categoriesList[$s->id] = $s->name;
     }
-
+    
     $selectList = ['0' => 0, '1' => 1, '2' => 2];
     
     return view('empodat.filter', [
@@ -108,7 +108,7 @@ class EmpodatController extends Controller
       'getEqualitySigns' => $this->getEqualitySigns(),
     ]);
   }
-
+  
   public function search(Request $request){
     
     if(is_array($request->input('countrySearch'))){
@@ -116,43 +116,51 @@ class EmpodatController extends Controller
     } else{
       $countrySearch = json_decode($request->input('countrySearch'));
     }
-
+    
     if(is_array($request->input('matrixSearch'))){
       $matrixSearch = $request->input('matrixSearch');
     } else{
       $matrixSearch = json_decode($request->input('matrixSearch'));
     }
-
-
-    // dd($countrySearch);
-    // $empodats = EmpodatMain::where('empodat_main.id', 150000006)->get();
-    $empodats = EmpodatMain::
-    leftjoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')->
-    leftjoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')->
-    leftjoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id');
     
     
-    if(!empty($countrySearch)){
-      $empodats = $empodats->whereIn('empodat_stations.country_id', $countrySearch);
+    $empodats = EmpodatMain::query()
+    ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
+    ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
+    ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id');
+    
+    // Apply filters only when necessary
+    if (!empty($countrySearch)) {
+      $empodats->whereIn('empodat_stations.country_id', $countrySearch);
     }
-    // dd($matrixSearch);
-    if(!empty($matrixSearch)){
-      $empodats = $empodats->whereIn('empodat_main.matrix_id', $matrixSearch);
-    }
-
-    $empodats = $empodats->
-    // where('empodat_main.id', 150000006)->
-    select('empodat_main.*', 'susdat_substances.name as substance_name', 'list_matrices.name as matrix_name', 'empodat_stations.name AS station_name', 'empodat_stations.country AS country');
     
-    $empodatTotal = $empodats->count('empodat_main.id');
-    $empodats = $empodats->orderby('empodat_main.id', 'asc')->simplePaginate(200)->withQueryString();
-    // dd($empodats);
+    if (!empty($matrixSearch)) {
+      $empodats->whereIn('empodat_main.matrix_id', $matrixSearch);
+    }
+    
+    // Select only the columns you need
+    $empodats = $empodats->select(
+      'empodat_main.id', // Required for cursorPaginate
+      'empodat_main.*',
+      'susdat_substances.name as substance_name',
+      'list_matrices.name as matrix_name',
+      'empodat_stations.name as station_name',
+      'empodat_stations.country as country'
+    );
+    
+    // Add ordering and pagination
+    $empodats = $empodats->orderBy('empodat_main.id', 'asc')
+    ->simplePaginate(200)
+    ->withQueryString();
+    
+    // $empodatTotal = $empodats->count('empodat_main.id');
+    
     $empodatsCount = DatabaseEntity::where('code', 'empodat')->first()->number_of_records;
-  
+    
     return view('empodat.index', [
       'empodats' => $empodats,
       'empodatsCount' => $empodatsCount,
-      'empodatTotal' => $empodatTotal,
+      // 'empodatTotal' => $empodatTotal,
     ]);
   }
 }
