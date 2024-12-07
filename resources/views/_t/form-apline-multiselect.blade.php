@@ -90,7 +90,7 @@ class="flex items-center justify-between px-1 border border-2 rounded-md relativ
 <template x-if="expanded">
     <ul
     x-ref="listBox"
-    class="w-full list-none border border-2 border-t-0 rounded-md focus:outline-none overflow-y-auto outline-none focus:outline-none bg-blue-100 absolute left-0 bottom-100"
+    class="w-full list-none border border-2 border-t-0 rounded-md focus:outline-none overflow-y-auto outline-none focus:outline-none bg-blue-100 absolute left-0 bottom-100 z-10"
     tabindex="0"
     :style="listBoxStyle"
     >

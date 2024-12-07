@@ -13,6 +13,7 @@ use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
+use App\Http\Controllers\Empodat\UniqueSearchController;
 use App\Http\Controllers\Dashboard\DashboardMainController;
 
 Route::get('/', function () {
@@ -73,6 +74,13 @@ Route::prefix('empodat')->group(function () {
     Route::resource('codsearch', EmpodatController::class);
     
     Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
+
+    // generate unique search tables
+    Route::post('unique/search/country', [UniqueSearchController::class, 'countries'])->name('cod.unique.search.countries');
+    Route::post('unique/search/matrix', [UniqueSearchController::class, 'matrices'])->name('cod.unique.search.matrices');
+
+
+    Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
 }); 
 
 Route::prefix('ecotox')->middleware('auth')->group(function () {

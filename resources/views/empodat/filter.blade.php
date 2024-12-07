@@ -53,22 +53,22 @@
                         Ecosystem criteria:
                       </div>
                       @include('_t.form-apline-multiselect', [
-                      'tag' => 'ecosystemSearch', 'list' => $ecosystemSearch,
-                      'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                      'tag' => 'matrixSearch', 'list' => $matrixList,
+                      'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                       ])
                     </div>
                   </div>
-                  <div class="flex">
+                  {{-- <div class="flex">
                     <div class="w-full">
                       <div class="font-bold mb-2">
                         Sampling station:
                       </div>
                       @include('_t.form-apline-multiselect', [
-                      'tag' => 'ecosystemSearch', 'list' => $ecosystemSearch,
-                      'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                      'tag' => 'matrixSearchx', 'list' => $matrixList,
+                      'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                       ])
                     </div>
-                  </div>
+                  </div> --}}
                   
                 </div>
               </div>
@@ -90,7 +90,7 @@
                   <div class="w-full">
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'sourcesList', 'list' => $sourcesList,
-                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                 </div>
@@ -150,7 +150,7 @@
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'sourcesList', 'list' => $sourcesList,
-                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                   
@@ -159,8 +159,8 @@
                       Organisation:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'organisationList', 'list' => $ecosystemSearch,
-                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    'tag' => 'organisationList', 'list' => $matrixList,
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                 </div>
@@ -174,7 +174,7 @@
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'laboratoryList', 'list' => $sourcesList,
-                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                 </div>
@@ -203,7 +203,7 @@
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'analyticalMethodList', 'list' => $sourcesList,
-                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                 </div>
@@ -217,7 +217,7 @@
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'qualityInformationCategoryList', 'list' => $sourcesList,
-                    'active_ids' => isset($request->ecosystemSearch) ? $request->ecosystemSearch : [],
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                 </div>

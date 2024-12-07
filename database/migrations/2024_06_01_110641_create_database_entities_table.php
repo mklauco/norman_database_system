@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('image_path')->nullable()->default(null);
             $table->string('code')->nullable()->default(null);
             $table->string('dashboard_route_name')->nullable()->default(null);
+            $table->datetime('last_update')->nullable()->default(null);
+            $table->unsignedInteger('number_of_records')->nullable()->default(null);
             $table->timestamps();
         });
     }

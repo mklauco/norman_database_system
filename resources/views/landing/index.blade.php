@@ -35,7 +35,8 @@
                         @if($external == true)
                         <span>Link to external entity:</span><span class="text-gray-400 hover:text-lime-500"> {{$link}}</span>
                         @else
-                        <span>Last update on</span>
+                        <span>Number of records: </span><span class="text-gray-800 font-medium">{{ number_format($d->number_of_records ?? 0, 0, '.', ' ') }}</span>,
+                        <span>Last update on: </span><span class="text-gray-800 font-medium">{{ $d->last_update ?? 'n/a' }}</span>
                         @endif
                       </div>
                     </div>

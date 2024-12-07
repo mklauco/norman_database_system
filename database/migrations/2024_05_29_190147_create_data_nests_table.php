@@ -258,10 +258,13 @@ return new class extends Migration
             $table->bigInteger('dct_analysis_id')->nullable()->default(0);
             // Filter:  Country, Sampling site/station 
             $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_stations');
+            $table->index('station_id'); // Create index on station_id
             // Filter: Ecosystems/matrices
             $table->foreignId('matrix_id')->constrained()->nullable()->default(null)->references('id')->on('list_matrices');
             // Filter: Substance
+            $table->index('matrix_id'); // Create index on matrix_id
             $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->index('substance_id');
             // Filter: Year from, Year to
             $table->unsignedSmallInteger('sampling_date_year')->nullable()->default(null);
             // Filter: Concentration data
@@ -270,7 +273,9 @@ return new class extends Migration
             $table->float('concentration_value', 10)->nullable()->default(null);
             // $table->string('unit_extra')->nullable()->default(null); // ???????????
             $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_analytical_methods');
+            $table->index('method_id'); // Create index on method_id
             $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_data_sources');
+            $table->index('data_source_id'); // Create index on method_id
         });
 
         Schema::create('empodat_minor', function (Blueprint $table) {

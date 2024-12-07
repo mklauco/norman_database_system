@@ -12,9 +12,24 @@
 
             <div class="col-span-2 bg-white border-gray-100 shadow-lg rounded-md overflow-hidden p-4">
               <div class="font-bold">
-                Pending processes
+                Execute processes
               </div>
-              <div class="mt-2">
+              <div class="mt-2 flex gap-2">
+                <form action="{{route('cod.unique.search.countries')}}" method="POST">
+                  @csrf
+                  <button type="submit" class="btn-submit">Generate Unique Countries</button>
+                </form>
+
+                <form action="{{route('cod.unique.search.matrices')}}" method="POST">
+                  @csrf
+                  <button type="submit" class="btn-submit">Generate Unique Ecosystems</button>
+                </form>
+
+                <form action="{{route('update.dbentities.counts')}}" method="POST">
+                  @csrf
+                  <button type="submit" class="btn-submit">Update DB Entities</button>
+                </form>
+
               </div>
             </div>
 
