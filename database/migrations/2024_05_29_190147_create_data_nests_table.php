@@ -275,7 +275,7 @@ return new class extends Migration
             $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_analytical_methods');
             $table->index('method_id'); // Create index on method_id
             $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_data_sources');
-            $table->index('data_source_id'); // Create index on method_id
+            $table->index('data_source_id'); 
         });
 
         Schema::create('empodat_minor', function (Blueprint $table) {

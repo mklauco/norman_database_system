@@ -13,6 +13,7 @@
           <form action="{{ route('codsearch.filter', [
             'countrySearch'   => json_encode($countrySearch),
             'matrixSearch'    => json_encode($matrixSearch),
+            'sourceSearch'    => json_encode($sourceSearch),
             'year_from'       => $year_from,
             'year_to'         => $year_to,
           ]) }}" method="GET">
@@ -32,8 +33,8 @@
               <th>Substance</th>
               <th>Concentration</th>
               <th>Ecosystem/Matrix</th>
-              <th>Sampling year</th>
               <th>Country</th>
+              <th>Sampling year</th>
               <th>Sampling station</th>
             </tr>
           </thead>
