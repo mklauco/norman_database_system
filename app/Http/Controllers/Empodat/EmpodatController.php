@@ -69,7 +69,7 @@ class EmpodatController extends Controller
     //
   }
   
-  public function filter()
+  public function filter(Request $request)
   {
     $countries = SearchCountries::with('country')->orderBy('country_id', 'asc')->get();
     $countryList = [];
@@ -85,9 +85,9 @@ class EmpodatController extends Controller
     
     
     $sources = SuspectListExchangeSource::select('id', 'code', 'name')->get()->keyBy('id');
-    $sourcesList = [];
+    $sourceList = [];
     foreach($sources as $s){
-      $sourcesList[$s->id] = $s->code. ' - ' . $s->name;
+      $sourceList[$s->id] = $s->code. ' - ' . $s->name;
     }
     
     $categoriesList = [];
@@ -97,11 +97,13 @@ class EmpodatController extends Controller
     }
     
     $selectList = ['0' => 0, '1' => 1, '2' => 2];
+
     
     return view('empodat.filter', [
+      'request' => $request,
       'countryList' => $countryList,
       'matrixList' => $matrixList,
-      'sourcesList' => $sourcesList,
+      'sourceList' => $sourceList,
       'categoriesList' => $categoriesList,
       'categories' => $categories,
       'selectList' => $selectList,
@@ -122,6 +124,12 @@ class EmpodatController extends Controller
     } else{
       $matrixSearch = json_decode($request->input('matrixSearch'));
     }
+
+    if(is_array($request->input('sourceSearch'))){
+      $sourceSearch = $request->input('sourceSearch');
+    } else{
+      $sourceSearch = json_decode($request->input('sourceSearch'));
+    }
     
     
     $empodats = EmpodatMain::query()
@@ -131,11 +139,22 @@ class EmpodatController extends Controller
     
     // Apply filters only when necessary
     if (!empty($countrySearch)) {
-      $empodats->whereIn('empodat_stations.country_id', $countrySearch);
+      $empodats = $empodats->whereIn('empodat_stations.country_id', $countrySearch);
     }
     
     if (!empty($matrixSearch)) {
-      $empodats->whereIn('empodat_main.matrix_id', $matrixSearch);
+      $empodats = $empodats->whereIn('empodat_main.matrix_id', $matrixSearch);
+    }
+
+    if (!empty($sourceSearch)) {
+      $empodats = $empodats->whereIn('empodat_main.data_source_id', $sourceSearch);
+    }
+
+    if (!is_null($request->input('year_from'))) {
+      $empodats = $empodats->where('empodat_main.sampling_date_year', '>=', $request->input('year_from'));
+    }
+    if (!is_null($request->input('year_to'))) {
+      $empodats = $empodats->where('empodat_main.sampling_date_year', '<=', $request->input('year_to'));
     }
     
     // Select only the columns you need
@@ -156,10 +175,15 @@ class EmpodatController extends Controller
     // $empodatTotal = $empodats->count('empodat_main.id');
     
     $empodatsCount = DatabaseEntity::where('code', 'empodat')->first()->number_of_records;
-    
+    // dd($countrySearch);
     return view('empodat.index', [
       'empodats' => $empodats,
       'empodatsCount' => $empodatsCount,
+      'countrySearch' => $countrySearch,
+      'matrixSearch' => $matrixSearch,
+      'sourceSearch' => $sourceSearch,
+      'year_from' => $request->input('year_from'),
+      'year_to' => $request->input('year_to'),
       // 'empodatTotal' => $empodatTotal,
     ]);
   }
