@@ -1,4 +1,10 @@
-{{-- {{var_dump($active_ids);}} --}}
+
+@if (is_string($active_ids))
+    @php
+        $active_ids = json_decode($active_ids, true);
+    @endphp
+@endif
+
 <div class="w-full max-w-lg">
     <!-- Start Component -->
     <div

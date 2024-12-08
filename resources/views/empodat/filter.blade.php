@@ -36,7 +36,6 @@
               <div id="searchGeography">
                 <div class="bg-gray-100 p-2">
                   
-                  
                   <div class="flex">
                     <div class="w-full">
                       <div class="font-bold mb-2">
@@ -89,14 +88,14 @@
                   </div>
                   <div class="w-full">
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourcesList', 'list' => $sourcesList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    'tag' => 'sourceSearch', 'list' => $sourceList,
+                    'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
                     ])
                   </div>
                 </div>
               </div>
               
-              <div id="searchCategory">
+              <div id="searchCategory" class="pointer-events-none opacity-50">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Search Category:
@@ -125,11 +124,11 @@
                   </div>
                   <div class="w-full">
                     <div class="grid grid-cols-2 gap-1">
-                      <input type="number" name="year_from" value="" class="form-text">
-                      <input type="number" name="year_to" value="" class="form-text">
+                      <input type="number" name="year_from" value="{{ isset($request->year_from) ? $request->year_from : null }}" class="form-text" placeholder="year from">
+                      <input type="number" name="year_to" value="{{ isset($request->year_to) ? $request->year_to : null }}" class="form-text" placeholder="year to">
                     </div>
                   </div>
-                  <div class="flex">
+                  <div class="flex pointer-events-none opacity-50">
                     <div class="w-full">
                       <span>Concentration data:</span>
                       @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
@@ -142,15 +141,15 @@
                 </div>
               </div>
               
-              <div id="searchSource">
+              <div id="searchSource" class="pointer-events-none opacity-50">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Type of data source:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourcesList', 'list' => $sourcesList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    'tag' => 'sourceSearchx', 'list' => $sourceList,
+                    'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
                     ])
                   </div>
                   
@@ -166,21 +165,21 @@
                 </div>
               </div>
               
-              <div id="searchLaboratory">
+              <div id="searchLaboratory" class="pointer-events-none opacity-50">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Laboratory:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'laboratoryList', 'list' => $sourcesList,
+                    'tag' => 'laboratoryList', 'list' => $sourceList,
                     'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                 </div>
               </div>
               
-              <div id="searchQaQc">
+              <div id="searchQaQc" class="pointer-events-none opacity-50">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg]</span>
@@ -195,28 +194,28 @@
                 </div>
               </div>
               
-              <div id="searchAnalyticaMethod">
+              <div id="searchAnalyticaMethod" class="pointer-events-none opacity-50">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Analytical method:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'analyticalMethodList', 'list' => $sourcesList,
+                    'tag' => 'analyticalMethodList', 'list' => $sourceList,
                     'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
                 </div>
               </div>
               
-              <div id="searchQualityInformationCategory">
+              <div id="searchQualityInformationCategory" class="pointer-events-none opacity-50">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Quality information category:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'qualityInformationCategoryList', 'list' => $sourcesList,
+                    'tag' => 'qualityInformationCategoryList', 'list' => $sourceList,
                     'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
                     ])
                   </div>
