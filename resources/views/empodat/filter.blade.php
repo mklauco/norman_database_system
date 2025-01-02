@@ -9,13 +9,13 @@
         
         <div class="p-6 text-gray-900">
           
-          
+          {{ var_dump($request) }}
           
           <!-- Main Search form -->
           <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
             <div class="grid grid-cols-1 gap-5">
               
-              <div id="searchOptions">
+              <div id="searchOptions" class="pointer-events-none opacity-50">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Search options:
@@ -28,6 +28,24 @@
                     <label class="inline-flex items-center">
                       <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option2">
                       <span class="ml-2"><strong>OR</strong> conditions to all criteria</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="displayOptions">
+                <div class="bg-gray-100 p-2">
+                  <div class="font-bold mb-2">
+                    Display options:
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-indigo-600" name="displayOption" value="1" checked>
+                      <span class="ml-2">Fast data preview</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input type="radio" class="form-radio text-indigo-600" name="displayOption" value="0">
+                      <span class="ml-2">Detailed output</span>
                     </label>
                   </div>
                 </div>
@@ -77,18 +95,20 @@
                   <div class="font-bold mb-2">
                     Substance criteria:
                   </div>
-                  
+                  <div>
+                    @livewire('empodat.substance-search')
+                  </div>
                 </div>
               </div>
               
-              <div id="searchSource">
+              <div id="searchSource" class="pointer-events-none opacity-50">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Source criteria:
                   </div>
                   <div class="w-full">
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourceSearch', 'list' => $sourceList,
+                    'tag' => 'sourceSearchx', 'list' => $sourceList,
                     'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
                     ])
                   </div>
