@@ -9,7 +9,6 @@
         
         <div class="p-6 text-gray-900">
           
-          {{ var_dump($request) }}
           
           <!-- Main Search form -->
           <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
