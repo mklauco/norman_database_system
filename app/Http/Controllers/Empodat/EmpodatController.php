@@ -73,7 +73,7 @@ class EmpodatController extends Controller
   {
     
     $countries = SearchCountries::with('country')->orderBy('country_id', 'asc')->get();
-    dd('test');
+    
     $countryList = [];
     foreach($countries as $s){
       $countryList[$s->country_id] = $s->country->name.' - '.$s->country->code;
