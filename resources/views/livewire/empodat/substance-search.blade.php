@@ -3,7 +3,10 @@
         @foreach ($selectedSubstances as $substance)
         <div  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
             <input type="hidden" name="substances[]" value="{{$substance['id']}}">
-            {{ $substance['name'] }} <span class="text-sm">({{ $substance['cas_number'] }} | {{ $substance['stdinchikey'] }})</span>
+            <span class="text-sm">{{ $substance['name'] }} ({{ $substance['cas_number'] }})</span>
+            <div class="ml-2">
+                <button type="button" wire:click="removeSubstance({{$substance['id']}})" class="text-red-500">x</button>
+            </div>
         </div>
         @endforeach
     </div>
@@ -42,7 +45,14 @@
         @if($resultsAvailable == true)
         @if($results->count() > 0)
         <div class="flex justify-end m-2">
-            <button type="button" wire:click="applySubstanceFilter" class="btn-submit"> Apply Substance Filter</button>
+            <button type="button" wire:click="applySubstanceFilter" class="btn-submit"> Add Selected Substances to Search</button>
+            <button 
+            type="button" 
+            wire:click="clearFilters" 
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+        >
+            Clear List
+        </button>
         </div>
         @else
         <div class="flex justify-end m-2">

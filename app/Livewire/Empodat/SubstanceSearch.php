@@ -11,6 +11,16 @@ class SubstanceSearch extends Component
     public $searchType = 'name';
     public $selectedSubstanceIds = []; // Track selected substance IDs
     public $selectedSubstances = []; // Store selected substances
+    public $existingSubstances = []; // Provided substances for initialization
+    
+    public function mount($existingSubstances = [])
+    {
+        // Set the initial substances based on the provided data
+        if(!empty($existingSubstances)) {
+            $this->selectedSubstanceIds = $existingSubstances;
+            $this->applySubstanceFilter();
+        }
+    }
     
     public function render()
     {
@@ -56,4 +66,23 @@ class SubstanceSearch extends Component
         })
         ->toArray();
     }
+    
+    public function removeSubstance($substanceId)
+    {
+        // Remove the substance from the selected list
+        
+        $this->selectedSubstanceIds = array_filter($this->selectedSubstanceIds, function ($id) use ($substanceId) {
+            return (string) $id !== (string) $substanceId;
+        });
+        
+        // Reapply the filter to update selectedSubstances
+        $this->applySubstanceFilter();
+    }
+    
+    public function clearFilters()
+    {
+        // Reset only the list of selected substances
+        $this->search = '';
+    }
+    
 }

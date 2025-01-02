@@ -9,7 +9,6 @@
         
         <div class="p-6 text-gray-900">
           
-          
           <!-- Main Search form -->
           <div class="grid grid-cols-3 gap-5">
             

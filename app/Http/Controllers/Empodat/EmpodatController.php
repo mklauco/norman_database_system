@@ -71,7 +71,7 @@ class EmpodatController extends Controller
   
   public function filter(Request $request)
   {
-    
+    // dd($request->all());
     $countries = SearchCountries::with('country')->orderBy('country_id', 'asc')->get();
     
     $countryList = [];
@@ -199,6 +199,7 @@ class EmpodatController extends Controller
       'year_from' => $request->input('year_from'),
       'year_to' => $request->input('year_to'),
       'displayOption' => $request->input('displayOption'),
+      'substances' => $request->input('substances'),
       // 'empodatTotal' => $empodatTotal,
     ]);
   }
