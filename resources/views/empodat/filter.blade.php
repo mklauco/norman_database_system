@@ -8,8 +8,7 @@
       <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
         
         <div class="p-6 text-gray-900">
-          
-          
+        {{ dump($request) }}
           <!-- Main Search form -->
           <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
             <div class="grid grid-cols-1 gap-5">
@@ -95,7 +94,7 @@
                     Substance criteria:
                   </div>
                   <div>
-                    @livewire('empodat.substance-search')
+                    @livewire('empodat.substance-search', ['existingSubstances' => $request->substances])
                   </div>
                 </div>
               </div>
@@ -145,16 +144,6 @@
                     <div class="grid grid-cols-2 gap-1">
                       <input type="number" name="year_from" value="{{ isset($request->year_from) ? $request->year_from : null }}" class="form-text" placeholder="year from">
                       <input type="number" name="year_to" value="{{ isset($request->year_to) ? $request->year_to : null }}" class="form-text" placeholder="year to">
-                    </div>
-                  </div>
-                  <div class="flex pointer-events-none opacity-50">
-                    <div class="w-full">
-                      <span>Concentration data:</span>
-                      @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
-                    </div>
-                    <div class="w-full">
-                      <span>Concentration equal or higher than:</span>
-                      @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
                     </div>
                   </div>
                 </div>

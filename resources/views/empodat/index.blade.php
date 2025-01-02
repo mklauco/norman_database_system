@@ -10,16 +10,17 @@
         <div class="p-6 text-gray-900">
           {{-- main div --}}
           
-          <form action="{{ route('codsearch.filter', [
-            'countrySearch'   => json_encode($countrySearch),
-            'matrixSearch'    => json_encode($matrixSearch),
-            'sourceSearch'    => json_encode($sourceSearch),
+          <a href="{{ route('codsearch.filter', [
+            'countrySearch'   => $countrySearch,
+            'matrixSearch'    => $matrixSearch,
+            'sourceSearch'    => $sourceSearch,
             'year_from'       => $year_from ?? '',
             'year_to'         => $year_to ?? '',
             'displayOption'         => $displayOption,
-          ]) }}" method="GET">
+            'substances'     => $substances,
+          ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
-        </form>
+        </a>
         
         <div class="text-gray-600">
           @if($displayOption == 1)
