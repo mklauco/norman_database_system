@@ -71,7 +71,9 @@ class EmpodatController extends Controller
   
   public function filter(Request $request)
   {
+    
     $countries = SearchCountries::with('country')->orderBy('country_id', 'asc')->get();
+    dd('test');
     $countryList = [];
     foreach($countries as $s){
       $countryList[$s->country_id] = $s->country->name.' - '.$s->country->code;
@@ -83,7 +85,7 @@ class EmpodatController extends Controller
       $matrixList[$s->matrix_id] = $s->matrix->name;
     }
     
-    
+
     $sources = SuspectListExchangeSource::select('id', 'code', 'name')->get()->keyBy('id');
     $sourceList = [];
     foreach($sources as $s){
@@ -112,7 +114,6 @@ class EmpodatController extends Controller
   }
   
   public function search(Request $request){
-    
     if(is_array($request->input('countrySearch'))){
       $countrySearch = $request->input('countrySearch');
     } else{
@@ -150,6 +151,10 @@ class EmpodatController extends Controller
       $empodats = $empodats->whereIn('empodat_main.data_source_id', $sourceSearch);
     }
 
+    if (!empty($request->input('substances'))) {
+      $empodats = $empodats->whereIn('empodat_main.substance_id', $request->input('substances'));
+    }
+
     if (!is_null($request->input('year_from'))) {
       $empodats = $empodats->where('empodat_main.sampling_date_year', '>=', $request->input('year_from'));
     }
@@ -167,10 +172,19 @@ class EmpodatController extends Controller
       'empodat_stations.country as country'
     );
     
-    // Add ordering and pagination
-    $empodats = $empodats->orderBy('empodat_main.id', 'asc')
-    ->simplePaginate(200)
-    ->withQueryString();
+    
+    if ($request->displayOption == 1) {
+      // use simple pagination
+      $empodats = $empodats->orderBy('empodat_main.id', 'asc')
+      ->simplePaginate(200)
+      ->withQueryString();
+    } else {
+      // use cursor pagination
+      $empodats = $empodats->orderBy('empodat_main.id', 'asc')
+      ->paginate(200)
+      ->withQueryString();
+    }
+
     
     // $empodatTotal = $empodats->count('empodat_main.id');
     
@@ -184,6 +198,7 @@ class EmpodatController extends Controller
       'sourceSearch' => $sourceSearch,
       'year_from' => $request->input('year_from'),
       'year_to' => $request->input('year_to'),
+      'displayOption' => $request->input('displayOption'),
       // 'empodatTotal' => $empodatTotal,
     ]);
   }
