@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Empodat;
 
 use Illuminate\Http\Request;
+use App\Models\DatabaseEntity;
 use App\Models\Susdat\Category;
+use App\Models\Backend\QueryLog;
 use App\Models\Empodat\EmpodatMain;
 use App\Http\Controllers\Controller;
-use App\Models\DatabaseEntity;
 use App\Models\Empodat\SearchMatrix;
 use App\Models\Empodat\SearchCountries;
 use App\Models\SLE\SuspectListExchangeSource;
@@ -192,8 +193,15 @@ class EmpodatController extends Controller
       'empodat_stations.country as country',
       'susdat_substances.id AS substance_id',
     );
-    
-    
+
+    $now = now();
+    QueryLog::insert([
+      'content' => json_encode($request->all()),
+      'query' => $empodats->toSql(),
+      'user_id' => auth()->check() ? auth()->id() : null,
+      'created_at' => $now,
+      'updated_at' => $now,
+    ]);
     if ($request->displayOption == 1) {
       // use simple pagination
       $empodats = $empodats->orderBy('empodat_main.id', 'asc')
