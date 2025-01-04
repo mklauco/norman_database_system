@@ -113,7 +113,7 @@
                 </div>
               </div>
               
-              <div id="searchCategory" class="pointer-events-none opacity-50">
+              <div id="searchCategory" class="">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Search Category:
@@ -123,11 +123,13 @@
                     @foreach ($categories as $category)
                     <div class="block p-1">
                       <span>
-                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}">
+                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}"
+                        @if (is_array(request('categoriesSearch')) && in_array($category->id, request('categoriesSearch'))) checked @endif
+                        >
                       </span>
                       <span class="ml-1">
-                        {{-- ensure non-breakable space before parentheses --}}
-                        {!! preg_replace('/\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
+                        {{-- remove space before parentheses, and ensure non-breakable space before parentheses --}}
+                        {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
                       </span>
                     </div>
                     @endforeach
@@ -234,6 +236,7 @@
               
               <!-- Main Search form -->
               <div class="flex justify-end m-2">
+                <a href="{{route('codsearch.filter')}}" class="btn-clear mx-2"> Reset </a>
                 <button type="submit" class="btn-submit"> Search
                 </button>
               </div>

@@ -18,6 +18,7 @@
             'year_to'         => $year_to ?? '',
             'displayOption'         => $displayOption,
             'substances'     => $substances,
+            'categoriesSearch'     => $categoriesSearch,
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
@@ -51,6 +52,9 @@
               </td>
               <td class="p-1 text-center">
                 {{ $e->substance_name }}
+                @role('super_admin')
+                <span class="text-xss text-gray-500"> ({{ $e->substance_id }})</span>
+                @endrole
               </td>
               <td class="p-1 text-center">
                 {{ $e->concentration }}

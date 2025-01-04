@@ -27,7 +27,7 @@
                         <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}">
                       </span>
                       <span class="ml-1">
-                        {{$category->name}} 
+                        {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
                       </span>
                     </div>
                     @endforeach
