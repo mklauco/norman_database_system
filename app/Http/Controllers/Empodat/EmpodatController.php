@@ -7,6 +7,7 @@ use App\Models\DatabaseEntity;
 use App\Models\Susdat\Category;
 use App\Models\Backend\QueryLog;
 use App\Models\Empodat\EmpodatMain;
+use App\Models\List\TypeDataSource;
 use App\Http\Controllers\Controller;
 use App\Models\Empodat\SearchMatrix;
 use App\Models\Empodat\SearchCountries;
@@ -86,7 +87,7 @@ class EmpodatController extends Controller
       $matrixList[$s->matrix_id] = $s->matrix->name;
     }
     
-
+    
     $sources = SuspectListExchangeSource::select('id', 'code', 'name')->get()->keyBy('id');
     $sourceList = [];
     foreach($sources as $s){
@@ -99,8 +100,14 @@ class EmpodatController extends Controller
       $categoriesList[$s->id] = $s->name;
     }
     
+    $typeDataSourcesList = [];
+    $typeSources = TypeDataSource::all();
+    foreach($typeSources as $s){
+      $typeDataSourcesList[$s->id] = $s->name;
+    }
+    
     $selectList = ['0' => 0, '1' => 1, '2' => 2];
-
+    
     
     return view('empodat.filter', [
       'request' => $request,
@@ -110,6 +117,7 @@ class EmpodatController extends Controller
       'categoriesList' => $categoriesList,
       'categories' => $categories,
       'selectList' => $selectList,
+      'typeDataSourcesList' => $typeDataSourcesList,
       'getEqualitySigns' => $this->getEqualitySigns(),
     ]);
   }
@@ -126,20 +134,26 @@ class EmpodatController extends Controller
     } else{
       $matrixSearch = json_decode($request->input('matrixSearch'));
     }
-
+    
     if(is_array($request->input('sourceSearch'))){
       $sourceSearch = $request->input('sourceSearch');
     } else{
       $sourceSearch = json_decode($request->input('sourceSearch'));
     }
-    
+
     if( is_null($request->input('categoriesSearch')) ){
       $categoriesSearch = [];
     } else {
       $categoriesSearch = $request->input('categoriesSearch');
     }
-
-
+    
+    if( is_array($request->input('typeDataSourcesSearch')) ){
+      $typeDataSourcesSearch = [];
+    } else {
+      $typeDataSourcesSearch = json_decode($request->input('typeDataSourcesSearch'));
+    }
+    
+    
     $empodats = EmpodatMain::query()
     ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
@@ -153,29 +167,32 @@ class EmpodatController extends Controller
     if (!empty($matrixSearch)) {
       $empodats = $empodats->whereIn('empodat_main.matrix_id', $matrixSearch);
     }
-
-    if (!empty($sourceSearch)) {
-      $empodats = $empodats->whereIn('empodat_main.data_source_id', $sourceSearch);
-    }
-
+    
     if (!empty($request->input('substances'))) {
       $empodats = $empodats->whereIn('empodat_main.substance_id', $request->input('substances'));
     }
-
+    
     //source
-
+    
+    if (!empty($typeDataSourcesSearch)) {
+      $empodats = $empodats->join('empodat_data_sources', 'empodat_data_sources.id', '=', 'empodat_main.data_source_id');
+      $empodats = $empodats->whereIn('empodat_data_sources.type_data_source_id', $typeDataSourcesSearch);
+    }
+    
     //substance category
-
+    
     if (!empty($categoriesSearch)) {
       $empodats = $empodats->join('susdat_category_substance', 'susdat_category_substance.substance_id', '=', 'empodat_main.substance_id');
       $empodats = $empodats->whereIn('susdat_category_substance.category_id', $categoriesSearch);
     }
-
+    
     if (!empty($sourceSearch)) {
+      
       $empodats = $empodats->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'empodat_main.substance_id');
       $empodats = $empodats->whereIn('susdat_source_substance.source_id', $sourceSearch);
+      // dd($empodats->toSql());
     }
-
+    
     if (!is_null($request->input('year_from'))) {
       $empodats = $empodats->where('empodat_main.sampling_date_year', '>=', $request->input('year_from'));
     }
@@ -193,11 +210,13 @@ class EmpodatController extends Controller
       'empodat_stations.country as country',
       'susdat_substances.id AS substance_id',
     );
-
+    
     $now = now();
+    $bindings = $empodats->getBindings();
+    $sql = vsprintf(str_replace('?', "'%s'", $empodats->toSql()), $bindings);
     QueryLog::insert([
-      'content' => json_encode($request->all()),
-      'query' => $empodats->toSql(),
+      'content' => json_encode(['request' => $request->all(), 'bindings' => $bindings]),
+      'query' => $sql,
       'user_id' => auth()->check() ? auth()->id() : null,
       'created_at' => $now,
       'updated_at' => $now,
@@ -213,7 +232,7 @@ class EmpodatController extends Controller
       ->paginate(200)
       ->withQueryString();
     }
-
+    
     
     // $empodatTotal = $empodats->count('empodat_main.id');
     // dd($categoriesSearch);
@@ -230,6 +249,8 @@ class EmpodatController extends Controller
       'displayOption' => $request->input('displayOption'),
       'substances' => $request->input('substances'),
       'categoriesSearch' => $request->input('categoriesSearch'),
+      'typeDataSourcesSearch' => $typeDataSourcesSearch,
+      'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id,
       // 'empodatTotal' => $empodatTotal,
     ]);
   }

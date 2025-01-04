@@ -11,24 +11,27 @@
           {{-- main div --}}
           
           <a href="{{ route('codsearch.filter', [
-            'countrySearch'   => $countrySearch,
-            'matrixSearch'    => $matrixSearch,
-            'sourceSearch'    => $sourceSearch,
-            'year_from'       => $year_from ?? '',
-            'year_to'         => $year_to ?? '',
-            'displayOption'         => $displayOption,
-            'substances'     => $substances,
-            'categoriesSearch'     => $categoriesSearch,
+            'countrySearch'           => $countrySearch,
+            'matrixSearch'            => $matrixSearch,
+            'sourceSearch'            => $sourceSearch,
+            'year_from'               => $year_from ?? '',
+            'year_to'                 => $year_to ?? '',
+            'displayOption'           => $displayOption,
+            'substances'              => $substances,
+            'categoriesSearch'        => $categoriesSearch,
+            'typeDataSourcesSearch'   => $typeDataSourcesSearch,
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
         
-        <div class="text-gray-600">
+        <div class="text-gray-600 flex">
           @if($displayOption == 1)
           {{-- use simple output --}}
+          <div class="flex">Number of matched records:&nbsp;@livewire('empodat.query-counter', ['queryId' => $query_log_id]) &nbsp;of&nbsp;<span> {{number_format($empodatsCount, 0, " ", " ") }}</span> </div>.
+          {{-- <livewire:empodat.query-counter :queryId="$query_log_id" /> --}}
           @else
           {{-- use advanced output --}}
-          <span>Number of matched records: </span><span class="font-bold">{{$empodats->total() ?? ''}}</span> of <span>{{$empodatsCount}}</span>.
+          <span>Number of matched records: </span><span class="font-bold">{{$empodats->total() ?? ''}}</span> of <span>{{number_format($empodatsCount, 0, " ", " ") }}</span>.
           @endif
         </div>
         
