@@ -7,7 +7,7 @@
     <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-lg rounded-0">
         
-        
+        {!! dump($request) !!}
         <!-- Main Search form -->
         <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
           
@@ -168,19 +168,23 @@
                 </div>
               </div>
               
-              <div id="searchSource" class="pointer-events-none opacity-50">
+              <div>
+                SEARCH based on: list_concentration_indicators
+              </div>
+
+              <div id="typeDataSourcesSearch" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Type of data source:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourceSearchx', 'list' => $sourceList,
-                    'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
+                    'tag' => 'typeDataSourcesSearch', 'list' => $typeDataSourcesList,
+                    'active_ids' => isset($request->typeDataSourcesSearch) ? $request->typeDataSourcesSearch : [],
                     ])
                   </div>
                   
-                  <div class="w-full">
+                  <div class="w-full pointer-events-none opacity-50">
                     <div class="font-bold mb-2">
                       Organisation:
                     </div>
@@ -206,26 +210,31 @@
                 </div>
               </div>
               
-              <div id="searchQaQc" class="pointer-events-none opacity-50">
+              {{-- <div id="searchQaQc" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
-                    <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg]</span>
+                    <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 2</span>
+                    0. JOIN empodat_main.method_id == empodat_analytical_methods.id
+                    1. empodat_analytical_methods.lod > ?
                     @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
                     @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
                   </div>
                   <div class="w-full">
-                    <span>Limit of Quantification (LoQ) [µg/m3, µg/l or µg/kg]</span>
+                    <span>Limit of Quantification (LoQ) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 3</span>
+                    0. JOIN empodat_main.method_id == empodat_analytical_methods.id
+                    1. empodat_analytical_methods.loq > ?
                     @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
                     @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
                   </div>
                 </div>
-              </div>
+              </div> --}}
               
               <div id="searchAnalyticaMethod" class="pointer-events-none opacity-50">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Analytical method:
+                      TABLE: list_analytical_methods
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'analyticalMethodList', 'list' => $sourceList,
@@ -240,6 +249,7 @@
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Quality information category:
+                      TABLE: list_quality_empodat_analytical_methods
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'qualityInformationCategoryList', 'list' => $sourceList,
