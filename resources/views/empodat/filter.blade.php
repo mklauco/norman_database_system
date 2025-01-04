@@ -5,30 +5,35 @@
   
   <div class="py-4">
     <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-lg rounded-0">
         
-        <div class="p-6 text-gray-900">
-        {{ dump($request) }}
-          <!-- Main Search form -->
-          <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
-            <div class="grid grid-cols-1 gap-5">
-              
-              <div id="searchOptions" class="pointer-events-none opacity-50">
-                <div class="bg-gray-100 p-2">
-                  <div class="font-bold mb-2">
-                    Search options:
-                  </div>
-                  <div class="flex items-center space-x-4">
-                    <label class="inline-flex items-center">
-                      <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option1">
-                      <span class="ml-2"><strong>AND</strong> condition to all criteria</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                      <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option2">
-                      <span class="ml-2"><strong>OR</strong> conditions to all criteria</span>
-                    </label>
+        
+        <!-- Main Search form -->
+        <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
+          
+          <div class="p-4 text-gray-900 grid grid-cols-1 gap-4">
+            <!-- Main Search form -->
+            <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
+              <div class="grid grid-cols-1 gap-5">
+                
+                <div id="searchOptions" class="pointer-events-none opacity-50">
+                  <div class="bg-gray-100 p-2">
+                    <div class="font-bold mb-2">
+                      Search options:
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option1">
+                        <span class="ml-2"><strong>AND</strong> condition to all criteria</span>
+                      </label>
+                      <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option2">
+                        <span class="ml-2"><strong>OR</strong> conditions to all criteria</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
+                
               </div>
               
               <div id="displayOptions">
@@ -38,12 +43,24 @@
                   </div>
                   <div class="flex items-center space-x-4">
                     <label class="inline-flex items-center">
-                        <input type="radio" class="form-radio text-indigo-600" name="displayOption" value="1" checked>
+                      <input 
+                      type="radio" 
+                      class="form-radio text-indigo-600" 
+                      name="displayOption" 
+                      value="1" 
+                      @if (request('displayOption', '1') == 1) checked @endif
+                      >
                       <span class="ml-2">Fast data preview</span>
                     </label>
                     <label class="inline-flex items-center">
-                      <input type="radio" class="form-radio text-indigo-600" name="displayOption" value="0">
-                      <span class="ml-2">Detailed output</span>
+                      <input 
+                      type="radio" 
+                      class="form-radio text-indigo-600" 
+                      name="displayOption" 
+                      value="0" 
+                      @if (request('displayOption', '1') === '0') checked @endif
+                      >
+                      <span class="ml-2">Data output with page links (might be slow)</span>
                     </label>
                   </div>
                 </div>
@@ -240,10 +257,11 @@
                 <button type="submit" class="btn-submit"> Search
                 </button>
               </div>
-
+              
             </div>    
-          </form>    
-        </div>
+          </div>
+
+        </form>  
       </div>
     </div>
   </div>
