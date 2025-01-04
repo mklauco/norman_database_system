@@ -7,10 +7,16 @@ use App\Models\DatabaseEntity;
 use App\Models\Susdat\Category;
 use App\Models\Backend\QueryLog;
 use App\Models\Empodat\EmpodatMain;
+use App\Models\List\TypeDataSource;
 use App\Http\Controllers\Controller;
 use App\Models\Empodat\SearchMatrix;
+use App\Models\List\AnalyticalMethods;
 use App\Models\Empodat\SearchCountries;
+use App\Models\List\DataSourceLaboratory;
+use App\Models\List\ConcentrationIndicator;
+use App\Models\List\DataSourceOrganisation;
 use App\Models\SLE\SuspectListExchangeSource;
+use App\Models\List\QualityEmpodatAnalyticalMethods;
 
 class EmpodatController extends Controller
 {
@@ -86,7 +92,6 @@ class EmpodatController extends Controller
       $matrixList[$s->matrix_id] = $s->matrix->name;
     }
     
-
     $sources = SuspectListExchangeSource::select('id', 'code', 'name')->get()->keyBy('id');
     $sourceList = [];
     foreach($sources as $s){
@@ -99,8 +104,46 @@ class EmpodatController extends Controller
       $categoriesList[$s->id] = $s->name;
     }
     
+    $typeDataSourcesList = [];
+    $typeSources = TypeDataSource::all();
+    foreach($typeSources as $s){
+      $typeDataSourcesList[$s->id] = $s->name;
+    }
+    
+    $concentrationIndicatorList = [];
+    $concentrationIndicator = ConcentrationIndicator::all();
+    foreach($concentrationIndicator as $s){
+      $concentrationIndicatorList[$s->id] = $s->name;
+    }
+    
+    $analyticalMethodsList = [];
+    $analyticalMethods = AnalyticalMethods::all();
+    foreach($analyticalMethods as $s){
+      $analyticalMethodsList[$s->id] = $s->name;
+    }
+    
+    $qualityAnalyticalMethodsList = [];
+    $qualityAnalyticalMethods = QualityEmpodatAnalyticalMethods::all();
+    foreach ($qualityAnalyticalMethods as $method) {
+      $qualityAnalyticalMethodsList[$method->id] = $method->name;
+    }
+    
+    
+    $dataSourceLaboratoryList = [];
+    $dataSourceLaboratories = DataSourceLaboratory::all();
+    foreach ($dataSourceLaboratories as $laboratory) {
+      $dataSourceLaboratoryList[$laboratory->id] = $laboratory->name;
+    }
+    
+    $dataSourceOrganisationList = [];
+    $dataSourceOrganisations = DataSourceOrganisation::all();
+    foreach ($dataSourceOrganisations as $organisation) {
+      $dataSourceOrganisationList[$organisation->id] = $organisation->name;
+    }
+    
+    
     $selectList = ['0' => 0, '1' => 1, '2' => 2];
-
+    
     
     return view('empodat.filter', [
       'request' => $request,
@@ -110,6 +153,12 @@ class EmpodatController extends Controller
       'categoriesList' => $categoriesList,
       'categories' => $categories,
       'selectList' => $selectList,
+      'analyticalMethodsList' => $analyticalMethodsList,
+      'concentrationIndicatorList' => $concentrationIndicatorList,
+      'dataSourceLaboratoryList' => $dataSourceLaboratoryList,
+      'typeDataSourcesList' => $typeDataSourcesList,
+      'qualityAnalyticalMethodsList' => $qualityAnalyticalMethodsList,
+      'dataSourceOrganisationList' => $dataSourceOrganisationList,
       'getEqualitySigns' => $this->getEqualitySigns(),
     ]);
   }
@@ -126,21 +175,60 @@ class EmpodatController extends Controller
     } else{
       $matrixSearch = json_decode($request->input('matrixSearch'));
     }
-
+    
     if(is_array($request->input('sourceSearch'))){
       $sourceSearch = $request->input('sourceSearch');
     } else{
       $sourceSearch = json_decode($request->input('sourceSearch'));
     }
     
-    if( is_null($request->input('categoriesSearch')) ){
-      $categoriesSearch = [];
+    if( is_null($request->input('analyticalMethodSearch')) ){
+      $analyticalMethodSearch = [];
     } else {
-      $categoriesSearch = $request->input('categoriesSearch');
+      $analyticalMethodSearch = json_decode($request->input('analyticalMethodSearch'));
     }
-
-
-    $empodats = EmpodatMain::query()
+    
+    if(is_array($request->input('sourceSearch'))){
+      $sourceSearch = $request->input('sourceSearch');
+    } else{
+      $sourceSearch = json_decode($request->input('sourceSearch'));
+    }
+    
+    if( is_array($request->input('typeDataSourcesSearch')) ){
+      $typeDataSourcesSearch = [];
+    } else {
+      $typeDataSourcesSearch = json_decode($request->input('typeDataSourcesSearch'));
+    }
+    
+    if( is_array($request->input('concentrationIndicatorSearch')) ){
+      $concentrationIndicatorSearch = [];
+    } else {
+      $concentrationIndicatorSearch = json_decode($request->input('concentrationIndicatorSearch'));
+    }
+    
+    if( is_array($request->input('qualityAnalyticalMethodsSearch')) ){
+      $qualityAnalyticalMethodsSearch = [];
+    } else {
+      $qualityAnalyticalMethodsSearch = json_decode($request->input('qualityAnalyticalMethodsSearch'));
+    }
+    
+    if( is_array($request->input('dataSourceLaboratorySearch')) ){
+      $dataSourceLaboratorySearch = [];
+    } else {
+      $dataSourceLaboratorySearch = json_decode($request->input('dataSourceLaboratorySearch'));
+    }
+    
+    if( is_array($request->input('dataSourceOrganisationSearch')) ){
+      $dataSourceOrganisationSearch = [];
+    } else {
+      $dataSourceOrganisationSearch = json_decode($request->input('dataSourceOrganisationSearch'));
+    }
+    
+    $use_tables = [
+      'empodat_data_sources' => false,
+    ];
+    
+    $empodats = EmpodatMain::with('concetrationIndicator')
     ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
     ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id');
@@ -153,35 +241,74 @@ class EmpodatController extends Controller
     if (!empty($matrixSearch)) {
       $empodats = $empodats->whereIn('empodat_main.matrix_id', $matrixSearch);
     }
-
-    if (!empty($sourceSearch)) {
-      $empodats = $empodats->whereIn('empodat_main.data_source_id', $sourceSearch);
-    }
-
+    
     if (!empty($request->input('substances'))) {
       $empodats = $empodats->whereIn('empodat_main.substance_id', $request->input('substances'));
     }
-
-    //source
-
+    
+    if (!empty($typeDataSourcesSearch)) {
+      $use_tables['empodat_data_sources'] = true;
+      $empodats = $empodats->join('empodat_data_sources', 'empodat_data_sources.id', '=', 'empodat_main.data_source_id');
+      $empodats = $empodats->whereIn('empodat_data_sources.type_data_source_id', $typeDataSourcesSearch);
+    }
+    
+    if (!empty($analyticalMethodSearch)) {
+      $empodats = $empodats->join('empodat_analytical_methods', 'empodat_analytical_methods.id', '=', 'empodat_main.method_id');
+      $empodats = $empodats->whereIn('empodat_analytical_methods.analytical_method_id', $analyticalMethodSearch);
+    }
+    
     //substance category
-
+    
     if (!empty($categoriesSearch)) {
       $empodats = $empodats->join('susdat_category_substance', 'susdat_category_substance.substance_id', '=', 'empodat_main.substance_id');
       $empodats = $empodats->whereIn('susdat_category_substance.category_id', $categoriesSearch);
     }
-
+    
+    if (!empty($concentrationIndicatorSearch)) {
+      $empodats = $empodats->whereIn('empodat_main.concentration_indicator_id', $concentrationIndicatorSearch);
+    }    
+    
     if (!empty($sourceSearch)) {
       $empodats = $empodats->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'empodat_main.substance_id');
       $empodats = $empodats->whereIn('susdat_source_substance.source_id', $sourceSearch);
+    }    
+    
+    if (!empty($qualityAnalyticalMethodsSearch)) {
+      $ratings = QualityEmpodatAnalyticalMethods::whereIn('id', $qualityAnalyticalMethodsSearch)->get();
+      $empodats = $empodats->join('empodat_analytical_methods', 'empodat_analytical_methods.id', '=', 'empodat_main.method_id');
+      $empodats = $empodats->where(function($query) use ($ratings) {
+        foreach ($ratings as $rating) {
+          $query->orWhere(function($query) use ($rating) {
+            $query->where('empodat_analytical_methods.rating', '>=', $rating->min_rating)
+            ->where('empodat_analytical_methods.rating', '<', $rating->max_rating);
+          });
+        }
+      });
     }
-
+    
     if (!is_null($request->input('year_from'))) {
       $empodats = $empodats->where('empodat_main.sampling_date_year', '>=', $request->input('year_from'));
     }
     if (!is_null($request->input('year_to'))) {
       $empodats = $empodats->where('empodat_main.sampling_date_year', '<=', $request->input('year_to'));
     }
+    
+    
+    if (!empty($dataSourceLaboratorySearch)) {
+      if($use_tables['empodat_data_sources'] == false){
+        $empodats = $empodats->join('empodat_data_sources', 'empodat_data_sources.id', '=', 'empodat_main.data_source_id');
+        $use_tables['empodat_data_sources'] = true;
+      }
+      $empodats = $empodats->whereIn('empodat_data_sources.laboratory1_id', $dataSourceLaboratorySearch);
+    }   
+    
+    if (!empty($dataSourceOrganisationSearch)) {
+      if($use_tables['empodat_data_sources'] == false){
+        $empodats = $empodats->join('empodat_data_sources', 'empodat_data_sources.id', '=', 'empodat_main.data_source_id');
+        $use_tables['empodat_data_sources'] = true;
+      }      
+      $empodats = $empodats->whereIn('empodat_data_sources.organisation_id', $dataSourceOrganisationSearch);
+    }   
     
     // Select only the columns you need
     $empodats = $empodats->select(
@@ -193,11 +320,13 @@ class EmpodatController extends Controller
       'empodat_stations.country as country',
       'susdat_substances.id AS substance_id',
     );
-
+    
     $now = now();
+    $bindings = $empodats->getBindings();
+    $sql = vsprintf(str_replace('?', "'%s'", $empodats->toSql()), $bindings);
     QueryLog::insert([
-      'content' => json_encode($request->all()),
-      'query' => $empodats->toSql(),
+      'content' => json_encode(['request' => $request->all(), 'bindings' => $bindings]),
+      'query' => $sql,
       'user_id' => auth()->check() ? auth()->id() : null,
       'created_at' => $now,
       'updated_at' => $now,
@@ -213,7 +342,7 @@ class EmpodatController extends Controller
       ->paginate(200)
       ->withQueryString();
     }
-
+    // dd($empodats[0]);
     
     // $empodatTotal = $empodats->count('empodat_main.id');
     // dd($categoriesSearch);
@@ -225,11 +354,17 @@ class EmpodatController extends Controller
       'countrySearch' => $countrySearch,
       'matrixSearch' => $matrixSearch,
       'sourceSearch' => $sourceSearch,
+      'analyticalMethodSearch' => $analyticalMethodSearch,
       'year_from' => $request->input('year_from'),
       'year_to' => $request->input('year_to'),
       'displayOption' => $request->input('displayOption'),
       'substances' => $request->input('substances'),
       'categoriesSearch' => $request->input('categoriesSearch'),
+      'typeDataSourcesSearch' => $typeDataSourcesSearch,
+      'concentrationIndicatorSearch' => $concentrationIndicatorSearch,
+      'dataSourceLaboratorySearch' => $dataSourceLaboratorySearch,
+      'dataSourceOrganisationSearch' => $dataSourceOrganisationSearch,
+      'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id,
       // 'empodatTotal' => $empodatTotal,
     ]);
   }

@@ -7,16 +7,16 @@
     <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-lg rounded-0">
         
-        
+        {{-- {!! dump($request) !!} --}}
         <!-- Main Search form -->
         <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
           
-          <div class="p-4 text-gray-900 grid grid-cols-1 gap-4">
+          <div class="px-4 text-gray-900 grid grid-cols-1 gap-4">
             <!-- Main Search form -->
             <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
               <div class="grid grid-cols-1 gap-5">
                 
-                <div id="searchOptions" class="pointer-events-none opacity-50">
+                {{-- <div id="searchOptions" class="pointer-events-none opacity-50">
                   <div class="bg-gray-100 p-2">
                     <div class="font-bold mb-2">
                       Search options:
@@ -32,7 +32,7 @@
                       </label>
                     </div>
                   </div>
-                </div>
+                </div> --}}
                 
               </div>
               
@@ -119,7 +119,7 @@
               <div id="searchSource" class="">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
-                    Source criteria:
+                    SLE Source criteria:
                   </div>
                   <div class="w-full">
                     @include('_t.form-apline-multiselect', [
@@ -168,15 +168,29 @@
                 </div>
               </div>
               
-              <div id="searchSource" class="pointer-events-none opacity-50">
+              <div id="concentrationIndicatorSearch" class="">
+                <div class="flex bg-gray-100 p-2">
+                  <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Concetration Indicators:
+                    </div>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'concentrationIndicatorSearch', 'list' => $concentrationIndicatorList,
+                    'active_ids' => isset($request->concentrationIndicatorSearch) ? $request->concentrationIndicatorSearch : [],
+                    ])
+                  </div>
+                </div>
+              </div>
+
+              <div id="typeDataSourcesSearch" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Type of data source:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourceSearchx', 'list' => $sourceList,
-                    'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
+                    'tag' => 'typeDataSourcesSearch', 'list' => $typeDataSourcesList,
+                    'active_ids' => isset($request->typeDataSourcesSearch) ? $request->typeDataSourcesSearch : [],
                     ])
                   </div>
                   
@@ -185,65 +199,70 @@
                       Organisation:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'organisationList', 'list' => $matrixList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    'tag' => 'dataSourceOrganisationSearch', 'list' => $dataSourceOrganisationList,
+                    'active_ids' => isset($request->dataSourceOrganisationSearch) ? $request->dataSourceOrganisationSearch : [],
                     ])
                   </div>
                 </div>
               </div>
               
-              <div id="searchLaboratory" class="pointer-events-none opacity-50">
+              <div id="dataSourceLaboratorySearch" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Laboratory:
                     </div>
+                    {{-- {{ var_dump($dataSourceLaboratoryList) }} --}}
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'laboratoryList', 'list' => $sourceList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    'tag' => 'dataSourceLaboratorySearch', 'list' => $dataSourceLaboratoryList,
+                    'active_ids' => isset($request->dataSourceLaboratorySearch) ? $request->dataSourceLaboratorySearch : [],
                     ])
                   </div>
                 </div>
               </div>
               
-              <div id="searchQaQc" class="pointer-events-none opacity-50">
+              {{-- <div id="searchQaQc" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
-                    <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg]</span>
+                    <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 2</span>
+                    0. JOIN empodat_main.method_id == empodat_analytical_methods.id
+                    1. empodat_analytical_methods.lod > ?
                     @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
                     @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
                   </div>
                   <div class="w-full">
-                    <span>Limit of Quantification (LoQ) [µg/m3, µg/l or µg/kg]</span>
+                    <span>Limit of Quantification (LoQ) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 3</span>
+                    0. JOIN empodat_main.method_id == empodat_analytical_methods.id
+                    1. empodat_analytical_methods.loq > ?
                     @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
                     @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
                   </div>
                 </div>
-              </div>
+              </div> --}}
               
-              <div id="searchAnalyticaMethod" class="pointer-events-none opacity-50">
+              <div id="analyticalMethodSearch" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Analytical method:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'analyticalMethodList', 'list' => $sourceList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    'tag' => 'analyticalMethodSearch', 'list' => $analyticalMethodsList,
+                    'active_ids' => isset($request->analyticalMethodSearch) ? $request->analyticalMethodSearch : [],
                     ])
                   </div>
                 </div>
               </div>
               
-              <div id="searchQualityInformationCategory" class="pointer-events-none opacity-50">
+              <div id="qualityAnalyticalMethodsSearch" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Quality information category:
                     </div>
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'qualityInformationCategoryList', 'list' => $sourceList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    'tag' => 'qualityAnalyticalMethodsSearch', 'list' => $qualityAnalyticalMethodsList,
+                    'active_ids' => isset($request->qualityAnalyticalMethodsSearch) ? $request->qualityAnalyticalMethodsSearch : [],
                     ])
                   </div>
                 </div>

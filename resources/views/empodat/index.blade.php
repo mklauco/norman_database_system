@@ -4,31 +4,38 @@
   </x-slot>
   
   
-  <div class="py-4">
+  <div class="py-4"  wire:ignore>
     <div class="w-full mx-auto sm:px-6 lg:px-8">
       <div class="bg-white shadow-lg sm:rounded-lg">
         <div class="p-6 text-gray-900">
           {{-- main div --}}
           
           <a href="{{ route('codsearch.filter', [
-            'countrySearch'   => $countrySearch,
-            'matrixSearch'    => $matrixSearch,
-            'sourceSearch'    => $sourceSearch,
-            'year_from'       => $year_from ?? '',
-            'year_to'         => $year_to ?? '',
-            'displayOption'         => $displayOption,
-            'substances'     => $substances,
-            'categoriesSearch'     => $categoriesSearch,
+            'countrySearch'                   => $countrySearch,
+            'matrixSearch'                    => $matrixSearch,
+            'sourceSearch'                    => $sourceSearch,
+            'year_from'                       => $year_from ?? '',
+            'year_to'                         => $year_to ?? '',
+            'displayOption'                   => $displayOption,
+            'substances'                      => $substances,
+            'categoriesSearch'                => $categoriesSearch,
+            'typeDataSourcesSearch'           => $typeDataSourcesSearch,
+            'concentrationIndicatorSearch'    => $concentrationIndicatorSearch,
+            'analyticalMethodSearch'          => $analyticalMethodSearch,
+            'dataSourceLaboratorySearch'      => $dataSourceLaboratorySearch,
+            'dataSourceOrganisationSearch'      => $dataSourceOrganisationSearch,
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
         
-        <div class="text-gray-600">
+        <div class="text-gray-600 flex">
           @if($displayOption == 1)
           {{-- use simple output --}}
+          <div class="flex">Number of matched records:&nbsp;@livewire('empodat.query-counter', ['queryId' => $query_log_id]) &nbsp;of&nbsp;<span> {{number_format($empodatsCount, 0, " ", " ") }}</span> </div>.
+          {{-- <livewire:empodat.query-counter :queryId="$query_log_id" /> --}}
           @else
           {{-- use advanced output --}}
-          <span>Number of matched records: </span><span class="font-bold">{{$empodats->total() ?? ''}}</span> of <span>{{$empodatsCount}}</span>.
+          <span>Number of matched records: </span><span class="font-bold">{{$empodats->total() ?? ''}}</span> of <span>{{number_format($empodatsCount, 0, " ", " ") }}</span>.
           @endif
         </div>
         
@@ -57,7 +64,12 @@
                 @endrole
               </td>
               <td class="p-1 text-center">
-                {{ $e->concentration }}
+                @if($e->concentration_indicator_id == 0) {{ $e->concentration_indicator_id }} @endif
+                @if($e->concentration_indicator_id > 1)
+                {{ $e->concetrationIndicator->name }}
+                @else
+                {{ $e->concentration_value }}
+                @endif
               </td>
               <td class="p-1 text-center">
                 {{ $e->matrix_name }}
