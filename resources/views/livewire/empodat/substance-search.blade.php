@@ -49,7 +49,7 @@
             <button 
             type="button" 
             wire:click="clearFilters" 
-            class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            class="px-4 py-2 mx-2 bg-gray-200 text-gray-800 rounded-0 hover:bg-gray-300"
         >
             Clear List
         </button>
