@@ -13,6 +13,7 @@ class QueryCounter extends Component
     public $countResult; // The result of the COUNT operation
     public $isLoaded = false; // Flag to indicate if the query has been executed
     public $sqlQuery;
+    
 
     public function mount($queryId)
     {
@@ -37,6 +38,33 @@ class QueryCounter extends Component
 
             $this->isLoaded = true;
 
+    }
+
+    public function downloadCsv()
+    {
+        if (!$this->sqlQuery) {
+            session()->flash('error', 'No query available to execute.');
+            return;
+        }
+
+        // Execute the original SQL query to retrieve the list of IDs
+        $query = "SELECT dct_analysis_id FROM ({$this->sqlQuery}) as subquery";
+        $ids = DB::select($query);
+
+        // Create a StreamedResponse for the CSV download
+        return response()->streamDownload(function () use ($ids) {
+            $output = fopen('php://output', 'w');
+
+            // Add headers
+            fputcsv($output, ['ID']);
+
+            // Add rows
+            foreach ($ids as $row) {
+                fputcsv($output, [$row['id']]);
+            }
+
+            fclose($output);
+        }, 'ids.csv');
     }
 
     public function render()
