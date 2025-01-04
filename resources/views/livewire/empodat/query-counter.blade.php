@@ -15,7 +15,7 @@
         <div wire:loading.remove>
             @if (is_numeric($countResult))
                 <p class="text-gray-800 font-bold mb-2">
-                    Total Count: {{ number_format($countResult, 0, " ", " ") }}
+                    {{ number_format($countResult, 0, " ", " ") }}
                 </p>
 
                 {{-- Download CSV Button
