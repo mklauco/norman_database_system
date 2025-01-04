@@ -170,6 +170,11 @@ class EmpodatController extends Controller
       $empodats = $empodats->whereIn('susdat_category_substance.category_id', $categoriesSearch);
     }
 
+    if (!empty($sourceSearch)) {
+      $empodats = $empodats->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'empodat_main.substance_id');
+      $empodats = $empodats->whereIn('susdat_source_substance.source_id', $sourceSearch);
+    }
+
     if (!is_null($request->input('year_from'))) {
       $empodats = $empodats->where('empodat_main.sampling_date_year', '>=', $request->input('year_from'));
     }

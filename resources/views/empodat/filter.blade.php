@@ -99,14 +99,14 @@
                 </div>
               </div>
               
-              <div id="searchSource" class="pointer-events-none opacity-50">
+              <div id="searchSource" class="">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Source criteria:
                   </div>
                   <div class="w-full">
                     @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourceSearchx', 'list' => $sourceList,
+                    'tag' => 'sourceSearch', 'list' => $sourceList,
                     'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
                     ])
                   </div>
