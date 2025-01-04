@@ -10,20 +10,26 @@
         <div class="p-6 text-gray-900">
           {{-- main div --}}
           
-          <form action="{{ route('codsearch.filter', [
-            'countrySearch'   => json_encode($countrySearch),
-            'matrixSearch'    => json_encode($matrixSearch),
-            'sourceSearch'    => json_encode($sourceSearch),
-            'year_from'       => $year_from,
-            'year_to'         => $year_to,
-          ]) }}" method="GET">
+          <a href="{{ route('codsearch.filter', [
+            'countrySearch'   => $countrySearch,
+            'matrixSearch'    => $matrixSearch,
+            'sourceSearch'    => $sourceSearch,
+            'year_from'       => $year_from ?? '',
+            'year_to'         => $year_to ?? '',
+            'displayOption'         => $displayOption,
+            'substances'     => $substances,
+            'categoriesSearch'     => $categoriesSearch,
+          ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
-        </form>
+        </a>
         
         <div class="text-gray-600">
-          {{-- <span>Number of matched records: </span><span class="font-bold">{{$empodatTotal ?? ''}}</span> of <span>{{$empodatsCount}}</span>. --}}
-          {{-- {{ $empodats->count() }} --}}
-          {{-- <span>Number of matched records: </span><span class="font-bold"></span> of <span>{{$empodatsCount}}</span>. --}}
+          @if($displayOption == 1)
+          {{-- use simple output --}}
+          @else
+          {{-- use advanced output --}}
+          <span>Number of matched records: </span><span class="font-bold">{{$empodats->total() ?? ''}}</span> of <span>{{$empodatsCount}}</span>.
+          @endif
         </div>
         
         <table class="table-standard">
@@ -46,6 +52,9 @@
               </td>
               <td class="p-1 text-center">
                 {{ $e->substance_name }}
+                @role('super_admin')
+                <span class="text-xss text-gray-500"> ({{ $e->substance_id }})</span>
+                @endrole
               </td>
               <td class="p-1 text-center">
                 {{ $e->concentration }}
@@ -66,7 +75,10 @@
             @endforeach
           </tbody>
         </table>
-        {{-- {{$empodats->links('pagination::tailwind')}} --}}
+        
+        @if($displayOption == 1)
+        {{-- use simple output --}}
+        
         <div class="flex justify-center space-x-4 mt-4">
           @if ($empodats->onFirstPage())
           <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
@@ -88,7 +100,10 @@
           </span>
           @endif
         </div>
-        
+        @else
+        {{-- use advanced output --}}
+        {{$empodats->links('pagination::tailwind')}}
+        @endif
         
         {{-- end of main div --}}
       </div>

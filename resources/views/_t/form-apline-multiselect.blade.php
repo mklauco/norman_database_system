@@ -5,6 +5,13 @@
     @endphp
 @endif
 
+{{-- @if (is_null($active_ids))
+    @php
+        $active_ids = [];
+    @endphp
+@endif --}}
+
+
 <div class="w-full max-w-lg">
     <!-- Start Component -->
     <div

@@ -9,7 +9,6 @@
         
         <div class="p-6 text-gray-900">
           
-          
           <!-- Main Search form -->
           <div class="grid grid-cols-3 gap-5">
             
@@ -28,7 +27,7 @@
                         <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}">
                       </span>
                       <span class="ml-1">
-                        {{$category->name}} 
+                        {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
                       </span>
                     </div>
                     @endforeach

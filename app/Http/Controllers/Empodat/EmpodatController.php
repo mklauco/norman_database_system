@@ -71,7 +71,9 @@ class EmpodatController extends Controller
   
   public function filter(Request $request)
   {
+    // dd($request->all());
     $countries = SearchCountries::with('country')->orderBy('country_id', 'asc')->get();
+    
     $countryList = [];
     foreach($countries as $s){
       $countryList[$s->country_id] = $s->country->name.' - '.$s->country->code;
@@ -83,7 +85,7 @@ class EmpodatController extends Controller
       $matrixList[$s->matrix_id] = $s->matrix->name;
     }
     
-    
+
     $sources = SuspectListExchangeSource::select('id', 'code', 'name')->get()->keyBy('id');
     $sourceList = [];
     foreach($sources as $s){
@@ -91,7 +93,7 @@ class EmpodatController extends Controller
     }
     
     $categoriesList = [];
-    $categories = Category::select('id', 'name', 'abbreviation')->get()->keyBy('id');
+    $categories = Category::orderBy('name', 'asc')->select('id', 'name', 'abbreviation')->get()->keyBy('id');
     foreach($categories as $s){
       $categoriesList[$s->id] = $s->name;
     }
@@ -112,7 +114,6 @@ class EmpodatController extends Controller
   }
   
   public function search(Request $request){
-    
     if(is_array($request->input('countrySearch'))){
       $countrySearch = $request->input('countrySearch');
     } else{
@@ -131,7 +132,13 @@ class EmpodatController extends Controller
       $sourceSearch = json_decode($request->input('sourceSearch'));
     }
     
-    
+    if( is_null($request->input('categoriesSearch')) ){
+      $categoriesSearch = [];
+    } else {
+      $categoriesSearch = $request->input('categoriesSearch');
+    }
+
+
     $empodats = EmpodatMain::query()
     ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
@@ -150,6 +157,24 @@ class EmpodatController extends Controller
       $empodats = $empodats->whereIn('empodat_main.data_source_id', $sourceSearch);
     }
 
+    if (!empty($request->input('substances'))) {
+      $empodats = $empodats->whereIn('empodat_main.substance_id', $request->input('substances'));
+    }
+
+    //source
+
+    //substance category
+
+    if (!empty($categoriesSearch)) {
+      $empodats = $empodats->join('susdat_category_substance', 'susdat_category_substance.substance_id', '=', 'empodat_main.substance_id');
+      $empodats = $empodats->whereIn('susdat_category_substance.category_id', $categoriesSearch);
+    }
+
+    if (!empty($sourceSearch)) {
+      $empodats = $empodats->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'empodat_main.substance_id');
+      $empodats = $empodats->whereIn('susdat_source_substance.source_id', $sourceSearch);
+    }
+
     if (!is_null($request->input('year_from'))) {
       $empodats = $empodats->where('empodat_main.sampling_date_year', '>=', $request->input('year_from'));
     }
@@ -164,16 +189,26 @@ class EmpodatController extends Controller
       'susdat_substances.name as substance_name',
       'list_matrices.name as matrix_name',
       'empodat_stations.name as station_name',
-      'empodat_stations.country as country'
+      'empodat_stations.country as country',
+      'susdat_substances.id AS substance_id',
     );
     
-    // Add ordering and pagination
-    $empodats = $empodats->orderBy('empodat_main.id', 'asc')
-    ->simplePaginate(200)
-    ->withQueryString();
+    
+    if ($request->displayOption == 1) {
+      // use simple pagination
+      $empodats = $empodats->orderBy('empodat_main.id', 'asc')
+      ->simplePaginate(200)
+      ->withQueryString();
+    } else {
+      // use cursor pagination
+      $empodats = $empodats->orderBy('empodat_main.id', 'asc')
+      ->paginate(200)
+      ->withQueryString();
+    }
+
     
     // $empodatTotal = $empodats->count('empodat_main.id');
-    
+    // dd($categoriesSearch);
     $empodatsCount = DatabaseEntity::where('code', 'empodat')->first()->number_of_records;
     // dd($countrySearch);
     return view('empodat.index', [
@@ -184,6 +219,9 @@ class EmpodatController extends Controller
       'sourceSearch' => $sourceSearch,
       'year_from' => $request->input('year_from'),
       'year_to' => $request->input('year_to'),
+      'displayOption' => $request->input('displayOption'),
+      'substances' => $request->input('substances'),
+      'categoriesSearch' => $request->input('categoriesSearch'),
       // 'empodatTotal' => $empodatTotal,
     ]);
   }

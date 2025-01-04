@@ -59,7 +59,8 @@ Route::prefix('susdat')->group(function () {
 }); 
 
 Route::prefix('empodat')->group(function () {
-    Route::get('codsearch/filter/{countrySearch?}/{matrixSearch?}/{sourceSearch?}/{year_from?}/{year_to?}', [EmpodatController::class, 'filter'])->name('codsearch.filter');
+    Route::get('codsearch/filter/{countrySearch?}/{matrixSearch?}/{sourceSearch?}/{year_from?}/{year_to?}/{displayOption?}', [EmpodatController::class, 'filter'])->name('codsearch.filter');
+    Route::get('codsearch/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
     Route::get('codsearch/search/', [EmpodatController::class, 'search'])->name('codsearch.search');
     
     Route::resource('codhome', EmpodatHomeController::class)->only(['index']);

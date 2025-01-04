@@ -8,14 +8,12 @@
       <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
         
         <div class="p-6 text-gray-900">
-          
-          
-          
+        {{ dump($request) }}
           <!-- Main Search form -->
           <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
             <div class="grid grid-cols-1 gap-5">
               
-              <div id="searchOptions">
+              <div id="searchOptions" class="pointer-events-none opacity-50">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Search options:
@@ -28,6 +26,24 @@
                     <label class="inline-flex items-center">
                       <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option2">
                       <span class="ml-2"><strong>OR</strong> conditions to all criteria</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="displayOptions">
+                <div class="bg-gray-100 p-2">
+                  <div class="font-bold mb-2">
+                    Display options:
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <label class="inline-flex items-center">
+                        <input type="radio" class="form-radio text-indigo-600" name="displayOption" value="1" checked>
+                      <span class="ml-2">Fast data preview</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                      <input type="radio" class="form-radio text-indigo-600" name="displayOption" value="0">
+                      <span class="ml-2">Detailed output</span>
                     </label>
                   </div>
                 </div>
@@ -77,11 +93,13 @@
                   <div class="font-bold mb-2">
                     Substance criteria:
                   </div>
-                  
+                  <div>
+                    @livewire('empodat.substance-search', ['existingSubstances' => $request->substances])
+                  </div>
                 </div>
               </div>
               
-              <div id="searchSource">
+              <div id="searchSource" class="">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Source criteria:
@@ -95,7 +113,7 @@
                 </div>
               </div>
               
-              <div id="searchCategory" class="pointer-events-none opacity-50">
+              <div id="searchCategory" class="">
                 <div class="bg-gray-100 p-2">
                   <div class="font-bold mb-2">
                     Search Category:
@@ -105,11 +123,13 @@
                     @foreach ($categories as $category)
                     <div class="block p-1">
                       <span>
-                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}">
+                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}"
+                        @if (is_array(request('categoriesSearch')) && in_array($category->id, request('categoriesSearch'))) checked @endif
+                        >
                       </span>
                       <span class="ml-1">
-                        {{-- ensure non-breakable space before parentheses --}}
-                        {!! preg_replace('/\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
+                        {{-- remove space before parentheses, and ensure non-breakable space before parentheses --}}
+                        {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
                       </span>
                     </div>
                     @endforeach
@@ -126,16 +146,6 @@
                     <div class="grid grid-cols-2 gap-1">
                       <input type="number" name="year_from" value="{{ isset($request->year_from) ? $request->year_from : null }}" class="form-text" placeholder="year from">
                       <input type="number" name="year_to" value="{{ isset($request->year_to) ? $request->year_to : null }}" class="form-text" placeholder="year to">
-                    </div>
-                  </div>
-                  <div class="flex pointer-events-none opacity-50">
-                    <div class="w-full">
-                      <span>Concentration data:</span>
-                      @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
-                    </div>
-                    <div class="w-full">
-                      <span>Concentration equal or higher than:</span>
-                      @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $selectList])
                     </div>
                   </div>
                 </div>
@@ -226,6 +236,7 @@
               
               <!-- Main Search form -->
               <div class="flex justify-end m-2">
+                <a href="{{route('codsearch.filter')}}" class="btn-clear mx-2"> Reset </a>
                 <button type="submit" class="btn-submit"> Search
                 </button>
               </div>
