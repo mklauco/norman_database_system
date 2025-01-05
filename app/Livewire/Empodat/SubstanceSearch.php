@@ -65,6 +65,7 @@ class SubstanceSearch extends Component
             ];
         })
         ->toArray();
+        $this->search = '';
     }
     
     public function removeSubstance($substanceId)
