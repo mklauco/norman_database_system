@@ -55,4 +55,9 @@
       </div>
     </div>
   </div>
+  <div class="hidden">
+    <span class="text-purple-600"></span>
+    <span class="text-teal-600"></span>
+    <span class="text-orange-800"></span>
+  </div>
 </x-app-layout>
