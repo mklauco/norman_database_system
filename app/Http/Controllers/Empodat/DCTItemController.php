@@ -28,6 +28,9 @@ class DCTItemController extends Controller
     public function create()
     {
         //
+        return view('empodat.dctitems.edit', [
+            'edit' => false
+        ]);
     }
     
     /**
@@ -36,6 +39,22 @@ class DCTItemController extends Controller
     public function store(Request $request)
     {
         //
+        $validation = [
+            'name' => 'required',
+            'description' => 'required'
+        ];
+
+        $request->validate($validation);
+
+        $dctitem = New DCTItem();
+        $dctitem->name = $request->name;
+        $dctitem->description = $request->description;
+        try {
+            $dctitem->save();
+            return redirect()->route('dctitems.index')->with('success', 'Data Collection Template created successfully');
+        } catch (\Exception $e) {
+            return redirect()->route('dctitems.index')->with('error', 'Data Collection Template could not be created');
+        }
     }
     
     /**
@@ -53,7 +72,8 @@ class DCTItemController extends Controller
     {
         //
         return view('empodat.dctitems.edit', [
-            'dctitem' => DCTItem::find($id)
+            'dctitem' => DCTItem::find($id),
+            'edit' => true
         ]);
     }
     

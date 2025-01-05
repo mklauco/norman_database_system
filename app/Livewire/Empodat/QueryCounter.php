@@ -13,11 +13,13 @@ class QueryCounter extends Component
     public $countResult; // The result of the COUNT operation
     public $isLoaded = false; // Flag to indicate if the query has been executed
     public $sqlQuery;
+    public $empodatsCount;
     
 
-    public function mount($queryId)
+    public function mount($queryId, $empodatsCount)
     {
         $this->queryId = $queryId;
+        $this->empodatsCount = $empodatsCount;
     }
 
     public function init()
@@ -32,6 +34,15 @@ class QueryCounter extends Component
 
                 // Execute the COUNT query and fetch the result
                 $this->countResult = DB::select($countQuery)[0]->count;
+
+                $q = QueryLog::find($this->queryId);
+                $content = json_decode($q->content, true);
+                // put the new key value pair in the content array
+                $content['count'] = $this->countResult;
+                // update the content with the new key value pair
+                $q->content = json_encode($content);
+                // save the updated content
+                $q->save();              
             } else {
                 $this->countResult = 'Query not found.';
             }
@@ -50,17 +61,20 @@ class QueryCounter extends Component
         // Execute the original SQL query to retrieve the list of IDs
         $query = "SELECT dct_analysis_id FROM ({$this->sqlQuery}) as subquery";
         $ids = DB::select($query);
+        
 
         // Create a StreamedResponse for the CSV download
         return response()->streamDownload(function () use ($ids) {
             $output = fopen('php://output', 'w');
 
+
+
             // Add headers
-            fputcsv($output, ['ID']);
+            fputcsv($output, ['dct_analysis_id']);
 
             // Add rows
             foreach ($ids as $row) {
-                fputcsv($output, [$row['id']]);
+                fputcsv($output, [$row->dct_analysis_id]);
             }
 
             fclose($output);
@@ -73,7 +87,7 @@ class QueryCounter extends Component
             'countResult' => $this->countResult,
             'isLoaded' => $this->isLoaded,
             'queryId' => $this->queryId,
-            'sqlQuery' => $this->sqlQuery,
+            'empodatsCount' => $this->empodatsCount,
         ]);
     }
 }

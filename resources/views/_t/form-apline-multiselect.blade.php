@@ -37,7 +37,7 @@ $active_ids = [];
     
     <!-- Start Item Tags And Input Field -->
     <div
-    class="flex items-center justify-between px-1 border border-2 rounded-md relative pr-8 bg-white"
+    class="flex items-center justify-between px-1 border border-2 rounded-0 relative pr-8 bg-white"
     >
     <ul class="flex flex-wrap items-center w-full">
         <!-- Tags (Selected) -->
@@ -49,7 +49,7 @@ $active_ids = [];
             @keyup.backspace="removeElementByIdx(idx)"
             @keyup.delete="removeElementByIdx(idx)"
             tabindex="0"
-            class="relative m-1 px-2 py-1.5 border rounded-md cursor-pointer hover:bg-red-100 after:content-['x'] after:ml-1.5 after:text-red-300 outline-none focus:outline-none ring-0 focus:ring-2 focus:ring-amber-300 ring-inset transition-all"
+            class="relative m-1 px-2 py-1.5 border rounded-0 cursor-pointer hover:bg-red-100 after:content-['x'] after:ml-1.5 after:text-red-300 outline-none focus:outline-none ring-0 focus:ring-2 focus:ring-amber-300 ring-inset transition-all"
             ></li>
             
         </template>
@@ -67,7 +67,7 @@ $active_ids = [];
         @keyup.enter="addActiveItem"
         :placeholder="searchPlaceholder"
         type="text"
-        class="flex-grow py-2 px-2 mx-1 my-1.5 outline-none focus:outline-none focus:ring-amber-300 focus:ring-2 ring-inset transition-all rounded-md w-24"
+        class="flex-grow py-2 px-2 mx-1 my-1.5 outline-none focus:outline-none focus:ring-lime-300 focus:ring-2 ring-inset transition-all rounded-0 w-24 text-sm"
         />
         
         <!-- Arrow Icon -->
@@ -94,7 +94,7 @@ $active_ids = [];
 <template x-if="expanded">
     <ul
     x-ref="listBox"
-    class="w-full list-none border border-2 border-t-0 rounded-md focus:outline-none overflow-y-auto outline-none focus:outline-none bg-blue-100 absolute left-0 bottom-100 z-10"
+    class="w-full list-none border border-2 border-t-0 rounded-0 focus:outline-none overflow-y-auto outline-none focus:outline-none bg-stone-100 absolute left-0 bottom-100 z-10 text-sm"
     tabindex="0"
     :style="listBoxStyle"
     >

@@ -46,6 +46,10 @@
     @apply border border-slate-500 text-slate-500 hover:bg-slate-300 hover:text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
   }
 
+  .btn-download{
+    @apply bg-zinc-500 hover:bg-zinc-800 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
+  }
+
   .btn-delete{
     @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
   }

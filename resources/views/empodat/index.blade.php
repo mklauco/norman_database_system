@@ -24,6 +24,7 @@
             'analyticalMethodSearch'          => $analyticalMethodSearch,
             'dataSourceLaboratorySearch'      => $dataSourceLaboratorySearch,
             'dataSourceOrganisationSearch'      => $dataSourceOrganisationSearch,
+            'qualityAnalyticalMethodsSearch'      => $qualityAnalyticalMethodsSearch,
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
@@ -31,8 +32,8 @@
         <div class="text-gray-600 flex">
           @if($displayOption == 1)
           {{-- use simple output --}}
-          <div class="flex">Number of matched records:&nbsp;@livewire('empodat.query-counter', ['queryId' => $query_log_id]) &nbsp;of&nbsp;<span> {{number_format($empodatsCount, 0, " ", " ") }}</span> </div>.
-          {{-- <livewire:empodat.query-counter :queryId="$query_log_id" /> --}}
+          @livewire('empodat.query-counter', ['queryId' => $query_log_id, 'empodatsCount' => $empodatsCount])
+
           @else
           {{-- use advanced output --}}
           <span>Number of matched records: </span><span class="font-bold">{{$empodats->total() ?? ''}}</span> of <span>{{number_format($empodatsCount, 0, " ", " ") }}</span>.

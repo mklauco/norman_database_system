@@ -9,6 +9,7 @@ use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Empodat\DCTItemController;
 use App\Http\Controllers\Empodat\EmpodatController;
+use App\Http\Controllers\Backend\QueryLogController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
@@ -82,6 +83,8 @@ Route::prefix('empodat')->group(function () {
 
 
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
+
+    Route::resource('querylog', QueryLogController::class)->middleware('auth');
 }); 
 
 Route::prefix('ecotox')->middleware('auth')->group(function () {
