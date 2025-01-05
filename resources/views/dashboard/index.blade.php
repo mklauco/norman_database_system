@@ -10,6 +10,7 @@
           
           <div class="grid lg:grid-cols-3 md:grid-cols-2 gap-4">
 
+            @role('super_admin')
             <div class="col-span-2 bg-white border-gray-100 shadow-lg rounded-md overflow-hidden p-4">
               <div class="font-bold">
                 Execute processes
@@ -32,6 +33,7 @@
 
               </div>
             </div>
+            @endrole
 
             <div class="bg-white border-gray-100 shadow-lg rounded-md overflow-hidden p-4">
               <div class="font-bold">

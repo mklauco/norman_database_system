@@ -50,6 +50,8 @@ class DatabaseSeeder extends Seeder
             ListSamplingMethodSeeder::class,
             ListSamplingCollectionDeviceSeeder::class,
             EmpodatAnalyticalMethodSeeder::class,
+            QualityEmpodatAnalyticalMethodsSeeder::class,
+
             
             
             // Data source
