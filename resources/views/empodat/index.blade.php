@@ -24,6 +24,7 @@
             'analyticalMethodSearch'          => $analyticalMethodSearch,
             'dataSourceLaboratorySearch'      => $dataSourceLaboratorySearch,
             'dataSourceOrganisationSearch'      => $dataSourceOrganisationSearch,
+            'qualityAnalyticalMethodsSearch'      => $qualityAnalyticalMethodsSearch,
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>

@@ -182,11 +182,20 @@
                 </div>
               </div>
 
-              <div id="typeDataSourcesSearch" class="">
+              <div id="empodatDataSourcesSearch" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
-                    <div class="font-bold mb-2">
-                      Type of data source:
+                    <div class="font-bold mb-2 flex items-center space-x-2">
+                      <div class="relative group">
+                        <!-- Icon -->
+                        <i class="fas fa-hourglass-half text-gray-500"></i>
+                        <!-- Tooltip -->
+                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                          Including this search option will slow down the search process.
+                        </div>
+                      </div>
+                      <!-- Text -->
+                      <span>Type of data source:</span>
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'typeDataSourcesSearch', 'list' => $typeDataSourcesList,
@@ -195,24 +204,40 @@
                   </div>
                   
                   <div class="w-full">
-                    <div class="font-bold mb-2">
-                      Organisation:
+                    <div class="font-bold mb-2 flex items-center space-x-2">
+                      <div class="relative group">
+                        <!-- Icon -->
+                        <i class="fas fa-hourglass-half text-gray-500"></i>
+                        <!-- Tooltip -->
+                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                          Including this search option will slow down the search process.
+                        </div>
+                      </div>
+                      <!-- Text -->
+                      <span>Organisation:</span>
                     </div>
+                    
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'dataSourceOrganisationSearch', 'list' => $dataSourceOrganisationList,
                     'active_ids' => isset($request->dataSourceOrganisationSearch) ? $request->dataSourceOrganisationSearch : [],
                     ])
                   </div>
                 </div>
-              </div>
-              
-              <div id="dataSourceLaboratorySearch" class="">
+
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
-                    <div class="font-bold mb-2">
-                      Laboratory:
+                    <div class="font-bold mb-2 flex items-center space-x-2">
+                      <div class="relative group">
+                        <!-- Icon -->
+                        <i class="fas fa-hourglass-half text-gray-500"></i>
+                        <!-- Tooltip -->
+                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                          Including this search option will slow down the search process.
+                        </div>
+                      </div>
+                      <!-- Text -->
+                      <span>Laboratory:</span>
                     </div>
-                    {{-- {{ var_dump($dataSourceLaboratoryList) }} --}}
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'dataSourceLaboratorySearch', 'list' => $dataSourceLaboratoryList,
                     'active_ids' => isset($request->dataSourceLaboratorySearch) ? $request->dataSourceLaboratorySearch : [],
@@ -243,8 +268,17 @@
               <div id="analyticalMethodSearch" class="">
                 <div class="flex bg-gray-100 p-2">
                   <div class="w-full">
-                    <div class="font-bold mb-2">
-                      Analytical method:
+                    <div class="font-bold mb-2 flex items-center space-x-2">
+                      <div class="relative group">
+                        <!-- Icon -->
+                        <i class="fas fa-hourglass-half text-gray-500"></i>
+                        <!-- Tooltip -->
+                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                          Including this search option will slow down the search process.
+                        </div>
+                      </div>
+                      <!-- Text -->
+                      <span>Analytical method:</span>
                     </div>
                     @include('_t.form-apline-multiselect', [
                     'tag' => 'analyticalMethodSearch', 'list' => $analyticalMethodsList,
@@ -277,6 +311,16 @@
                 </button>
               </div>
               
+
+              <div class="m-2">
+                <ul class="list-disc list-inside text-gray-700 text-sm">
+                  <li>All search criteria are optional. If you do not select any criteria, all data will be displayed.</li>
+                  <li>Each time the search is executed, the search options are recorded in the database for future reference and performance improvements.</li>
+                  <li>We encourage users to register for a free account to save-&-view their search criteria and results.</li>
+                </ul>
+              </div>
+              
+
             </div>    
           </div>
 

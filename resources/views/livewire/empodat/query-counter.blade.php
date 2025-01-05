@@ -5,7 +5,7 @@
             Number of matched records:
         </div>
         <div wire:loading>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 py-2 px-2">
                 <svg class="w-4 h-4 text-gray-500 animate-spin" style="animation-duration: 1s;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
@@ -26,7 +26,15 @@
         </div>
 
         <div class="py-2"> 
-            of <span> {{number_format($empodatsCount, 0, " ", " ") }}</span> 
+            of <span> {{number_format($empodatsCount, 0, " ", " ") }} 
+                @if (is_numeric($countResult))
+                @if ($countResult/$empodatsCount*100 < 0.01)
+                which is &le; 0.01% of total records.
+                @else
+                which is {{number_format($countResult/$empodatsCount*100, 3, ".", " ") }}% of total records.
+                @endif
+                @endif
+            </span> 
         </div>        
 
         <div class="ml-1">

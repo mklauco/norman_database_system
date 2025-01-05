@@ -229,7 +229,7 @@ class EmpodatController extends Controller
     ];
     
     $empodats = EmpodatMain::with('concetrationIndicator')
-    ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
+    ->join('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
     ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id');
     
@@ -364,6 +364,7 @@ class EmpodatController extends Controller
       'concentrationIndicatorSearch' => $concentrationIndicatorSearch,
       'dataSourceLaboratorySearch' => $dataSourceLaboratorySearch,
       'dataSourceOrganisationSearch' => $dataSourceOrganisationSearch,
+      'qualityAnalyticalMethodsSearch' => $qualityAnalyticalMethodsSearch,
       'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id,
       // 'empodatTotal' => $empodatTotal,
     ]);
