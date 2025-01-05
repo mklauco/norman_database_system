@@ -34,6 +34,15 @@ class QueryCounter extends Component
 
                 // Execute the COUNT query and fetch the result
                 $this->countResult = DB::select($countQuery)[0]->count;
+
+                $q = QueryLog::find($this->queryId);
+                $content = json_decode($q->content, true);
+                // put the new key value pair in the content array
+                $content['count'] = $this->countResult;
+                // update the content with the new key value pair
+                $q->content = json_encode($content);
+                // save the updated content
+                $q->save();              
             } else {
                 $this->countResult = 'Query not found.';
             }
