@@ -231,7 +231,8 @@ class EmpodatController extends Controller
     $empodats = EmpodatMain::with('concetrationIndicator')
     ->join('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
-    ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id');
+    ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
+    ->leftJoin('list_countries', 'empodat_stations.country_id', '=', 'list_countries.id');
     
     // Apply filters only when necessary
     if (!empty($countrySearch)) {
@@ -316,9 +317,11 @@ class EmpodatController extends Controller
       'empodat_main.*',
       'susdat_substances.name as substance_name',
       'list_matrices.name as matrix_name',
-      'empodat_stations.name as station_name',
       'empodat_stations.country as country',
       'susdat_substances.id AS substance_id',
+      'list_matrices.unit AS concentration_unit',
+      'list_countries.name AS country_name',
+      'list_countries.code AS country_code',
     );
     
     $now = now();
