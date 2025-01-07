@@ -29,14 +29,34 @@
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
         
-        <div class="text-gray-600 flex">
+        <div class="text-gray-600 flex border-l-2 border-white">
           @if($displayOption == 1)
           {{-- use simple output --}}
           @livewire('empodat.query-counter', ['queryId' => $query_log_id, 'empodatsCount' => $empodatsCount])
-
+          
           @else
           {{-- use advanced output --}}
-          <span>Number of matched records: </span><span class="font-bold">{{$empodats->total() ?? ''}}</span> of <span>{{number_format($empodatsCount, 0, " ", " ") }}</span>.
+          {{-- <span>Number of matched records: </span><span class="font-bold">&nbsp;{{number_format($empodats->total(), 0, " ", " ") ?? ''}}&nbsp;</span> <span> of {{number_format($empodatsCount, 0, " ", " ") }}</span>. --}}
+          
+          <div  class="py-2">
+            Number of matched records:
+          </div>
+          <div class="py-2 mx-1 font-bold">
+            {{ number_format($empodats->total(), 0, ".", " ") }}
+          </div>
+
+          <div  class="py-2">
+            of <span> {{number_format($empodatsCount, 0, " ", " ") }} 
+              @if (is_numeric($empodats->total()))
+              @if ($empodats->total()/$empodatsCount*100 < 0.01)
+              which is &le; 0.01% of total records.
+              @else
+              which is {{number_format($empodats->total()/$empodatsCount*100, 3, ".", " ") }}% of total records.
+              @endif
+              @endif
+            </span> 
+          </div>  
+          
           @endif
         </div>
         
@@ -69,14 +89,14 @@
                 @if($e->concentration_indicator_id > 1)
                 {{ $e->concetrationIndicator->name }}
                 @else
-                {{ $e->concentration_value }}
+                <span class="font-medium">{{ $e->concentration_value}}</span>&nbsp;{{$e->concentration_unit }}
                 @endif
               </td>
               <td class="p-1 text-center">
                 {{ $e->matrix_name }}
               </td>
               <td class="p-1 text-center">
-                {{ $e->country }}
+                {{ $e->country_name }} - {{ $e->country_code }}
               </td> 
               <td class="p-1 text-center">
                 {{ $e->sampling_date_year }}
