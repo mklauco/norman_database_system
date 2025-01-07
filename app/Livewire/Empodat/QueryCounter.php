@@ -83,38 +83,15 @@ class QueryCounter extends Component
         // Add headers to the CSV file
         fputcsv($file, ['empodat_main.id', 'dct_analysis_id']);
         
-        $chunkSize = 1000; // Number of rows to write per chunk
-        $buffer = []; // Temporary storage for rows
-        
-        // Iterate through the data
         foreach ($ids as $row) {
-            // Add row to the buffer
-            $buffer[] = [(string) $row->eid, (string) $row->dct_analysis_id];
-        
-            // Check if the buffer has reached the chunk size
-            if (count($buffer) >= $chunkSize) {
-                // Write the chunk to the file
-                foreach ($buffer as $line) {
-                    fputcsv($file, $line);
-                }
-        
-                // Clear the buffer
-                $buffer = [];
-            }
-        }
-        
-        // Write any remaining rows in the buffer
-        if (!empty($buffer)) {
-            foreach ($buffer as $line) {
-                fputcsv($file, $line);
-            }
+            fputcsv($file, [(string) $row->eid, (string) $row->dct_analysis_id]);
         }
         
         // Close the file
         fclose($file);
         
         // Offer the file as a download link
-        // $this->loadingMessage = null;
+        $this->loadingMessage = null;
 
         return response()->download($filePath, $name)->deleteFileAfterSend();
     }
