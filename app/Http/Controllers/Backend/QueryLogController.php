@@ -14,7 +14,11 @@ class QueryLogController extends Controller
     public function index()
     {
         //
-        $queries = QueryLog::with('users')->orderBy('id', 'desc')->paginate(20);
+        // $queries = QueryLog::with('users')->orderBy('id', 'desc')->paginate(20);
+        // get max id from query log
+        $maxId = QueryLog::max('id');
+
+        $queries = QueryLog::with('users')->where('id', '>=', max($maxId - 100, 0))->orderBy('id', 'desc')->paginate(20);
         // dd($queries);
         return view('backend.querylog.index', [
             'queries' => $queries
