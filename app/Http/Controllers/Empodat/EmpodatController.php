@@ -231,7 +231,8 @@ class EmpodatController extends Controller
     $empodats = EmpodatMain::with('concetrationIndicator')
     ->join('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
-    ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id');
+    ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
+    ->leftJoin('list_countries', 'empodat_stations.country_id', '=', 'list_countries.id');
     
     // Apply filters only when necessary
     if (!empty($countrySearch)) {
@@ -317,20 +318,45 @@ class EmpodatController extends Controller
       'susdat_substances.name as substance_name',
       'list_matrices.name as matrix_name',
       'empodat_stations.name as station_name',
-      'empodat_stations.country as country',
       'susdat_substances.id AS substance_id',
+      'list_matrices.unit AS concentration_unit',
+      'list_countries.name AS country_name',
+      'list_countries.code AS country_code',
     );
     
-    $now = now();
-    $bindings = $empodats->getBindings();
-    $sql = vsprintf(str_replace('?', "'%s'", $empodats->toSql()), $bindings);
-    QueryLog::insert([
-      'content' => json_encode(['request' => $request->all(), 'bindings' => $bindings]),
-      'query' => $sql,
-      'user_id' => auth()->check() ? auth()->id() : null,
-      'created_at' => $now,
-      'updated_at' => $now,
-    ]);
+
+    $main_request = [
+      'countrySearch'                   => $countrySearch,
+      'matrixSearch'                    => $matrixSearch,
+      'sourceSearch'                    => $sourceSearch,
+      'analyticalMethodSearch'          => $analyticalMethodSearch,
+      'year_from'                       => $request->input('year_from'),
+      'year_to'                         => $request->input('year_to'),
+      'displayOption'                   => $request->input('displayOption'),
+      'substances'                      => $request->input('substances'),
+      'categoriesSearch'                => $request->input('categoriesSearch'),
+      'typeDataSourcesSearch'           => $typeDataSourcesSearch,
+      'concentrationIndicatorSearch'    => $concentrationIndicatorSearch,
+      'dataSourceLaboratorySearch'      => $dataSourceLaboratorySearch,
+      'dataSourceOrganisationSearch'    => $dataSourceOrganisationSearch,
+      'qualityAnalyticalMethodsSearch'  => $qualityAnalyticalMethodsSearch,
+    ];
+
+    if(!$request->has('page')){
+      $now = now();
+      $bindings = $empodats->getBindings();
+      $sql = vsprintf(str_replace('?', "'%s'", $empodats->toSql()), $bindings);
+      
+      QueryLog::insert([
+        'content' => json_encode(['request' => $main_request, 'bindings' => $bindings]),
+        'query' => $sql,
+        'user_id' => auth()->check() ? auth()->id() : null,
+        'created_at' => $now,
+        'updated_at' => $now,
+      ]);
+      // dd($request->all());
+    }
+
     if ($request->displayOption == 1) {
       // use simple pagination
       $empodats = $empodats->orderBy('empodat_main.id', 'asc')
@@ -351,22 +377,8 @@ class EmpodatController extends Controller
     return view('empodat.index', [
       'empodats' => $empodats,
       'empodatsCount' => $empodatsCount,
-      'countrySearch' => $countrySearch,
-      'matrixSearch' => $matrixSearch,
-      'sourceSearch' => $sourceSearch,
-      'analyticalMethodSearch' => $analyticalMethodSearch,
-      'year_from' => $request->input('year_from'),
-      'year_to' => $request->input('year_to'),
-      'displayOption' => $request->input('displayOption'),
-      'substances' => $request->input('substances'),
-      'categoriesSearch' => $request->input('categoriesSearch'),
-      'typeDataSourcesSearch' => $typeDataSourcesSearch,
-      'concentrationIndicatorSearch' => $concentrationIndicatorSearch,
-      'dataSourceLaboratorySearch' => $dataSourceLaboratorySearch,
-      'dataSourceOrganisationSearch' => $dataSourceOrganisationSearch,
-      'qualityAnalyticalMethodsSearch' => $qualityAnalyticalMethodsSearch,
       'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id,
-      // 'empodatTotal' => $empodatTotal,
-    ]);
+      // search filters
+    ], $main_request);
   }
 }

@@ -136,7 +136,7 @@
                     Search Category:
                   </div>
                   <div class="grid grid-cols-3 gap-1">
-                    <input type="hidden" value="1" name="search">
+                    {{-- <input type="hidden" value="1" name="search"> --}}
                     @foreach ($categories as $category)
                     <div class="block p-1">
                       <span>
