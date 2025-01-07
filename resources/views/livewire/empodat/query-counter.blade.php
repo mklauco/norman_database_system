@@ -11,7 +11,6 @@
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                 </svg>
                 <span class="text-zinc-600">
-                    {{-- {{ dump($loadingMessage) }} --}}
                     @if (!is_null($loadingMessage))
                     {{ $loadingMessage }}
                     @else
