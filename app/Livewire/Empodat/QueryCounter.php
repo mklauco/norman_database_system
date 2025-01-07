@@ -59,7 +59,7 @@ class QueryCounter extends Component
         }
 
         // Execute the original SQL query to retrieve the list of IDs
-        $query = "SELECT dct_analysis_id FROM ({$this->sqlQuery}) as subquery";
+        $query = "SELECT empodat_main.id AS eid, dct_analysis_id FROM ({$this->sqlQuery}) as subquery";
         $ids = DB::select($query);
         
 
@@ -70,11 +70,11 @@ class QueryCounter extends Component
 
 
             // Add headers
-            fputcsv($output, ['dct_analysis_id']);
+            fputcsv($output, ['empodat_main.id', 'dct_analysis_id']);
 
             // Add rows
             foreach ($ids as $row) {
-                fputcsv($output, [$row->dct_analysis_id]);
+                fputcsv($output, [$row->eid, $row->dct_analysis_id]);
             }
 
             fclose($output);
