@@ -59,7 +59,7 @@ class QueryCounter extends Component
         }
 
         // Execute the original SQL query to retrieve the list of IDs
-        $query = "SELECT empodat_main.id AS eid, dct_analysis_id FROM ({$this->sqlQuery}) as subquery";
+        $query = "SELECT id AS eid, dct_analysis_id FROM ({$this->sqlQuery}) as subquery";
         $ids = DB::select($query);
         
 
