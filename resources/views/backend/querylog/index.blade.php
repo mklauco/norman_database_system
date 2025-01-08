@@ -8,12 +8,15 @@
       <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <div class="overflow-x-auto">
+            To speedup development, only last 100 queries are shown.
             <table class="table-standard">
               <thead>
                 <tr class="bg-gray-600 text-white">
                   <th class="py-1 px-2">ID</th>
                   <th class="py-1 px-2">Content</th>
-                  <th class="py-1 px-2">Query</th>
+                  @role('super_admin')
+                  <th class="py-1 px-2">Query <i class="fas fa-lock"></i></th>
+                  @endrole
                   <th class="py-1 px-2">User</th>
                   <th class="py-1 px-2">Created at</th>
                   <th class="py-1 px-2">Actions</th>
@@ -29,9 +32,11 @@
                     <pre>{{ json_encode(json_decode($q->content), JSON_PRETTY_PRINT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) }}
                     </pre>
                   </td>
+                  @role('super_admin')
                   <td class="py-1 px-2 font-mono  text-xs">
                     {!!  $q->formatted_query !!}
                   </td>
+                  @endrole
                   <td class="py-1 px-2">
                     @if(is_null($q->user_id))
                     Guest
@@ -43,21 +48,42 @@
                     {{ $q->created_at }}
                   </td>
                   <td class="py-1 px-2">
-                    <a href="{{ route('projects.edit', $q->id) }}" class="text-blue-500 hover:underline">Edit</a>
-                  </td>
-                </tr>
-                @endforeach
-              </tbody>
-            </table>
-            {{$queries->links('pagination::tailwind')}}
-          </div>
+                    @php
+                    $content = json_decode($q->content, TRUE);
+                    $request = $content['request'];
+                    @endphp
+                    <a href=" {{ route('codsearch.filter', [
+                        'countrySearch'                   => data_get($request, 'countrySearch', null),
+                        'matrixSearch'                    => data_get($request, 'matrixSearch', null),
+                        'sourceSearch'                    => data_get($request, 'sourceSearch', null),
+                        'year_from'                       => data_get($request, 'year_from', null),
+                        'year_to'                         => data_get($request, 'year_to', null),
+                        'displayOption'                   => data_get($request, 'displayOption', null),
+                        'substances'                      => data_get($request, 'substances', null),
+                        'categoriesSearch'                => data_get($request, 'categoriesSearch', null),
+                        'typeDataSourcesSearch'           => data_get($request, 'typeDataSourcesSearch', null),
+                        'concentrationIndicatorSearch'    => data_get($request, 'concentrationIndicatorSearch', null),
+                        'analyticalMethodSearch'          => data_get($request, 'analyticalMethodSearch', null),
+                        'dataSourceLaboratorySearch'      => data_get($request, 'dataSourceLaboratorySearch', null),
+                        'dataSourceOrganisationSearch'    => data_get($request, 'dataSourceOrganisationSearch', null),
+                        'qualityAnalyticalMethodsSearch'  => data_get($request, 'qualityAnalyticalMethodsSearch', null),
+                      ]) }}" class="text-blue-500 hover:underline">
+                    View
+                  </a>
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+          {{$queries->links('pagination::tailwind')}}
         </div>
       </div>
     </div>
   </div>
-  <div class="hidden">
-    <span class="text-purple-600"></span>
-    <span class="text-teal-600"></span>
-    <span class="text-orange-800"></span>
-  </div>
+</div>
+<div class="hidden">
+  <span class="text-purple-600"></span>
+  <span class="text-teal-600"></span>
+  <span class="text-orange-800"></span>
+</div>
 </x-app-layout>
