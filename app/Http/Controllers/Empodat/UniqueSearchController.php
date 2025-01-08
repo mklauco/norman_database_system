@@ -80,7 +80,7 @@ class UniqueSearchController extends Controller
     {
         DatabaseEntity::where('code', 'empodat')->update([
             // 'last_update' => EmpodatMain::max('updated_at'),
-            'number_of_records' => EmpodatMain::where('empodat_main.substance_id', '<', 400000)->count()
+            'number_of_records' => EmpodatMain::leftjoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')->where('susdat_substances.relevant_to_norman', 1)->count()
         ]);
         DatabaseEntity::where('code', 'susdat')->update([
             'last_update' => Substance::max('updated_at'),
