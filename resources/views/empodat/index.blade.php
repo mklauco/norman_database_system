@@ -76,7 +76,7 @@
             @foreach ($empodats as $e)
             <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
               <td class="p-1 text-center">
-                {{ $e->id }}
+                {{ $e->id }} <livewire:empodat.show-empodat-entry :recordId="$e->id" />
               </td>
               <td class="p-1 text-center">
                 {{ $e->substance_name }}
