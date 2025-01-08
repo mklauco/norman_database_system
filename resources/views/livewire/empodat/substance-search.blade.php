@@ -29,9 +29,12 @@
             </label>
         </div>
     </div>
-    <span class="text-gray-500 text-sm">the search is limited to 50 substances</span>
+    <span class="text-gray-600 text-sm">the search is limited to 30 substances</span>
     <span class="text-gray-500 text-sm">search type: {{$searchType}}</span>
     <div>
+        @if($resultsAvailable == true)
+        <span class="text-red-800 text-sm block">To include specific substance in search, please check the substance and click on <span class="font-semibold">Add Selected Substances to Search</span> at the bottom</span>
+        @endif
         @foreach ($results as $result)
         <div class="block p-1">
             <span>
@@ -45,7 +48,7 @@
         @if($resultsAvailable == true)
         @if($results->count() > 0)
         <div class="flex justify-end m-2">
-            <button type="button" wire:click="applySubstanceFilter" class="btn-submit"> Add Selected Substances to Search</button>
+            <button type="button" wire:click="applySubstanceFilter" class="btn-submit-danger"> Add Selected Substances to Search</button>
             <button 
             type="button" 
             wire:click="clearFilters" 
