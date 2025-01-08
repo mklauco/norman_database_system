@@ -231,7 +231,8 @@ class EmpodatController extends Controller
     $empodats = EmpodatMain::with('concetrationIndicator')
     ->join('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
-    ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id');
+    ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
+    ->where('empodat_main.substance_id', '<', 40000);
     
     // Apply filters only when necessary
     if (!empty($countrySearch)) {
