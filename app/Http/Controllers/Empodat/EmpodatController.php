@@ -232,7 +232,6 @@ class EmpodatController extends Controller
     ->join('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
     ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
-    ->leftJoin('list_countries', 'empodat_stations.country_id', '=', 'list_countries.id')
     ->where('empodat_main.substance_id', '<', 40000);
     
     // Apply filters only when necessary
