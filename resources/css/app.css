@@ -42,6 +42,10 @@
     @apply bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
   }
 
+  .btn-submit-danger{
+    @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
+  }
+
   .btn-clear{
     @apply border border-slate-500 text-slate-500 hover:bg-slate-300 hover:text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
   }
