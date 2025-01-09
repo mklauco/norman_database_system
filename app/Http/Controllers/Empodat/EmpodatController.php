@@ -10,12 +10,13 @@ use App\Models\Empodat\EmpodatMain;
 use App\Models\List\TypeDataSource;
 use App\Http\Controllers\Controller;
 use App\Models\Empodat\SearchMatrix;
-use App\Models\List\AnalyticalMethods;
+use App\Models\List\AnalyticalMethod;
 use App\Models\Empodat\SearchCountries;
 use App\Models\List\DataSourceLaboratory;
 use App\Models\List\ConcentrationIndicator;
 use App\Models\List\DataSourceOrganisation;
 use App\Models\SLE\SuspectListExchangeSource;
+use App\Models\List\QualityEmpodatAnalyticalMethod;
 use App\Models\List\QualityEmpodatAnalyticalMethods;
 
 class EmpodatController extends Controller
@@ -117,7 +118,7 @@ class EmpodatController extends Controller
     }
     
     $analyticalMethodsList = [];
-    $analyticalMethods = AnalyticalMethods::all();
+    $analyticalMethods = AnalyticalMethod::all();
     foreach($analyticalMethods as $s){
       $analyticalMethodsList[$s->id] = $s->name;
     }
@@ -234,6 +235,7 @@ class EmpodatController extends Controller
     ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
     ->leftJoin('list_countries', 'empodat_stations.country_id', '=', 'list_countries.id')
     ->where('susdat_substances.relevant_to_norman', 1);
+    // ->where('empodat_main.id', 10779391);
     
     // Apply filters only when necessary
     if (!empty($countrySearch)) {

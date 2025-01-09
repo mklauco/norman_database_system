@@ -32,7 +32,7 @@
         <div class="text-gray-600 flex border-l-2 border-white">
           @if($displayOption == 1)
           {{-- use simple output --}}
-          @livewire('empodat.query-counter', ['queryId' => $query_log_id, 'empodatsCount' => $empodatsCount])
+          @livewire('empodat.query-counter', ['queryId' => $query_log_id, 'empodatsCount' => $empodatsCount, 'count_again' => request()->has('page') ? false : true])
           
           @else
           {{-- use advanced output --}}
@@ -76,7 +76,7 @@
             @foreach ($empodats as $e)
             <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
               <td class="p-1 text-center">
-                {{ $e->id }} <livewire:empodat.show-empodat-entry :recordId="$e->id" />
+                <livewire:empodat.show-empodat-entry :recordId="$e->id" />
               </td>
               <td class="p-1 text-center">
                 {{ $e->substance_name }}

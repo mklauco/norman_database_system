@@ -2,7 +2,7 @@
 
 namespace App\Models\Empodat;
 
-use App\Models\List\Countries;
+use App\Models\List\Country;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -18,6 +18,6 @@ class SearchCountries extends Model
     ];
 
     public function country(){
-      return $this->hasOne(Countries::class, 'id', 'country_id');
+      return $this->hasOne(Country::class, 'id', 'country_id');
     }
 }
