@@ -43,7 +43,7 @@
             </span> 
         </div>        
         
-        <div class="ml-1">
+        {{-- <div class="ml-1">
             @if(auth()->check())
             <button wire:click="downloadCsv" class="btn-download py-2 px-2">
                 Download IDs as CSV
@@ -53,7 +53,7 @@
                 Downloads are available for registered users only.
             </button>
             @endif
-        </div>
+        </div> --}}
         
     </div>
 </div>

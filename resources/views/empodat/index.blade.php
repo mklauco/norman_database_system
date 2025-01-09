@@ -25,6 +25,7 @@
             'dataSourceLaboratorySearch'      => $dataSourceLaboratorySearch,
             'dataSourceOrganisationSearch'      => $dataSourceOrganisationSearch,
             'qualityAnalyticalMethodsSearch'      => $qualityAnalyticalMethodsSearch,
+            'query_log_id'                  => $query_log_id
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
@@ -58,6 +59,9 @@
           </div>  
           
           @endif
+
+          <div class="py-2 px-2"><a href="{{ route('codsearch.download', ['query_log_id' => $query_log_id]) }}" class="btn-download">Download</a></div>
+
         </div>
         
         <table class="table-standard">
