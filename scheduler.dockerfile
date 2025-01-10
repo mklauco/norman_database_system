@@ -48,10 +48,10 @@ RUN useradd -u 1002 -ms /bin/bash -g deployer deployer
 COPY . /var/www
 
 # Copy existing application directory permissions
-# COPY --chown=deployer:deployer . /var/www
+COPY --chown=deployer:deployer . /var/www
 
 # Change current user to www
-# USER deployer
+USER deployer
 
 # Expose port 9000 and start php-fpm server
 # EXPOSE 9000
