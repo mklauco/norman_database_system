@@ -12,14 +12,16 @@ class QueryCounter extends Component
     public $queryId; // The ID of the query to execute
     public $countResult; // The result of the COUNT operation
     public $isLoaded = false; // Flag to indicate if the query has been executed
+    public $count_again = true; // Flag to indicate if the query has been executed
     public $sqlQuery;
     public $empodatsCount;
     public $loadingMessage = null;
     
     
-    public function mount($queryId, $empodatsCount)
+    public function mount($queryId, $empodatsCount, $count_again)
     {
         $this->queryId = $queryId;
+        $this->count_again = $count_again;
         $this->empodatsCount = $empodatsCount;
     }
     
@@ -29,7 +31,7 @@ class QueryCounter extends Component
         // Retrieve the SQL query from the QueryLog table
         $this->sqlQuery = QueryLog::where('id', $this->queryId)->value('query');
         
-        if ($this->sqlQuery) {
+        if ($this->sqlQuery && ($this->count_again == true)) {
             // Modify the query to perform COUNT operation
             $countQuery = "SELECT COUNT(*) as count FROM ({$this->sqlQuery}) as subquery";
             
@@ -47,6 +49,14 @@ class QueryCounter extends Component
         } else {
             $this->countResult = 'Query not found.';
         }
+
+        if($this->count_again == false){
+            $q = QueryLog::find($this->queryId);
+            $content = json_decode($q->content, true);
+            $this->countResult = $content['count'];
+        }
+        	
+
         
         $this->isLoaded = true;
         

@@ -9,13 +9,16 @@ use App\Models\Backend\QueryLog;
 use App\Models\Empodat\EmpodatMain;
 use App\Models\List\TypeDataSource;
 use App\Http\Controllers\Controller;
+use App\Jobs\Empodat\DownloadCsvJob;
 use App\Models\Empodat\SearchMatrix;
-use App\Models\List\AnalyticalMethods;
+use App\Models\List\AnalyticalMethod;
 use App\Models\Empodat\SearchCountries;
+use Illuminate\Support\Facades\Storage;
 use App\Models\List\DataSourceLaboratory;
 use App\Models\List\ConcentrationIndicator;
 use App\Models\List\DataSourceOrganisation;
 use App\Models\SLE\SuspectListExchangeSource;
+use App\Models\List\QualityEmpodatAnalyticalMethod;
 use App\Models\List\QualityEmpodatAnalyticalMethods;
 
 class EmpodatController extends Controller
@@ -76,6 +79,33 @@ class EmpodatController extends Controller
     //
   }
   
+  public function startDownloadJob($query_log_id){
+    
+    // $q = QueryLog::find($query_log_id);
+    // dd($query_log_id, $q->query);
+    // Dispatch the job to the queue
+    $user = auth()->user();
+    // dd($user->email);
+    DownloadCsvJob::dispatch($query_log_id, $user);
+    
+    session()->flash('success', 'The CSV file is being generated. You will receive an email once it is ready for download.');
+    return back();
+  }
+  
+  public function downloadCsv($filename){
+    $directory = 'exports/empodat';
+    $path = Storage::path("{$directory}/{$filename}");
+    // $path = storage_path("app/exports/empodat/.$filename");
+    
+    if (!file_exists($path)) {
+      abort(404);
+    }
+    
+    return response()->download($path, $filename, [
+      'Content-Type' => 'text/csv',
+    ]);
+  }
+  
   public function filter(Request $request)
   {
     // dd($request->all());
@@ -117,7 +147,7 @@ class EmpodatController extends Controller
     }
     
     $analyticalMethodsList = [];
-    $analyticalMethods = AnalyticalMethods::all();
+    $analyticalMethods = AnalyticalMethod::all();
     foreach($analyticalMethods as $s){
       $analyticalMethodsList[$s->id] = $s->name;
     }
@@ -234,6 +264,7 @@ class EmpodatController extends Controller
     ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
     ->leftJoin('list_countries', 'empodat_stations.country_id', '=', 'list_countries.id')
     ->where('susdat_substances.relevant_to_norman', 1);
+    // ->where('empodat_main.id', 10779391);
     
     // Apply filters only when necessary
     if (!empty($countrySearch)) {
@@ -325,7 +356,7 @@ class EmpodatController extends Controller
       'list_countries.code AS country_code',
     );
     
-
+    
     $main_request = [
       'countrySearch'                   => $countrySearch,
       'matrixSearch'                    => $matrixSearch,
@@ -342,7 +373,7 @@ class EmpodatController extends Controller
       'dataSourceOrganisationSearch'    => $dataSourceOrganisationSearch,
       'qualityAnalyticalMethodsSearch'  => $qualityAnalyticalMethodsSearch,
     ];
-
+    // dd($request);
     if(!$request->has('page')){
       $now = now();
       $bindings = $empodats->getBindings();
@@ -357,7 +388,7 @@ class EmpodatController extends Controller
       ]);
       // dd($request->all());
     }
-
+    
     if ($request->displayOption == 1) {
       // use simple pagination
       $empodats = $empodats->orderBy('empodat_main.id', 'asc')

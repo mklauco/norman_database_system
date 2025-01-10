@@ -25,6 +25,7 @@
             'dataSourceLaboratorySearch'      => $dataSourceLaboratorySearch,
             'dataSourceOrganisationSearch'      => $dataSourceOrganisationSearch,
             'qualityAnalyticalMethodsSearch'      => $qualityAnalyticalMethodsSearch,
+            'query_log_id'                  => $query_log_id
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
@@ -32,7 +33,7 @@
         <div class="text-gray-600 flex border-l-2 border-white">
           @if($displayOption == 1)
           {{-- use simple output --}}
-          @livewire('empodat.query-counter', ['queryId' => $query_log_id, 'empodatsCount' => $empodatsCount])
+          @livewire('empodat.query-counter', ['queryId' => $query_log_id, 'empodatsCount' => $empodatsCount, 'count_again' => request()->has('page') ? false : true])
           
           @else
           {{-- use advanced output --}}
@@ -58,6 +59,9 @@
           </div>  
           
           @endif
+
+          <div class="py-2 px-2"><a href="{{ route('codsearch.download', ['query_log_id' => $query_log_id]) }}" class="btn-download">Download</a></div>
+
         </div>
         
         <table class="table-standard">
@@ -76,7 +80,7 @@
             @foreach ($empodats as $e)
             <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
               <td class="p-1 text-center">
-                {{ $e->id }} <livewire:empodat.show-empodat-entry :recordId="$e->id" />
+                <livewire:empodat.show-empodat-entry :recordId="$e->id" />
               </td>
               <td class="p-1 text-center">
                 {{ $e->substance_name }}
