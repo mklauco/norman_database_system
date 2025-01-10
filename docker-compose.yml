@@ -1,7 +1,37 @@
 # version: '3.9'
 services:
   
-  #PHP Service
+  task-app-schedule:
+    build:
+      context: .
+      dockerfile: scheduler.dockerfile
+    # image: laravel-app
+    command: ["php", "artisan", "schedule:work"]
+    stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
+    container_name: nds-app-schedule
+    restart: unless-stopped
+    tty: true
+    volumes:
+        - ./:/var/www
+    networks:
+    - mkassets_docker_network
+
+  task-app-queue:
+    build:
+      context: .
+      dockerfile: scheduler.dockerfile
+    # image: laravel-app
+    command: ["php", "artisan", "queue:listen"]
+    stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
+    container_name: nds-app-queue
+    restart: unless-stopped
+    tty: true
+    volumes:
+        - ./:/var/www
+    networks:
+    - mkassets_docker_network
+
+  #Laravel Service
   app:
     build:
       context: .
@@ -18,24 +48,6 @@ services:
         - ./_php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - mkassets_docker_network
-
-  task:
-    build:
-      context: .
-      dockerfile: scheduler.dockerfile
-    # image: laravel-app
-    command: ["php", "artisan", "schedule:work"]
-    # command: ["php", "artisan", "schedule:run"]
-    stop_signal: SIGTERM # Set this for graceful shutdown if you're using fpm-apache or fpm-nginx
-    container_name: nds-app-task
-    restart: unless-stopped
-    tty: true
-    # user: "${DEPLOYER_UID}:${DEPLOYER_GID}"
-    # working_dir: /var/www
-    volumes:
-        - ./:/var/www
-    networks:
-    - mkassets_docker_network
 
   # Nginx Service behing reverse proxy
   # see: https://github.com/nginx-proxy/acme-companion?tab=readme-ov-file
