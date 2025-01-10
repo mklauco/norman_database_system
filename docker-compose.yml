@@ -34,6 +34,7 @@ services:
     tty: true
     volumes:
       - ./:/var/www
+      - ./_php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - mkassets_docker_network
 
@@ -50,6 +51,7 @@ services:
     tty: true
     volumes:
       - ./:/var/www
+      - ./_php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - mkassets_docker_network
 
