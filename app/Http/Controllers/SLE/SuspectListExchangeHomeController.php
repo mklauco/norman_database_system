@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Ecotox;
+namespace App\Http\Controllers\SLE;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\DatabaseEntity;
+use App\Http\Controllers\Controller;
+use App\Models\SLE\SuspectListExchangeSource;
 
-class EcotoxController extends Controller
+class SuspectListExchangeHomeController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,7 +15,11 @@ class EcotoxController extends Controller
     public function index()
     {
         //
-        return redirect()->route('ecotox.home.index');
+        $sleSources = SuspectListExchangeSource::orderBy('order', 'asc')->where('show', 1)->get();
+        return view('sle.home.index', [
+            'sleSources' => $sleSources,
+        ]);
+
     }
 
     /**
@@ -62,5 +68,15 @@ class EcotoxController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function countAll()
+    {
+        DatabaseEntity::where('code', 'sle')->update([
+            'last_update' => SuspectListExchangeSource::max('updated_at'),
+            'number_of_records' => SuspectListExchangeSource::count()
+        ]);
+        session()->flash('success', 'Database counts updated successfully');
+        return redirect()->back();
     }
 }
