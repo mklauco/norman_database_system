@@ -9,32 +9,49 @@
         <div class="p-6 text-gray-900">
           
           <div class="grid lg:grid-cols-3 md:grid-cols-2 gap-4">
-
+            
             @role('super_admin')
             <div class="col-span-2 bg-white border-gray-100 shadow-lg rounded-md overflow-hidden p-4">
               <div class="font-bold">
-                Execute processes
+                Execute processes <i class="fas fa-lock ml-2"></i>
               </div>
-              <div class="mt-2 flex gap-2">
+              <div class="mt-2 gap-2">
+                <div class="font-bold text-gray-600">
+                  Empodat:
+                </div>
+
+                <div class="flex gap-2">
                 <form action="{{route('cod.unique.search.countries')}}" method="POST">
                   @csrf
                   <button type="submit" class="btn-submit">Generate Unique Countries</button>
                 </form>
-
+                
                 <form action="{{route('cod.unique.search.matrices')}}" method="POST">
                   @csrf
                   <button type="submit" class="btn-submit">Generate Unique Ecosystems</button>
                 </form>
-
+                
                 <form action="{{route('update.dbentities.counts')}}" method="POST">
                   @csrf
                   <button type="submit" class="btn-submit">Update DB Entities</button>
                 </form>
+                </div>
+              </div>
 
+              <div class="mt-2 gap-2">
+                <div class="font-bold text-gray-600">
+                  SLE:
+                </div>
+                <div class="flex gap-2">
+                <form action="{{route('slehome.countAll')}}" method="GET">
+                  @csrf
+                  <button type="submit" class="btn-submit">Count All Sources</button>
+                </form>
+                </div>
               </div>
             </div>
             @endrole
-
+            
             <div class="bg-white border-gray-100 shadow-lg rounded-md overflow-hidden p-4">
               <div class="font-bold">
                 API Tokens
@@ -47,7 +64,7 @@
                 @endif  
               </div>
             </div>
-
+            
             <div class="col-span-2 bg-white border-gray-100 shadow-lg rounded-md overflow-hidden p-4">
               <div class="font-bold">
                 SUSDAT duplicates 
@@ -55,7 +72,7 @@
               <div class="mt-2">
               </div>
             </div>
-
+            
             <div class="bg-white border-gray-100 shadow-lg rounded-md overflow-hidden p-4">
               <div class="font-bold">
                 Database Statistics
@@ -63,7 +80,7 @@
               <div class="mt-2">
               </div>
             </div>
-
+            
           </div> 
           
         </div>
