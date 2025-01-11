@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Ecotox;
+namespace App\Http\Controllers\ARGB;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class EcotoxController extends Controller
+class AntibioticResistanceBacteriaGeneHomeController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,7 +13,7 @@ class EcotoxController extends Controller
     public function index()
     {
         //
-        return redirect()->route('ecotox.home.index');
+        return view('arbg.home.index');
     }
 
     /**

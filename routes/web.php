@@ -6,6 +6,7 @@ use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmailTestController;
 use App\Http\Controllers\Ecotox\EcotoxController;
+use App\Http\Controllers\Backend\GeneralController;
 use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Empodat\DCTItemController;
 use App\Http\Controllers\Empodat\EmpodatController;
@@ -13,9 +14,12 @@ use App\Http\Controllers\Backend\QueryLogController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
+use App\Http\Controllers\Ecotox\EcotoxHomeController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
 use App\Http\Controllers\Empodat\UniqueSearchController;
 use App\Http\Controllers\Dashboard\DashboardMainController;
+use App\Http\Controllers\SLE\SuspectListExchangeHomeController;
+use App\Http\Controllers\ARGB\AntibioticResistanceBacteriaGeneHomeController;
 
 Route::get('/', function () {
     return redirect()->route('landing.index');
@@ -77,8 +81,6 @@ Route::prefix('empodat')->group(function () {
     Route::resource('dctitems', DCTItemController::class)->only(['index']);
     Route::resource('dctitems', DCTItemController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('codsearch', EmpodatController::class);
-    
-    Route::get('general_route/filter', [SubstanceController::class, 'filter'])->name('general_route.filter');
 
     // generate unique search tables
     Route::post('unique/search/country', [UniqueSearchController::class, 'countries'])->name('cod.unique.search.countries');
@@ -90,10 +92,26 @@ Route::prefix('empodat')->group(function () {
     Route::resource('querylog', QueryLogController::class)->middleware('auth');
 }); 
 
-Route::prefix('ecotox')->middleware('auth')->group(function () {
-    Route::resource('general_route', EcotoxController::class);
-    Route::get('general_route/filter', [DatabaseDirectoryController::class, 'index'])->name('general_route.filter');
+Route::prefix('ecotox')->group(function () {
+    Route::resource('ecotoxhome', EcotoxHomeController::class)->only(['index']);;
+    Route::resource('ecotoxhome', EcotoxHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
 }); 
+
+Route::prefix('sle')->group(function () {
+    Route::resource('slehome', SuspectListExchangeHomeController::class)->only(['index']);
+    Route::resource('slehome', SuspectListExchangeHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+    Route::get('slehome/countAll', [SuspectListExchangeHomeController::class, 'countAll'])->middleware('auth')->name('slehome.countAll');
+}); 
+
+Route::prefix('arbg')->group(function () {
+    Route::resource('arbghome', AntibioticResistanceBacteriaGeneHomeController::class)->only(['index']);
+    Route::resource('arbghome', AntibioticResistanceBacteriaGeneHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+}); 
+
+Route::prefix('backend')->group(function () {
+    Route::resource('general_route', GeneralController::class);
+});
 
 
 Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
