@@ -3,24 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Backend\Project;
 use Illuminate\Routing\Controllers\HasMiddleware;
 
 class UserController extends Controller implements HasMiddleware
 {
-
+  
   public static function middleware(): array
   {
-      return [
-          // examples with aliases, pipe-separated names, guards, etc:
-          'role_or_permission:super_admin|admin|user_manager',
-          // new Middleware('role:author', only: ['index']),
-          // new Middleware(\Spatie\Permission\Middleware\RoleMiddleware::using('manager'), except:['show']),
-          // new Middleware(\Spatie\Permission\Middleware\PermissionMiddleware::using('delete records,api'), only:['destroy']),
-      ];
+    return [
+      // examples with aliases, pipe-separated names, guards, etc:
+      'role_or_permission:super_admin|admin|user_manager',
+      // new Middleware('role:author', only: ['index']),
+      // new Middleware(\Spatie\Permission\Middleware\RoleMiddleware::using('manager'), except:['show']),
+      // new Middleware(\Spatie\Permission\Middleware\PermissionMiddleware::using('delete records,api'), only:['destroy']),
+    ];
   }
-
+  
   /**
   * Display a listing of the resource.
   */
@@ -49,6 +50,8 @@ class UserController extends Controller implements HasMiddleware
     //
     return view('dashboard.users.upsert', [
       'edit' => false,
+      'roles' => \Spatie\Permission\Models\Role::all(),
+      'projects' => Project::all(),
     ]);
   }
   
@@ -58,6 +61,30 @@ class UserController extends Controller implements HasMiddleware
   public function store(Request $request)
   {
     //
+    //
+    $validation_array = [
+      'first_name'    => 'required',
+      'last_name'     => 'required',
+      'email'         => 'required',
+      'roles'         => 'required',
+      'projects'      => 'required',
+    ];
+    $request->validate($validation_array);
+    $temporary_password = Str::random(12);
+    $user = New User();
+    $user->first_name = $request['first_name'];
+    $user->last_name = $request['last_name'];
+    $user->email = $request['email'];
+    $user->password = bcrypt($temporary_password);
+    $user->syncRoles($request['roles']);
+    try {
+      $user->save();
+      $user->projects()->sync($request['projects']);
+    } catch (\Exception $e) {
+      return redirect()->back()->with('error', 'User with this email already exists, or some other error occurred.');
+    }
+    session()->flash('success', 'User created successfully with temporary password: ' . $temporary_password);
+    return redirect()->route('users.index');
   }
   
   /**
@@ -96,14 +123,18 @@ class UserController extends Controller implements HasMiddleware
       'projects'      => 'required',
     ];
     $request->validate($validation_array);
-
+    
     $user = User::find($id);
     $user->first_name = $request['first_name'];
     $user->last_name = $request['last_name'];
     $user->email = $request['email'];
     $user->syncRoles($request['roles']);
     $user->projects()->sync($request['projects']);
-    $user->save();
+    try {
+      $user->save();
+    } catch (\Exception $e) {
+      return redirect()->route('users.edit', ['id' => $id])->with('error', 'User with this email already exists, or some other error occurred.');
+    }
     return redirect()->route('users.index');
   }
   
@@ -114,7 +145,7 @@ class UserController extends Controller implements HasMiddleware
   {
     //
   }
-
+  
   public function getVisibleColumns()
   {
     return [
