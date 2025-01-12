@@ -61,7 +61,7 @@
                         @endphp
                         @foreach ($roles as $role)
                         <label class="inline-flex items-center space-x-2">
-                          <input type="checkbox" name="roles[]" value="{{ $role->name }}" @if($user->hasRole($role->name)) checked @endif >
+                          <input type="checkbox" name="roles[]" value="{{ $role->name }}" @if (isset($user) && $user->hasRole($role->name)) checked @endif >
                           <span class="pl-1 text-sm">{{ $role->name }}</span>
                         </label>
                         @endforeach
@@ -74,7 +74,7 @@
                       <div class="grid grid-cols-3 gap-1">
                         @foreach ($projects as $project)
                         <label class="inline-flex items-center space-x-2">
-                          <input type="checkbox" name="projects[]" value="{{ $project->id }}" @if($user->projects->contains($project->id)) checked @endif >
+                          <input type="checkbox" name="projects[]" value="{{ $project->id }}" @if(isset($user) && $user->projects->contains($project->id)) checked @endif >
                           <span class="pl-1 text-sm">{{ $project->name }}</span>
                         </label>
                         @endforeach
