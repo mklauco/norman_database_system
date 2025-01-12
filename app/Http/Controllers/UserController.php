@@ -4,9 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\Backend\Project;
+use Illuminate\Routing\Controllers\HasMiddleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+
+  public static function middleware(): array
+  {
+      return [
+          // examples with aliases, pipe-separated names, guards, etc:
+          'role_or_permission:super_admin|admin|user_manager',
+          // new Middleware('role:author', only: ['index']),
+          // new Middleware(\Spatie\Permission\Middleware\RoleMiddleware::using('manager'), except:['show']),
+          // new Middleware(\Spatie\Permission\Middleware\PermissionMiddleware::using('delete records,api'), only:['destroy']),
+      ];
+  }
+
   /**
   * Display a listing of the resource.
   */
@@ -33,6 +47,9 @@ class UserController extends Controller
   public function create()
   {
     //
+    return view('dashboard.users.upsert', [
+      'edit' => false,
+    ]);
   }
   
   /**
@@ -57,6 +74,12 @@ class UserController extends Controller
   public function edit(string $id)
   {
     //
+    return view('dashboard.users.upsert', [
+      'edit' => true,
+      'user' => User::with('projects')->find($id),
+      'roles' => \Spatie\Permission\Models\Role::all(),
+      'projects' => Project::all(),
+    ]);    
   }
   
   /**
@@ -65,6 +88,23 @@ class UserController extends Controller
   public function update(Request $request, string $id)
   {
     //
+    $validation_array = [
+      'first_name'    => 'required',
+      'last_name'     => 'required',
+      'email'         => 'required',
+      'roles'         => 'required',
+      'projects'      => 'required',
+    ];
+    $request->validate($validation_array);
+
+    $user = User::find($id);
+    $user->first_name = $request['first_name'];
+    $user->last_name = $request['last_name'];
+    $user->email = $request['email'];
+    $user->syncRoles($request['roles']);
+    $user->projects()->sync($request['projects']);
+    $user->save();
+    return redirect()->route('users.index');
   }
   
   /**

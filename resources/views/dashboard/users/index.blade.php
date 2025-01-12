@@ -24,7 +24,11 @@
                 <td class="py-1 px-2">{{$user->first_name}}</td>
                 <td class="py-1 px-2">{{$user->last_name}}</td>
                 <td class="py-1 px-2">{{$user->email}}</td>
-                <td class="py-1 px-2">{{$user->getRoleNames()}}</td>
+                <td class="py-1 px-2">
+                  @foreach ($user->getRoleNames() as $role)
+                  {{ $role }}@if (!$loop->last), @endif
+                  @endforeach
+                </td>
                 <td class="py-1 px-2">{{$usersWithTokens[$user->id]}}</td>
                 <td class="py-1 px-2">
                   @foreach ($user->projects as $project)
