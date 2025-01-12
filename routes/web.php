@@ -15,7 +15,9 @@ use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\DatabaseDirectoryController;
 use App\Http\Controllers\Ecotox\EcotoxHomeController;
+use App\Http\Controllers\Indoor\IndoorHomeController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
+use App\Http\Controllers\Passive\PassiveHomeController;
 use App\Http\Controllers\Empodat\UniqueSearchController;
 use App\Http\Controllers\Dashboard\DashboardMainController;
 use App\Http\Controllers\SLE\SuspectListExchangeHomeController;
@@ -107,6 +109,16 @@ Route::prefix('sle')->group(function () {
 Route::prefix('arbg')->group(function () {
     Route::resource('arbghome', AntibioticResistanceBacteriaGeneHomeController::class)->only(['index']);
     Route::resource('arbghome', AntibioticResistanceBacteriaGeneHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+}); 
+
+Route::prefix('indoor')->group(function () {
+    Route::resource('indoorhome', IndoorHomeController::class)->only(['index']);
+    Route::resource('indoorhome', IndoorHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+}); 
+
+Route::prefix('passive')->group(function () {
+    Route::resource('passivehome', PassiveHomeController::class)->only(['index']);
+    Route::resource('passivehome', PassiveHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
 }); 
 
 Route::prefix('backend')->group(function () {
