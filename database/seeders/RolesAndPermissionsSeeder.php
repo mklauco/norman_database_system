@@ -22,16 +22,34 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // create all roles:
-        $roleNames = ['super_admin', 'admin', 'user'];
+        $roleNames = [
+            'super_admin',
+            'admin',
+            'user',
+            'user_manager',
+            'project_manager',
+            'susdat',
+            'empodat',
+            'ecotox',
+            'sle',
+            'arbg',
+            'indoor',
+            'passive'
+        ];
         foreach($roleNames as $role){
             $roles[$role] = Role::firstOrCreate(['name' => $role]);
         }
 
         $users = \App\Models\User::whereIn('email', ['martin.klauco@stuba.sk', 'lubos.cirka@stuba.sk'])->get();
         foreach ($users as $user){
-            $user->assignRole($roles['super_admin']);   
-            $user->assignRole($roles['admin']);   
-            $user->assignRole($roles['user']);   
+            foreach($roleNames as $role){
+                $user->assignRole($roles[$role]);
+            }
+        }
+
+        $users = \App\Models\User::whereNotIn('email', ['martin.klauco@stuba.sk', 'lubos.cirka@stuba.sk'])->get();
+        foreach ($users as $user){
+            $user->assignRole($roles['user']);
         }
     }
 }
