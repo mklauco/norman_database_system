@@ -53,6 +53,31 @@ class EmpodatController extends Controller
   public function show(string $id)
   {
     //
+    $empodat = EmpodatMain::query()
+
+    // Eager load relationships (as needed)
+    ->with('concetrationIndicator') 
+    ->with('station') 
+    ->with('analyticalMethod') 
+    // ->with('substance') 
+
+    // Joins
+    ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
+    // ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
+    // ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
+    // ->leftJoin('list_countries', 'empodat_stations.country_id', '=', 'list_countries.id')
+    // ->join('empodat_data_sources', 'empodat_data_sources.id', '=', 'empodat_main.data_source_id')
+    // ->join('empodat_analytical_methods', 'empodat_analytical_methods.id', '=', 'empodat_main.method_id')
+    // ->join('susdat_category_substance', 'susdat_category_substance.substance_id', '=', 'empodat_main.substance_id')
+    // ->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'empodat_main.substance_id')
+
+    // Finally, constrain it to a single empodat_main.id
+    ->where('empodat_main.id', $id)
+
+    // Execute
+    ->first();  // or ->get(), depending on whether you expect one record or multiple
+
+    return response()->json($empodat);
   }
   
   /**
@@ -374,19 +399,32 @@ class EmpodatController extends Controller
       'qualityAnalyticalMethodsSearch'  => $qualityAnalyticalMethodsSearch,
     ];
     // dd($request);
+    $database_key = 'empodat';
+    $empodatsCount = DatabaseEntity::where('code', $database_key)->first()->number_of_records;
     if(!$request->has('page')){
       $now = now();
       $bindings = $empodats->getBindings();
       $sql = vsprintf(str_replace('?', "'%s'", $empodats->toSql()), $bindings);
+      // try to find same SQL query in the QueryLog table with same total_count based on the query_hash
+      $actual_count = QueryLog::where('query_hash', hash('sha256', $sql))->where('total_count', $empodatsCount)->value('actual_count');
+
+      try {
+        QueryLog::insert([
+          'content' => json_encode(['request' => $main_request, 'bindings' => $bindings]),
+          'query' => $sql,
+          'user_id' => auth()->check() ? auth()->id() : null,
+          'total_count' => $empodatsCount,
+          'actual_count' => is_null($actual_count) ? null : $actual_count,
+          'database_key' => $database_key,
+          'query_hash' => hash('sha256', $sql),
+          'created_at' => $now,
+          'updated_at' => $now,
+        ]);
+      } catch (\Exception $e) {
+        dd($e, hash('sha256', $sql));
+      }
       
-      QueryLog::insert([
-        'content' => json_encode(['request' => $main_request, 'bindings' => $bindings]),
-        'query' => $sql,
-        'user_id' => auth()->check() ? auth()->id() : null,
-        'created_at' => $now,
-        'updated_at' => $now,
-      ]);
-      // dd($request->all());
+      
     }
     
     if ($request->displayOption == 1) {
@@ -404,7 +442,7 @@ class EmpodatController extends Controller
     
     // $empodatTotal = $empodats->count('empodat_main.id');
     // dd($categoriesSearch);
-    $empodatsCount = DatabaseEntity::where('code', 'empodat')->first()->number_of_records;
+    
     // dd($countrySearch);
     return view('empodat.index', [
       'empodats' => $empodats,
@@ -414,3 +452,4 @@ class EmpodatController extends Controller
     ], $main_request);
   }
 }
+

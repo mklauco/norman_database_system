@@ -29,34 +29,68 @@ class QueryCounter extends Component
     {
         
         // Retrieve the SQL query from the QueryLog table
-        $this->sqlQuery = QueryLog::where('id', $this->queryId)->value('query');
+        $q = QueryLog::find($this->queryId);
+        $this->sqlQuery = $q->query;
+        $actual_count = QueryLog::where('query_hash', hash('sha256', $this->sqlQuery))->where('actual_count', '>', 0)->value('actual_count');
+        
         
         if ($this->sqlQuery && ($this->count_again == true)) {
-            // Modify the query to perform COUNT operation
-            $countQuery = "SELECT COUNT(*) as count FROM ({$this->sqlQuery}) as subquery";
-            
-            // Execute the COUNT query and fetch the result
-            $this->countResult = DB::select($countQuery)[0]->count;
-            
-            $q = QueryLog::find($this->queryId);
-            $content = json_decode($q->content, true);
-            // put the new key value pair in the content array
-            $content['count'] = $this->countResult;
-            // update the content with the new key value pair
-            $q->content = json_encode($content);
-            // save the updated content
-            $q->save();              
+            if($actual_count > 0){
+                // Start time measurement
+                $startTime = microtime(true);
+
+                $this->countResult = $actual_count;
+                $this->isLoaded = true;
+                $endTime = microtime(true);
+
+                $executionTime = $endTime - $startTime;
+                $content = json_decode($q->content, true);
+                $content['count'] = $this->countResult;
+                $content['loadExecutionTime'] = number_format($executionTime, 2, ".", "").' s';
+
+                $q->content = json_encode($content);
+                $q->actual_count = $this->countResult;
+                // save the updated content
+                
+                $q->save();
+                return;
+            } else {
+                // Start time measurement
+                $startTime = microtime(true);
+
+                // Modify the query to perform COUNT operation
+                $countQuery = "SELECT COUNT(*) as count FROM ({$this->sqlQuery}) as subquery";
+
+                // Execute the COUNT query and fetch the result
+                $this->countResult = DB::select($countQuery)[0]->count;
+
+                // End time measurement
+                $endTime = microtime(true);
+                $executionTime = $endTime - $startTime;
+
+                
+                $content = json_decode($q->content, true);
+                // put the new key value pair in the content array
+                $content['count'] = $this->countResult;
+                $content['countExecutionTime'] = number_format($executionTime, 2, ".", "").' s';
+                // update the content with the new key value pair
+                $q->content = json_encode($content);
+                $q->actual_count = $this->countResult;
+                // save the updated content
+                
+                $q->save();
+            }          
         } else {
             $this->countResult = 'Query not found.';
         }
-
+        
         if($this->count_again == false){
             $q = QueryLog::find($this->queryId);
             $content = json_decode($q->content, true);
-            $this->countResult = $content['count'];
+            $this->countResult = $q->actual_count;
         }
-        	
-
+        
+        
         
         $this->isLoaded = true;
         
@@ -65,7 +99,7 @@ class QueryCounter extends Component
     public function downloadCsv()
     {
         $this->loadingMessage = 'File storing...';
-
+        
         if (!$this->sqlQuery) {
             session()->flash('error', 'No query available to execute.');
             return;
@@ -102,7 +136,7 @@ class QueryCounter extends Component
         
         // Offer the file as a download link
         $this->loadingMessage = null;
-
+        
         return response()->download($filePath, $name)->deleteFileAfterSend();
     }
     
