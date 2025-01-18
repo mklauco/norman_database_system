@@ -5,32 +5,9 @@
   
   <div class="py-4">
     
-    {{-- // Leaflet --}}
-    {{-- // A basic map is as easy as using the x blade component. --}}
-    
-    
-    {{-- <x-maps-leaflet></x-maps-leaflet> --}}
-    
-    {{-- // Set the centerpoint of the map: --}}
-    {{-- <x-maps-leaflet :centerPoint="['lat' => 52.16, 'long' => 5]"></x-maps-leaflet> --}}
-    
-    {{-- // Set a zoomlevel: --}}
-    {{-- <x-maps-leaflet :zoomLevel="6"></x-maps-leaflet> --}}
-    
-    {{-- // Set markers on the map: --}}
-    
-    {{-- </div> --}}
-    
+        
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
       
-      {{-- <div class="w-32 aspect-square bg-blue-500 flex items-center justify-center"> --}}
-        <div class="bg-white overflow-hidden shadow rounded-lg divide-y divide-gray-200">
-          <div class="px-4 py-5 sm:p-6">
-            <div id="showingMap" class="w-64 h-64">Map:
-              @include('_t.map', ['id' => "1", 'latitude' => 55, 'longitude' => 5, 'locations' => [['lat' => 55, 'lng' => 5, 'popup' => 'ASDF']]])
-            </div>
-          </div>
-        </div>
         
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
           <div class="p-6 text-gray-900">
