@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class QueryLog extends Model
 {
     //
-    protected $fillable = ['content', 'query', 'user_id'];
+    protected $fillable = ['content', 'query', 'user_id', 'total_count', 'database_key', 'query_hash', 'actual_count'];
     
     public function users()
     {
@@ -49,8 +49,8 @@ class QueryLog extends Model
         ->replace('INNER JOIN<br>', '<span class="text-purple-600">INNER JOIN</span><br>')
         ->replace('LEFT JOIN<br>', '<span class="text-purple-600">LEFT JOIN</span><br>')
         ->replace('WHERE<br>', '<span class="text-purple-600">WHERE</span><br>')
-        ->replace('AND<br>', '<span class="text-purple-600">AND</span><br>')
-        ->replace('OR<br>', '<span class="text-purple-600">OR</span><br>')
+        ->replace('AND<br>', '<span class="text-purple-600"> AND</span><br>')
+        ->replace('OR<br>', '<span class="text-purple-600"> OR</span><br>')
         ->replace('ORDER BY<br>', '<span class="text-purple-600">ORDER BY</span><br>')
         ->replace('GROUP BY<br>', '<span class="text-purple-600">GROUP BY</span><br>')
         ->replace('LIMIT<br>', '<span class="text-purple-600">LIMIT</span><br>')
