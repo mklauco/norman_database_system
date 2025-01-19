@@ -60,7 +60,12 @@
           
           @endif
           
-          <div class="py-2 px-2"><a href="{{ route('codsearch.download', ['query_log_id' => $query_log_id]) }}" class="btn-download">Download</a></div>
+          @auth
+          <div class="py-2 px-2"><a href="{{ route('codsearch.download', ['query_log_id' => $query_log_id]) }}" class="btn-download">Download</a></div>  
+          @else
+          <div class="py-2 px-2 text-gray-400"> Downloads are avaiable for registered users only</div>
+          @endauth
+          
           
         </div>
         
@@ -216,6 +221,20 @@
               <!-- Leaflet map container -->
               <div id="map" class="mt-4 w-full h-64 bg-gray-200"></div>
               
+              <div class="font-semibold text-base border-b-2 border-lime-500 text-center">Data Source</div>
+              <!-- We'll loop over stationArray -->
+              <template x-for="(pair, index) in dataSourceArray" :key="index">
+                <!-- index = 0,1,2,... so we can do odd/even backgrounds -->
+                <div :class="index % 2 === 0 ? 'py-1 bg-slate-100' : 'py-1 bg-slate-200'">
+                  <div class="flex justify-between py-1 text-sm">
+                    <!-- pair[0] = key, pair[1] = value -->
+                    <div class="px-1 font-semibold" x-text="pair[0]"></div>
+                    <div class="px-1" x-text="pair[1]"></div>
+                  </div>
+                </div>
+              </template>
+
+
             </div>
             
             <!-- Modal Footer -->
@@ -237,6 +256,7 @@
               mapInstance: null,
               stationArray: [],
               analyticalMethodArray: [],
+              dataSourceArray: [],
               
               initLeaflet() {
                 // We'll initialize Leaflet once when component loads
@@ -276,9 +296,9 @@
                   } else {
                     this.stationArray = [];
                   }
-
+                  
                   // Build an array of analyticalMethod entries, skipping unwanted keys and empty/null values
-                  console.log(this.record);
+                  // console.log(this.record);
                   if (this.record.analytical_method) {
                     const excludedKeys = ['id', 'created_at', 'updated_at'];
                     this.analyticalMethodArray = Object.entries(this.record.analytical_method)
@@ -289,6 +309,19 @@
                     );
                   } else {
                     this.analyticalMethodArray = [];
+                  }
+                  
+                  // Build an array of dataSource entries, skipping unwanted keys and empty/null values
+                  if (this.record.data_source) {
+                    const excludedKeys = ['id', 'created_at', 'updated_at'];
+                    this.dataSourceArray = Object.entries(this.record.data_source)
+                    .filter(([key, val]) => 
+                    !excludedKeys.includes(key) && 
+                    val !== null && 
+                    val !== ''
+                    );
+                  } else {
+                    this.dataSourceArray = [];
                   }
                   
                   // Show the modal

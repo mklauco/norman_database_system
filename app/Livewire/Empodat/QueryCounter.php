@@ -27,74 +27,61 @@ class QueryCounter extends Component
     
     public function init()
     {
-        
-        // Retrieve the SQL query from the QueryLog table
+        // 1. Fetch the QueryLog record
         $q = QueryLog::find($this->queryId);
-        $this->sqlQuery = $q->query;
-        $actual_count = QueryLog::where('query_hash', hash('sha256', $this->sqlQuery))->where('actual_count', '>', 0)->value('actual_count');
         
-        
-        if ($this->sqlQuery && ($this->count_again == true)) {
-            if($actual_count > 0){
-                // Start time measurement
-                $startTime = microtime(true);
-
-                $this->countResult = $actual_count;
-                $this->isLoaded = true;
-                $endTime = microtime(true);
-
-                $executionTime = $endTime - $startTime;
-                $content = json_decode($q->content, true);
-                $content['count'] = $this->countResult;
-                $content['loadExecutionTime'] = number_format($executionTime, 2, ".", "").' s';
-
-                $q->content = json_encode($content);
-                $q->actual_count = $this->countResult;
-                // save the updated content
-                
-                $q->save();
-                return;
-            } else {
-                // Start time measurement
-                $startTime = microtime(true);
-
-                // Modify the query to perform COUNT operation
-                $countQuery = "SELECT COUNT(*) as count FROM ({$this->sqlQuery}) as subquery";
-
-                // Execute the COUNT query and fetch the result
-                $this->countResult = DB::select($countQuery)[0]->count;
-
-                // End time measurement
-                $endTime = microtime(true);
-                $executionTime = $endTime - $startTime;
-
-                
-                $content = json_decode($q->content, true);
-                // put the new key value pair in the content array
-                $content['count'] = $this->countResult;
-                $content['countExecutionTime'] = number_format($executionTime, 2, ".", "").' s';
-                // update the content with the new key value pair
-                $q->content = json_encode($content);
-                $q->actual_count = $this->countResult;
-                // save the updated content
-                
-                $q->save();
-            }          
-        } else {
+        // If the record doesn't exist, bail out
+        if (!$q) {
             $this->countResult = 'Query not found.';
+            return;
         }
         
-        if($this->count_again == false){
-            $q = QueryLog::find($this->queryId);
+        $this->sqlQuery = $q->query;
+        
+        // 2. If user wants to recount
+        if ($this->sqlQuery && $this->count_again) {
+            // See if there's a cached 'actual_count' already stored
+            $actualCount = QueryLog::where('query_hash', hash('sha256', $this->sqlQuery))
+            ->where('actual_count', '>', 0)
+            ->value('actual_count');
+            
+            // Start measuring time
+            $startTime = microtime(true);
+            
+            // 2a. If an 'actual_count' is already known, use that
+            if ($actualCount) {
+                $this->countResult = $actualCount;
+                $executionTimeKey  = 'loadExecutionTime';
+            } 
+            // 2b. Otherwise, run a fresh COUNT query
+            else {
+                $countQuery = "SELECT COUNT(*) as count FROM ({$this->sqlQuery}) as subquery";
+                $this->countResult = DB::select($countQuery)[0]->count;
+                $executionTimeKey  = 'countExecutionTime';
+            }
+            
+            // End time measurement and store it
+            $executionTime = microtime(true) - $startTime;
+            
+            // Update JSON content
             $content = json_decode($q->content, true);
-            $this->countResult = $q->actual_count;
+            $content['count']               = $this->countResult;
+            $content[$executionTimeKey]     = number_format($executionTime, 2, ".", "") . ' s';
+            
+            // Persist changes
+            $q->content      = json_encode($content);
+            $q->actual_count = $this->countResult;
+            $q->save();
+        } 
+        // 3. If *not* recounting, just use the previous actual_count
+        else {
+            $this->countResult = $q->actual_count ?? 'Query not found.';
         }
         
-        
-        
+        // 4. Indicate data has been loaded
         $this->isLoaded = true;
-        
     }
+    
     
     public function downloadCsv()
     {
