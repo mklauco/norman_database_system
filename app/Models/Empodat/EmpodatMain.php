@@ -33,4 +33,9 @@ class EmpodatMain extends Model
     public function analyticalMethod(){
         return $this->belongsTo(EmpodatAnalyticalMethod::class, 'method_id');
     }
+
+    public function dataSource(){
+        return $this->belongsTo(DataSources::class, 'data_source_id');
+    }
+
 }

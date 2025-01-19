@@ -18,8 +18,23 @@ use App\Models\List\DataSourceLaboratory;
 use App\Models\List\ConcentrationIndicator;
 use App\Models\List\DataSourceOrganisation;
 use App\Models\SLE\SuspectListExchangeSource;
-use App\Models\List\QualityEmpodatAnalyticalMethod;
 use App\Models\List\QualityEmpodatAnalyticalMethods;
+use App\Models\List\CoverageFactor;
+use App\Models\List\SamplePreparationMethod;
+use App\Models\List\AnalyticalMethod as AnalyticalMethodList;
+use App\Models\List\StandardisedMethod;
+use App\Models\List\ValidatedMethod;
+use App\Models\List\CorrectedRecovery;
+use App\Models\List\FieldBlank;
+use App\Models\List\Iso;
+use App\Models\List\GivenAnalyte;
+use App\Models\List\LaboratoryParticipate;
+use App\Models\List\SummaryPerformance;
+use App\Models\List\ControlChart;
+use App\Models\List\InternalStandard;
+use App\Models\List\Authority;
+use App\Models\List\SamplingMethod;
+use App\Models\List\SamplingCollectionDevice;
 
 class EmpodatController extends Controller
 {
@@ -54,13 +69,14 @@ class EmpodatController extends Controller
   {
     //
     $empodat = EmpodatMain::query()
-
+    
     // Eager load relationships (as needed)
     ->with('concetrationIndicator') 
     ->with('station') 
     ->with('analyticalMethod') 
+    ->with('dataSource') 
     // ->with('substance') 
-
+    
     // Joins
     ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     // ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
@@ -70,13 +86,44 @@ class EmpodatController extends Controller
     // ->join('empodat_analytical_methods', 'empodat_analytical_methods.id', '=', 'empodat_main.method_id')
     // ->join('susdat_category_substance', 'susdat_category_substance.substance_id', '=', 'empodat_main.substance_id')
     // ->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'empodat_main.substance_id')
-
+    
     // Finally, constrain it to a single empodat_main.id
     ->where('empodat_main.id', $id)
-
+    
     // Execute
     ->first();  // or ->get(), depending on whether you expect one record or multiple
+    
+    // ==============================
+    // REMAP ANALYTICAL METHOD FIELDS
+    // ==============================
+    
+    // 2) Build a lookup table for each model: [id => name]
+    $fieldsMap = $this->fieldMapAnalyticalMethods();
+    $lookups = [];
+    foreach ($fieldsMap as $field => $meta) {
+      $lookups[$field] = $meta['model']::query()->pluck('name', 'id');
+    }
+    
+    // 3) Loop through each field in $empodat->analyticalMethod
+    foreach ($fieldsMap as $field => $meta) {
+      // 3a) Extract the field value (the *_id)
+      $id = data_get($empodat->analyticalMethod, $field);
+      
+      // 3b) If it's not null (or 0, if your DB defaults that way) and we find a match
+      if (!empty($id) && isset($lookups[$field][$id])) {
+        // 3c) Write the "name" to the desired attribute
+        data_set($empodat->analyticalMethod, $meta['targetAttribute'], $lookups[$field][$id]);
+        // 3d) Optionally set the original *_id field to null
+        data_set($empodat->analyticalMethod, $field, null);
+      }
+    }
 
+    // ==============================
+    // END REMAP ANALYTICAL METHOD FIELDS
+    // ==============================
+    
+    
+    // dd($empodat->dataSource);
     return response()->json($empodat);
   }
   
@@ -106,6 +153,10 @@ class EmpodatController extends Controller
   
   public function startDownloadJob($query_log_id){
     
+    if (!auth()->check()) {
+      session()->flash('error', 'You must be logged in to download the CSV file.');
+      return back();
+    }
     // $q = QueryLog::find($query_log_id);
     // dd($query_log_id, $q->query);
     // Dispatch the job to the queue
@@ -407,7 +458,7 @@ class EmpodatController extends Controller
       $sql = vsprintf(str_replace('?', "'%s'", $empodats->toSql()), $bindings);
       // try to find same SQL query in the QueryLog table with same total_count based on the query_hash
       $actual_count = QueryLog::where('query_hash', hash('sha256', $sql))->where('total_count', $empodatsCount)->value('actual_count');
-
+      
       try {
         QueryLog::insert([
           'content' => json_encode(['request' => $main_request, 'bindings' => $bindings]),
@@ -450,6 +501,76 @@ class EmpodatController extends Controller
       'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id,
       // search filters
     ], $main_request);
+  }
+
+  public function fieldMapAnalyticalMethods(){
+        // 1) Map each *_id field to its model & target attribute name:
+        return [
+          'coverage_factor_id'            => [
+            'model' => CoverageFactor::class,
+            'targetAttribute' => 'coverage_factor_name'
+          ],
+          'sample_preparation_method_id'  => [
+            'model' => SamplePreparationMethod::class,
+            'targetAttribute' => 'sample_preparation_method_name'
+          ],
+          'analytical_method_id'          => [
+            'model' => AnalyticalMethodList::class,
+            'targetAttribute' => 'analytical_method'
+          ],
+          'standardised_method_id'        => [
+            'model' => StandardisedMethod::class,
+            'targetAttribute' => 'standardised_method_name'
+          ],
+          'validated_method_id'           => [
+            'model' => ValidatedMethod::class,
+            'targetAttribute' => 'validated_method_name'
+          ],
+          'corrected_recovery_id'         => [
+            'model' => CorrectedRecovery::class,
+            'targetAttribute' => 'corrected_recovery_name'
+          ],
+          'field_blank_id'                => [
+            'model' => FieldBlank::class,
+            'targetAttribute' => 'field_blank_name'
+          ],
+          'iso_id'                        => [
+            'model' => Iso::class,
+            'targetAttribute' => 'iso_name'
+          ],
+          'given_analyte_id'              => [
+            'model' => GivenAnalyte::class,
+            'targetAttribute' => 'given_analyte_name'
+          ],
+          'laboratory_participate_id'     => [
+            'model' => LaboratoryParticipate::class,
+            'targetAttribute' => 'laboratory_participate_name'
+          ],
+          'summary_performance_id'        => [
+            'model' => SummaryPerformance::class,
+            'targetAttribute' => 'summary_performance_name'
+          ],
+          'control_charts_id'             => [
+            'model' => ControlChart::class,
+            'targetAttribute' => 'control_charts_name'
+          ],
+          'internal_standards_id'         => [
+            'model' => InternalStandard::class,
+            'targetAttribute' => 'internal_standards_name'
+          ],
+          'authority_id'                  => [
+            'model' => Authority::class,
+            'targetAttribute' => 'authority_name'
+          ],
+          'sampling_method_id'            => [
+            'model' => SamplingMethod::class,
+            'targetAttribute' => 'sampling_method_name'
+          ],
+          'sampling_collection_device_id' => [
+            'model' => SamplingCollectionDevice::class,
+            'targetAttribute' => 'sampling_collection_device_name'
+          ],
+        ];
   }
 }
 
