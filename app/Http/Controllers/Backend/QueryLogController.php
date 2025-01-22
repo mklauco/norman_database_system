@@ -42,7 +42,7 @@ class QueryLogController extends Controller
         $dataSourceOrganisations    = DataSourceOrganisation::all()->pluck('name', 'id');
         $dataSourceLaboratories     = DataSourceLaboratory::all()->pluck('name', 'id');
         $analyticalMethods          = AnalyticalMethod::all()->pluck('name', 'id');
-        $qualityAnalyticalMethods = QualityEmpodatAnalyticalMethods::all()->pluck('name', 'id');
+        $qualityAnalyticalMethods   = QualityEmpodatAnalyticalMethods::all()->pluck('name', 'id');
 
         // $queries = QueryLog::with('users')->orderBy('id', 'desc')->paginate(20);
         // get max id from query log

@@ -63,10 +63,27 @@
           @auth
           <div class="py-2 px-2"><a href="{{ route('codsearch.download', ['query_log_id' => $query_log_id]) }}" class="btn-download">Download</a></div>  
           @else
-          <div class="py-2 px-2 text-gray-400"> Downloads are avaiable for registered users only</div>
+          <div class="py-2 px-2 text-gray-400">Downloads are available for registered users only</div>
           @endauth
           
           
+        </div>
+        
+        <div class="text-gray-600 flex border-l-2 border-white">
+          Search parameters:&nbsp;<span class="font-semibold">
+          @foreach ($searchParameters as $key => $value)
+          {{-- if value is array|collection then use for each, othervise display value --}}
+          @if (is_array($value) || $value instanceof \Illuminate\Support\Collection)
+          {{-- If $value is an array or collection, loop over each element --}}
+          @foreach ($value as $item)
+          {{ $item }}@if(!$loop->last), @endif
+          @endforeach
+          @else
+          {{-- Otherwise, just display the single value --}}
+          {{ $value }}
+          @endif @if(!$loop->last); @endif
+          @endforeach
+          </span>
         </div>
         
         <table class="table-standard">
@@ -233,8 +250,8 @@
                   </div>
                 </div>
               </template>
-
-
+              
+              
             </div>
             
             <!-- Modal Footer -->
