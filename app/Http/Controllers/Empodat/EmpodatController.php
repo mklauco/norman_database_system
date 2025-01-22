@@ -2,39 +2,41 @@
 
 namespace App\Http\Controllers\Empodat;
 
+use App\Models\List\Iso;
 use Illuminate\Http\Request;
 use App\Models\DatabaseEntity;
+use App\Models\List\Authority;
+use App\Models\List\FieldBlank;
 use App\Models\Susdat\Category;
 use App\Models\Backend\QueryLog;
+use App\Models\List\ControlChart;
+use App\Models\List\GivenAnalyte;
 use App\Models\Empodat\EmpodatMain;
+use App\Models\List\CoverageFactor;
+use App\Models\List\SamplingMethod;
 use App\Models\List\TypeDataSource;
+use App\Models\List\TypeMonitoring;
 use App\Http\Controllers\Controller;
 use App\Jobs\Empodat\DownloadCsvJob;
 use App\Models\Empodat\SearchMatrix;
+use App\Models\List\ValidatedMethod;
 use App\Models\List\AnalyticalMethod;
+use App\Models\List\DataAccesibility;
+use App\Models\List\InternalStandard;
+use App\Models\List\CorrectedRecovery;
 use App\Models\Empodat\SearchCountries;
+use App\Models\List\StandardisedMethod;
+use App\Models\List\SummaryPerformance;
 use Illuminate\Support\Facades\Storage;
 use App\Models\List\DataSourceLaboratory;
+use App\Models\List\LaboratoryParticipate;
 use App\Models\List\ConcentrationIndicator;
 use App\Models\List\DataSourceOrganisation;
+use App\Models\List\SamplePreparationMethod;
+use App\Models\List\SamplingCollectionDevice;
 use App\Models\SLE\SuspectListExchangeSource;
 use App\Models\List\QualityEmpodatAnalyticalMethods;
-use App\Models\List\CoverageFactor;
-use App\Models\List\SamplePreparationMethod;
 use App\Models\List\AnalyticalMethod as AnalyticalMethodList;
-use App\Models\List\StandardisedMethod;
-use App\Models\List\ValidatedMethod;
-use App\Models\List\CorrectedRecovery;
-use App\Models\List\FieldBlank;
-use App\Models\List\Iso;
-use App\Models\List\GivenAnalyte;
-use App\Models\List\LaboratoryParticipate;
-use App\Models\List\SummaryPerformance;
-use App\Models\List\ControlChart;
-use App\Models\List\InternalStandard;
-use App\Models\List\Authority;
-use App\Models\List\SamplingMethod;
-use App\Models\List\SamplingCollectionDevice;
 
 class EmpodatController extends Controller
 {
@@ -121,7 +123,34 @@ class EmpodatController extends Controller
     // ==============================
     // END REMAP ANALYTICAL METHOD FIELDS
     // ==============================
+
+   // ==============================
+    // REMAP SOURCES  FIELDS
+    // ==============================
+
+    $fieldsMap = $this->fieldMapEmpodatDataSources();
+    $lookups = [];
+    foreach ($fieldsMap as $field => $meta) {
+      $lookups[$field] = $meta['model']::query()->pluck('name', 'id');
+    }
     
+    // 3) Loop through each field in $empodat->analyticalMethod
+    foreach ($fieldsMap as $field => $meta) {
+      // 3a) Extract the field value (the *_id)
+      $id = data_get($empodat->dataSource, $field);
+      
+      // 3b) If it's not null (or 0, if your DB defaults that way) and we find a match
+      if (!empty($id) && isset($lookups[$field][$id])) {
+        // 3c) Write the "name" to the desired attribute
+        data_set($empodat->dataSource, $meta['targetAttribute'], $lookups[$field][$id]);
+        // 3d) Optionally set the original *_id field to null
+        data_set($empodat->dataSource, $field, null);
+      }
+    }
+
+    // ==============================
+    // END SOURCES FIELDS
+    // ==============================
     
     // dd($empodat->dataSource);
     return response()->json($empodat);
@@ -572,5 +601,36 @@ class EmpodatController extends Controller
           ],
         ];
   }
+
+  public function fieldMapEmpodatDataSources(){
+    // 1) Map each *_id field to its model & target attribute name:
+    return [
+      'type_data_source_id'            => [
+        'model' => TypeDataSource::class,
+        'targetAttribute' => 'type_data_source_name'
+      ],
+      'type_monitoring_id'            => [
+        'model' => TypeMonitoring::class,
+        'targetAttribute' => 'type_monitoring_name'
+      ],
+      'data_accessibility_id'            => [
+        'model' => DataAccesibility::class,
+        'targetAttribute' => 'data_accessibility_name'
+      ],
+      'organisation_id'            => [
+        'model' => DataSourceLaboratory::class,
+        'targetAttribute' => 'laboratory_name'
+      ],
+      'laboratory1_id'            => [
+        'model' => DataSourceLaboratory::class,
+        'targetAttribute' => 'laboratory_name'
+      ],
+      'laboratory2_id'            => [
+        'model' => DataSourceLaboratory::class,
+        'targetAttribute' => 'laboratory_name_2'
+      ],
+    ];
+  }
+
 }
 
