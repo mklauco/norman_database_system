@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dct_items', function (Blueprint $table) {
+        Schema::create('data_collection_templates', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable()->default(null);
             $table->string('description')->nullable()->default(null);
+            $table->foreignId('database_entity_id')->references('id')->constrained()->on('database_entities');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dct_items');
+        Schema::dropIfExists('dct_templates');
     }
 };
