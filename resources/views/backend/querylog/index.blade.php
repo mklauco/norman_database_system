@@ -94,7 +94,7 @@
                       </div>
                       <div class="px-1 text-right">
                         @if (empty($values))
-                        n/a
+                        <span class="text-gray-500">n/a</span>
                         @else
                         @foreach ($values as $value)
                         {{ $field['dataList'][$value] ?? 'Unknown' }}@if (!$loop->last), @endif
@@ -120,7 +120,7 @@
                         @if(!empty($request['substances']))
                         applied
                         @else
-                        n/a
+                        <span class="text-gray-500">n/a</span>
                         @endif
                       </div>
                     </div>
