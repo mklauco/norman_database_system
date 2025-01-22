@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('data_collection_template_files', function (Blueprint $table) {
+        Schema::create('data_collection_file_uploads', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('data_collection_template_id')->references('id')->constrained()->on('data_collection_templates');
             $table->string('path');
             $table->string('filename');
+            $table->foreignId('database_entity_id')->references('id')->constrained()->on('database_entities');
+            $table->foreignId('data_collection_template_id')->references('id')->nullable()->default(null)->constrained()->on('data_collection_templates');
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('data_collection_template_files');
+        Schema::dropIfExists('data_collection_file_uploads');
     }
 };
