@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('filename');
             $table->foreignId('database_entity_id')->references('id')->constrained()->on('database_entities');
             $table->foreignId('data_collection_template_id')->references('id')->nullable()->default(null)->constrained()->on('data_collection_templates');
+            $table->boolean('is_public')->default(false);
             $table->timestamps();
         });
     }

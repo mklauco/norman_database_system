@@ -5,10 +5,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmailTestController;
-use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Backend\GeneralController;
 use App\Http\Controllers\Backend\ProjectController;
-use App\Http\Controllers\Empodat\DCTItemController;
+use App\Http\Controllers\Empodat\DataCollectionTemplateFileController;
 use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Backend\QueryLogController;
 use App\Http\Controllers\Susdat\DuplicateController;
@@ -75,13 +74,13 @@ Route::prefix('empodat')->group(function () {
     
     Route::resource('codhome', EmpodatHomeController::class)->only(['index']);
     Route::resource('codhome', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
-    Route::get('dctitems/dctupload/{dctitem_id}', [DCTItemController::class, 'uploadNewTemplate'])->name('dctitems.upload_new_template');
-    Route::post('dctitems/dctstore/{dctitem_id}', [DCTItemController::class, 'storeNewTemplate'])->name('dctitems.store_new_template');
-    Route::get('dctitems/dctdownload/{id}', [DCTItemController::class, 'downloadTemplate'])->name('dctitems.donwload_template');
-    Route::delete('dctitems/destroyfiles/{dctitem_id}', [DCTItemController::class, 'destroyFile'])->name('dctitems.delete_template');
-    Route::get('dctitems/files/{id}', [DCTItemController::class, 'indexFiles'])->name('dctitems.index_files');
-    Route::resource('dctitems', DCTItemController::class)->only(['index']);
-    Route::resource('dctitems', DCTItemController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('dctitems/dctupload/{dctitem_id}', [DataCollectionTemplateFileController::class, 'uploadNewTemplate'])->name('dctitems.upload_new_template');
+    Route::post('dctitems/dctstore/{dctitem_id}', [DataCollectionTemplateFileController::class, 'storeNewTemplate'])->name('dctitems.store_new_template');
+    Route::get('dctitems/dctdownload/{id}', [DataCollectionTemplateFileController::class, 'downloadTemplate'])->name('dctitems.donwload_template');
+    Route::delete('dctitems/destroyfiles/{dctitem_id}', [DataCollectionTemplateFileController::class, 'destroyFile'])->name('dctitems.delete_template');
+    Route::get('dctitems/files/{id}', [DataCollectionTemplateFileController::class, 'indexFiles'])->name('dctitems.index_files');
+    Route::resource('dctitems', DataCollectionTemplateFileController::class)->only(['index']);
+    Route::resource('dctitems', DataCollectionTemplateFileController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('codsearch', EmpodatController::class);
 
     // generate unique search tables
