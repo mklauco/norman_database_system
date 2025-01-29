@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('path');
             $table->string('filename');
+            $table->dateTime('uploaded_at');
+            $table->string('file_hash', 64)->nullable();
             $table->foreignId('database_entity_id')->references('id')->constrained()->on('database_entities');
-            $table->foreignId('data_collection_template_id')->references('id')->nullable()->default(null)->constrained()->on('data_collection_templates');
+            $table->foreignId('data_collection_template_id')->nullable()->default(null)->references('id')->on('data_collection_templates');
             $table->boolean('is_public')->default(false);
             $table->timestamps();
         });
