@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sars_cov2_sources', function (Blueprint $table) {
+        Schema::create('sars_cov_file_uploads', function (Blueprint $table) {
             $table->id();
             //$table->string('sars_save')->nullable()->default(null); // ==> created_at  
             $table->string('filename')->nullable()->default(null); //  
             $table->string('directory')->nullable()->default(null); //  
-            $table->tinyInteger('availabilities')->nullable()->default(null); // 0 - available, 1 - not available  
+            $table->boolean('is_available')->nullable()->default(null); // 0 - available, 1 - not available  
             $table->timestamps();
         });
     }
@@ -26,6 +26,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sars_cov2_sources');
+        Schema::dropIfExists('sars_cov_file_uploads');
     }
 };
+

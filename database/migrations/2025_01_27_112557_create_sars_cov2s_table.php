@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sars_cov2s', function (Blueprint $table) {
+        Schema::create('sars_cov_main', function (Blueprint $table) {
             $table->id();
             $table->text('type_of_data')->nullable()->default(null); // Type of data 
             $table->text('data_provider')->nullable()->default(null); // Data provider 
@@ -100,7 +100,7 @@ return new class extends Migration
             $table->text('comment')->nullable()->default(null); // - Text [max. 255 characters]
             $table->float('latitude_decimal_show', precision: 53)->nullable()->default(null); //
             $table->float('longitude_decimal_show', precision: 53)->nullable()->default(null); //
-            $table->foreignId('sars_cov2_source_id')->nullable()->default(null)->references('id')->on('sars_cov2_sources'); // Country
+            $table->foreignId('sars_cov_file_upload_id')->nullable()->default(null)->references('id')->on('sars_cov_file_uploads'); // Country
             $table->timestamps();
         });
     }
@@ -110,6 +110,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sars_cov2s');
+        Schema::dropIfExists('sars_cov_main');
     }
 };

@@ -13,7 +13,7 @@ class SarsCov2SourceSeeder extends Seeder
         DB::disableQueryLog();
 
         $filePath = base_path() . '/database/seeders/seeds_sars/sars0.xlsx';
-        $targetTable = 'sars_cov2_sources';
+        $targetTable = 'sars_cov_file_uploads';
 
         // Stream rows from the CSV in chunks of 1,000
         SimpleExcelReader::create($filePath)
@@ -26,7 +26,7 @@ class SarsCov2SourceSeeder extends Seeder
                         'id' => $r['source_id'],
                         'filename' => $r['sars_source'] ?: null,
                         'directory' => $r['sars_source_dir'] ?: null,
-                        'availabilities' => $r['noexport'] ?: null,
+                        'is_available' => $r['noexport'] ?: null,
                         'created_at' => $r['sars_save'] ?: null,
                     ];
                 });
@@ -36,3 +36,5 @@ class SarsCov2SourceSeeder extends Seeder
             });
     }
 }
+
+// php artisan db:seed --class=Database\Seeders\SarsCov2SourceSeeder

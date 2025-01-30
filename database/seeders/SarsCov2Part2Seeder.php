@@ -13,7 +13,7 @@ class SarsCov2Part2Seeder extends Seeder
         DB::disableQueryLog();
 
         $filePath = base_path() . '/database/seeders/seeds_sars/sars2.xlsx';
-        $targetTable = 'sars_cov2s';
+        $targetTable = 'sars_cov_main';
 
         // Stream rows from the CSV in chunks of 1,000
         SimpleExcelReader::create($filePath)
@@ -108,7 +108,7 @@ class SarsCov2Part2Seeder extends Seeder
                         'comment' => $r['comment'] ?: null,
                         'latitude_decimal_show' => $r['longitude_decimal_show'] ?: null,
                         'longitude_decimal_show' => $r['latitude_decimal_show'] ?: null,
-                        'sars_cov2_source_id' => $r['source_id'] ?: null,
+                        'sars_cov_file_upload_id' => $r['source_id'] ?: null,
                     ];
                 });
 
@@ -117,3 +117,5 @@ class SarsCov2Part2Seeder extends Seeder
             });
     }
 }
+
+//php artisan db:seed --class=Database\Seeders\SarsCov2Part2Seeder
