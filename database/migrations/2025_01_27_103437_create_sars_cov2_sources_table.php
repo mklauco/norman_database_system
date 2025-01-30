@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('sars_cov2_sources', function (Blueprint $table) {
             $table->id();
             //$table->string('sars_save')->nullable()->default(null); // ==> created_at  
-            $table->string('source')->nullable()->default(null); //  
-            $table->string('source_dir')->nullable()->default(null); //  
+            $table->string('filename')->nullable()->default(null); //  
+            $table->string('directory')->nullable()->default(null); //  
             $table->tinyInteger('availabilities')->nullable()->default(null); // 0 - available, 1 - not available  
             $table->timestamps();
         });
