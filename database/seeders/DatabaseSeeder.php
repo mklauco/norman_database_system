@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            
+            /*
             AdminSeeder::class,
             RolesAndPermissionsSeeder::class,
             DatabaseEntitySeeder::class,
@@ -82,6 +82,10 @@ class DatabaseSeeder extends Seeder
             
             //Backend
             ProjectSeeder::class, // testing data
+            */
+            SarsCov2SourceSeeder::class,
+            SarsCov2Part1Seeder::class,
+            SarsCov2Part2Seeder::class,
         ]);
     }
 }
