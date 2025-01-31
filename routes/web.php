@@ -147,7 +147,7 @@ Route::prefix('sars')->group(function () {
     Route::get('search/search/', [SarsController::class, 'search'])->name('sars.search.search');
     Route::get('search/downloadjob/{query_log_id}', [SarsController::class, 'startDownloadJob'])->name('sars.search.download');
     Route::get('search/download/{filename}', [SarsController::class, 'downloadCsv'])
-    ->name('csv.download');
+    ->name('sars.csv.download');
     Route::resource('search', SarsController::class)->names([
         'index'   => 'sars.search.index',
         'create'  => 'sars.search.create',
