@@ -5,9 +5,10 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmailTestController;
+use App\Http\Controllers\Sars\SarsController;
+use App\Http\Controllers\Sars\SarsHomeController;
 use App\Http\Controllers\Backend\GeneralController;
 use App\Http\Controllers\Backend\ProjectController;
-use App\Http\Controllers\Empodat\DataCollectionTemplateFileController;
 use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Backend\QueryLogController;
 use App\Http\Controllers\Susdat\DuplicateController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Passive\PassiveHomeController;
 use App\Http\Controllers\Empodat\UniqueSearchController;
 use App\Http\Controllers\Dashboard\DashboardMainController;
 use App\Http\Controllers\SLE\SuspectListExchangeHomeController;
+use App\Http\Controllers\Empodat\DataCollectionTemplateFileController;
 use App\Http\Controllers\ARGB\AntibioticResistanceBacteriaGeneHomeController;
 
 Route::get('/', function () {
@@ -65,15 +67,34 @@ Route::prefix('susdat')->group(function () {
 }); 
 
 Route::prefix('empodat')->group(function () {
-    Route::get('codsearch/filter/{countrySearch?}/{matrixSearch?}/{sourceSearch?}/{year_from?}/{year_to?}/{displayOption?}', [EmpodatController::class, 'filter'])->name('codsearch.filter');
-    Route::get('codsearch/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
-    Route::get('codsearch/search/', [EmpodatController::class, 'search'])->name('codsearch.search');
-    Route::get('codsearch/downloadjob/{query_log_id}', [EmpodatController::class, 'startDownloadJob'])->name('codsearch.download');
-    Route::get('/codsearch/download/{filename}', [EmpodatController::class, 'downloadCsv'])
-     ->name('csv.download');
+    Route::get('search/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
+    Route::get('search/search/', [EmpodatController::class, 'search'])->name('codsearch.search');
+    Route::get('search/downloadjob/{query_log_id}', [EmpodatController::class, 'startDownloadJob'])->name('codsearch.download');
+    Route::get('search/download/{filename}', [EmpodatController::class, 'downloadCsv'])
+    ->name('csv.download');
+    Route::resource('search', EmpodatController::class)->names([
+        'index'   => 'codsearch.index',
+        'create'  => 'codsearch.create',
+        'store'   => 'codsearch.store',
+        'show'    => 'codsearch.show',
+        'edit'    => 'codsearch.edit',
+        'update'  => 'codsearch.update',
+        'destroy' => 'codsearch.destroy',
+    ]);
     
-    Route::resource('codhome', EmpodatHomeController::class)->only(['index']);
-    Route::resource('codhome', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    // Public routes
+    Route::resource('home', EmpodatHomeController::class)->only(['index'])->names([
+        'index' => 'codhome.index',
+    ]);
+    
+    // Authenticated routes
+    Route::resource('home', EmpodatHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy'])->names([
+        'create' => 'codhome.create',
+        'store' => 'codhome.store',
+        'edit' => 'codhome.edit',
+        'update' => 'codhome.update',
+        'destroy' => 'codhome.destroy',
+    ]);
     Route::get('dctitems/dctupload/{dctitem_id}', [DataCollectionTemplateFileController::class, 'uploadNewTemplate'])->name('dctitems.upload_new_template');
     Route::post('dctitems/dctstore/{dctitem_id}', [DataCollectionTemplateFileController::class, 'storeNewTemplate'])->name('dctitems.store_new_template');
     Route::get('dctitems/dctdownload/{id}', [DataCollectionTemplateFileController::class, 'downloadTemplate'])->name('dctitems.donwload_template');
@@ -81,15 +102,15 @@ Route::prefix('empodat')->group(function () {
     Route::get('dctitems/files/{id}', [DataCollectionTemplateFileController::class, 'indexFiles'])->name('dctitems.index_files');
     Route::resource('dctitems', DataCollectionTemplateFileController::class)->only(['index']);
     Route::resource('dctitems', DataCollectionTemplateFileController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
-    Route::resource('codsearch', EmpodatController::class);
-
+    
+    
     // generate unique search tables
     Route::post('unique/search/country', [UniqueSearchController::class, 'countries'])->name('cod.unique.search.countries');
     Route::post('unique/search/matrix', [UniqueSearchController::class, 'matrices'])->name('cod.unique.search.matrices');
-
-
+    
+    
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
-
+    
     Route::resource('querylog', QueryLogController::class)->middleware('auth');
 }); 
 
@@ -101,7 +122,7 @@ Route::prefix('ecotox')->group(function () {
 Route::prefix('sle')->group(function () {
     Route::resource('slehome', SuspectListExchangeHomeController::class)->only(['index']);
     Route::resource('slehome', SuspectListExchangeHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
-
+    
     Route::get('slehome/countAll', [SuspectListExchangeHomeController::class, 'countAll'])->middleware('auth')->name('slehome.countAll');
 }); 
 
@@ -118,6 +139,40 @@ Route::prefix('indoor')->group(function () {
 Route::prefix('passive')->group(function () {
     Route::resource('passivehome', PassiveHomeController::class)->only(['index']);
     Route::resource('passivehome', PassiveHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+}); 
+
+Route::prefix('sars')->group(function () {  
+    
+    Route::get('search/filter/', [SarsController::class, 'filter'])->name('sars.search.filter');
+    Route::get('search/search/', [SarsController::class, 'search'])->name('sars.search.search');
+    Route::get('search/downloadjob/{query_log_id}', [SarsController::class, 'startDownloadJob'])->name('sars.search.download');
+    Route::get('search/download/{filename}', [SarsController::class, 'downloadCsv'])
+    ->name('csv.download');
+    Route::resource('search', SarsController::class)->names([
+        'index'   => 'sars.search.index',
+        'create'  => 'sars.search.create',
+        'store'   => 'sars.search.store',
+        'show'    => 'sars.search.show',
+        'edit'    => 'sars.search.edit',
+        'update'  => 'sars.search.update',
+        'destroy' => 'sars.search.destroy',
+    ]);
+    
+    // Public routes
+    Route::resource('home', SarsHomeController::class)->only(['index'])->names([
+        'index' => 'sars.home.index',
+    ]);
+    
+    // Authenticated routes
+    Route::resource('home', SarsHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy'])->names([
+        'create' => 'sars.home.create',
+        'store' => 'sars.home.store',
+        'edit' => 'sars.home.edit',
+        'update' => 'sars.home.update',
+        'destroy' => 'sars.home.destroy',
+    ]);
+    
+    
 }); 
 
 Route::prefix('backend')->group(function () {
