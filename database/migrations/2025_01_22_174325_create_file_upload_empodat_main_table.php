@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('data_collection_template_files', function (Blueprint $table) {
+        Schema::create('file_upload_empodat_main', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('data_collection_template_id')->references('id')->constrained()->on('data_collection_templates');
-            $table->string('path');
-            $table->string('filename');
+            $table->foreignId('data_collection_file_id')->references('id')->constrained()->on('data_collection_file_uploads');
+            $table->foreignId('empodat_main_id')->references('id')->constrained()->on('empodat_main');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('data_collection_template_files');
+        Schema::dropIfExists('file_upload_empodat_main');
     }
 };

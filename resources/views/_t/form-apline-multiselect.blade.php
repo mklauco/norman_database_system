@@ -12,7 +12,7 @@ $active_ids = [];
 @endif --}}
 
 {{-- {{ var_dump($list) }} --}}
-<div class="w-full max-w-lg">
+<div class="w-full ">
     <!-- Start Component -->
     <div
     x-data="multiselect(

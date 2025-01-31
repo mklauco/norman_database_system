@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Empodat;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Models\Empodat\DCTFile;
-use App\Models\Empodat\DCTItem;
+use App\Models\Empodat\DataCollectionTemplate;
+use App\Models\Empodat\DataCollectionTemplateFile;
 use App\Http\Controllers\Controller;
 
-class DCTItemController extends Controller
+class DataCollectionTemplateFileController extends Controller
 {
     /**
     * Display a listing of the resource.
@@ -16,7 +16,7 @@ class DCTItemController extends Controller
     public function index()
     {
         //
-        $dctitems = DCTItem::with('files')->orderBy('id', 'desc')->get();
+        $dctitems = DataCollectionTemplateFile::with('files')->orderBy('id', 'desc')->get();
         return view('empodat.dctitems.index', [
             'dctitems' => $dctitems
         ]);
@@ -46,7 +46,7 @@ class DCTItemController extends Controller
 
         $request->validate($validation);
 
-        $dctitem = New DCTItem();
+        $dctitem = New DataCollectionTemplateFile();
         $dctitem->name = $request->name;
         $dctitem->description = $request->description;
         try {
@@ -72,7 +72,7 @@ class DCTItemController extends Controller
     {
         //
         return view('empodat.dctitems.edit', [
-            'dctitem' => DCTItem::find($id),
+            'dctitem' => DataCollectionTemplateFile::find($id),
             'edit' => true
         ]);
     }
@@ -84,7 +84,7 @@ class DCTItemController extends Controller
     {
         //
 
-        $dctitem = DCTItem::find($id);
+        $dctitem = DataCollectionTemplateFile::find($id);
         $dctitem->name = $request->name;
         $dctitem->file_path = $path;
         try {
@@ -106,14 +106,14 @@ class DCTItemController extends Controller
     public function uploadNewTemplate($dctitem_id)
     {
         return view('empodat.dctitems.uploadNewTemplate', [
-            'dctitem' => DCTItem::find($dctitem_id)
+            'dctitem' => DataCollectionTemplateFile::find($dctitem_id)
         ]);
     }
 
     public function storeNewTemplate(Request $request, $dctitem_id)
     {
 
-        $dctitem = DCTItem::find($dctitem_id);
+        $dctitem = DataCollectionTemplateFile::find($dctitem_id);
 
         if($request->hasFile('file')) {            
             // $fileName = $request->file('file')->getClientOriginalName();
@@ -123,7 +123,7 @@ class DCTItemController extends Controller
             return redirect()->route('dctitems.index')->with('error', 'Data Collection Template could not be uploaded');
         }
 
-        $dctFile = New DCTFile();
+        $dctFile = New DataCollectionTemplate();
 
         try {
             $dctFile->create([
@@ -140,14 +140,14 @@ class DCTItemController extends Controller
     }
 
     public function downloadTemplate($id){
-        $dctFile = DCTFile::find($id);
+        $dctFile = DataCollectionTemplate::find($id);
         return response()->download(storage_path('app/' . $dctFile->path));
 
     }
 
     public function indexFiles($dctitem_id){
-        $dctitem = DCTItem::find($dctitem_id);
-        $files = DCTFile::where('dct_item_id', $dctitem_id)->orderBy('updated_at', 'desc')->get();
+        $dctitem = DataCollectionTemplateFile::find($dctitem_id);
+        $files = DataCollectionTemplate::where('dct_item_id', $dctitem_id)->orderBy('updated_at', 'desc')->get();
         return view('empodat.dctitems.indexFiles', [
             'files' => $files,
             'dctitem' => $dctitem
@@ -155,7 +155,7 @@ class DCTItemController extends Controller
     }
 
     public function destroyFile($id){
-        $dctFile = DCTFile::find($id);
+        $dctFile = DataCollectionTemplate::find($id);
         $dctFile->delete();
         return redirect()->back();
     }

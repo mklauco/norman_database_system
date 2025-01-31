@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_empodats', function (Blueprint $table) {
+        Schema::create('file_upload_project', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->references('id')->constrained()->on('projects');
-            $table->foreignId('empodat_id')->references('id')->constrained()->on('empodat_main');
-            $table->timestamps();
+            $table->foreignId('data_collection_file_id')->references('id')->constrained()->on('data_collection_file_uploads');
+            // $table->timestamps();
         });
     }
 
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('project_empodats');
+        Schema::dropIfExists('file_upload_project');
     }
 };

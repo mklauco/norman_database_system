@@ -75,7 +75,7 @@ class QueryCounter extends Component
         } 
         // 3. If *not* recounting, just use the previous actual_count
         else {
-            $this->countResult = $q->actual_count ?? 'Query not found.';
+            $this->countResult = $q->actual_count ?? 'Count of records for this search has failed.';
         }
         
         // 4. Indicate data has been loaded

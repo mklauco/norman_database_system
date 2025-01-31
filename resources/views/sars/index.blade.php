@@ -1,6 +1,6 @@
 <x-app-layout>
   <x-slot name="header">
-    @include('empodat.header')
+    @include('sars.header')
   </x-slot>
   
   
@@ -10,7 +10,7 @@
         <div class="p-6 text-gray-900" x-data="recordsTable()" x-init="initLeaflet()">
           {{-- main div --}}
           
-          <a href="{{ route('codsearch.filter', [
+          {{-- <a href="{{ route('codsearch.filter', [
             'countrySearch'                   => $countrySearch,
             'matrixSearch'                    => $matrixSearch,
             'sourceSearch'                    => $sourceSearch,
@@ -28,31 +28,31 @@
             'query_log_id'                  => $query_log_id
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
-        </a>
+        </a> --}}
         
         <div class="text-gray-600 flex border-l-2 border-white">
           @if($displayOption == 1)
           {{-- use simple output --}}
-          @livewire('empodat.query-counter', ['queryId' => $query_log_id, 'empodatsCount' => $empodatsCount, 'count_again' => request()->has('page') ? false : true])
+          {{-- @livewire('sars.query-counter', ['queryId' => $query_log_id, 'sarsObjectsCount' => $sarsObjectsCount, 'count_again' => request()->has('page') ? false : true]) --}}
           
           @else
           {{-- use advanced output --}}
-          {{-- <span>Number of matched records: </span><span class="font-bold">&nbsp;{{number_format($empodats->total(), 0, " ", " ") ?? ''}}&nbsp;</span> <span> of {{number_format($empodatsCount, 0, " ", " ") }}</span>. --}}
+          {{-- <span>Number of matched records: </span><span class="font-bold">&nbsp;{{number_format($sarsObjects->total(), 0, " ", " ") ?? ''}}&nbsp;</span> <span> of {{number_format($sarsObjectsCount, 0, " ", " ") }}</span>. --}}
           
           <div  class="py-2">
             Number of matched records:
           </div>
           <div class="py-2 mx-1 font-bold">
-            {{ number_format($empodats->total(), 0, ".", " ") }}
+            {{ number_format($sarsObjects->total(), 0, ".", " ") }}
           </div>
           
           <div  class="py-2">
-            of <span> {{number_format($empodatsCount, 0, " ", " ") }} 
-              @if (is_numeric($empodats->total()))
-              @if ($empodats->total()/$empodatsCount*100 < 0.01)
+            of <span> {{number_format($sarsObjectsCount, 0, " ", " ") }} 
+              @if (is_numeric($sarsObjects->total()))
+              @if ($sarsObjects->total()/$sarsObjectsCount*100 < 0.01)
               which is &le; 0.01% of total records.
               @else
-              which is {{number_format($empodats->total()/$empodatsCount*100, 3, ".", " ") }}% of total records.
+              which is {{number_format($sarsObjects->total()/$sarsObjectsCount*100, 3, ".", " ") }}% of total records.
               @endif
               @endif
             </span> 
@@ -90,52 +90,55 @@
           <thead>
             <tr class="bg-gray-600 text-white">
               <th>ID</th>
-              <th>Substance</th>
-              <th>Concentration</th>
-              <th>Ecosystem/Matrix</th>
+              <th>Sampling date</th>
+              <th>Gene copy</th>
+              <th>Gene copy</th>
+              <th>Ct #</th>
+              <th>Sampling site</th>
+              <th>Population served</th>
+              <th>No. of people SARS-CoV-2 POSITIVE: activate to sort column descending</th>
               <th>Country</th>
-              <th>Sampling year</th>
-              <th>Sampling station</th>
             </tr>
           </thead>
           <tbody>
-            @foreach ($empodats as $e)
+            @foreach ($sarsObjects as $e)
             <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
               <td class="p-1 text-center">
                 <div  class="">
                   {{ $e->id }}
-                  {{-- <livewire:empodat.show-empodat-entry :recordId="$e->id" /> --}}
-                  <a href="{{ route('codsearch.show', $e->id) }}" class="link-lime-text" x-on:click.prevent="openModal({{ $e->id }})">
+                  {{-- <livewire:sars.show-sars-entry :recordId="$e->id" /> --}}
+                  {{-- <a href="{{ route('codsearch.show', $e->id) }}" class="link-lime-text" x-on:click.prevent="openModal({{ $e->id }})">
                     <i class="fas fa-search"></i>
-                  </a>
+                  </a> --}}
                 </div>
               </td>
               <td class="p-1 text-center">
-                {{ $e->substance_name }}
-                @role('super_admin')
+                {{ $e->sample_from_year.'-'.$e->sample_from_month.'-'.$e->sample_from_day }}
+                {{-- @role('super_admin')
                 <span class="text-xss text-gray-500"> ({{ $e->substance_id }})</span>
-                @endrole
+                @endrole --}}
               </td>
               <td class="p-1 text-center">
-                @if($e->concentration_indicator_id == 0) {{ $e->concentration_indicator_id }} @endif
-                @if($e->concentration_indicator_id > 1)
-                {{ $e->concetrationIndicator->name }}
-                @else
-                <span class="font-medium">{{ $e->concentration_value}}</span>&nbsp;{{$e->concentration_unit }}
-                @endif
+                {{ $e->gene1 }}
               </td>
               <td class="p-1 text-center">
-                {{ $e->matrix_name }}
+                {{ $e->gene2 }}
               </td>
               <td class="p-1 text-center">
-                {{ $e->country_name }} - {{ $e->country_code }}
+                {{ $e->ct }}
               </td> 
               <td class="p-1 text-center">
-                {{ $e->sampling_date_year }}
+                {{ $e->station_name }}
               </td>  
               <td class="p-1 text-center">
-                {{ $e->station_name }}
+                {{ $e->population_served }}
+              </td>   
+              <td class="p-1 text-center">
+                {{ $e->people_positive }}
               </td>     
+              <td class="p-1 text-center">
+                {{ $e->name_of_country }}
+              </td>   
             </tr>
             @endforeach
           </tbody>
@@ -145,18 +148,18 @@
         {{-- use simple output --}}
         
         <div class="flex justify-center space-x-4 mt-4">
-          @if ($empodats->onFirstPage())
+          @if ($sarsObjects->onFirstPage())
           <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
             Previous
           </span>
           @else
-          <a href="{{ $empodats->previousPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+          <a href="{{ $sarsObjects->previousPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
             Previous
           </a>
           @endif
           
-          @if ($empodats->hasMorePages())
-          <a href="{{ $empodats->nextPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+          @if ($sarsObjects->hasMorePages())
+          <a href="{{ $sarsObjects->nextPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
             Next
           </a>
           @else
@@ -167,7 +170,7 @@
         </div>
         @else
         {{-- use advanced output --}}
-        {{$empodats->links('pagination::tailwind')}}
+        {{$sarsObjects->links('pagination::tailwind')}}
         @endif
         
         
