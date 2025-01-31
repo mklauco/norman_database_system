@@ -380,6 +380,7 @@ class EmpodatController extends Controller
     ->where('susdat_substances.relevant_to_norman', 1);
     // ->where('empodat_main.id', 10779391);
     
+    $searchParameters = [];
     // Apply filters only when necessary
     if (!empty($countrySearch)) {
       $empodats = $empodats->whereIn('empodat_stations.country_id', $countrySearch);
@@ -523,13 +524,14 @@ class EmpodatController extends Controller
           'updated_at' => $now,
         ]);
       } catch (\Exception $e) {
-        dd($e, hash('sha256', $sql));
+        // dd($e, hash('sha256', $sql));
+        session()->flash('error', 'An error occurred while processing your request.');
       }
       
       
     }
     
-    if ($request->displayOption == 1) {
+    if ($request->displayOptiondisplayOption == 1) {
       // use simple pagination
       $empodats = $empodats->orderBy('empodat_main.id', 'asc')
       ->simplePaginate(200)

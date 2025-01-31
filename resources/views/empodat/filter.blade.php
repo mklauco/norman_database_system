@@ -11,321 +11,299 @@
         <!-- Main Search form -->
         <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
           
-          <div class="px-4 text-gray-900 grid grid-cols-1 gap-4">
+          <div class="p-4 text-gray-900 grid grid-cols-1 gap-4">
             <!-- Main Search form -->
-            <form  name="searchEmpodat" id="searchEmpodat" action="{{route('codsearch.search')}}" method="GET">
-              <div class="grid grid-cols-1 gap-5">
+            
+            <div id="displayOptions">
+              <div class="bg-gray-100 p-2">
+                <div class="font-bold mb-2">
+                  Display options:
+                </div>
+                <div class="flex items-center space-x-4">
+                  <label class="inline-flex items-center">
+                    <input 
+                    type="radio" 
+                    class="form-radio text-indigo-600" 
+                    name="displayOption" 
+                    value="1" 
+                    @if (request('displayOption', '1') == 1) checked @endif
+                    >
+                    <span class="ml-2">Fast data preview</span>
+                  </label>
+                  <label class="inline-flex items-center">
+                    <input 
+                    type="radio" 
+                    class="form-radio text-indigo-600" 
+                    name="displayOption" 
+                    value="0" 
+                    @if (request('displayOption', '1') === '0') checked @endif
+                    >
+                    <span class="ml-2">Data output with page links (might be slow)</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div id="searchGeography">
+              <div class="bg-gray-100 p-2">
                 
-                {{-- <div id="searchOptions" class="pointer-events-none opacity-50">
-                  <div class="bg-gray-100 p-2">
+                <div class="flex">
+                  <div class="w-full">
                     <div class="font-bold mb-2">
-                      Search options:
+                      Geography criteria:
                     </div>
-                    <div class="flex items-center space-x-4">
-                      <label class="inline-flex items-center">
-                        <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option1">
-                        <span class="ml-2"><strong>AND</strong> condition to all criteria</span>
-                      </label>
-                      <label class="inline-flex items-center">
-                        <input type="radio" class="form-radio text-indigo-600" name="searchOption" value="option2">
-                        <span class="ml-2"><strong>OR</strong> conditions to all criteria</span>
-                      </label>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'countrySearch', 'list' => $countryList,
+                    'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
+                    ])
+                  </div>
+                  
+                  <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Ecosystem criteria:
                     </div>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'matrixSearch', 'list' => $matrixList,
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    ])
+                  </div>
+                </div>
+                {{-- <div class="flex">
+                  <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Sampling station:
+                    </div>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'matrixSearchx', 'list' => $matrixList,
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    ])
                   </div>
                 </div> --}}
                 
               </div>
-              
-              <div id="displayOptions">
-                <div class="bg-gray-100 p-2">
-                  <div class="font-bold mb-2">
-                    Display options:
-                  </div>
-                  <div class="flex items-center space-x-4">
-                    <label class="inline-flex items-center">
-                      <input 
-                      type="radio" 
-                      class="form-radio text-indigo-600" 
-                      name="displayOption" 
-                      value="1" 
-                      @if (request('displayOption', '1') == 1) checked @endif
+            </div>
+            
+            <div id="searchSubstance">
+              <div class="bg-gray-100 p-2">
+                <div class="font-bold mb-2">
+                  Substance criteria:
+                </div>
+                <div>
+                  @livewire('empodat.substance-search', ['existingSubstances' => $request->substances])
+                </div>
+              </div>
+            </div>
+            
+            <div id="searchSource" class="">
+              <div class="bg-gray-100 p-2">
+                <div class="font-bold mb-2">
+                  SLE Source criteria:
+                </div>
+                <div class="w-full">
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'sourceSearch', 'list' => $sourceList,
+                  'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
+                  ])
+                </div>
+              </div>
+            </div>
+            
+            <div id="searchCategory" class="">
+              <div class="bg-gray-100 p-2">
+                <div class="font-bold mb-2">
+                  Search Category:
+                </div>
+                <div class="grid grid-cols-3 gap-1">
+                  {{-- <input type="hidden" value="1" name="search"> --}}
+                  @foreach ($categories as $category)
+                  <div class="block p-1">
+                    <span>
+                      <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}"
+                      @if (is_array(request('categoriesSearch')) && in_array($category->id, request('categoriesSearch'))) checked @endif
                       >
-                      <span class="ml-2">Fast data preview</span>
-                    </label>
-                    <label class="inline-flex items-center">
-                      <input 
-                      type="radio" 
-                      class="form-radio text-indigo-600" 
-                      name="displayOption" 
-                      value="0" 
-                      @if (request('displayOption', '1') === '0') checked @endif
-                      >
-                      <span class="ml-2">Data output with page links (might be slow)</span>
-                    </label>
+                    </span>
+                    <span class="ml-1">
+                      {{-- remove space before parentheses, and ensure non-breakable space before parentheses --}}
+                      {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
+                    </span>
+                  </div>
+                  @endforeach
+                </div>
+              </div>
+            </div>
+            
+            <div id="searchYear">
+              <div class="bg-gray-100 p-2">
+                <div class="font-bold mb-2">
+                  Year:
+                </div>
+                <div class="w-full">
+                  <div class="grid grid-cols-2 gap-1">
+                    <input type="number" name="year_from" value="{{ isset($request->year_from) ? $request->year_from : null }}" class="form-text" placeholder="year from">
+                    <input type="number" name="year_to" value="{{ isset($request->year_to) ? $request->year_to : null }}" class="form-text" placeholder="year to">
                   </div>
                 </div>
               </div>
-              
-              <div id="searchGeography">
-                <div class="bg-gray-100 p-2">
-                  
-                  <div class="flex">
-                    <div class="w-full">
-                      <div class="font-bold mb-2">
-                        Geography criteria:
-                      </div>
-                      @include('_t.form-apline-multiselect', [
-                      'tag' => 'countrySearch', 'list' => $countryList,
-                      'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
-                      ])
-                    </div>
-                    
-                    <div class="w-full">
-                      <div class="font-bold mb-2">
-                        Ecosystem criteria:
-                      </div>
-                      @include('_t.form-apline-multiselect', [
-                      'tag' => 'matrixSearch', 'list' => $matrixList,
-                      'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
-                      ])
-                    </div>
-                  </div>
-                  {{-- <div class="flex">
-                    <div class="w-full">
-                      <div class="font-bold mb-2">
-                        Sampling station:
-                      </div>
-                      @include('_t.form-apline-multiselect', [
-                      'tag' => 'matrixSearchx', 'list' => $matrixList,
-                      'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
-                      ])
-                    </div>
-                  </div> --}}
-                  
-                </div>
-              </div>
-              
-              <div id="searchSubstance">
-                <div class="bg-gray-100 p-2">
+            </div>
+            
+            <div id="concentrationIndicatorSearch" class="">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
                   <div class="font-bold mb-2">
-                    Substance criteria:
+                    Concetration Indicators:
                   </div>
-                  <div>
-                    @livewire('empodat.substance-search', ['existingSubstances' => $request->substances])
-                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'concentrationIndicatorSearch', 'list' => $concentrationIndicatorList,
+                  'active_ids' => isset($request->concentrationIndicatorSearch) ? $request->concentrationIndicatorSearch : [],
+                  ])
                 </div>
               </div>
-              
-              <div id="searchSource" class="">
-                <div class="bg-gray-100 p-2">
-                  <div class="font-bold mb-2">
-                    SLE Source criteria:
-                  </div>
-                  <div class="w-full">
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourceSearch', 'list' => $sourceList,
-                    'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
-                    ])
-                  </div>
-                </div>
-              </div>
-              
-              <div id="searchCategory" class="">
-                <div class="bg-gray-100 p-2">
-                  <div class="font-bold mb-2">
-                    Search Category:
-                  </div>
-                  <div class="grid grid-cols-3 gap-1">
-                    {{-- <input type="hidden" value="1" name="search"> --}}
-                    @foreach ($categories as $category)
-                    <div class="block p-1">
-                      <span>
-                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}"
-                        @if (is_array(request('categoriesSearch')) && in_array($category->id, request('categoriesSearch'))) checked @endif
-                        >
-                      </span>
-                      <span class="ml-1">
-                        {{-- remove space before parentheses, and ensure non-breakable space before parentheses --}}
-                        {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
-                      </span>
-                    </div>
-                    @endforeach
-                  </div>
-                </div>
-              </div>
-              
-              <div id="searchYear">
-                <div class="bg-gray-100 p-2">
-                  <div class="font-bold mb-2">
-                    Year:
-                  </div>
-                  <div class="w-full">
-                    <div class="grid grid-cols-2 gap-1">
-                      <input type="number" name="year_from" value="{{ isset($request->year_from) ? $request->year_from : null }}" class="form-text" placeholder="year from">
-                      <input type="number" name="year_to" value="{{ isset($request->year_to) ? $request->year_to : null }}" class="form-text" placeholder="year to">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div id="concentrationIndicatorSearch" class="">
-                <div class="flex bg-gray-100 p-2">
-                  <div class="w-full">
-                    <div class="font-bold mb-2">
-                      Concetration Indicators:
-                    </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'concentrationIndicatorSearch', 'list' => $concentrationIndicatorList,
-                    'active_ids' => isset($request->concentrationIndicatorSearch) ? $request->concentrationIndicatorSearch : [],
-                    ])
-                  </div>
-                </div>
-              </div>
-
-              <div id="empodatDataSourcesSearch" class="">
-                <div class="flex bg-gray-100 p-2">
-                  <div class="w-full">
-                    <div class="font-bold mb-2 flex items-center space-x-2">
-                      <div class="relative group">
-                        <!-- Icon -->
-                        <i class="fas fa-hourglass-half text-gray-500"></i>
-                        <!-- Tooltip -->
-                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
-                          Including this search option will slow down the search process.
-                        </div>
+            </div>
+            
+            <div id="empodatDataSourcesSearch" class="">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2 flex items-center space-x-2">
+                    <div class="relative group">
+                      <!-- Icon -->
+                      <i class="fas fa-hourglass-half text-gray-500"></i>
+                      <!-- Tooltip -->
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                        Including this search option will slow down the search process.
                       </div>
-                      <!-- Text -->
-                      <span>Type of data source:</span>
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'typeDataSourcesSearch', 'list' => $typeDataSourcesList,
-                    'active_ids' => isset($request->typeDataSourcesSearch) ? $request->typeDataSourcesSearch : [],
-                    ])
+                    <!-- Text -->
+                    <span>Type of data source:</span>
+                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'typeDataSourcesSearch', 'list' => $typeDataSourcesList,
+                  'active_ids' => isset($request->typeDataSourcesSearch) ? $request->typeDataSourcesSearch : [],
+                  ])
+                </div>
+                
+                <div class="w-full">
+                  <div class="font-bold mb-2 flex items-center space-x-2">
+                    <div class="relative group">
+                      <!-- Icon -->
+                      <i class="fas fa-hourglass-half text-gray-500"></i>
+                      <!-- Tooltip -->
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                        Including this search option will slow down the search process.
+                      </div>
+                    </div>
+                    <!-- Text -->
+                    <span>Organisation:</span>
                   </div>
                   
-                  <div class="w-full">
-                    <div class="font-bold mb-2 flex items-center space-x-2">
-                      <div class="relative group">
-                        <!-- Icon -->
-                        <i class="fas fa-hourglass-half text-gray-500"></i>
-                        <!-- Tooltip -->
-                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
-                          Including this search option will slow down the search process.
-                        </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'dataSourceOrganisationSearch', 'list' => $dataSourceOrganisationList,
+                  'active_ids' => isset($request->dataSourceOrganisationSearch) ? $request->dataSourceOrganisationSearch : [],
+                  ])
+                </div>
+              </div>
+              
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2 flex items-center space-x-2">
+                    <div class="relative group">
+                      <!-- Icon -->
+                      <i class="fas fa-hourglass-half text-gray-500"></i>
+                      <!-- Tooltip -->
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                        Including this search option will slow down the search process.
                       </div>
-                      <!-- Text -->
-                      <span>Organisation:</span>
                     </div>
-                    
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'dataSourceOrganisationSearch', 'list' => $dataSourceOrganisationList,
-                    'active_ids' => isset($request->dataSourceOrganisationSearch) ? $request->dataSourceOrganisationSearch : [],
-                    ])
+                    <!-- Text -->
+                    <span>Laboratory:</span>
                   </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'dataSourceLaboratorySearch', 'list' => $dataSourceLaboratoryList,
+                  'active_ids' => isset($request->dataSourceLaboratorySearch) ? $request->dataSourceLaboratorySearch : [],
+                  ])
                 </div>
-
-                <div class="flex bg-gray-100 p-2">
-                  <div class="w-full">
-                    <div class="font-bold mb-2 flex items-center space-x-2">
-                      <div class="relative group">
-                        <!-- Icon -->
-                        <i class="fas fa-hourglass-half text-gray-500"></i>
-                        <!-- Tooltip -->
-                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
-                          Including this search option will slow down the search process.
-                        </div>
+              </div>
+            </div>
+            
+            {{-- <div id="searchQaQc" class="">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 2</span>
+                  0. JOIN empodat_main.method_id == empodat_analytical_methods.id
+                  1. empodat_analytical_methods.lod > ?
+                  @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
+                  @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
+                </div>
+                <div class="w-full">
+                  <span>Limit of Quantification (LoQ) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 3</span>
+                  0. JOIN empodat_main.method_id == empodat_analytical_methods.id
+                  1. empodat_analytical_methods.loq > ?
+                  @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
+                  @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
+                </div>
+              </div>
+            </div> --}}
+            
+            <div id="analyticalMethodSearch" class="">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2 flex items-center space-x-2">
+                    <div class="relative group">
+                      <!-- Icon -->
+                      <i class="fas fa-hourglass-half text-gray-500"></i>
+                      <!-- Tooltip -->
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                        Including this search option will slow down the search process.
                       </div>
-                      <!-- Text -->
-                      <span>Laboratory:</span>
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'dataSourceLaboratorySearch', 'list' => $dataSourceLaboratoryList,
-                    'active_ids' => isset($request->dataSourceLaboratorySearch) ? $request->dataSourceLaboratorySearch : [],
-                    ])
+                    <!-- Text -->
+                    <span>Analytical method:</span>
                   </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'analyticalMethodSearch', 'list' => $analyticalMethodsList,
+                  'active_ids' => isset($request->analyticalMethodSearch) ? $request->analyticalMethodSearch : [],
+                  ])
                 </div>
               </div>
-              
-              {{-- <div id="searchQaQc" class="">
-                <div class="flex bg-gray-100 p-2">
-                  <div class="w-full">
-                    <span>Limit of Detection (LoD) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 2</span>
-                    0. JOIN empodat_main.method_id == empodat_analytical_methods.id
-                    1. empodat_analytical_methods.lod > ?
-                    @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
-                    @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
+            </div>
+            
+            <div id="qualityAnalyticalMethodsSearch" class="">
+              <div class="flex bg-gray-100 p-2">
+                <div class="w-full">
+                  <div class="font-bold mb-2">
+                    Quality information category:
                   </div>
-                  <div class="w-full">
-                    <span>Limit of Quantification (LoQ) [µg/m3, µg/l or µg/kg] concentration_indicator_id = 3</span>
-                    0. JOIN empodat_main.method_id == empodat_analytical_methods.id
-                    1. empodat_analytical_methods.loq > ?
-                    @include('_t.form-select', ['tag' => 'concentration_data', 'space' => 'empodat', 'list' => $getEqualitySigns])
-                    @include('_t.form-text', ['tag' => 'concentration_data', 'space' => 'empodat'])
-                  </div>
-                </div>
-              </div> --}}
-              
-              <div id="analyticalMethodSearch" class="">
-                <div class="flex bg-gray-100 p-2">
-                  <div class="w-full">
-                    <div class="font-bold mb-2 flex items-center space-x-2">
-                      <div class="relative group">
-                        <!-- Icon -->
-                        <i class="fas fa-hourglass-half text-gray-500"></i>
-                        <!-- Tooltip -->
-                        <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
-                          Including this search option will slow down the search process.
-                        </div>
-                      </div>
-                      <!-- Text -->
-                      <span>Analytical method:</span>
-                    </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'analyticalMethodSearch', 'list' => $analyticalMethodsList,
-                    'active_ids' => isset($request->analyticalMethodSearch) ? $request->analyticalMethodSearch : [],
-                    ])
-                  </div>
+                  @include('_t.form-apline-multiselect', [
+                  'tag' => 'qualityAnalyticalMethodsSearch', 'list' => $qualityAnalyticalMethodsList,
+                  'active_ids' => isset($request->qualityAnalyticalMethodsSearch) ? $request->qualityAnalyticalMethodsSearch : [],
+                  ])
                 </div>
               </div>
-              
-              <div id="qualityAnalyticalMethodsSearch" class="">
-                <div class="flex bg-gray-100 p-2">
-                  <div class="w-full">
-                    <div class="font-bold mb-2">
-                      Quality information category:
-                    </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'qualityAnalyticalMethodsSearch', 'list' => $qualityAnalyticalMethodsList,
-                    'active_ids' => isset($request->qualityAnalyticalMethodsSearch) ? $request->qualityAnalyticalMethodsSearch : [],
-                    ])
-                  </div>
-                </div>
-              </div>
-              
-              
-              
-              <!-- Main Search form -->
-              <div class="flex justify-end m-2">
-                <a href="{{route('codsearch.filter')}}" class="btn-clear mx-2"> Reset </a>
-                <button type="submit" class="btn-submit"> Search
-                </button>
-              </div>
-              
-
-              <div class="m-2">
-                <ul class="list-disc list-inside text-gray-700 text-sm">
-                  <li>All search criteria are optional. If you do not select any criteria, all data will be displayed.</li>
-                  <li>Each time the search is executed, the search options are recorded in the database for future reference and performance improvements.</li>
-                  <li>We encourage users to register for a free account to save-&-view their search criteria and results.</li>
-                </ul>
-              </div>
-              
-
-            </div>    
-          </div>
-
-        </form>  
-      </div>
+            </div>
+            
+            
+            
+            <!-- Main Search form -->
+            <div class="flex justify-end m-2">
+              <a href="{{route('codsearch.filter')}}" class="btn-clear mx-2"> Reset </a>
+              <button type="submit" class="btn-submit"> Search
+              </button>
+            </div>
+            
+            
+            <div class="m-2">
+              <ul class="list-disc list-inside text-gray-700 text-sm">
+                <li>All search criteria are optional. If you do not select any criteria, all data will be displayed.</li>
+                <li>Each time the search is executed, the search options are recorded in the database for future reference and performance improvements.</li>
+                <li>We encourage users to register for a free account to save-&-view their search criteria and results.</li>
+              </ul>
+            </div>
+            
+            
+          </div>    
+        </div>
+        
+      </form>  
     </div>
   </div>
+</div>
 </x-app-layout>
