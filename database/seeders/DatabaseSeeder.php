@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-        
+
         // User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             RolesAndPermissionsSeeder::class,
             DatabaseEntitySeeder::class,
-            
+
             // **************************************
             // LISTs
             // **************************************
@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
             ListConcentrationIndicatorSeeder::class,
             ListSamplingTechniqueSeeder::class,
             ListTreatmentLessSeeder::class,
-            
+
             // Analytical methods
             ListCoverageFactorSeeder::class,
             ListSamplePreparationMethodSeeder::class,
@@ -52,8 +52,8 @@ class DatabaseSeeder extends Seeder
             EmpodatAnalyticalMethodSeeder::class,
             QualityEmpodatAnalyticalMethodsSeeder::class,
 
-            
-            
+
+
             // Data source
             ListTypeDataSourceSeeder::class,
             ListTypeMonitoringSeeder::class,
@@ -62,24 +62,30 @@ class DatabaseSeeder extends Seeder
             ListDataSourceOrganisationSeeder::class,
             ListMatricesSeeder::class,
             EmpodatDataSourceSeeder::class,
-            
+
             //ListTypeStationSeeder::class,
-            
+
             // SUSDAT
             SusdatSusdatMigrator::class,
             SuspectListExchangeSourceSeeder::class,
             SusdatCategorySeeder::class,
             SusdatSourceSubstanceJoinSeeder::class,
             SusdatCategorySubstanceJoinSeeder::class,
-            
-            
+
+
             // Migrators for SLE
             // SuspectListExchangeMigrator::class,
             // SuspectListExchangeSourceJoinSeeder::class,
-            
+
             // EMPODAT
             EmpodatStationSeeder::class,
-            
+
+            //BIOASSAY SEEDER
+            BioassayMonitorXSeeder::class,
+            BioassaysMonitorDataSourceSeeder::class,
+            BioassaysMonitoringDataSeeder::class,
+            BioassayFieldStudySeeder::class,
+
             //Backend
             ProjectSeeder::class, // testing data
             */

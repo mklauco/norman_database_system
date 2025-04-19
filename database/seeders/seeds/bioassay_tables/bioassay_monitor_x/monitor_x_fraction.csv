@@ -1,0 +1,5 @@
+id,name,ordering
+"1","Dissolved fraction","0"
+"2","Whole water with no separation of liquid and SPM phases","0"
+"3","Whole water with determination on each separate phase (sum of all phases)","0"
+"4","NR","1"
