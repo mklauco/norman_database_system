@@ -148,6 +148,7 @@ Route::prefix('bioassays')->group(function () {
     Route::resource('bioassayhome', BioassayHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
 
     Route::get('search/filter/', [BioassayController::class, 'filter'])->name('bioassay.search.filter');
+    Route::get('search/search/', [BioassayController::class, 'search'])->name('bioassay.search.search');
 
     Route::resource('search', BioassayController::class)->names([
         'index'   => 'bioassay.search.index',
