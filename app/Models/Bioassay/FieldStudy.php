@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Bioassay;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BioassayFieldStudy extends Model
+class FieldStudy extends Model
 {
     use HasFactory;
 
@@ -106,8 +105,6 @@ class BioassayFieldStudy extends Model
         'photoperiod',
         'reference_method',
         'reference_paper',
-        'created_by',
-        'updated_by',
     ];
 
     /**
@@ -116,10 +113,6 @@ class BioassayFieldStudy extends Model
      * @var array
      */
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'm_sd_id' => 'integer',
-        'm_ds_id' => 'integer',
         'm_bioassay_type_id' => 'integer',
         'm_bioassay_name_id' => 'integer',
         'm_adverse_outcome_id' => 'integer',
@@ -140,64 +133,154 @@ class BioassayFieldStudy extends Model
     ];
 
     /**
-     * Get the bioassay main record associated with this field study.
+     * Get the sample data associated with the bioassay field study.
      */
-    public function bioassayMain()
+    public function sampleData()
     {
-        return $this->belongsTo(BioassayMain::class, 'm_sd_id', 'id');
+        return $this->belongsTo(MonitorSampleData::class, 'm_sd_id');
     }
 
     /**
-     * Get the user that created the record.
+     * Get the data source associated with the bioassay field study.
      */
-    public function creator()
+    public function dataSource()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(MonitorDataSource::class, 'm_ds_id');
     }
 
     /**
-     * Get the user that last updated the record.
-     */
-    public function updater()
-    {
-        return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    /**
-     * Get the bioassay type.
+     * Get the bioassay type associated with the bioassay field study.
      */
     public function bioassayType()
     {
-        // Assuming you have a BioassayType model
-        return $this->belongsTo(BioassayType::class, 'm_bioassay_type_id');
+        return $this->belongsTo(MonitorXBioassayType::class, 'm_bioassay_type_id', 'id');
     }
 
     /**
-     * Get the bioassay name.
+     * Get the bioassay name associated with the bioassay field study.
      */
     public function bioassayName()
     {
-        // Assuming you have a BioassayName model
-        return $this->belongsTo(BioassayName::class, 'm_bioassay_name_id');
+        return $this->belongsTo(MonitorXBioassayName::class, 'm_bioassay_name_id', 'id');
     }
 
     /**
-     * Get the adverse outcome.
+     * Get the adverse outcome associated with the bioassay field study.
      */
     public function adverseOutcome()
     {
-        // Assuming you have an AdverseOutcome model
-        return $this->belongsTo(AdverseOutcome::class, 'm_adverse_outcome_id');
+        return $this->belongsTo(MonitorXAdverseOutcome::class, 'm_adverse_outcome_id', 'id');
     }
 
     /**
-     * Get the test organism.
+     * Get the test organism associated with the bioassay field study.
      */
     public function testOrganism()
     {
-        // Assuming you have a TestOrganism model
-        return $this->belongsTo(TestOrganism::class, 'm_test_organism_id');
+        return $this->belongsTo(MonitorXTestOrganism::class, 'm_test_organism_id', 'id');
     }
 
-    // Additional relationships can be added here as needed
+    /**
+     * Get the cell line strain associated with the bioassay field study.
+     */
+    public function cellLineStrain()
+    {
+        return $this->belongsTo(MonitorXCellLineStrain::class, 'm_cell_line_strain_id', 'id');
+    }
+
+    /**
+     * Get the endpoint associated with the bioassay field study.
+     */
+    public function endpoint()
+    {
+        return $this->belongsTo(MonitorXEndpoint::class, 'm_endpoint_id', 'id');
+    }
+
+    /**
+     * Get the effect associated with the bioassay field study.
+     */
+    public function effect()
+    {
+        return $this->belongsTo(MonitorXEffect::class, 'm_effect_id', 'id');
+    }
+
+    /**
+     * Get the measured parameter associated with the bioassay field study.
+     */
+    public function measuredParameter()
+    {
+        return $this->belongsTo(MonitorXMeasuredParameter::class, 'm_measured_parameter_id', 'id');
+    }
+
+    /**
+     * Get the main determinand associated with the bioassay field study.
+     */
+    public function mainDeterminand()
+    {
+        return $this->belongsTo(MonitorXMainDeterminand::class, 'm_main_determinand_id', 'id');
+    }
+
+    /**
+     * Get the effect equivalent associated with the bioassay field study.
+     */
+    public function effectEquivalent()
+    {
+        return $this->belongsTo(MonitorXEffectEquivalent::class, 'm_effect_equivalent_id', 'id');
+    }
+
+    /**
+     * Get the standard substance associated with the bioassay field study.
+     */
+    public function standardSubstance()
+    {
+        return $this->belongsTo(MonitorXStandardSubstance::class, 'm_standard_substance_id', 'id');
+    }
+
+    /**
+     * Get the assay format associated with the bioassay field study.
+     */
+    public function assayFormat()
+    {
+        return $this->belongsTo(MonitorXAssayFormat::class, 'm_assay_format_id', 'id');
+    }
+
+    /**
+     * Get the solvent associated with the bioassay field study.
+     */
+    public function solvent()
+    {
+        return $this->belongsTo(MonitorXSolvent::class, 'm_solvent_id', 'id');
+    }
+
+    /**
+     * Get the test system associated with the bioassay field study.
+     */
+    public function testSystem()
+    {
+        return $this->belongsTo(MonitorXTestSystem::class, 'm_test_system_id', 'id');
+    }
+
+    /**
+     * Get the life stage associated with the bioassay field study.
+     */
+    public function lifeStage()
+    {
+        return $this->belongsTo(MonitorXLifeStage::class, 'm_life_stage_id', 'id');
+    }
+
+    /**
+     * Get the effect level associated with the bioassay field study.
+     */
+    public function effectLevel()
+    {
+        return $this->belongsTo(MonitorXEffectLevel::class, 'm_effect_level_id', 'id');
+    }
+
+    /**
+     * Get the positive control associated with the bioassay field study.
+     */
+    public function positiveControl()
+    {
+        return $this->belongsTo(MonitorXPositiveControl::class, 'm_positive_control_id', 'id');
+    }
 }
