@@ -1,0 +1,11 @@
+id,name,ordering
+"1","Activation","0"
+"2","Decrease","0"
+"3","Downregulation","0"
+"4","Increase","0"
+"5","Inhibition","0"
+"6","Stimulation","0"
+"7","Upregulation","0"
+"8","NA","1"
+"9","NR","2"
+"10","Other","3"

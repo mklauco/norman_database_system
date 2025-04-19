@@ -1,0 +1,10 @@
+id,name,ordering
+"1","Spot grab sample","0"
+"2","24-h composite sample","0"
+"3","Large volume SPE ","1"
+"4","POCIS","0"
+"5","SPMD","0"
+"6","Empore Disk","0"
+"7","Silicone rubber","0"
+"8","NR","1"
+"9","Other","2"

@@ -1,0 +1,9 @@
+m_ds_id,m_ds_organisation,m_ds_address,m_ds_country,m_ds_laboratory,m_ds_author,m_ds_email,m_data_source_id,m_monitoring_id,m_ds_monitoring_other,m_ds_project
+1,Environmental Institute,"Okružná 784/42, Koš 97241, Slovakia",Slovak Republic,Ecotox laboratory Recetox,Zuzana Tousova,zuzana.tousova@seznam.cz,3,6,Research,EDA EMERGE
+2,INERIS,"Parc Technologique ALATA BP 2, 60550 Verneuil-en-Halatte, France",France,Unit in vitro and in vivo,Selim Ait Aissa,selim.ait-aissa@ineris.fr,3,6,Research,EDA EMERGE
+3,Eawag,"Ueberlandstrasse 133, 8600 Dubendorf, Switzerland",Switzerland,Department Environmental Toxicology,Anita Hidasi,anita.hidasi@eawag.ch,3,6,Research,EDA EMERGE
+4,NIVA - Norsk institutt for vannforskning,"Gaustadalléen 21, 0349 Oslo, Norway",Norway,Ecotoxicology,Jean Froment ,jean.froment@ufz.de,3,6,Research,EDA EMERGE
+5,RWTH Aachen University,"Worringerweg 1, 52074, Aachen, Germany",Germany,"Inst. for Environmental Research (Biology V), Department of Ecosystem Analysis",Carolina Di Paolo,carolina.dipaolo@bio5.rwth-aachen.de,3,6,Research,EDA EMERGE
+6,WatchFrog S. A.,"1 rue Pierre Fontaine, 91000 Evry",France,NR,Andrew Tindall,tindall@watchfrog.fr,3,6,Research,EDA EMERGE
+7,UFZ Helmholtz-Centre for Environmental Research,"Permoserstrasse 15, 04318 Leipzig",Germany,Department of Effect-Directed Analysis,Tobias Schulze,tobias.schulze@ufz.de,3,6,Research,EDA EMERGE
+8,"Rudjer Boskovic Institute, Bijenicka cesta 54, 10000, Zagreb, Croatia ","Bijenicka cesta 54, 10000, Zagreb",Croatia,Division for Marine and Environmental Research,Marijan Ahel,ahel@irb.hr,3,6,Research,EDA EMERGE

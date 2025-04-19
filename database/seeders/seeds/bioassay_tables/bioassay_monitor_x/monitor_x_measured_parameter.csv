@@ -1,0 +1,10 @@
+id,name,ordering
+"1","Absorbance","0"
+"2","Flow cytomety - Cell count","0"
+"3","Fluorescence","0"
+"4","Luminiscence","0"
+"5","Microscopic inspection","0"
+"6","Observation","0"
+"7","NA","1"
+"8","NR","2"
+"9","Other","3"
