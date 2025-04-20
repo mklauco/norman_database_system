@@ -1,0 +1,13 @@
+id,name,ordering
+"1","electronics (<5)"
+"2","electronics (5-10)"
+"3","electronics (>10)"
+"4","Air conditioning"
+"5","air freshener"
+"6","Mechanical ventilation"
+"7","Other (please specify)"
+"8","Passive ventilation"
+"9","personal care products"
+"10","plastic toys"
+"11","wooden toys"
+"12","Other"

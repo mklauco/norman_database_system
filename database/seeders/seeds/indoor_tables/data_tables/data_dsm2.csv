@@ -1,0 +1,13 @@
+id,name,ordering
+"1","Adsorbent (PUF)"
+"2","Adsorbent (XAD)"
+"3","Adsorbent (Tenax)"
+"4","Adsorbent other"
+"5","Filter (Quartz/glass fibre)"
+"6","Filter  other"
+"7","Adsorbent (PUF) and filter"
+"8","Adsorbent (XAD) and filter"
+"9","Adsorbent and Filter (other)"
+"10","Absorbent (PDMS)"
+"11","Size selective particle collector"
+"12","Other"
