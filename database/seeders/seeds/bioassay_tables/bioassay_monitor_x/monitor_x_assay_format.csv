@@ -1,0 +1,13 @@
+id,name,ordering
+"1","12-well plate","0"
+"2","24-well plate","0"
+"3","48-well plate","0"
+"4","96-well plate","0"
+"5","384-well plate","0"
+"6","Gene microarray","0"
+"7","Glass beaker","0"
+"8","Glass Erlenmayer flask ","0"
+"9","Petri dish","0"
+"10","NA","1"
+"11","NR","2"
+"12","Other","3"

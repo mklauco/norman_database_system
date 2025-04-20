@@ -22,6 +22,7 @@ yarn-error.log
 database/seeders/seeds/*.log
 _dbdata/
 _postgres_data/
+_postgres_exports/
 _pgadmin_data/
 _secrets/*
 composer.lock
