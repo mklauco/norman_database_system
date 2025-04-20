@@ -113,7 +113,6 @@ Route::prefix('empodat')->group(function () {
 
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
 
-    Route::resource('querylog', QueryLogController::class)->middleware('auth');
 });
 
 Route::prefix('ecotox')->group(function () {
@@ -197,6 +196,7 @@ Route::prefix('sars')->group(function () {
 
 Route::prefix('backend')->group(function () {
     Route::resource('general_route', GeneralController::class);
+    Route::resource('querylog', QueryLogController::class)->middleware('auth');
 });
 
 
