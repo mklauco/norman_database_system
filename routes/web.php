@@ -1,13 +1,12 @@
 <?php
 
-use App\Http\Controllers\Bioassay\BioassayController;
-use App\Http\Controllers\Bioassay\BioassayHomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MainAPIController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmailTestController;
 use App\Http\Controllers\Sars\SarsController;
+use App\Http\Controllers\Indoor\IndoorController;
 use App\Http\Controllers\Sars\SarsHomeController;
 use App\Http\Controllers\Backend\GeneralController;
 use App\Http\Controllers\Backend\ProjectController;
@@ -15,12 +14,14 @@ use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Backend\QueryLogController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
+use App\Http\Controllers\Bioassay\BioassayController;
 use App\Http\Controllers\DatabaseDirectoryController;
 use App\Http\Controllers\Ecotox\EcotoxHomeController;
 use App\Http\Controllers\Indoor\IndoorHomeController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
 use App\Http\Controllers\Passive\PassiveHomeController;
 use App\Http\Controllers\Empodat\UniqueSearchController;
+use App\Http\Controllers\Bioassay\BioassayHomeController;
 use App\Http\Controllers\Dashboard\DashboardMainController;
 use App\Http\Controllers\SLE\SuspectListExchangeHomeController;
 use App\Http\Controllers\Empodat\DataCollectionTemplateFileController;
@@ -135,6 +136,10 @@ Route::prefix('arbg')->group(function () {
 Route::prefix('indoor')->group(function () {
     Route::resource('indoorhome', IndoorHomeController::class)->only(['index']);
     Route::resource('indoorhome', IndoorHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+    Route::get('search/filter/', [IndoorController::class, 'filter'])->name('indoor.search.filter');
+    Route::get('search/search/', [IndoorController::class, 'search'])->name('indoor.search.search');
+
 });
 
 Route::prefix('passive')->group(function () {
@@ -160,7 +165,6 @@ Route::prefix('bioassays')->group(function () {
     ]);
 
     Route::get('bioassay/countAll', [BioassayHomeController::class, 'countAll'])->middleware('auth')->name('bioassay.countAll');
-
 });
 
 Route::prefix('sars')->group(function () {

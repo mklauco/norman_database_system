@@ -1,0 +1,9 @@
+id,name,ordering
+"1","Air - Gas-phase ","1","Indoor environment - Air"
+"2","Air - Particle-phase ","1","Indoor environment - Air"
+"3","Air - Gas & particle phases","1","Indoor environment - Air"
+"4","Dust - Surface dust","2","Indoor environment - Dust & Film"
+"5","Dust - Floor dust","2","Indoor environment - Dust & Film"
+"6","Window film","2","Indoor environment - Dust & Film"
+"7","Other surface film","2","Indoor environment - Dust & Film"
+"8","Settled dust","2","Indoor environment - Dust & Film"
