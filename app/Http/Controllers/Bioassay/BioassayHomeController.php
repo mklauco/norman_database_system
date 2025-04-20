@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Bioassay;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\DatabaseEntity;
+use App\Models\Bioassay\FieldStudy;
+use App\Http\Controllers\Controller;
 
 class BioassayHomeController extends Controller
 {
@@ -57,11 +59,21 @@ class BioassayHomeController extends Controller
         //
     }
 
-    /**
+    /**ß
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
         //
+    }
+
+    public function countAll()
+    {
+        DatabaseEntity::where('code', 'bioassay')->update([
+            'last_update' => FieldStudy::max('updated_at'),
+            'number_of_records' => FieldStudy::count()
+        ]);
+        session()->flash('success', 'Database counts updated successfully');
+        return redirect()->back();
     }
 }
