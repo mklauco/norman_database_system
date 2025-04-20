@@ -3,7 +3,7 @@
     @include('bioassay.header')
   </x-slot>
   
-  
+   
   <div class="py-4">
     <div class="w-full mx-auto sm:px-6 lg:px-8">
       <div class="bg-white shadow-lg sm:rounded-lg" >
@@ -25,7 +25,7 @@
         <div class="text-gray-600 flex border-l-2 border-white">
           @if($displayOption == 1)
           {{-- use simple output --}}
-          {{-- @livewire('bioassay.query-counter', ['queryId' => $query_log_id, 'sarsObjectsCount' => $resultsObjectsCount, 'count_again' => request()->has('page') ? false : true]) --}}
+          @livewire('backend.query-counter', ['queryId' => $query_log_id, 'resultsCount' => $resultsObjectsCount, 'count_again' => request()->has('page') ? false : true])
           
           @else
           {{-- use advanced output --}}
