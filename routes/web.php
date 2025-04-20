@@ -158,6 +158,9 @@ Route::prefix('bioassays')->group(function () {
         'update'  => 'bioassay.search.update',
         'destroy' => 'bioassay.search.destroy',
     ]);
+
+    Route::get('bioassay/countAll', [BioassayHomeController::class, 'countAll'])->middleware('auth')->name('bioassay.countAll');
+
 });
 
 Route::prefix('sars')->group(function () {
