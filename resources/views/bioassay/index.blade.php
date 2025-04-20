@@ -10,25 +10,17 @@
         <div class="p-6 text-gray-900" x-data="recordsTable()" x-init="initLeaflet()">
           {{-- main div --}}
           
-          {{-- <a href="{{ route('codsearch.filter', [
-          'countrySearch'                   => $countrySearch,
-          'matrixSearch'                    => $matrixSearch,
-          'sourceSearch'                    => $sourceSearch,
-          'year_from'                       => $year_from ?? '',
-          'year_to'                         => $year_to ?? '',
-          'displayOption'                   => $displayOption,
-          'substances'                      => $substances,
-          'categoriesSearch'                => $categoriesSearch,
-          'typeDataSourcesSearch'           => $typeDataSourcesSearch,
-          'concentrationIndicatorSearch'    => $concentrationIndicatorSearch,
-          'analyticalMethodSearch'          => $analyticalMethodSearch,
-          'dataSourceLaboratorySearch'      => $dataSourceLaboratorySearch,
-          'dataSourceOrganisationSearch'      => $dataSourceOrganisationSearch,
-          'qualityAnalyticalMethodsSearch'      => $qualityAnalyticalMethodsSearch,
-          'query_log_id'                  => $query_log_id
+          <a href="{{ route('bioassay.search.filter', [
+          'countrySearch'      => $countrySearch,
+          'bioassayNameSearch' => $bioassayNameSearch,
+          'endpointSearch'     => $endpointSearch,
+          'determinandSearch'  => $determinandSearch,
+          'year_from'          => $year_from ?? '',
+          'year_to'            => $year_to ?? '',
+          'query_log_id'       => $query_log_id
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
-        </a> --}}
+        </a>
         
         <div class="text-gray-600 flex border-l-2 border-white">
           @if($displayOption == 1)

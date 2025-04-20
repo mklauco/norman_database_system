@@ -2,26 +2,27 @@
   Chemical Occurance Data:
 </span> --}}
 
-<x-nav-link-header :href="route('bioassayhome.index')" :active="request()->is('*bioassay*')">
+{{-- <x-nav-link-header :href="route('sars.home.index')" :active="request()->is('*home*')">
   Home
-</x-nav-link-header>
+</x-nav-link-header> --}}
 
- <x-nav-link-header :href="route('bioassay.search.filter')" :active="request()->is('*bioassay.search*')">
+{{-- <x-nav-link-header :href="route('sars.search.filter')" :active="request()->is('*search*')">
   Search
-</x-nav-link-header>
+</x-nav-link-header> --}}
 
 {{-- <x-nav-link-header :href="route('dctitems.index')" :active="request()->is('*dctitems*')">
   DCT Download
 </x-nav-link-header> --}}
 
 @role('super_admin')
-<x-nav-link-header :href="route('querylog.index')" :active="request()->is('*querylog*')">
+{{-- <x-nav-link-header :href="route('querylog.index')" :active="request()->is('*querylog*')">
   History of search
-</x-nav-link-header>
+</x-nav-link-header> --}}
 @else
-<x-nav-link-header>
+{{-- <x-nav-link-header>
   History of search <i class="fas fa-lock ml-2"></i>
-</x-nav-link-header>
+</x-nav-link-header> --}}
+
 @endrole
 
 {{-- @if(request()->is('*filter') == true)

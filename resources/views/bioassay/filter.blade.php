@@ -58,8 +58,6 @@
                     ])
                   </div>
                 </div>
-
-
               </div>
             </div>
 
@@ -120,7 +118,7 @@
 
             <!-- Main Search form -->
             <div class="flex justify-end m-2">
-              <a href="{{route('codsearch.filter')}}" class="btn-clear mx-2"> Reset </a>
+              <a href="{{route('bioassay.search.filter')}}" class="btn-clear mx-2"> Reset </a>
               <button type="submit" class="btn-submit"> Search
               </button>
             </div>
