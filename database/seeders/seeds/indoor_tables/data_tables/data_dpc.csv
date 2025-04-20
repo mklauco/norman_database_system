@@ -1,0 +1,4 @@
+id,name,ordering
+"1","Average (range 10-100 m)"
+"2","Low (range 100-1000 m)"
+"3","Very low (>1000 m)"

@@ -1,0 +1,10 @@
+id,name,ordering
+"1","Liquid desorption"
+"2","Microwave assisted extraction (MAE)"
+"3","Pressurized liquid extraction (PLE)"
+"4","Soxhlet extraction "
+"5","Static headspace"
+"6","Supercritical fluid extraction (SFE)"
+"7","Thermal desorption"
+"8","Ultrasonic extraction (USE)"
+"9","Other"

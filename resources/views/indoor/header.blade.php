@@ -2,13 +2,13 @@
   Chemical Occurance Data:
 </span> --}}
 
-<x-nav-link-header :href="route('indoorhome.index')" :active="request()->is('*indoor*')">
+<x-nav-link-header :href="route('indoorhome.index')" :active="request()->is('*indoorhome*')">
   Home
 </x-nav-link-header>
 
-{{-- <x-nav-link-header :href="route('codsearch.filter')" :active="request()->is('*codsearch*')">
+<x-nav-link-header :href="route('indoor.search.filter')" :active="request()->is('*search*')">
   Search
-</x-nav-link-header> --}}
+</x-nav-link-header>
 
 {{-- <x-nav-link-header :href="route('dctitems.index')" :active="request()->is('*dctitems*')">
   DCT Download
