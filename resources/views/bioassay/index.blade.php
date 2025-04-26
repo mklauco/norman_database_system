@@ -29,7 +29,7 @@
           
           @else
           {{-- use advanced output --}}
-          {{-- <span>Number of matched records: </span><span class="font-bold">&nbsp;{{number_format($resultsObjects->total(), 0, " ", " ") ?? ''}}&nbsp;</span> <span> of {{number_format($resultsObjectsCount, 0, " ", " ") }}</span>. --}}
+          <span>Number of matched records: </span><span class="font-bold">&nbsp;{{number_format($resultsObjects->total(), 0, " ", " ") ?? ''}}&nbsp;</span> <span> of {{number_format($resultsObjectsCount, 0, " ", " ") }}</span>.
           
           <div  class="py-2">
             Number of matched records:

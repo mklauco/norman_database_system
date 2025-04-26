@@ -61,6 +61,18 @@
                 </form>
                 </div>
               </div>
+
+              <div class="mt-2 gap-2">
+                <div class="font-bold text-gray-600">
+                  Indoor:
+                </div>
+                <div class="flex gap-2">
+                <form action="{{route('indoor.countAll')}}" method="GET">
+                  @csrf
+                  <button type="submit" class="btn-submit">Count All Sources</button>
+                </form>
+                </div>
+              </div>
             </div>
             @endrole
             
