@@ -73,6 +73,18 @@
                 </form>
                 </div>
               </div>
+
+              <div class="mt-2 gap-2">
+                <div class="font-bold text-gray-600">
+                  Passive:
+                </div>
+                <div class="flex gap-2">
+                <form action="{{route('passive.countAll')}}" method="GET">
+                  @csrf
+                  <button type="submit" class="btn-submit">Count All Entries</button>
+                </form>
+                </div>
+              </div>
             </div>
             @endrole
             

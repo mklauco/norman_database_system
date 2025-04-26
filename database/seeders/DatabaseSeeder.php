@@ -92,6 +92,17 @@ class DatabaseSeeder extends Seeder
             SarsCov2Part1Seeder::class,
             SarsCov2Part2Seeder::class,
             */
+
+            // Indoor
+            /*
+            IndoorDataSeeder::class,
+            IndoorMainSeeder::class,
+            */
+
+            // Passive Sampling
+            /*
+            PassiveDataSeeder::class,
+            */
         ]);
     }
 }
