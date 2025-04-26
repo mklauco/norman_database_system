@@ -46,7 +46,6 @@
 
             <div id="searchGeography">
               <div class="bg-gray-100 p-2">
-
                 <div class="flex">
                   <div class="w-full">
                     <div class="font-bold mb-2">
@@ -57,9 +56,47 @@
                     'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
                     ])
                   </div>
+                  <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Matrix criteria:
+                    </div>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'matrixSearch', 'list' => $matrixList,
+                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
+                    ])
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div id="searchEnvironmentType">
+              <div class="bg-gray-100 p-2">
+                <div class="flex">
+                  <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Environment Type criteria:
+                    </div>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'environmentTypeSearch', 'list' => $environmentTypeList,
+                    'active_ids' => isset($request->environmentTypeSearch) ? $request->environmentTypeSearch : [],
+                    ])
+                  </div>
+                
+
+                
+                  <div class="w-full">
+                    <div class="font-bold mb-2">
+                      Environment Category criteria:
+                    </div>
+                    @include('_t.form-apline-multiselect', [
+                    'tag' => 'environmentCategorySearch', 'list' => $environmentCategoryList,
+                    'active_ids' => isset($request->environmentCategorySearch) ? $request->environmentCategorySearch : [],
+                    ])
+                  </div>
+                </div>
+              </div>
+            </div>
+          
 
             {{-- <div id="searchGeography">
               <div class="bg-gray-100 p-2">
@@ -102,19 +139,7 @@
 
 
 
-            <div id="searchYear">
-              <div class="bg-gray-100 p-2">
-                <div class="font-bold mb-2">
-                  Year:
-                </div>
-                <div class="w-full">
-                  <div class="grid grid-cols-2 gap-1">
-                    <input type="number" name="year_from" value="{{ isset($request->year_from) ? $request->year_from : null }}" class="form-text" placeholder="year from">
-                    <input type="number" name="year_to" value="{{ isset($request->year_to) ? $request->year_to : null }}" class="form-text" placeholder="year to">
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             <!-- Main Search form -->
             <div class="flex justify-end m-2">

@@ -88,10 +88,10 @@ class DatabaseSeeder extends Seeder
 
             //Backend
             ProjectSeeder::class, // testing data
-            */
             SarsCov2SourceSeeder::class,
             SarsCov2Part1Seeder::class,
             SarsCov2Part2Seeder::class,
+            */
         ]);
     }
 }

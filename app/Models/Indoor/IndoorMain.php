@@ -2,6 +2,7 @@
 
 namespace App\Models\Indoor;
 
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -86,6 +87,11 @@ class IndoorMain extends Model
         'id_method' => 'integer',
         'id_data' => 'integer',
     ];
+
+    public function substance()
+    {
+        return $this->belongsTo(Substance::class, 'substance_id', 'id');
+    }
 
     /**
      * Get the country record associated with the indoor record.
