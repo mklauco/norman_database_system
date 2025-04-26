@@ -140,6 +140,7 @@ Route::prefix('indoor')->group(function () {
     Route::get('search/filter/', [IndoorController::class, 'filter'])->name('indoor.search.filter');
     Route::get('search/search/', [IndoorController::class, 'search'])->name('indoor.search.search');
 
+    Route::get('indoor/countAll', [IndoorHomeController::class, 'countAll'])->middleware('auth')->name('indoor.countAll');
 });
 
 Route::prefix('passive')->group(function () {

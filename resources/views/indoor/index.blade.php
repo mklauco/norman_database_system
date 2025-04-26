@@ -3,53 +3,58 @@
     @include('indoor.header')
   </x-slot>
   
-   
+  
   <div class="py-4">
     <div class="w-full mx-auto sm:px-6 lg:px-8">
       <div class="bg-white shadow-lg sm:rounded-lg" >
         <div class="p-6 text-gray-900" x-data="recordsTable()" x-init="initLeaflet()">
           {{-- main div --}}
           
-          {{-- <a href="{{ route('bioassay.search.filter', [
+          <a href="{{ route('indoor.search.filter', [
           'countrySearch'      => $countrySearch,
-          'bioassayNameSearch' => $bioassayNameSearch,
-          'endpointSearch'     => $endpointSearch,
-          'determinandSearch'  => $determinandSearch,
-          'year_from'          => $year_from ?? '',
-          'year_to'            => $year_to ?? '',
+          'bioassayNameSearch' => $matrixSearch,
+          'endpointSearch'     => $environmentTypeSearch,
+          'determinandSearch'  => $environmentCategorySearch,
           'query_log_id'       => $query_log_id
-          ]) }}"> --}}
+          ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
         
         <div class="text-gray-600 flex border-l-2 border-white">
           @if($displayOption == 1)
-          {{-- use simple output --}}
-          {{-- @livewire('backend.query-counter', ['queryId' => $query_log_id, 'resultsCount' => $resultsObjectsCount, 'count_again' => request()->has('page') ? false : true]) --}}
-          
+          {{-- Simple output --}}
+          @livewire('backend.query-counter', [
+          'queryId' => $query_log_id ?? null, 
+          'resultsCount' => $resultsObjectsCount, 
+          'count_again' => request()->has('page') ? false : true
+          ])
           @else
-          {{-- use advanced output --}}
-          {{-- <span>Number of matched records: </span><span class="font-bold">&nbsp;{{number_format($resultsObjects->total(), 0, " ", " ") ?? ''}}&nbsp;</span> <span> of {{number_format($resultsObjectsCount, 0, " ", " ") }}</span>. --}}
-          
-          <div  class="py-2">
-            Number of matched records:
-          </div>
-          <div class="py-2 mx-1 font-bold">
-            {{-- {{ number_format($resultsObjects->total(), 0, ".", " ") }} --}}
-          </div>
-          
-          {{-- <div  class="py-2">
-            of <span> {{number_format($resultsObjectsCount, 0, " ", " ") }}
-              @if (is_numeric($resultsObjects->total()))
-              @if ($resultsObjects->total()/$resultsObjectsCount*100 < 0.01)
-              which is &le; 0.01% of total records.
-              @else
-              which is {{number_format($resultsObjects->total()/$resultsObjectsCount*100, 3, ".", " ") }}% of total records.
+          {{-- Advanced output with better styling --}}
+          <div class="flex flex-wrap items-center bg-gray-50 p-3 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex items-center mr-4">
+              <span class="text-gray-700">Number of matched records:</span>
+              <span class="font-bold text-lg ml-2 text-indigo-700">
+                {{ number_format($resultsObjects->total(), 0, ".", " ") }}
+              </span>
+            </div>
+            
+            <div class="flex items-center">
+              <span class="text-gray-700">of</span>
+              <span class="font-medium ml-2 text-gray-800">
+                {{ number_format($resultsObjectsCount, 0, ".", " ") }}
+              </span>
+              
+              @if(is_numeric($resultsObjects->total()) && $resultsObjectsCount > 0)
+              <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                @if($resultsObjects->total()/$resultsObjectsCount*100 < 0.01)
+                &le; 0.01% of total
+                @else
+                {{ number_format($resultsObjects->total()/$resultsObjectsCount*100, 2, ".", " ") }}% of total
+                @endif
+              </span>
               @endif
-              @endif
-            </span>
-          </div> --}}
-          
+            </div>
+          </div>
           @endif
           
           @auth
@@ -85,27 +90,48 @@
               <th>Substance</th>
               <th>Concentration</th>
               <th>Unit</th>
-              <th>Ecosystem/Matrix</th>
-              <th>Type of environment</th>
-              <th>Category of environment</th>
+              <th>Matrix</th>
+              <th>Type of Environment</th>
+              <th>Category of Environment</th>
             </tr>
           </thead>
           <tbody>
             @foreach ($resultsObjects as $e)
             <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
+              <td class="p-1 text-center">{{ $e->id }}</td>
               <td class="p-1 text-center">
-                <div  class="">
-                  {{ $e->id }}
-                  {{-- <livewire:bioassay.show-sars-entry :recordId="$e->id" /> --}}
-                  {{-- <a href="{{ route('codsearch.show', $e->id) }}" class="link-lime-text" x-on:click.prevent="openModal({{ $e->id }})">
-                    <i class="fas fa-search"></i>
-                  </a> --}}
-                </div>
+                @if($e->sus_id)
+                {{ $e->substance->name }}
+                @else
+                <span class="text-gray-400">N/A</span>
+                @endif
               </td>
-              <td>
+              <td class="p-1 text-center">{{ number_format($e->concentration_value, 4) }}</td>
+              <td class="p-1 text-center">{{ $e->concentration_unit }}</td>
+              <td class="p-1 text-center">
+                @if($e->matrix)
+                {{ $e->matrix->name }}
+                @elseif($e->matrix_other)
+                {{ $e->matrix_other }}
+                @else
+                <span class="text-gray-400">N/A</span>
+                @endif
               </td>
               <td class="p-1 text-center">
-                {{ $e->concentration_value}}
+                @if($e->environmentType)
+                {{ $e->environmentType->name }}
+                @else
+                <span class="text-gray-400">N/A</span>
+                @endif
+              </td>
+              <td class="p-1 text-center">
+                @if($e->environmentCategory)
+                {{ $e->environmentCategory->name }}
+                @elseif($e->dcoe_other)
+                {{ $e->dcoe_other }}
+                @else
+                <span class="text-gray-400">N/A</span>
+                @endif
               </td>
             </tr>
             @endforeach
