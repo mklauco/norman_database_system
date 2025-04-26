@@ -1,0 +1,6 @@
+id,name,ordering
+"1","V1 - Within-laboratory validation (full method internal validation at research level)"
+"2","V2 - Basic external validation (method transferable to other expert laboratories)"
+"3","V3 - Inter-laboratory validation (method usable at routine level)"
+"4","No"
+"5","Not known"

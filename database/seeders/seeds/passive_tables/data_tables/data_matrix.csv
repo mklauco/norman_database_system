@@ -1,0 +1,10 @@
+id,name,ordering
+"1","Surface water - River water"
+"2","Surface water - Lake water"
+"3","Surface water - Transitional water"
+"4","Surface water - Coastal water"
+"5","Surface water - Territorial (marine) water"
+"6","Surface water - Reservoirs"
+"7","Surface water - Other"
+"8","Air"
+"9","Other"
