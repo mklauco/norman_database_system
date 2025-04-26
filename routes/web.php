@@ -11,6 +11,7 @@ use App\Http\Controllers\Sars\SarsHomeController;
 use App\Http\Controllers\Backend\GeneralController;
 use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Empodat\EmpodatController;
+use App\Http\Controllers\Passive\PassiveController;
 use App\Http\Controllers\Backend\QueryLogController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
@@ -146,6 +147,12 @@ Route::prefix('indoor')->group(function () {
 Route::prefix('passive')->group(function () {
     Route::resource('passivehome', PassiveHomeController::class)->only(['index']);
     Route::resource('passivehome', PassiveHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+    Route::get('search/filter/', [PassiveController::class, 'filter'])->name('passive.search.filter');
+    Route::get('search/search/', [PassiveController::class, 'search'])->name('passive.search.search');
+
+    Route::get('passive/countAll', [PassiveHomeController::class, 'countAll'])->middleware('auth')->name('passive.countAll');
+
 });
 
 Route::prefix('bioassays')->group(function () {

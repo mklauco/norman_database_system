@@ -2,13 +2,13 @@
   Chemical Occurance Data:
 </span> --}}
 
-<x-nav-link-header :href="route('passivehome.index')" :active="request()->is('*passive*')">
+<x-nav-link-header :href="route('passivehome.index')" :active="request()->is('*home*')">
   Home
 </x-nav-link-header>
 
-{{-- <x-nav-link-header :href="route('codsearch.filter')" :active="request()->is('*codsearch*')">
+<x-nav-link-header :href="route('passive.search.filter')" :active="request()->is('*passive.search*')">
   Search
-</x-nav-link-header> --}}
+</x-nav-link-header>
 
 {{-- <x-nav-link-header :href="route('dctitems.index')" :active="request()->is('*dctitems*')">
   DCT Download

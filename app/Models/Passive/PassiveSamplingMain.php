@@ -2,8 +2,9 @@
 
 namespace App\Models\Passive;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PassiveSamplingMain extends Model
 {
@@ -136,6 +137,12 @@ class PassiveSamplingMain extends Model
         'date_of_analysis' => 'date',
         'time_of_analysis' => 'datetime',
     ];
+
+    public function substance()
+    {
+        return $this->belongsTo(Substance::class, 'substance_id', 'id');
+    }
+
 
     /**
      * Get the country record associated with the passive sampling record.
