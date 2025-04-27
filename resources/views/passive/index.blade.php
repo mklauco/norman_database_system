@@ -11,8 +11,12 @@
           {{-- main div --}}
           
           <a href="{{ route('passive.search.filter', [
-          'countrySearch'      => $countrySearch,
-          'query_log_id'       => $query_log_id
+          'countrySearch' => $countrySearch,
+          'matrixSearch'  => $matrixSearch,
+          'year_to'       => $year_to ?? null,
+          'year_from'     => $year_from ?? null,
+          'substances'    => $substances,
+          'query_log_id'  => $query_log_id
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
         </a>
@@ -96,12 +100,12 @@
             <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
               <td class="p-1 text-center">{{ $e->id }}</td>
               <td class="p-1 text-center">
-                {{ $e->sus_id }}
-                {{-- @if($e->sus_id)
+                {{-- {{ $e->sus_id }} --}}
+                @if($e->sus_id)
                 {{ $e->substance->name }}
                 @else
                 <span class="text-gray-400">N/A</span>
-                @endif --}}
+                @endif
               </td>
               <td class="p-1 text-center">
                 @if($e->country_id)
