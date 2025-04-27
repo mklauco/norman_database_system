@@ -5,96 +5,109 @@ namespace App\Http\Controllers\Passive;
 use Illuminate\Http\Request;
 use App\Models\DatabaseEntity;
 use App\Models\Backend\QueryLog;
+use App\Models\Susdat\Substance;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Passive\PassiveDataMatrix;
 use App\Models\Passive\PassiveDataCountry;
 use App\Models\Passive\PassiveSamplingMain;
 
 class PassiveController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
+    * Display a listing of the resource.
+    */
     public function index()
     {
         //
     }
-
+    
     /**
-     * Show the form for creating a new resource.
-     */
+    * Show the form for creating a new resource.
+    */
     public function create()
     {
         //
     }
-
+    
     /**
-     * Store a newly created resource in storage.
-     */
+    * Store a newly created resource in storage.
+    */
     public function store(Request $request)
     {
         //
     }
-
+    
     /**
-     * Display the specified resource.
-     */
+    * Display the specified resource.
+    */
     public function show(string $id)
     {
         //
     }
-
+    
     /**
-     * Show the form for editing the specified resource.
-     */
+    * Show the form for editing the specified resource.
+    */
     public function edit(string $id)
     {
         //
     }
-
+    
     /**
-     * Update the specified resource in storage.
-     */
+    * Update the specified resource in storage.
+    */
     public function update(Request $request, string $id)
     {
         //
     }
-
+    
     /**
-     * Remove the specified resource from storage.
-     */
+    * Remove the specified resource from storage.
+    */
     public function destroy(string $id)
     {
         //
     }
-
+    
     public function filter(Request $request){
         $countryIds = PassiveSamplingMain::distinct('country_id')
         ->whereNotNull('country_id')
         ->pluck('country_id')
         ->toArray();
-    
+        
         // Get the country names in alphabetical order
         $countryList = PassiveDataCountry::whereIn('abbreviation', $countryIds)
         ->orderBy('name')
         ->pluck('name', 'abbreviation')
         ->toArray();
         
+        // Get matrices that are actually used in the main table
+        $matrixIds = PassiveSamplingMain::distinct('matrix_id')
+        ->whereNotNull('matrix_id')
+        ->pluck('matrix_id')
+        ->toArray();
+        
+        // Get the matrix names in alphabetical order
+        $matrixList = PassiveDataMatrix::whereIn('id', $matrixIds)
+        ->orderBy('name')
+        ->pluck('name', 'id')
+        ->toArray();
         
         return view('passive.filter', [
             'request'                 => $request,
             'countryList'             => $countryList,
             // 'environmentTypeList'     => $environmentTypeList,
             // 'environmentCategoryList' => $environmentCategoryList,
-            // 'matrixList'              => $matrixList,
+            'matrixList'              => $matrixList,
         ]);
     }
-
+    
     public function search(Request $request){
         
         
         // Define the input fields to process
-        $searchFields = ['countrySearch'];
+        $searchFields = ['countrySearch', 'matrixSearch' ];
         
         // Process each field with the same logic
         /* 
@@ -119,10 +132,22 @@ class PassiveController extends Controller
             $searchParameters['countrySearch'] = PassiveDataCountry::whereIn('abbreviation', $countrySearch)->pluck('name');
         }
         
-
-
+        // Apply matrix filter
+        if (!empty($matrixSearch)) {
+            $resultsObjects = $resultsObjects->whereIn('matrix_id', $matrixSearch);
+            $searchParameters['matrixSearch'] = PassiveDataMatrix::whereIn('id', $matrixSearch)->pluck('name');
+        }
+        
+        if (!empty($request->input('substances'))) {
+            $resultsObjects = $resultsObjects->whereIn('passive_sampling_main.substance_id', $request->input('substances'));
+            $searchParameters['substances'] = Substance::whereIn('id', $request->input('substances'))->pluck('name');
+        } else {
+            // TASK fix this:
+            $request->merge(['substances' => []]);
+        }
+        
         $main_request = $request->all();
-
+        
         $database_key        = 'passive';
         $resultsObjectsCount = DatabaseEntity::where('code', $database_key)->first()->number_of_records ?? 0;
         
@@ -166,7 +191,7 @@ class PassiveController extends Controller
             ->withQueryString();
         }
         
-
+        // dd($main_request);
         
         return view('passive.index', [
             'resultsObjects'      => $resultsObjects,

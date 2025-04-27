@@ -199,3 +199,4 @@ class PassiveMainSeeder extends Seeder
         $this->command->info('Passive sampling main data seeding completed!');
     }
 }
+// php artisan db:seed --class=PassiveMainSeeder
