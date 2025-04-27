@@ -102,6 +102,7 @@ class DatabaseSeeder extends Seeder
             // Passive Sampling
             /*
             PassiveDataSeeder::class,
+            PassiveMainSeeder::class,
             */
         ]);
     }
