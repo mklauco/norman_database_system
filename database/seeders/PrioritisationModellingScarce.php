@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
-class PrioritisationModellingDanube extends Seeder
+class PrioritisationModellingScarce extends Seeder
 {
     /**
      * Run the database seeds.
@@ -17,11 +17,11 @@ class PrioritisationModellingDanube extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('Starting modelling_danube data seeding...');
-        $target_table_name = 'prioritisation_modelling_danube';
+        $this->command->info('Starting modelling_Scarce data seeding...');
+        $target_table_name = 'prioritisation_modelling_scarce';
         $now = Carbon::now();
         $startTime = microtime(true);
-        $path = base_path() . '/database/seeders/seeds/prioritisation_tables/modelling_danube_export.csv';
+        $path = base_path() . '/database/seeders/seeds/prioritisation_tables/modelling_scarce_export.csv';
         
         // Temporarily disable foreign key checks
         Schema::disableForeignKeyConstraints();
@@ -32,7 +32,7 @@ class PrioritisationModellingDanube extends Seeder
             ->headersToSnakeCase(false);
         
         // Use lazy collection to process the CSV file in chunks without loading it all
-        $chunkSize = 1000; // Process in small chunks to conserve memory
+        $chunkSize = 100; // Process in small chunks to conserve memory
         $reader->getRows()
             ->chunk($chunkSize)
             ->each(function ($rows, $key) use ($target_table_name, $now, $startTime) {
@@ -69,7 +69,7 @@ class PrioritisationModellingDanube extends Seeder
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
         
-        $this->command->info('Modelling Danube data seeding completed!');
+        $this->command->info('Modelling Scarce data seeding completed!');
     }
 }
-// php artisan db:seed --class="PrioritisationModellingDanube"
+// php artisan db:seed --class="PrioritisationModellingScarce"
