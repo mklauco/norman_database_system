@@ -25,6 +25,11 @@ use App\Http\Controllers\Empodat\UniqueSearchController;
 use App\Http\Controllers\Bioassay\BioassayHomeController;
 use App\Http\Controllers\Dashboard\DashboardMainController;
 use App\Http\Controllers\SLE\SuspectListExchangeHomeController;
+use App\Http\Controllers\Prioritisation\ModellingDanubeController;
+use App\Http\Controllers\Prioritisation\ModellingScarceController;
+use App\Http\Controllers\Prioritisation\MonitoringDanubeController;
+use App\Http\Controllers\Prioritisation\MonitoringScarceController;
+use App\Http\Controllers\Prioritisation\PrioritisationHomeController;
 use App\Http\Controllers\Empodat\DataCollectionTemplateFileController;
 use App\Http\Controllers\ARGB\AntibioticResistanceBacteriaGeneHomeController;
 
@@ -207,6 +212,22 @@ Route::prefix('sars')->group(function () {
     ]);
 
 
+});
+
+Route::prefix('prioritisation')->group(function () {
+    Route::resource('prioritisationhome', PrioritisationHomeController::class)->only(['index']);
+    Route::resource('prioritisationhome', PrioritisationHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    
+    Route::get('/monitoring-scarce', [MonitoringScarceController::class, 'index'])->name('prioritisation.monitoring-scarce.index');
+    Route::get('/monitoring-danube', [MonitoringDanubeController::class, 'index'])->name('prioritisation.monitoring-danube.index');
+
+    Route::get('/modelling-scarce', [ModellingScarceController::class, 'index'])->name('prioritisation.modelling-scarce.index');
+    Route::get('/modelling-danube', [ModellingDanubeController::class, 'index'])->name('prioritisation.modelling-danube.index');
+
+
+    Route::get('/monitoring-scarce/filter', [MonitoringScarceController::class, 'filter'])->name('prioritisation.monitoring-scarce.filter');
+
+    Route::get('prioritisation/countAll', [PrioritisationHomeController::class, 'countAll'])->middleware('auth')->name('prioritisation.countAll');
 });
 
 Route::prefix('backend')->group(function () {
