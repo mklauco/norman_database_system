@@ -1,0 +1,7 @@
+id,name,ordering
+"1","Conventional PCR"
+"2","qPCR"
+"3","FISH"
+"4","RT-PCR (gene expression)"
+"5","qPCR (gene abundance e.g. qPCR chip)"
+"6","Other"

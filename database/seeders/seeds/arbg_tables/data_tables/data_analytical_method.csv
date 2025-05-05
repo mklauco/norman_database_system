@@ -1,0 +1,7 @@
+id,name,ordering
+"1","Conventional PCR"
+"2","Real-time PCR"
+"3","Illumina Myseq"
+"4","Whole genome sequencing"
+"5","LAMP-PCR"
+"6","Other"

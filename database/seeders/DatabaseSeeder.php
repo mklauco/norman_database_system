@@ -104,6 +104,13 @@ class DatabaseSeeder extends Seeder
             PassiveDataSeeder::class,
             PassiveMainSeeder::class,
             */
+
+            // ARGBG
+            /*
+            ARBGDataSeeder::class,
+            ARBGBacteriaMainSeeder::class,
+            ARBGGeneMainSeeder::class,
+            */
         ]);
     }
 }
