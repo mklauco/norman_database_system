@@ -110,6 +110,7 @@ class DatabaseSeeder extends Seeder
             ARBGDataSeeder::class,
             ARBGBacteriaMainSeeder::class,
             ARBGGeneMainSeeder::class,
+            ARBGBacteriaCoordinateSeeder::class,
             */
         ]);
     }
