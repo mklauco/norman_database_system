@@ -2,15 +2,15 @@
   Antibiotic Resistant B/G
 </span> 
 
-<x-nav-link-header :href="route('arbghome.index')" :active="request()->is('*arbg*')">
+<x-nav-link-header :href="route('arbghome.index')" :active="request()->is('arbg/arbghome*') || request()->is('arbg')">
   Home
 </x-nav-link-header>
 
-<x-nav-link-header :href="route('arbg.bacteria.search.filter')" :active="request()->is('*arbg.bacteria.search.filter*')">
+<x-nav-link-header :href="route('arbg.bacteria.search.filter')" :active="request()->is('arbg/bacteria*')">
   Search Bacteria
 </x-nav-link-header>
 
-<x-nav-link-header :href="route('arbg.gene.search.filter')" :active="request()->is('*arbg.gene.search.filter*')">
+<x-nav-link-header :href="route('arbg.gene.search.filter')" :active="request()->is('arbg/gene*')">
   Search Genes
 </x-nav-link-header>
 
