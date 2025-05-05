@@ -1,14 +1,18 @@
-{{-- <span class="mr-12 font-bold text-lime-700">
-  Chemical Occurance Data:
-</span> --}}
+<span class="mr-12 font-bold text-lime-700">
+  Antibiotic Resistant B/G
+</span> 
 
-<x-nav-link-header :href="route('arbghome.index')" :active="request()->is('*arbg*')">
+<x-nav-link-header :href="route('arbghome.index')" :active="request()->is('arbg/arbghome*') || request()->is('arbg')">
   Home
 </x-nav-link-header>
 
-{{-- <x-nav-link-header :href="route('codsearch.filter')" :active="request()->is('*codsearch*')">
-  Search
-</x-nav-link-header> --}}
+<x-nav-link-header :href="route('arbg.bacteria.search.filter')" :active="request()->is('arbg/bacteria*')">
+  Search Bacteria
+</x-nav-link-header>
+
+<x-nav-link-header :href="route('arbg.gene.search.filter')" :active="request()->is('arbg/gene*')">
+  Search Genes
+</x-nav-link-header>
 
 {{-- <x-nav-link-header :href="route('dctitems.index')" :active="request()->is('*dctitems*')">
   DCT Download
