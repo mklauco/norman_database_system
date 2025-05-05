@@ -80,7 +80,7 @@ class BacteriaMain extends Model
      */
     public function sampleMatrix()
     {
-        return $this->belongsTo(DataSampleMatrix::class, 'sample_matrix_id', 'sample_matrix_id');
+        return $this->belongsTo(DataSampleMatrix::class, 'sample_matrix_id', 'id');
     }
 
     /**
@@ -88,7 +88,7 @@ class BacteriaMain extends Model
      */
     public function bacterialGroup()
     {
-        return $this->belongsTo(DataBacterialGroup::class, 'bacterial_group_id', 'bacterial_group_id');
+        return $this->belongsTo(DataBacterialGroup::class, 'bacterial_group_id', 'id');
     }
 
     /**
@@ -128,7 +128,7 @@ class BacteriaMain extends Model
      */
     public function depthSamplingType()
     {
-        return $this->belongsTo(DataTypeOfDepthSampling::class, 'type_of_depth_sampling_id', 'type_of_depth_sampling_id');
+        return $this->belongsTo(DataTypeOfDepthSampling::class, 'type_of_depth_sampling_id', 'id');
     }
 
     /**
@@ -136,7 +136,7 @@ class BacteriaMain extends Model
      */
     public function coordinate()
     {
-        return $this->belongsTo(DataCoordinate::class, 'coordinate_id', 'coordinate_id');
+        return $this->belongsTo(BacteriaCoordinate::class, 'coordinate_id', 'id');
     }
 
     /**
