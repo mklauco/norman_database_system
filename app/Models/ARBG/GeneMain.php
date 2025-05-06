@@ -5,7 +5,7 @@ namespace App\Models\ARBG;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class GenesMain extends Model
+class GeneMain extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,7 @@ class GenesMain extends Model
      *
      * @var string
      */
-    protected $table = 'arbg_genes_main';
+    protected $table = 'arbg_gene_main';
 
     /**
      * The attributes that are mass assignable.
@@ -77,7 +77,7 @@ class GenesMain extends Model
      */
     public function sampleMatrix()
     {
-        return $this->belongsTo(DataSampleMatrix::class, 'sample_matrix_id', 'sample_matrix_id');
+        return $this->belongsTo(DataSampleMatrix::class, 'sample_matrix_id', 'id');
     }
 
     /**
@@ -93,7 +93,7 @@ class GenesMain extends Model
      */
     public function coordinate()
     {
-        return $this->belongsTo(DataCoordinate::class, 'coordinate_id', 'coordinate_id');
+        return $this->belongsTo(GeneCoordinate::class, 'coordinate_id', 'id');
     }
 
     /**

@@ -1,6 +1,6 @@
 <x-app-layout>
   <x-slot name="header">
-    @include('indoor.header')
+    @include('arbg.header')
   </x-slot>
 
   <div class="py-4">
@@ -9,7 +9,7 @@
 
         {{-- {!! dump($request) !!} --}}
         <!-- Main Search form -->
-        <form  name="searchIndoor" id="searchIndoor" action="{{route('indoor.search.search')}}" method="GET">
+        <form  name="searchIndoor" id="searchIndoor" action="{{route('arbg.gene.search.search')}}" method="GET">
 
           <div class="p-4 text-gray-900 grid grid-cols-1 gap-4">
             <!-- Main Search form -->
@@ -45,7 +45,7 @@
             </div>
 
             <div id="searchGeography">
-              <div class="bg-gray-100 p-2">
+              {{-- <div class="bg-gray-100 p-2">
                 <div class="flex">
                   <div class="w-full">
                     <div class="font-bold mb-2">
@@ -66,11 +66,11 @@
                     ])
                   </div>
                 </div>
-              </div>
+              </div> --}}
             </div>
 
             <div id="searchEnvironmentType">
-              <div class="bg-gray-100 p-2">
+              {{-- <div class="bg-gray-100 p-2">
                 <div class="flex">
                   <div class="w-full">
                     <div class="font-bold mb-2">
@@ -94,7 +94,7 @@
                     ])
                   </div>
                 </div>
-              </div>
+              </div> --}}
             </div>
           
 
