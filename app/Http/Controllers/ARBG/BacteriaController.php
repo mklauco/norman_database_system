@@ -198,7 +198,7 @@ class BacteriaController extends Controller
         }
         $main_request = $request->all();
         
-        $database_key        = 'arbg';
+        $database_key        = 'arbg.bacteria';
         $resultsObjectsCount = DatabaseEntity::where('code', $database_key)->first()->number_of_records ?? 0;
         
         if(!$request->has('page')){
