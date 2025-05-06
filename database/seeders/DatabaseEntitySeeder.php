@@ -24,16 +24,30 @@ class DatabaseEntitySeeder extends Seeder
         $p = [];
         foreach($rows as $r) {
             $p[] = [
-                'name'                    => $this->isEmptyThenNull($r['name']),
-                'description'             => $this->isEmptyThenNull($r['description']),
-                'image_path'              => $this->isEmptyThenNull($r['image_path']),
-                'code'                    => $this->isEmptyThenNull($r['code']),
-                'dashboard_route_name'    => $this->isEmptyThenNull($r['dashboard_route_name']),
-                'created_at'              => $now,
-                'updated_at'              => $now,
+                'name'                 => $this->isEmptyThenNull($r['name']),
+                'description'          => $this->isEmptyThenNull($r['description']),
+                'image_path'           => $this->isEmptyThenNull($r['image_path']),
+                'code'                 => $this->isEmptyThenNull($r['code']),
+                'dashboard_route_name' => $this->isEmptyThenNull($r['dashboard_route_name']),
+                'number_of_records'    => $this->isEmptyThenNull($r['number_of_records']),
+                'parent_id'            => $this->isEmptyThenNull($r['parent_id']),
+                'show_in_dashboard'    => $this->isEmptyThenNull($r['show_in_dashboard']),
+                'created_at'           => $r['created_at'],
+                'updated_at'           => $r['updated_at'],
             ];
         }
-
+// id
+// name
+// description
+// image_path
+// code
+// dashboard_route_name
+// created_at
+// updated_at
+// last_update
+// number_of_records
+// parent_id
+// show_in_dashboard
         $chunkSize = 1000;
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
