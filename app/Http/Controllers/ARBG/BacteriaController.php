@@ -8,81 +8,199 @@ use App\Models\Backend\QueryLog;
 use App\Models\ARBG\BacteriaMain;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ARBG\DataSampleMatrix;
+use App\Models\ARBG\BacteriaCoordinate;
+use App\Models\ARBG\BacteriaDataSource;
+use App\Models\ARBG\DataBacterialGroup;
 
 class BacteriaController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
+    * Display a listing of the resource.
+    */
     public function index()
     {
         //
     }
-
+    
     /**
-     * Show the form for creating a new resource.
-     */
+    * Show the form for creating a new resource.
+    */
     public function create()
     {
         //
     }
-
+    
     /**
-     * Store a newly created resource in storage.
-     */
+    * Store a newly created resource in storage.
+    */
     public function store(Request $request)
     {
         //
     }
-
+    
     /**
-     * Display the specified resource.
-     */
+    * Display the specified resource.
+    */
     public function show(string $id)
     {
         //
     }
-
+    
     /**
-     * Show the form for editing the specified resource.
-     */
+    * Show the form for editing the specified resource.
+    */
     public function edit(string $id)
     {
         //
     }
-
+    
     /**
-     * Update the specified resource in storage.
-     */
+    * Update the specified resource in storage.
+    */
     public function update(Request $request, string $id)
     {
         //
     }
-
+    
     /**
-     * Remove the specified resource from storage.
-     */
+    * Remove the specified resource from storage.
+    */
     public function destroy(Request $request)
     {
         //
     }
-
-    public function filter(){
-
-        return view('arbg.bacteria.filter', []);
+    
+    public function filter(Request $request)
+    {
+        
+        // Get distinct countries from bacteria records - correct approach
+        $countryIds = BacteriaMain::join('arbg_bacteria_coordinates', 'arbg_bacteria_main.coordinate_id', '=', 'arbg_bacteria_coordinates.id')
+        ->whereNotNull('arbg_bacteria_coordinates.country_id')
+        ->where('arbg_bacteria_coordinates.country_id', '!=', '')
+        ->distinct()
+        ->pluck('arbg_bacteria_coordinates.country_id')
+        ->sort()
+        ->values()
+        ->toArray();
+        
+        // Then get countries from the country table if needed
+        $countryList = BacteriaCoordinate::whereIn('country_id', $countryIds)
+        ->orderBy('country_id')
+        ->pluck('country_id', 'country_id')
+        ->toArray();
+        
+        
+        // Get distinct sample matrices
+        $sampleMatrixIds = BacteriaMain::whereNotNull('sample_matrix_id')
+        ->distinct()
+        ->pluck('sample_matrix_id');
+        
+        $matrixList = DataSampleMatrix::whereIn('id', $sampleMatrixIds)
+        ->orderBy('name')
+        ->pluck('name', 'id')->toArray();
+        
+        
+        // Get distinct sources (organizations)
+        $sourceIds = BacteriaMain::whereNotNull('source_id')
+        ->distinct()
+        ->pluck('source_id');
+        
+        $organisationList = BacteriaDataSource::whereIn('id', $sourceIds)
+        ->whereNotNull('organisation')
+        ->orderBy('organisation')
+        ->distinct()
+        ->pluck('organisation', 'organisation')->toArray();
+        
+        // Get distinct bacterial groups
+        $bacterialGroupIds = BacteriaMain::whereNotNull('bacterial_group_id')
+        ->distinct()
+        ->pluck('bacterial_group_id');
+        
+        $bacterialGroupList = DataBacterialGroup::whereIn('id', $bacterialGroupIds)
+        ->orderBy('name')
+        ->pluck('name', 'id')->toArray();
+        
+        
+        return view('arbg.bacteria.filter', [
+            'request'                 => $request,
+            'countryList' => $countryList,
+            'matrixList' => $matrixList,
+            'organisationList' => $organisationList,
+            'bacterialGroupList' => $bacterialGroupList,
+            // 'yearList' => $yearList
+        ]);
     }
-
     public function search(Request $request){
-
-        $resultsObjects = BacteriaMain::query();
+        
+        // Define the input fields to process
+        $searchFields = ['countrySearch', 'matrixSearch', 'organisationSearch', 'bacterialGroupSearch'];
+        
+        // Process each field with the same logic
+        /* 
+        See more details at BioassayController.php method search()
+        */
+        foreach ($searchFields as $field) {
+            ${$field} = is_array($request->input($field))
+            ? $request->input($field) 
+            :  json_decode($request->input($field), true);
+        }
+        
+        $resultsObjects = BacteriaMain::with([
+            'coordinate', 
+            'sampleMatrix', 
+            'bacterialGroup',
+            'source'
+        ]);
+        
         $searchParameters = [];
-
-
+        
+        // Filter by country
+        if (!empty($countrySearch)) {
+            $resultsObjects = $resultsObjects->whereHas('coordinate', function($query) use ($countrySearch) {
+                $query->whereIn('country_id', $countrySearch);
+            });
+            // dd($countrySearch);
+            $searchParameters['countrySearch'] = BacteriaCoordinate::whereIn('country_id', $countrySearch)->distinct()->pluck('country_id');
+        }
+        
+        // Filter by sample matrix
+        if (!empty($matrixSearch)) {
+            $resultsObjects = $resultsObjects->whereIn('sample_matrix_id', $matrixSearch);
+            $searchParameters['matrixSearch'] = DataSampleMatrix::whereIn('id', $matrixSearch)->pluck('name');
+        }
+        
+        // Filter by organisation
+        if (!empty($organisationSearch)) {
+            $resultsObjects = $resultsObjects->whereHas('source', function($query) use ($organisationSearch) {
+                $query->whereIn('organisation', $organisationSearch);
+            });
+            $searchParameters['organisationSearch'] = BacteriaDataSource::whereIn('organisation', $organisationSearch)->pluck('organisation');
+        }
+        
+        // Filter by bacterial group
+        if (!empty($bacterialGroupSearch)) {
+            $resultsObjects = $resultsObjects->whereIn('bacterial_group_id', $bacterialGroupSearch);
+            $searchParameters['bacterialGroupSearch'] = DataBacterialGroup::whereIn('id', $bacterialGroupSearch)->pluck('name');
+        }
+        
+        // Filter by year
+        
+        // Filter by sampling year range
+        if (!is_null($request->input('year_from'))) {
+            $resultsObjects = $resultsObjects->where('sampling_date_year', '>=', $request->input('year_from'));
+            $searchParameters['year_from'] = $request->input('year_from');
+        }
+        
+        if (!is_null($request->input('year_to'))) {
+            $resultsObjects = $resultsObjects->where('sampling_date_year', '<=', $request->input('year_to'));
+            $searchParameters['year_to'] = $request->input('year_to');
+        }
         $main_request = $request->all();
-
-        $database_key        = 'arbg';
+        
+        $database_key        = 'arbg.bacteria';
         $resultsObjectsCount = DatabaseEntity::where('code', $database_key)->first()->number_of_records ?? 0;
-
+        
         if(!$request->has('page')){
             $now = now();
             $bindings = $resultsObjects->getBindings();
@@ -110,8 +228,8 @@ class BacteriaController extends Controller
                 }
             }
         }
-
-
+        
+        
         if ($request->displayOption == 1) {
             // use simple pagination
             $resultsObjects = $resultsObjects->orderBy('id', 'asc')
@@ -123,7 +241,7 @@ class BacteriaController extends Controller
             ->paginate(200)
             ->withQueryString();
         }
-
+        
         return view('arbg.bacteria.index', [
             'resultsObjects'      => $resultsObjects,
             'resultsObjectsCount' => $resultsObjectsCount,

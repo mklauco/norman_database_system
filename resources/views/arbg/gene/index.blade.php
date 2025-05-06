@@ -1,6 +1,6 @@
 <x-app-layout>
   <x-slot name="header">
-    @include('indoor.header')
+    @include('arbg.header')
   </x-slot>
   
   
@@ -10,11 +10,13 @@
         <div class="p-6 text-gray-900" x-data="recordsTable()" x-init="initLeaflet()">
           {{-- main div --}}
           
-          <a href="{{ route('indoor.search.filter', [
+          <a href="{{ route('arbg.gene.search.filter', [
           'countrySearch'      => $countrySearch,
-          'bioassayNameSearch' => $matrixSearch,
-          'endpointSearch'     => $environmentTypeSearch,
-          'determinandSearch'  => $environmentCategorySearch,
+          'matrixSearch' => $matrixSearch,
+          'geneNameSearch'     => $geneNameSearch,
+          'organisationSearch'  => $organisationSearch,
+          'year_to'       => $year_to ?? null,
+          'year_from'     => $year_from ?? null,
           'query_log_id'       => $query_log_id
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>
@@ -87,48 +89,61 @@
           <thead>
             <tr class="bg-gray-600 text-white">
               <th>ID</th>
-              <th>Substance</th>
-              <th>Concentration</th>
-              <th>Unit</th>
-              <th>Matrix</th>
-              <th>Type of Environment</th>
-              <th>Category of Environment</th>
+              <th>Sample Matrix</th>
+              <th>Sampling Date</th>
+              <th>Gene Name</th>
+              <th>Gene Family</th>
+              <th>Sampling Site/Station</th>
+              <th>Country</th>
             </tr>
           </thead>
           <tbody>
             @foreach ($resultsObjects as $e)
-            <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif ">
+            <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
               <td class="p-1 text-center">{{ $e->id }}</td>
               <td class="p-1 text-center">
-                @if($e->sus_id)
-                {{ $e->substance->name }}
-                @else
-                <span class="text-gray-400">N/A</span>
-                @endif
-              </td>
-              <td class="p-1 text-center">{{ number_format($e->concentration_value, 4) }}</td>
-              <td class="p-1 text-center">{{ $e->concentration_unit }}</td>
-              <td class="p-1 text-center">
-                @if($e->matrix)
-                {{ $e->matrix->name }}
-                @elseif($e->matrix_other)
-                {{ $e->matrix_other }}
+                @if($e->sampleMatrix)
+                {{ $e->sampleMatrix->name }}
+                @elseif($e->sample_matrix_other)
+                {{ $e->sample_matrix_other }}
                 @else
                 <span class="text-gray-400">N/A</span>
                 @endif
               </td>
               <td class="p-1 text-center">
-                @if($e->environmentType)
-                {{ $e->environmentType->name }}
+                @if($e->sampling_date)
+                {{ $e->sampling_date }}
                 @else
                 <span class="text-gray-400">N/A</span>
                 @endif
               </td>
               <td class="p-1 text-center">
-                @if($e->environmentCategory)
-                {{ $e->environmentCategory->name }}
-                @elseif($e->dcoe_other)
-                {{ $e->dcoe_other }}
+                @if($e->gene_name)
+                {{ $e->gene_name }}
+                @if($e->gene_description)
+                - {{ $e->gene_description }}
+                @endif
+                @else
+                <span class="text-gray-400">N/A</span>
+                @endif
+              </td>
+              <td class="p-1 text-center">
+                @if($e->gene_family)
+                {{ $e->gene_family }}
+                @else
+                <span class="text-gray-400">N/A</span>
+                @endif
+              </td>
+              <td class="p-1 text-center">
+                @if($e->coordinate && $e->coordinate->station_name)
+                {{ $e->coordinate->station_name }}
+                @else
+                <span class="text-gray-400">N/A</span>
+                @endif
+              </td>
+              <td class="p-1 text-center">
+                @if($e->coordinate && $e->coordinate->country_id)
+                {{ $e->coordinate->country_id }}
                 @else
                 <span class="text-gray-400">N/A</span>
                 @endif

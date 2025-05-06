@@ -11,7 +11,7 @@ class DatabaseDirectoryController extends Controller
 
     public function index()
     {
-        $databases = DatabaseEntity::orderby('id', 'asc')->get();
+        $databases = DatabaseEntity::orderby('id', 'asc')->where('show_in_dashboard', true)->get();
         return view('landing.index', [
             'databases' => $databases
         ]);

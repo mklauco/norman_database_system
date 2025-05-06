@@ -152,7 +152,7 @@ class BacteriaMain extends Model
      */
     public function source()
     {
-        return $this->belongsTo(DataSource::class, 'source_id', 'source_id');
+        return $this->belongsTo(BacteriaDataSource::class, 'source_id', 'id');
     }
 
     /**

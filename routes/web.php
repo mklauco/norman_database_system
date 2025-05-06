@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ARBG\GeneController;
 use App\Http\Controllers\EmailTestController;
 use App\Http\Controllers\Sars\SarsController;
+use App\Http\Controllers\ARBG\ARBGHomeController;
 use App\Http\Controllers\ARBG\BacteriaController;
 use App\Http\Controllers\Indoor\IndoorController;
 use App\Http\Controllers\Sars\SarsHomeController;
@@ -137,17 +138,21 @@ Route::prefix('sle')->group(function () {
 });
 
 Route::prefix('arbg')->group(function () {
-    Route::resource('arbghome', AntibioticResistanceBacteriaGeneHomeController::class)->only(['index']);
-    Route::resource('arbghome', AntibioticResistanceBacteriaGeneHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::resource('arbghome', ARBGHomeController::class)->only(['index']);
+    Route::resource('arbghome', ARBGHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+    Route::get('countAll', [ARBGHomeController::class, 'countAll'])->middleware('auth')->name('arbg.countAll');
+
     
     Route::prefix('bacteria')->group(function () {
         Route::get('search/filter/', [BacteriaController::class, 'filter'])->name('arbg.bacteria.search.filter');
         Route::get('search/search/', [BacteriaController::class, 'search'])->name('arbg.bacteria.search.search');
+        Route::get('countAll', [ARBGHomeController::class, 'countAllBacteria'])->middleware('auth')->name('arbg.bacteria.countAll');
     });
     
     Route::prefix('gene')->group(function () {
         Route::get('search/filter/', [GeneController::class, 'filter'])->name('arbg.gene.search.filter');
         Route::get('search/search/', [GeneController::class, 'search'])->name('arbg.gene.search.search');
+        Route::get('countAll', [ARBGHomeController::class, 'countAllGene'])->middleware('auth')->name('arbg.gene.countAll');
     });
     
 });
