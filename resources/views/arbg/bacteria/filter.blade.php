@@ -9,7 +9,7 @@
         
         {{-- {!! dump($request) !!} --}}
         <!-- Main Search form -->
-        <form  name="searchIndoor" id="searchIndoor" action="{{route('arbg.bacteria.search.search')}}" method="GET">
+        <form  name="searchBacteria" id="searchBacteria" action="{{route('arbg.bacteria.search.search')}}" method="GET">
           
           <div class="p-4 text-gray-900 grid grid-cols-1 gap-4">
             <!-- Main Search form -->
@@ -111,7 +111,7 @@
             
             <!-- Main Search form -->
             <div class="flex justify-end m-2">
-              <a href="{{route('indoor.search.filter')}}" class="btn-clear mx-2"> Reset </a>
+              <a href="{{route('arbg.bacteria.search.filter')}}" class="btn-clear mx-2"> Reset </a>
               <button type="submit" class="btn-submit"> Search
               </button>
             </div>
