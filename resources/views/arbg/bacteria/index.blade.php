@@ -14,7 +14,7 @@
           'countrySearch'      => $countrySearch,
           'matrixSearch' => $matrixSearch,
           'bacterialGroupSearch'     => $bacterialGroupSearch,
-          // 'organisationList'  => $organisationList,
+          'organisationSearch'  => $organisationSearch,
           'year_to'       => $year_to ?? null,
           'year_from'     => $year_from ?? null,
           'query_log_id'       => $query_log_id
