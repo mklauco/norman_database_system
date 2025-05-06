@@ -97,6 +97,29 @@
                 </form>
                 </div>
               </div>
+
+              <div class="mt-2">
+                <div class="font-bold text-gray-600 mb-2">
+                  ARBG:
+                </div>
+                <div class="flex gap-2">
+                  <form action="{{route('arbg.countAll')}}" method="GET">
+                    @csrf
+                    <button type="submit" class="btn-submit">Count All Entries</button>
+                  </form>
+                  
+                  <form action="{{route('arbg.bacteria.countAll')}}" method="GET">
+                    @csrf
+                    <button type="submit" class="btn-submit">Count Bacteria Entries</button>
+                  </form>
+                  
+                  <form action="{{route('arbg.gene.countAll')}}" method="GET">
+                    @csrf
+                    <button type="submit" class="btn-submit">Count Gene Entries</button>
+                  </form>
+                </div>
+              </div>
+              
             </div>
             @endrole
             
