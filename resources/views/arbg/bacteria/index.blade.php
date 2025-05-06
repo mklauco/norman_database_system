@@ -11,10 +11,12 @@
           {{-- main div --}}
           
           <a href="{{ route('arbg.bacteria.search.filter', [
-          // 'countrySearch'      => $countrySearch,
-          // 'bioassayNameSearch' => $matrixSearch,
-          // 'endpointSearch'     => $environmentTypeSearch,
-          // 'determinandSearch'  => $environmentCategorySearch,
+          'countrySearch'      => $countrySearch,
+          'matrixSearch' => $matrixSearch,
+          'bacterialGroupSearch'     => $bacterialGroupSearch,
+          // 'organisationList'  => $organisationList,
+          'year_to'       => $year_to ?? null,
+          'year_from'     => $year_from ?? null,
           'query_log_id'       => $query_log_id
           ]) }}">
           <button type="submit" class="btn-submit">Refine Search</button>

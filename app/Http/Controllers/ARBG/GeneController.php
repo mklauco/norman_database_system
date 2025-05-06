@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers\ARBG;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\ARBG\GeneMain;
+use App\Models\DatabaseEntity;
+use App\Models\Backend\QueryLog;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class GeneController extends Controller
 {
@@ -64,10 +68,68 @@ class GeneController extends Controller
     }
 
     public function filter(){
-        return 0;
+
+        return view('arbg.gene.filter', []);
     }
 
-    public function search(){
-        return 0;
+    public function search(Request $request){
+
+        $resultsObjects = GeneMain::query();
+        $searchParameters = [];
+
+
+        $main_request = $request->all();
+
+        $database_key        = 'arbg';
+        $resultsObjectsCount = DatabaseEntity::where('code', $database_key)->first()->number_of_records ?? 0;
+
+        if(!$request->has('page')){
+            $now = now();
+            $bindings = $resultsObjects->getBindings();
+            $sql = vsprintf(str_replace('?', "'%s'", $resultsObjects->toSql()), $bindings);
+            // try to find same SQL query in the QueryLog table with same total_count based on the query_hash
+            $actual_count = QueryLog::where('query_hash', hash('sha256', $sql))->where('total_count', $resultsObjectsCount)->value('actual_count');
+            
+            try {
+                QueryLog::insert([
+                    'content'      => json_encode(['request' => $main_request, 'bindings' => $bindings]),
+                    'query'        => $sql,
+                    'user_id'      => auth()->check() ? auth()->id() : null,
+                    'total_count'  => $resultsObjectsCount,
+                    'actual_count' => is_null($actual_count) ? null : $actual_count,
+                    'database_key' => $database_key,
+                    'query_hash'   => hash('sha256', $sql),
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
+                ]);
+            } catch (\Exception $e) {
+                if (Auth::check() && Auth::user()->hasRole('super_admin')) {
+                    session()->flash('failure', 'Query logging error: ' . $e->getMessage());
+                } else {
+                    session()->flash('error', 'An error occurred while processing your request.');
+                }
+            }
+        }
+
+
+        if ($request->displayOption == 1) {
+            // use simple pagination
+            $resultsObjects = $resultsObjects->orderBy('id', 'asc')
+            ->simplePaginate(200)
+            ->withQueryString();
+        } else {
+            // use cursor pagination
+            $resultsObjects = $resultsObjects->orderBy('id', 'asc')
+            ->paginate(200)
+            ->withQueryString();
+        }
+
+        return view('arbg.gene.index', [
+            'resultsObjects'      => $resultsObjects,
+            'resultsObjectsCount' => $resultsObjectsCount,
+            'query_log_id'        => QueryLog::orderBy('id', 'desc')->first()->id,
+            'request'             => $request,
+            'searchParameters'    => $searchParameters,
+        ], $main_request);
     }
 }
