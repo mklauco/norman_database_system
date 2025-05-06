@@ -110,7 +110,7 @@ class BacteriaController extends Controller
         ->whereNotNull('organisation')
         ->orderBy('organisation')
         ->distinct()
-        ->pluck('organisation', 'id')->toArray();
+        ->pluck('organisation', 'organisation')->toArray();
         
         // Get distinct bacterial groups
         $bacterialGroupIds = BacteriaMain::whereNotNull('bacterial_group_id')
@@ -123,6 +123,7 @@ class BacteriaController extends Controller
         
         
         return view('arbg.bacteria.filter', [
+            'request'                 => $request,
             'countryList' => $countryList,
             'matrixList' => $matrixList,
             'organisationList' => $organisationList,
@@ -162,7 +163,7 @@ class BacteriaController extends Controller
             // dd($countrySearch);
             $searchParameters['countrySearch'] = BacteriaCoordinate::whereIn('country_id', $countrySearch)->distinct()->pluck('country_id');
         }
-
+        
         // Filter by sample matrix
         if (!empty($matrixSearch)) {
             $resultsObjects = $resultsObjects->whereIn('sample_matrix_id', $matrixSearch);
@@ -172,9 +173,9 @@ class BacteriaController extends Controller
         // Filter by organisation
         if (!empty($organisationSearch)) {
             $resultsObjects = $resultsObjects->whereHas('source', function($query) use ($organisationSearch) {
-                $query->whereIn('name', $organisationSearch);
+                $query->whereIn('organisation', $organisationSearch);
             });
-            $searchParameters['organisationSearch'] = BacteriaDataSource::whereIn('name', $organisationSearch)->pluck('name');
+            $searchParameters['organisationSearch'] = BacteriaDataSource::whereIn('organisation', $organisationSearch)->pluck('organisation');
         }
         
         // Filter by bacterial group
@@ -183,6 +184,18 @@ class BacteriaController extends Controller
             $searchParameters['bacterialGroupSearch'] = DataBacterialGroup::whereIn('id', $bacterialGroupSearch)->pluck('name');
         }
         
+        // Filter by year
+        
+        // Filter by sampling year range
+        if (!is_null($request->input('year_from'))) {
+            $resultsObjects = $resultsObjects->where('sampling_date_year', '>=', $request->input('year_from'));
+            $searchParameters['year_from'] = $request->input('year_from');
+        }
+        
+        if (!is_null($request->input('year_to'))) {
+            $resultsObjects = $resultsObjects->where('sampling_date_year', '<=', $request->input('year_to'));
+            $searchParameters['year_to'] = $request->input('year_to');
+        }
         $main_request = $request->all();
         
         $database_key        = 'arbg';
