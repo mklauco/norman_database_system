@@ -21,6 +21,7 @@ use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\Bioassay\BioassayController;
 use App\Http\Controllers\DatabaseDirectoryController;
 use App\Http\Controllers\Ecotox\EcotoxHomeController;
+use App\Http\Controllers\Ecotox\LowestPNECController;
 use App\Http\Controllers\Indoor\IndoorHomeController;
 use App\Http\Controllers\Empodat\EmpodatHomeController;
 use App\Http\Controllers\Passive\PassiveHomeController;
@@ -128,6 +129,10 @@ Route::prefix('empodat')->group(function () {
 Route::prefix('ecotox')->group(function () {
     Route::resource('ecotoxhome', EcotoxHomeController::class)->only(['index']);;
     Route::resource('ecotoxhome', EcotoxHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
+
+    Route::prefix('lowestpnec')->group(function () {
+        Route::get('index', [LowestPNECController::class, 'index'])->name('ecotox.lowestpnec.index');
+    });
 });
 
 Route::prefix('sle')->group(function () {
