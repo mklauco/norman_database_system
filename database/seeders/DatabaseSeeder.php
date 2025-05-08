@@ -115,6 +115,13 @@ class DatabaseSeeder extends Seeder
             ARBGBacteriaDataSourceSeeder::class,
             ARBGGeneDataSourceSeeder::class,
             */
+
+            // Ecotox
+            /*
+            EcotoxLowestPNECSeeder::class,
+            EcotoxLowestPNECMainSeeder::class,
+            EcotoxPNEC3Seeder::class,
+            */
         ]);
     }
 }
