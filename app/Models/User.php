@@ -26,6 +26,14 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
+        'username',
+        'salutation',
+        'organisation',
+        'organisation_id',
+        'organisation_other',
+        'country',
+        'country_id',
+        'active',
     ];
 
     /**
@@ -48,6 +56,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
+            'organisation_id' => 'integer',
+            'country_id' => 'integer',
         ];
     }
 
@@ -62,10 +73,53 @@ class User extends Authenticatable
     }
 
     /**
-     * Get projects that belong to the user via the ProjectUSer pivot table.
+     * Get the user's formatted name with salutation if available.
+     *
+     * @return string
+     */
+    public function getFormattedNameAttribute(): string
+    {
+        if ($this->salutation) {
+            return "{$this->salutation} {$this->first_name} {$this->last_name}";
+        }
+        
+        return $this->getFullNameAttribute();
+    }
+
+    /**
+     * Get projects that belong to the user via the ProjectUser pivot table.
      */
     public function projects()
     {
         return $this->belongsToMany(Project::class);
+    }
+
+    /**
+     * Get the organisation that belongs to the user.
+     */
+    public function organisation()
+    {
+        // Assuming you have an Organisation model
+        return $this->belongsTo(Organisation::class);
+    }
+
+    /**
+     * Get the country that belongs to the user.
+     */
+    public function country()
+    {
+        // Assuming you have a Country model
+        return $this->belongsTo(Country::class);
+    }
+
+    /**
+     * Scope a query to only include active users.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
     }
 }
