@@ -97,4 +97,6 @@ class PNEC3 extends Model
     {
         return $this->belongsTo(Substance::class, 'sus_id', 'id');
     }
+
+    
 }

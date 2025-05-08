@@ -4,9 +4,11 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class MigrateOldUsersSeeder extends Seeder
@@ -16,117 +18,131 @@ class MigrateOldUsersSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('Starting user migration from CSV...');
+        $this->command->info('Starting optimized user migration from CSV...');
+        
+        // Correct way to handle constraints in PostgreSQL
+        Schema::disableForeignKeyConstraints();
+        
+        try {
+            // Clear the users table before migration
+            DB::table('users')->truncate();
+            $this->command->info('Users table truncated.');
+        } catch (\Exception $e) {
+            $this->command->error("Error truncating users table: " . $e->getMessage());
+            // If truncate fails, try delete all
+            DB::table('users')->delete();
+            $this->command->info('Users deleted using DELETE instead of TRUNCATE.');
+        }
         
         // Path to the CSV file
         $path = base_path('database/seeders/seeds/users.csv');
         
         // Check if the file exists
         if (!file_exists($path)) {
+            // Re-enable foreign key constraints before exiting
+            Schema::enableForeignKeyConstraints();
             $this->command->error("CSV file not found at: {$path}");
             return;
         }
         
         $now = Carbon::now();
-        $totalRows = 0;
-        $successCount = 0;
-        $errorCount = 0;
         $startTime = microtime(true);
+        
+        // Use a larger chunk size for better performance
+        $chunkSize = 100;
+        $totalRows = 0;
         
         // Use Spatie's SimpleExcelReader for efficient CSV processing
         $reader = SimpleExcelReader::create($path)
-            ->useDelimiter(',')  // Specify your delimiter if not comma
-            ->headersToSnakeCase(); // Convert headers to snake_case
+            ->useDelimiter(',')
+            ->headersToSnakeCase();
         
-        // Process in chunks to conserve memory
-        $chunkSize = 100;
+        // Process in chunks for batch insertion
         $reader->getRows()
             ->chunk($chunkSize)
-            ->each(function ($rows) use (&$totalRows, &$successCount, &$errorCount, $now, $startTime) {
+            ->each(function ($rows) use (&$totalRows, $now, $startTime) {
                 $chunkStartTime = microtime(true);
-                
+                $default_password = Hash::make(Str::random(12));
+                $users = [];
                 foreach ($rows as $row) {
                     try {
-                        // Check if the user already exists in the new system
-                        $existingUser = DB::table('users')->where('email', $row['email'])->first();
+                        // Build record for batch insertion
+                        $users[] = [
+                            'id' => $row['id'],
+                            'username' => $row['username'] ?? null,
+                            'first_name' => $row['firstname'] ?? null,
+                            'last_name' => $row['surname'] ?? null,
+                            'salutation' => $row['mr_ms'] ?? null,
+                            'email' => $row['email'],
+                            'email_verified_at' => $now,
+                            'organisation' => $row['organisation'] ?? null,
+                            'organisation_id' => null, // Will be populated later if needed
+                            'organisation_other' => $row['organisation_other'] ?? null,
+                            'country' => $row['country'] ?? null,
+                            'country_id' => null, // Will be populated later if needed
+                            'active' => isset($row['active']) ? (bool)$row['active'] : true,
+                            'password' => $default_password,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
                         
-                        // Map organisation and country IDs if needed
-                        $organisationId = null;
-                        $countryId = null;
-                        
-                        // Organisation ID mapping
-                        // Uncomment and customize if you need to map organisation names to IDs
-                        // if (!empty($row['organisation'])) {
-                        //     $organisationId = DB::table('organisations')
-                        //         ->where('name', $row['organisation'])
-                        //         ->value('id');
-                        // }
-                        
-                        // Country ID mapping
-                        // Uncomment and customize if you need to map country names to IDs
-                        // if (!empty($row['country'])) {
-                        //     $countryId = DB::table('countries')
-                        //         ->where('name', $row['country'])
-                        //         ->value('id');
-                        // }
-                        
-                        if ($existingUser) {
-                            // Update existing user
-                            DB::table('users')
-                                ->where('id', $existingUser->id)
-                                ->update([
-                                    'username' => $row['username'] ?? null,
-                                    'salutation' => $row['mr_ms'] ?? null,
-                                    'organisation' => $row['organisation'] ?? null,
-                                    'organisation_id' => $organisationId,
-                                    'organisation_other' => $row['organisation_other'] ?? null,
-                                    'country' => $row['country'] ?? null,
-                                    'country_id' => $countryId,
-                                    'active' => isset($row['active']) ? (bool)$row['active'] : true,
-                                    'updated_at' => $now,
-                                ]);
-                        } else {
-                            // Insert new user
-                            DB::table('users')->insert([
-                                'username' => $row['username'] ?? null,
-                                'first_name' => $row['firstname'] ?? null,
-                                'last_name' => $row['surname'] ?? null,
-                                'salutation' => $row['mr_ms'] ?? null,
-                                'email' => $row['email'],
-                                'email_verified_at' => $now,  // Assume all imported users are verified
-                                'organisation' => $row['organisation'] ?? null,
-                                'organisation_id' => $organisationId,
-                                'organisation_other' => $row['organisation_other'] ?? null,
-                                'country' => $row['country'] ?? null,
-                                'country_id' => $countryId,
-                                'active' => isset($row['active']) ? (bool)$row['active'] : true,
-                                'password' => Hash::make($row['passwd'] ?? str_random(12)),
-                                'created_at' => $now,
-                                'updated_at' => $now,
-                            ]);
-                        }
-                        
-                        $successCount++;
                     } catch (\Exception $e) {
-                        $errorCount++;
-                        $this->command->error("Error processing user {". $row['email'] ?? 'unknown' ." }: " . $e->getMessage());
-                        Log::error("User import error: " . $e->getMessage(), ['row' => $row]);
+                        // Just log the error and continue
+                        Log::error("User import error: " . $e->getMessage(), [
+                            'email' => $row['email'] ?? 'unknown',
+                            'row' => json_encode($row)
+                        ]);
                     }
-                    
-                    $totalRows++;
+                }
+                
+                // Batch insert all users in this chunk
+                if (!empty($users)) {
+                    try {
+                        // For PostgreSQL, we can use insert but need to handle potential errors differently
+                        DB::table('users')->insert($users);
+                        $totalRows += count($users);
+                    } catch (\Exception $e) {
+                        $this->command->error("Batch insert error: " . $e->getMessage());
+                        Log::error("Batch insert error: " . $e->getMessage());
+                        
+                        // If batch insert fails, try inserting one by one
+                        $this->command->info("Trying individual inserts...");
+                        foreach ($users as $user) {
+                            try {
+                                DB::table('users')->insert([$user]);
+                                $totalRows++;
+                            } catch (\Exception $innerE) {
+                                Log::error("Individual insert error: " . $innerE->getMessage(), [
+                                    'email' => $user['email'] ?? 'unknown'
+                                ]);
+                            }
+                        }
+                    }
                 }
                 
                 $chunkEndTime = microtime(true);
                 $chunkElapsedTime = round($chunkEndTime - $chunkStartTime, 2);
                 $totalElapsedTime = round($chunkEndTime - $startTime, 2);
                 
-                $this->command->info("Processed chunk with " . count($rows) . " records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
+                $this->command->info("Processed chunk with " . count($users) . " records. Chunk time: {$chunkElapsedTime}s, Total: {$totalRows}, Elapsed: {$totalElapsedTime}s");
             });
+        
+        // Reset sequence for the id column to ensure future inserts work correctly
+        // This is a PostgreSQL-specific operation
+        try {
+            DB::statement("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))");
+            $this->command->info("User ID sequence reset.");
+        } catch (\Exception $e) {
+            $this->command->error("Error resetting sequence: " . $e->getMessage());
+        }
+        
+        // Re-enable foreign key constraints
+        Schema::enableForeignKeyConstraints();
         
         $endTime = microtime(true);
         $totalTime = round($endTime - $startTime, 2);
         
         $this->command->info("Migration completed in {$totalTime} seconds.");
-        $this->command->info("Total records: {$totalRows}, Successful: {$successCount}, Errors: {$errorCount}");
+        $this->command->info("Total records imported: {$totalRows}");
     }
 }

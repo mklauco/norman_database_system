@@ -70,4 +70,24 @@ class LowestPNEC extends Model
     {
         return $this->belongsTo(Substance::class, 'substance_id');
     }
+
+    /**
+     * Get the PNEC3 record associated with this record.
+     * 
+     * RelationInfo: ecotox_lowestpnec_main.lowest_base_id = ecotox_pnec3.norman_pnec_id
+     */
+    public function pnec3()
+    {
+        return $this->belongsTo(PNEC3::class, 'lowest_base_id', 'norman_pnec_id');
+    }
+
+    /**
+     * Get the editor (user) associated with this record.
+     * 
+     * RelationInfo: ecotox_lowestpnec_main.lowest_editor = users.id
+     */
+    public function editor()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'lowest_editor', 'id');
+    }
 }
