@@ -40,16 +40,18 @@ class RolesAndPermissionsSeeder extends Seeder
             $roles[$role] = Role::firstOrCreate(['name' => $role]);
         }
 
-        $users = \App\Models\User::whereIn('email', ['martin.klauco@stuba.sk', 'lubos.cirka@stuba.sk'])->get();
+        $users = \App\Models\User::whereIn('email', ['martin@klauco.com', 'lubos.cirka@stuba.sk'])->get();
         foreach ($users as $user){
             foreach($roleNames as $role){
                 $user->assignRole($roles[$role]);
             }
         }
 
-        $users = \App\Models\User::whereNotIn('email', ['martin.klauco@stuba.sk', 'lubos.cirka@stuba.sk'])->get();
+        $users = \App\Models\User::whereNotIn('email', ['martin@klauco.com', 'lubos.cirka@stuba.sk'])->get();
         foreach ($users as $user){
             $user->assignRole($roles['user']);
         }
     }
 }
+
+// php artisan db:seed --class=RolesAndPermissionsSeeder
