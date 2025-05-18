@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+
 use Illuminate\Support\Facades\Log;
+
 use Illuminate\Support\Str;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
@@ -18,35 +20,25 @@ class MigrateOldUsersSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('Starting optimized user migration from CSV...');
+
+        $this->command->info('Starting user migration from CSV...');
+
+        // 1. First seed the admin user(s)
+        $this->call(AdminSeeder::class);
+        $this->command->info('Admin user(s) seeded.');
         
-        // Correct way to handle constraints in PostgreSQL
-        Schema::disableForeignKeyConstraints();
-        
-        try {
-            // Clear the users table before migration
-            DB::table('users')->truncate();
-            $this->command->info('Users table truncated.');
-        } catch (\Exception $e) {
-            $this->command->error("Error truncating users table: " . $e->getMessage());
-            // If truncate fails, try delete all
-            DB::table('users')->delete();
-            $this->command->info('Users deleted using DELETE instead of TRUNCATE.');
-        }
-        
-        // Path to the CSV file
+        // 2. Path to the CSV file
         $path = base_path('database/seeders/seeds/users.csv');
         
-        // Check if the file exists
         if (!file_exists($path)) {
-            // Re-enable foreign key constraints before exiting
-            Schema::enableForeignKeyConstraints();
+
             $this->command->error("CSV file not found at: {$path}");
             return;
         }
         
         $now = Carbon::now();
         $startTime = microtime(true);
+
         
         // Use a larger chunk size for better performance
         $chunkSize = 100;
@@ -132,6 +124,7 @@ class MigrateOldUsersSeeder extends Seeder
         try {
             DB::statement("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))");
             $this->command->info("User ID sequence reset.");
+
         } catch (\Exception $e) {
             $this->command->error("Error resetting sequence: " . $e->getMessage());
         }
@@ -145,4 +138,7 @@ class MigrateOldUsersSeeder extends Seeder
         $this->command->info("Migration completed in {$totalTime} seconds.");
         $this->command->info("Total records imported: {$totalRows}");
     }
+
 }
+// php artisan db:seed --class=MigrateOldUsersSeeder
+
