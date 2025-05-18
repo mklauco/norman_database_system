@@ -220,10 +220,10 @@ class EcotoxPrimary extends Model
     /**
      * Get the CRED final evaluations for this ecotox record.
      */
-    public function credFinalEvaluations()
-    {
-        return $this->hasMany(CredEvaluationFinal::class, 'ecotox_id', 'ecotox_id');
-    }
+    // public function credFinalEvaluations()
+    // {
+    //     return $this->hasMany(CredEvaluationFinal::class, 'ecotox_id', 'ecotox_id');
+    // }
 
     /**
      * Get the derivations associated with this ecotox record.

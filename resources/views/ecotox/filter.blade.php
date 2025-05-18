@@ -83,9 +83,9 @@
           }
       }" 
       @submit="submitForm($event)"
-      name="searchEmpodat" 
-      id="searchEmpodat" 
-      action="{{route('codsearch.search')}}" 
+      name="searchEcotox" 
+      id="searchEcotox" 
+      action="{{route('ecotox.search.search')}}" 
       method="GET">
   
       <!-- Full-screen overlay with timer and cancel button -->

@@ -28,7 +28,7 @@ class SubstanceSearch extends Component
         $results = [];
         $resultsAvailable = false;
         $ecotoxSubstanceIds = EcotoxSubstanceDistinct::pluck('substance_id')->toArray();
-
+        
         if(strlen($this->search) > 2) {
             $results = Substance::whereIn('id', $ecotoxSubstanceIds)->orderBy('id', 'asc');
             if($this->searchType == 'cas_number') {
@@ -44,7 +44,7 @@ class SubstanceSearch extends Component
             $results = $results->limit(30)->get();
             $resultsAvailable = true;
         }
-        return view('livewire.backend.substance-search', [
+        return view('livewire.ecotox.substance-search', [
             'results' => $results,
             'resultsAvailable' => $resultsAvailable,
             'searchType' => $this->searchType,
@@ -57,6 +57,11 @@ class SubstanceSearch extends Component
     public function applySubstanceFilter()
     {
         // Fetch the selected substances based on their IDs
+        
+        if (!is_array($this->selectedSubstanceIds)) {
+            $this->selectedSubstanceIds = [$this->selectedSubstanceIds];
+        }
+        
         $this->selectedSubstances = Substance::whereIn('id', $this->selectedSubstanceIds)
         ->get()
         ->map(function ($substance) {
@@ -89,7 +94,7 @@ class SubstanceSearch extends Component
         $this->search = '';
     }
     
-
+    
 }
 
 
