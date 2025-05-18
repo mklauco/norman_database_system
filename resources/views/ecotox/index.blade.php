@@ -129,7 +129,7 @@
                       <td class="p-1">
                         @if($e->substance)
                           <div>{{ $e->substance->name }}</div>
-                          <div class="text-xs text-gray-500">{{ $e->cas_number }}</div>
+                          <div class="text-xs text-gray-500">CAS: {{ $e->cas_number }}</div>
                         @else
                           <span class="text-gray-400">{{ $e->substance_name ?? 'N/A' }}</span>
                         @endif
