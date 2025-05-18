@@ -120,6 +120,7 @@
                 </div>
               </div>
 
+
               <div class="mt-2 gap-2">
                 <div class="font-bold text-gray-600">
                   Ecotox:
@@ -131,6 +132,7 @@
                 </form>
                 </div>
               </div>
+
               
             </div>
             @endrole

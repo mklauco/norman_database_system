@@ -6,9 +6,11 @@
   Home
 </x-nav-link-header>
 
+
 <x-nav-link-header :href="route('ecotox.search.filter')" :active="request()->is('ecotox/search*')">
   Ecotox Search
 </x-nav-link-header>
+
 
 <x-nav-link-header :href="route('ecotox.lowestpnec.index')" :active="request()->is('ecotox/lowestpnec*')">
   Lowest PNEC Search
