@@ -49,6 +49,8 @@ Route::get('/landing', [DatabaseDirectoryController::class, 'index'])->name('lan
 Route::prefix('dashboard')->middleware('auth')->group(function () {
     Route::get('overview', [DashboardMainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
     Route::resource('users', UserController::class);
+    Route::get('/user-data', [UserController::class, 'getUserData'])->middleware('auth');
+
     Route::resource('projects', ProjectController::class);
     
 });
