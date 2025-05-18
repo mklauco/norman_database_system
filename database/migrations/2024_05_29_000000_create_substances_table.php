@@ -7,18 +7,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
-     */
+    * Run the migrations.
+    */
     public function up(): void
     {
-
+        
         Schema::create('susdat_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable()->default(null);
             $table->string('abbreviation')->nullable()->default(null);
             $table->timestamps();
         });
-
+        
         
         Schema::create('susdat_substances', function (Blueprint $table) {
             $table->id();
@@ -41,10 +41,16 @@ return new class extends Migration
             $table->json('metadata_cas')->nullable()->default(null);
             $table->json('metadata_ms_ready')->nullable()->default(null);
             $table->json('metadata_general')->nullable()->default(null);
-            $table->foreignId('added_by')->constrained()->nullable()->default(null)->references('id')->on('users');
+            // The added_by column with proper constraint
+            $table->foreignId('added_by')
+            ->nullable()
+            ->references('id')
+            ->on('users')
+            ->onUpdate('cascade')
+            ->onDelete('restrict');
             $table->timestamps();
         });
-
+        
         Schema::create('susdat_category_substance', function (Blueprint $table) {
             // $table->id();
             $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
@@ -53,10 +59,10 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-
+    
     /**
-     * Reverse the migrations.
-     */
+    * Reverse the migrations.
+    */
     public function down(): void
     {
         Schema::dropIfExists('susdat_substances');

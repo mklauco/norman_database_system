@@ -18,22 +18,24 @@ class AdminSeeder extends Seeder
     {
         User::insert([
             [
+                'id' => 2,
                 'first_name'          => 'Martin',
                 'last_name'           => 'Klaučo',
-                'email'               => 'martin.klauco@stuba.sk',
+                'email'               => 'martin@klauco.com',
                 'email_verified_at'   => now(),
                 'password'            => Hash::make('password'),
                 'remember_token'      => Str::random(10),
             ],
-            
-            [
-                'first_name'          => 'Luboš',
-                'last_name'           => 'Čirka',
-                'email'               => 'lubos.cirka@stuba.sk',
-                'email_verified_at'   => now(),
-                'password'            => Hash::make('password'),
-                'remember_token'      => Str::random(10),
-            ],
+            // user already exists with ID: 545
+            // [
+            //     'id' => 3,
+            //     'first_name'          => 'Luboš',
+            //     'last_name'           => 'Čirka',
+            //     'email'               => 'lubos.cirka@stuba.sk',
+            //     'email_verified_at'   => now(),
+            //     'password'            => Hash::make('password'),
+            //     'remember_token'      => Str::random(10),
+            // ],
         ]);
     }
 }

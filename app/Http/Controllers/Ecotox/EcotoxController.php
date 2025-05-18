@@ -63,4 +63,11 @@ class EcotoxController extends Controller
     {
         //
     }
+
+    public function filter(Request $request)
+    {
+       return view('ecotox.filter', [
+            'request' => $request,
+        ]);
+    }
 }

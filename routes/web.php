@@ -9,6 +9,7 @@ use App\Http\Controllers\EmailTestController;
 use App\Http\Controllers\Sars\SarsController;
 use App\Http\Controllers\ARBG\ARBGHomeController;
 use App\Http\Controllers\ARBG\BacteriaController;
+use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Indoor\IndoorController;
 use App\Http\Controllers\Sars\SarsHomeController;
 use App\Http\Controllers\Backend\GeneralController;
@@ -134,6 +135,11 @@ Route::prefix('ecotox')->group(function () {
         Route::get('index', [LowestPNECController::class, 'index'])->name('ecotox.lowestpnec.index');
         Route::get('show/{sus_id}', [LowestPNECController::class, 'show'])->name('ecotox.lowestpnec.show');
     });
+
+        Route::get('search/filter/', [EcotoxController::class, 'filter'])->name('ecotox.search.filter');
+        Route::get('search/search/', [EcotoxController::class, 'search'])->name('ecotox.search.search');
+
+    Route::get('unique/search/substances', [EcotoxHomeController::class, 'syncNewSubstances'])->name('ecotox.unique.search.substances');
 });
 
 Route::prefix('sle')->group(function () {
