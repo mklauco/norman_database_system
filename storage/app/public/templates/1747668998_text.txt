@@ -1,0 +1,2563 @@
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+1
+Deception in Data-Driven Linear-Quadratic
+Control
+Filippos Fotiadis1
+, Member, IEEE, Aris Kanellopoulos2
+, Member, IEEE,
+Kyriakos G. Vamvoudakis3
+, Senior Member, IEEE, Ufuk Topcu1
+, Fellow, IEEE
+Abstract— Deception is a common defense mechanism
+against adversaries with an information disadvantage. It
+can force such adversaries to select suboptimal policies
+for a defender’s benefit. We consider a setting where an
+adversary tries to learn the optimal linear-quadratic attack
+against a system, the dynamics of which it does not know.
+On the other end, a defender who knows its dynamics
+exploits its information advantage and injects a deceptive
+input into the system to mislead the adversary. The de-
+fender’s aim is to then strategically design this deceptive
+input: it should force the adversary to learn, as closely as
+possible, a pre-selected attack that is different from the
+optimal one. We show that this deception design problem
+boils down to the solution of a coupled algebraic Riccati
+and a Lyapunov equation which, however, are challenging
+to tackle analytically. Nevertheless, we use a block suc-
+cessive over-relaxation algorithm to extract their solution
+numerically and prove the algorithm’s convergence under
+certain conditions. We perform simulations on a benchmark
+aircraft, where we showcase how the proposed algorithm
+can mislead adversaries into learning attacks that are less
+performance-degrading.
+Index Terms— Deception, data-driven control, linear-
+quadratic control, successive over-relaxation.
+in control theory that aims to design optimal controllers for
+systems whose dynamics are either uncertain or completely
+unknown. Its underlying idea is to use state and/or input
+histories of the system at hand to synthesize the desired control
+policy, instead of solving model-based equations that require
+strong prior empirical knowledge [6], [7]. Yet, a major back-
+door in data-driven control is its sensitivity to perturbations
+often present in the measured data. Such perturbations can
+be benign when they conform to specific random patterns or
+are sufficiently small [8], [9]. However, this is not the case
+when they are specifically crafted by an opponent with an
+information advantage as a means for deception. Crafting such
+deception is the focus of this paper.
+More specifically, we consider a setting where an adversary
+wants to compute the optimal linear quadratic attack against a
+dynamical system. However, being an outsider, the adversary
+has no prior knowledge regarding the system’s dynamics. It
+thus needs to either perform a direct data-driven method to
+learn the optimal attack or employ system identification and
+then learn the optimal attack indirectly. On the other end, the
+defender of the system is aware of the adversary’s malicious
+objective and is motivated to perform deception to mislead
+I. INTRODUCTION
+them towards learning a more benign attack. To that end,
+Deception is a mechanism defenders often use in adversarial
+the defender exploits its information advantage with respect
+environments, particularly as a tool to mislead their opponents
+to the system’s dynamics and injects deceptive feedback into
+into adopting oblivious policies. For example, adversarial
+the system to distort the data the adversary is using. A key
+entities can employ deception in cyber-physical settings as a
+characteristic of such feedback is that it has the same effect on
+means to render their attacks unnoticed [1], [2], but also, in
+the attack that the adversary will ultimately learn, irrespective
+other contexts such as robotics [3], autonomous vehicles [4],
+of the adversary’s actual learning algorithm.
+and warfare [5]. Despite the heterogeneity of these applica-
+To obtain the defender’s deceptive input, we cast its ob-
+tions, a common theme among them is that of information
+jective as a constrained optimization problem balancing two
+asymmetry; that is, to be able to deceive the opponent, one
+objectives: i) the desire to steer the adversary’s learned policy
+must have an information advantage against them, and the
+towards an a priori chosen benign gain; and ii) the desire to
+opponent should usually be oblivious to this advantage.
+use as small of deceptive feedback as possible to maintain the
+In this paper, we consider deception in the context of data-
+nominal closed-loop performance and stability. We mathemati-
+driven linear-quadratic control. This is a recently emerged field
+cally specify the conditions under which such an optimization
+problem is well-defined and characterize its solution as the
+1 F. Fotiadis and U. Topcu are with the Oden Institute for Computa-
+root of a coupled algebraic Riccati equation and a Lyapunov
+tional Engineering & Sciences, University of Texas at Austin, Austin, TX,
+USA. Email: {ffotiadis, utopcu}@utexas.edu.
+equation. Subsequently, since these coupled equations are
+2 A. Kanellopoulos is with the Division of Decision and Control
+difficult to analytically solve, we tackle them numerically with
+Systems, School of Electrical Engineering and Computer Science, KTH
+a successive over-relaxation iterative algorithm. In addition, we
+Royal Institute of Technology, Stockholm, Sweden, e-mail: arisk@kth.se.
+3K. G. Vamvoudakis is with the School of Aerospace Engineer-
+prove this algorithm’s convergence under certain conditions.
+ing, Georgia Institute of Technology, Atlanta, GA, USA. Email: kyri-
+We finally note that the proposed deception design also applies
+akos@gatech.edu.
+to the easier problem of deceiving minimizing data-driven
+This work was supported in part, by ARO under grant No. W911NF-
+24´1´0174, and by NSF under grant Nos. CAREER CPS-1851588,
+linear-quadratic regulators.
+SLES-2415479, SATC-2231651, CPS-2227185, and CPS-2227153.
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+2
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+A. Related work
+Despite data-driven control being a relatively young field,
+relevant studies regarding its deception have recently appeared
+in the literature. For example, related to the philosophy of
+this paper is the concept of deception in data-driven Nash
+equilibrium seeking [10]. It considers a setting where an agent
+engaged in a multi-player game has an information advantage
+and uses this advantage to design a deceptive input that steers
+the other agents’ policies toward a deceptive equilibrium.
+Nevertheless, the setting considered in [10] is tailored to
+repeated static games.
+The concept of deceiving data-driven methods is also often
+related to poisoning such methods, owing to the data corrup-
+tion that implicitly or explicitly takes place as the means for
+deception. This idea of poisoning has attracted much interest in
+the machine learning community [11]–[15] and a few studies
+have also investigated it from a systems and control theoretic
+perspective. For instance, relevant examples include poisoning
+virtual reference feedback controllers [16], [17] and data
+predictive control [18]. Nevertheless, most of these techniques
+revolve around distantly related setups with discrete-time sys-
+tems, different objectives, and sometimes without theoretical
+convergence guarantees. Relevant research initiatives have also
+focused on increasing resilience against poisoning attacks
+[19]–[22]. However, the problem of explicitly deceiving a
+learning-based optimal control algorithm, so that it converges
+to a prespecified policy, has not been studied.
+Moving target defense is another mechanism used to deal
+with adversaries [23]–[25]. Its main idea is that to prevent an
+adversary from stealthily attacking a dynamical system, it is
+in the interest of the defender to constantly alter the system’s
+dynamics to reveal or hinder the attack. However, moving
+target defense does not exploit the defender’s information
+advantage to explicitly deceive the adversary’s policy. This
+is the case in the deception method we develop, where one
+can prescribe how the defender’s deceptive input will affect
+the learned adversarial policy and hence steer it towards an a
+priori chosen benign target.
+A preliminary version of this paper appeared in [26], which
+studied the problem of deception against minimizing data-
+driven linear quadratic regulators. However, [26] only provided
+simulation results to support its algorithm’s ability in extract-
+ing the optimal deception policy. On the other hand, hereon,
+we adopt a stricter approach and theoretically prove the
+algorithm’s convergence properties. In addition, we shed light
+on the problem of deceiving maximizing regulators. This is a
+much more challenging problem owing to the associated value
+function possibly becoming unbounded and thus undefined
+[27].
+II. PRELIMINARIES
+“ d
+dX‰ij“
+d
+drXsij . For a square matrix X, αpXq denotes its
+spectral abscissa, and trpXqits trace. For a symmetric matrix
+X, λminpXqand λmaxpXqdenote its minimum and maximum
+eigenvalue, respectively. We denote X ą 0 (respectively, X ľ
+0qif X is positive definite (respectively, positive semidefinite).
+We denote as vecpXq the vectorization of X. We use In to
+denote the identity matrix of order n. Finally, we denote the
+Kronecker delta function as δi,j, so that δi,j“1 if i“j, and
+δi,j“0 else.
+Definition 1. Consider the following algebraic Riccati equa-
+tion:
+ATP `PA`Q´PpB1R´1
+1 BT
+1´B2R´1
+2 BT
+2 qP“0, (1)
+where A,P,Q P Rnˆn
+, R1 P Rmu ˆmu
+, R2 P Rma ˆma
+,
+B1 PRnˆmu
+, B2 PRnˆma
+, R1,R2,Q ą 0, and pA,B1q is
+stabilizable. When it exists, we denote the unique stabilizing
+solution of (1) as P PS`. Such a solution is positive definite,
+though not necessarily uniquely, but is the minimal such
+solution of (1) [27].
+III. PROBLEM FORMULATION
+A. Closed-Loop System
+Consider the continuous-time, closed-loop system for all
+tě0:
+9
+xptq“Axptq, (2)
+where xptq P Rn is the state of the system, and A P Rnˆn
+is the closed-loop state matrix. By closed loop, we mean that
+A“ Ao `BuF, where Ao P Rnˆn is the open-loop state
+matrix, Bu P Rnˆmu is the input matrix, and F P Rmu ˆn
+is a stabilizing gain such that A is Hurwitz. For example, F
+could be a gain obtained from a pole-placement procedure that
+moves the eigenvalues of A to the open left-half plane.
+B. The Adversary’s Model and Objectives
+We assume that an adversary can launch an adversarial
+attack on system (2). In the presence of such an attack, system
+(2) would take the form
+9
+xptq“Axptq`Baaptq, (3)
+with Ba P Rnˆma being the adversary’s input matrix, and
+aptq P Rma being the attack. The adversary’s purpose is to
+then design the attack to balance two objectives: i) disturbing
+the stabilization of (3); and ii) moderating the attack’s mag-
+nitude. We capture this dual objective with the maximizing
+linear-quadratic control problem:
+KPRma ˆn ż8
+max
+pxTpτqQxpτq´aTpτqRapτqqdτ,
+0
+s.t.9
+xptq“Axptq`Baaptq, (4)
+aptq“Kxptq,
+Notation: We denote as R the set of real numbers, and as N
+the set of natural numbers including zero. The vector ei PRn
+denotes a unit vector with a unity located in the i-th row. For
+any matrix X, ∥X∥F denotes its Frobenius norm. In addition,
+rXsij denotes the entry in its i-th row and j-th column.
+where Q,Rą 0 are weighting matrices. Provided that λminpRq
+is above a threshold, it then follows from standard linear
+systems theory [27] that the solution to this problem is given
+by
+Moreover, we follow the matrix differentiation convention
+K‹
+“R´1BT
+aP, (5)
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+3
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+where P PS` is the minimal positive definite solution of the
+algebraic Riccati equation (ARE)
+ATP `PA`Q`PBaR´1BT
+aP“0. (6)
+We now present the information structure of the adversary.
+Assumption 1. The following hold true.
+1) The adversary does not know the values of the entries of
+the system’s matrices A,Ba.
+2) The adversary can measure the state of the system.
+The main implication of the adversary’s information struc-
+ture is that it impedes them from directly solving the ARE (6),
+and hence from obtaining the optimal attack gain K‹ in (5).
+In that regard, the adversary is forced to gather measurements
+from the system over a given window and use them to either
+solve (4) in a direct data-driven manner, or to perform system
+identification and then solve (4).
+C. The Defender’s Model and Objectives
+We assume that the defender of the system is aware that a
+potential adversary might be gathering information from the
+system with the aim of synthesizing the optimal attack gain K‹
+in (5). In that respect, the defender opts to spoof the system’s
+dynamics during this window, and deceive the adversary into
+learning a prespecified gain different from K‹. Specifically,
+during this window, the system’s dynamics take the form
+9
+xptq“Axptq`Buuptq`Baaptq, (7)
+where uptqPRmu is the defender’s deceiving input added to
+spoof the system dynamics and deceive the adversary, forcing
+them to learn a gain¯
+K PRma ˆn that is different from K‹
+.
+We now present the information structure of the defender.
+Assumption 2. The following hold true.
+1) The defender knows the system matrices A,Bu,Ba.
+2) The defender can measure the state of the system.
+3) The defender does not know the learning algorithm the
+adversary is using, but knows its objective.
+aptq“Kxptq,
+where we note that the trajectories in this maximization prob-
+lem are over the spoofed dynamics, whereas the trajectories in
+(4) were over the dynamics of the original system. Following
+again standard linear systems theory, one can show that the
+optimal solution to (8) is
+KupΛq“R´1BT
+aPupΛq, (9)
+where PupΛq P Rnˆn P S` is now the minimal positive
+definite solution of the “spoofed” ARE:
+pA`BuΛqTPu `PupA`BuΛq`Q
+`PuBaR´1BT
+aPu “0. (10)
+The above equations imply that the defender can predict
+the adversarial gain KupΛq that the enemy will ultimately
+learn, particularly by exploiting its information advantage with
+respect to the system’s dynamics. Nevertheless, choosing the
+deception gain Λ to control KupΛqis far from being a trivial
+task, because the dependence of KupΛq on Λ goes through
+the minimal solution of the ARE (10). In that regard, if
+the defender wants, for example, to suppress the adversarial
+attack by forcing KupΛq to be very close to zero, then it is
+not clear how it should select Λ to achieve this suppression
+optimally. Motivated by this issue, we formalize the problem
+we investigate in the remainder of the paper as follows.
+Problem 1. Design Λ, so that the gain KupΛq that the
+adversary will learn closely resembles a different gain¯
+K P
+Rma ˆn that is prechosen by the defender.
+Remark 1. Another variation of the deception problem con-
+sidered in this paper is one where a defender tries to learn
+the minimizing linear-quadratic regulator for the system, and
+an adversary tries to deceive them towards converging to an
+unrelated, suboptimal gain. We note that this problem is easier
+owing to its inherently convex nature, and one can solve
+it using tools identical to those presented in the following
+sections; see Section VI-B for more details.
+IV. DECEPTION DESIGN
+The fact that the defender does not know the learning
+algorithm of the adversary, though realistic, makes it difficult
+to gauge how the deceiving input uptq will affect where
+that algorithm will converge. An exception is if the defender
+chooses u as
+A. Deception Design using a Distance-Based Metric
+One method the defender could use to design its deception
+gain Λ, is so that KupΛqis as close as possible—in the matrix
+norm sense—to¯
+K In other words, the defender could select
+uptq“Λxptq,
+its gain Λ so that it minimizes KupΛq´¯
+K 2
+F. Under this
+objective, the optimal deception gain would be derived as the
+where Λ P Rmu ˆn is an appropriately chosen deception
+solution of the constrained optimization
+gain. Such a strategy simply redefines the system’s internal
+dynamics, and hence will generate the same effect to the
+inf
+JpΛ,Puq“ KupΛq´¯
+K 2
+F `trpΛTΓΛq,
+learned adversarial gain irrespective of the underlying learning
+ΛPRmu ˆn ,Pu PRnˆn
+dynamics. Hence, if the adversary employs a learning-based
+s.t. (9),(10), (11)
+scheme to estimate the optimal gain K‹ that solves (4) while
+Pu PS`,
+under the proposed deceptive measure, the adversary will
+instead learn the gain that solves
+where Γ ą 0, and trpΛTΓΛq is a regulation term. This
+regulation term is necessary to ensure that the minimum exists,
+KPRma ˆn ż8
+max
+pxTpτqQxpτq´aTpτqRapτqqdτ,
+but also to penalize how large the deception gain Λ can be
+0
+to minimize performance loss and maintain stability. As an
+s.t.9
+xptq“pA`BuΛqxptq`Baaptq, (8)
+alternative, the distance of the target gain¯
+K from the original
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+4
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+gain K‹ should be sufficiently small. We provide an explicit –
+though conservative – condition on the distance K‹
+¯
+´
+K F
+as well as the regulation weight Γ, for ensuring closed-loop
+stability and the feasibility of (11), in the following Lemma.
+The Lemma’s proof, as well as the proofs of all technical
+results, are postponed to the Appendix.
+Lemma 1. Let S P Rnˆn be the unique positive-definite
+solution of
+pA`BaK‹qTS`SpA`BaK‹q`2I“0. (12)
+Choose Γ and the target gain¯
+K so that
+¯
+K‹
+´
+K F ă aλminpΓq
+. (13)
+aλminpΓq∥SBa∥F `∥SBu∥F
+Then, (11) admits a global minimizer pΛ‹,P‹
+uq, i.e., its infimum
+is a minimum. In addition, A`BuΛ‹`BaKupΛ‹qis strictly
+stable.
+We note that the condition of Lemma 1, though sufficient,
+is not necessary for maintaining stability and feasibility. It
+can often prove to be quite conservative, and merely having a
+sufficiently large regulation matrix Γ in terms of eigenvalues
+should suffice both in practice and theory. Moreover, simula-
+tion results show that even this condition is often redundant,
+as for certain reasonable choices of¯
+K the regulation matrix Γ
+can be arbitrarily small; see Section VI-A for further details.
+To proceed, we use the Karush–Kuhn–Tucker conditions
+to characterize the solution to the optimization problem (11),
+which yields the optimal deception policy for the defender.
+Theorem 1. Let pΛ‹,P‹
+uqPRmu ˆn ˆRnˆn be the optimal
+solution to (11). Then, P‹
+u PS`, and there exists Π‹ PRnˆn
+symmetric such that pΛ,Pu,Πq “ pΛ‹,P‹
+u,Π‹q solve the
+system of equations
+pA`BuΛqTPu `PupA`BuΛq
+`Q`PuBaR´1BT
+aPu “0, (14a)
+pA`BuΛ `BaR´1BT
+aPuqΠ
+`ΠpA`BuΛ`BaR´1BT
+aPuqT
+¯
+´
+KTR´1BT
+a
+´BaR´1¯
+K`PuBaR´2BT
+a `BaR´2BT
+aPu “0, (14b)
+Λ“´Γ´1BT
+uPuΠ. (14c)
+According to Theorem 1, we can extract the optimal solution
+to the deception design problem (11) by solving the matrix
+equations (14a)-(14c). However, a close inspection of these
+equations reveals that they are not easy to solve analytically,
+even in the scalar case. This is mainly due to their coupled
+and nonlinear nature, arising from the cross-term PuBuΛ in
+(14a), and the cross-terms PuΠ and ΛΠ in (14b).
+A potential solution to the aforementioned bottleneck could
+be to employ off-the-shelf numerical solvers for nonlinear
+systems of equations on (14a)-(14c), combined with standard
+heuristics that may aid their chances of success. However,
+not only would such a choice be computationally expensive
+since the number of unknowns scales quadratically with n in
+(14a)-(14c), but it would also have no theoretical guarantees of
+success. A more thoughtful numerical approach is thus clearly
+required.
+B. Proposed Numerical Solution
+To be able to numerically attack equations (14a)-(14c) in
+an efficient manner, it is important to first understand their
+structure. Even though as a whole this system of equations
+does not seem to fall within any known class of systems,
+each of its equations – when viewed independently – has a
+relatively familiar structure. More specifically, equation (14a)
+is an ARE when viewed with Pu being its sole unknown
+variable, and such AREs are straightforward to solve for their
+minimal positive definite solution. In addition, equation (14b)
+is a Lyapunov equation (LE) when viewed with Π being its
+sole unknown variable, and hence has a unique solution – as
+long as Pu is minimal – that we can extract even analytically.
+Finally, provided that both Pu and Π are known a priori, (14c)
+is a very simple computation that yields the deception gain Λ.
+In view of the above, a potential structured numerical
+method to solve (14a)-(14c) is the following: one can proceed
+to begin with an arbitrary gain Λ, then solve (14a) for its
+minimal positive definite solution Pu (provided it exists), then
+solve (14b) for its symmetric solution (provided it exists),
+then update Λ according to (14c), and then repeat this process
+iteratively until a fixed point is found. Such a fixed point will
+necessarily be a solution to (14a)-(14c), and hence qualify for
+being a stationary point of (11).
+The aforementioned method is known as the Gauss-Seidel
+method in numerical linear algebra [28]. We present a vari-
+ation of it in Algorithm 1, known as block successive over-
+relaxation, wherein the update of the gain Λ at each iteration
+goes through a low-pass filter.
+V. CONVERGENCE ANALYSIS
+We first presented Algorithm 1 in our preliminary study
+[26], which designed poisoning actuation attacks against de-
+fenders learning the minimizing linear-quadratic control of an
+unknown system. While simulation results in [26] showcased
+that Algorithm 1 performs well in a variety of settings,
+it is difficult to use such empirical results to argue about
+convergence properties, mainly because fixed-point iteration
+schemes are notorious for often being divergent. For this
+reason, here we will adopt a theoretically strict approach, and
+mathematically prove that Algorithm 1 leads to a stationary
+point of the deception problem (11). In addition, we will show
+that this stationary point, under certain conditions, corresponds
+to a minimum.
+Towards this end, notice that in the optimization problem
+(11), the ARE constraint (10) completely dictates the choice
+of the matrix Pu. That is, once we select a specific gain
+Λ, then we subsequently obtain the matrix Pu by solving
+the equality constraint (10) for its minimal positive definite
+solution. Taking this into consideration, it is possible to define
+the cost function of (11) uniquely with respect to Λ as
+˜
+JpΛq“JpΛ,PupΛqq, (18)
+where, with a slight abuse of notation, Pup¨qis now a function
+with unknown analytical form, which maps Λ to the minimal
+positive definite solution of the ARE
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+5
+Algorithm 1 Block Successive Over-relaxation Algorithm to
+solve (14a)-(14c)
+Input: Tolerance ϵ ą 0, step size ω P p0,2q, regula-
+tion weight Γ ą 0, desired gain¯
+K, parameters
+A,Bu,Ba,R,Q.
+Output: Estimated solution pˆ
+Λ,
+ˆ
+Pu,
+ˆ
+Πqto (14a)-(14c).
+1: procedure
+2: Λ0 Ð0.
+3: iÐ0.
+4: while i“0 or Λi
+´Λi´1
+F ěϵ¨ω do
+5: Solve for PGS
+u PS` from the ARE
+pA`BuΛiqTPGS
+u `PGS
+u pA`BuΛiq
+`Q`PGS
+u BaR´1BT
+aPGS
+u
+“0. (15)
+6: Set Pi`1
+ÐPGS
+u
+u.
+7: Solve for ΠGS from the LE
+pA`BuΛi `BaR´1BT
+aPi`1
+u qΠi
+`ΠpA`BuΛi`BaR´1BT
+aPi`1
+u qT
+¯
+´
+KTR´1BT
+a (16)
+´BaR´1¯
+K`Pi`1
+u BaR´2BT
+a `BaR´2BT
+aPi`1
+“0.
+u
+8: Set Πi`1 ÐΠGS
+.
+9: Compute ΛGS as
+ΛGS
+“´Γ´1BT
+uPi`1
+u Πi`1
+. (17)
+10: Set Λi`1 ÐΛi `ωpΛGS
+´Λiq.
+11: iÐi`1.
+12: end while
+13:ˆ
+ˆ
+ˆ
+Λ ÐΛi
+,
+Pu ÐPi
+Π ÐΠi
+u,
+.
+14: end procedure
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+where we recall that˜
+JpΛqis the cost function in (11) when Pu
+is viewed implicitly as a function of Λ (see (18)). This means
+that Algorithm 1 is a first-order method on the “generalized”
+cost (18) and should, in principle, converge to a stationary
+point, which would then correspond to a stationary point of
+problem (11). However, before hastily reaching that conclu-
+sion, one must consider a couple of issues.
+The first issue is that the domain of˜
+J is not equal to all
+of Rmu ˆn. This is because Λ must be such that a solution
+PupΛq P S` for (19) exists, and this is clearly not the case
+for all Λ in Rmu ˆn. Accordingly, if Algorithm 1 happens
+to abruptly exit the domain of˜
+J at some iteration, it will
+terminate prematurely with an error while attempting to solve
+(15). The second issue is that even if the iterates Λi do not
+violate the domain of˜
+J throughout the execution of Algorithm
+1, convergence to a stationary point can be assured only as
+long as the gradient of˜
+J has a bounded Lipschitz constant
+[29]. Fortunately, in what follows, we will show that neither
+of those two issues will become an obstacle to convergence,
+under certain conditions.
+Towards this end, let us define the set
+S0 “tΛ PRmu ˆn |DPupΛqPS`and˜
+JpΛqď˜
+JpΛ0qu, (23)
+where we observe that Λ0 “ 0, i.e. the starting point of
+Algorithm 1, lies on the boundary of S0. The following
+auxiliary lemma shows that both PupΛqand ΠpΛqare bounded
+uniformly in S0, and that A`BuΛ`BaKupΛqremains strictly
+stable uniformly in S0.
+Lemma 3. Let the following strengthened version of (13)
+hold:
+¯
+aλminpΓq
+K‹
+´
+K F ď
+, (24)
+2
+aλminpΓq∥SBa∥F `∥SBu∥F
+pA`BuΛqTPupΛq`PupΛqpA`BuΛq
+`Q`PupΛqBaR´1BT
+aPupΛq“0. (19)
+where S is as in (12), and ϵPp0,1q. Then,
+1) A`BuΛ `BaKupΛqis strictly stable uniformly in S0,
+In light of this definition, in what follows we prove the
+following central result: one can interpret the fixed point
+iteration presented in Algorithm 1 as a gradient iteration on
+the cost function˜
+JpΛq, scaled by Γ´1
+.
+that is, supΛPS0
+αpA`BuΛ `BaKupΛqqă0;
+2) there exist finite constants¯
+¯
+P,
+Π ą 0 such that
+∥PupΛq∥F ď¯
+P and ∥ΠpΛq∥F ď¯
+Π for all Λ PS0.
+The practical interpretation of Lemma 3 is that, by conti-
+Lemma 2. For any Λ PRmu ˆn for which the ARE (19) admits
+a solution PupΛqPS`, we have
+nuity, PupΛqPS` exists not only everywhere in S0 but also
+in a neighborhood around it. Therefore, the negated gradient
+˜
+d
+JpΛq
+´
+dΛ points in a direction towards which PupΛq P S`
+˜
+d
+JpΛq
+dΛ“2 `ΓΛ `BT
+uPupΛqΠpΛq˘, (20)
+where ΠpΛq is a matrix function of Λ, and the unique
+symmetric solution of the LE
+exists, and hence this direction is in the interior of S0.
+Accordingly, Algorithm 1 will always remain within a set
+where both equations (15) and (16) admit unique solutions and
+will not terminate prematurely. This effectively deals with one
+of the two issues raised in the preceding paragraphs.
+pA`BuΛ `BaR´1BT
+aPupΛqqΠpΛq
+`ΠpΛqpA`BuΛ`BaR´1BT
+aPupΛqqT
+¯
+´
+KTR´1BT
+a (21)
+´BaR´1¯
+K`PupΛqBaR´2BT
+a `BaR´2BT
+aPupΛq“0.
+Next, we focus on the second issue raised in the preceding
+discussion; that the gradient of˜
+J must admit a global Lipschitz
+constant on S0 for Algorithm 1 to converge to a stationary
+point of (11). Generally speaking, such a conclusion cannot
+According to Lemma 2, we can interpret the iterative update
+of the deception gain Λi in lines 9-10 of Algorithm 1 as the
+gradient descent update
+be directly obtained by inspection because PupΛqand ΠpΛqin
+(20) are derived as solutions of nonlinear equations, and hence
+can depend sublinearly on Λ. Nevertheless, using the uniform
+˜
+boundedness result asserted in the second part of Lemma 3,
+1
+Λi`1
+ÐΛi
+´
+ωΓ´1 d
+JpΛiq
+we are able to establish such property as follows.
+2
+dΛi , (22)
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+ϵ
+6
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+Lemma 4. Let (24) hold. Then, the gradient of the cost
+˜
+function˜
+JpΛq, i.e. d
+JpΛq
+dΛ , is globally Lipschitz on Λ PS0.
+Finally, we combine the previous Lemmas to obtain the
+main result of this subsection, which characterizes the con-
+vergence properties of Algorithm 1. In particular, we show
+that Algorithm 1 converges to a stationary point of (11), and
+that this point is a minimum under a stricter condition on the
+regulation matrix Γ.
+Theorem 2. Let (24) hold and ω ă 2
+λmin pΓ´1 q
+L
+λ2
+max pΓ´1 q, where L is
+˜
+the Lipschitz constant of d
+JpΛq
+dΛ on S0. Consider the sequence
+of matrices tPi
+u,Πi
+,ΛiuiPN generated by Algorithm 1. Then:
+1) At each step i PN, there exist unique solutions PGS
+a P
+S`, ΠGS
+, ΛGS to the equations (15)-(17);
+2)˜
+JpΛi`1qď˜
+JpΛiqfor all iPN;
+˜
+d
+JpΛi q
+3) limiÑ8
+dΛ“ 0, that is, the stationarity equations
+(14a)-(14c) hold in the limit, and Algorithm 1 terminates
+for any tolerance ϵą0;
+4) There exists γ‹ ą0, such that if Γ ą γ‹I then Algorithm
+1 converges to a minimum of (11).
+Remark 2. An alternative to having a small constant step size
+ωin Algorithm 1, would be to instead have an iteration-varying
+step ωi with the property that ωi Ñ 0 and řiPN ωi “ 8.
+While such a choice retains convergence guarantees, empirical
+results indicate that it makes Algorithm 1 converge substan-
+tially more slowly.
+the optimal attack gain is K‹
+“1´?1´R´1. On the other
+hand, when 0 ăRă1, (25) admits no solutions, the value of
+(4) is unbounded, and the optimal attack K‹destabilizing. Yet,
+the defender can deceive the attacker into a milder attack that
+renders the closed-loop stable, while bypassing the rationale
+of Lemma 1.
+More specifically, let R“ 0.5 ă 1 and suppose that the
+target attack gain the defender wants to induce is¯
+K“0.2;
+a milder target than K‹ which does not disrupt closed-loop
+stability. Then, assuming Γ“ 0 and thus further violating
+(13), the defender would need to find the gain Λ such that
+KupΛq “ R´1PupΛq “¯
+K“ 0.2, and thus PupΛq “ 0.1.
+Plugging this in (10) yields
+p´1 `Λq0.1 `0.1p´1 `Λq`1 `0.12
+¨0.5´1
+“0
+´2 `2Λ `10 `0.2“0 ùñ´2Λ“8.2 ùñΛ“´4.1.
+¯
+Therefore, A`BuΛ `BaKupΛq “ A`BuΛ `Ba
+K“
+´4.9, i.e., the minimum of (11) is attained and (10) admits a
+stabilizing solution. In addition, A`BaKupΛq“´1 `0.2“
+´0.8, i.e., the deceptive attack gain does not disrupt closed-
+loop stability.
+The example above showcases that even when (13) does not
+hold, (11) and its ARE constraint (10) can still be well-defined.
+The main idea is that it is not that the target¯
+K needs to be
+close to K‹ per se, as (13) requires; rather, that it needs to
+be equal to an attack gain that is milder than K‹, or at least
+not much worse than K‹. Accordingly, in these cases, one
+should select the initialization Λ0 in Algorithm 1 to render
+A`BuΛ0 sufficiently stable, i.e., with a sufficiently small
+spectral absissca1. In this way, one can guarantee that the first
+ARE iterate (15) will admit a well-defined stabilizing solution,
+and that (16) will admit a unique solution, too.
+VI. DISCUSSION
+In this section, we discuss how we can extend the results
+of the preceding sections to tackle more general cases of
+deception in linear-quadratric control.
+A. On the Condition of Lemma 1
+A sufficient condition for guaranteeing the existence of a
+minimizer to (11) is inequality (13), requiring that the attack
+gain¯
+K the defender wants to induce be sufficiently close to
+the original gain K‹. As stated in the preceding sections, such
+a condition can be conservative because we derived it without
+making any a priori assumptions regarding the deceptive target
+gain¯
+K. On the other hand, if we consider the possibility
+that¯
+K will be better for the defender in terms of closed-
+loop performance when compared to the original gain K‹
+,
+then (11) is unnecessary. We illustrate this in the following
+example, wherein the solution to the ARE (6) that yields the
+nominal attack K‹ does not even exist, because λminpRq is
+small and hence K‹ is destabilizing.
+Example 1. Consider a scalar system where the closed-loop
+state matrix is A“´1, the input matrices are Bu “Ba “1,
+and the state cost matrix is Q“1. Then, then ARE (6) reduces
+to the scalar quadratic equation
+P2
+´2RP `R“0. (25)
+B. On the Deception against Minimizing Data-Driven
+Linear-Quadratic Regulators
+A dual setup in data-driven linear quadratic control is
+one where a defender wants to learn the solution to the
+minimization problem
+min
+NPRmu ˆn ż8
+pxTpτqQxpτq`uTpτqMupτqqdτ,
+0
+s.t.9
+xptq“Axptq`Buuptq, (26)
+uptq“Nxptq,
+with Q,M ą 0. Assuming pA,Buq is stabilizable, then we
+know the solution to this problem is
+N‹
+“´M´1BT
+uZ, (27)
+where Z ą 0 is the unique positive definite solution of the
+ARE
+ATZ`ZA`Q´ZBuR´1BT
+uZ“0. (28)
+When Rą1 solution, the solutions to this equation are given
+Accordingly, a dual setup in deceiving such a defender would
+be to inject an adversarial perturbation aptq “ Lxptq in the
+by P1,2 “R˘?R´1?R, and hence the minimal positive
+definite solution is P“R´?R´1?R. Therefore, from (5),
+1This implicitly requires that pA, Buqbe controllable.
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+7
+Fig. 1: Case 1: The evolution of the entries of Λi during Algorithm
+1.
+0.6
+0.5
+0.4
+0.3
+0.2
+0.1
+0
+0.0392
+0.039199
+0.039198
+2000 2500 3000 3500
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+system, forcing the defender to converge to the “deceptive”
+linear-quadratic gain
+NapLq“´M´1BT
+uZapLq, (29)
+where ZapLqą 0 is obtained by solving the “deceptive” ARE
+pA`BaLqTZa `ZapA`BaLq
+`Q´ZaBuR´1BT
+uZa “0. (30)
+Note that (28) is much easier to analyze than (10); as long
+as RanpBaqĎRanpBuq, i.e., as long as the attacker does not
+have more input channels than the defender, then the positive
+definite solution to (28) always exists (see [26]). Therefore, it
+is straightforward to verify that the dual deception problem
+inf
+LPRma ˆn ,Za PRnˆn
+NapLq´¯
+N 2
+F `trpLTΓLq,
+s.t. (29),(30), (31)
+Za ą 0,
+admits a global minimizer for any choice of Γ ą 0 and
+¯
+N P Rmu ˆn. With minor modifications, one may then ad-
+just Algorithm 1 to solve (31) numerically (see [26]). The
+guarantees of convergence will follow the same line as those
+of Section V, but will not be constrained by the condition of
+Lemma 1 since (31) is well-defined for any LPRma ˆn
+.
+VII. SIMULATIONS
+We consider a linearized model of the ADMIRE benchmark
+aircraft [30], whose open-loop state and input matrices Ao,Bu
+are given in the Appendix. Using these, we define the closed-
+loop state matrix of the aircraft as A“Ao`BuF, where the
+gain F originates from a linear-quadratic regulation problem
+with identity weighting matrices.
+A. Case 1: Deception against a Performance-Degrading
+Attack
+In the first case, we consider that an adversary has access
+to the first and the third actuator of the aircraft, meaning that
+BT
+a
+´0.0709 0.0039´10.6058´2.4724´0.4923ȷ.
+“„´0.0062´0.0072 1.2456 2.7172´0.7497
+The adversary then wants to use these actuators to disturb the
+stabilization of the aircraft. To that end, it seeks to learn the
+2. In addition, Figure 2 shows that the deception cost (11) is
+attack that solves the optimization problem (4) with Q“I5
+decreasing at each iteration of Algorithm 1. This is in line with
+and R“0.6I2.
+the observation made in Lemma 2, regarding the Algorithm’s
+On the other side, the defender who is aware of the
+equivalence to a first-order gradient method. It indicates that, at
+adversary’s objective wants to deceive them to converge as
+each iteration i, the gain Λi the defender computes becomes
+closely as possible to the attack gain¯
+K“0. To that end, the
+more and more efficient in deceiving the adversary. Table I
+defender plugs a deceptive gain in the system to corrupt the
+additionally shows the ratio between the optimal attack K‹the
+attacker’s learning data. This gain is obtained by performing
+attacker would have learned in the absence of deception, and
+Algorithm 1 with ω “0.001, so as to numerically solve the
+the attack KupΛ‹qthey were forced to learn instead. Clearly,
+deception optimization (11) with Γ“10´3I7.
+the latter has been suppressed substantially and is thus more
+The evolutions of the deception gain sequence Λi generated
+benign in disturbing closed-loop performance.
+by Algorithm 1, as well as of the deception cost (11), are
+It is noteworthy that, in the preceding example, the condition
+shown in Figures 1-2. From Figure 1, we clearly notice that
+of Lemma 1 did not hold. As discussed in Section VI, such
+Algorithm 1 reaches a stationary point of the deception prob-
+condition is conservative as it does not make any a priori
+lem (11) after about 3500 iterations, which validates Theorem
+assumption about the target attack gain¯
+K. On the other hand,
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+0 500 1000 1500 2000 2500 3000 3500
+Fig. 2: Case 1: The evolution of the cost (11) during Algorithm 1.
+TABLE I: Ratio rKupΛ‹qsij{rK‹sij between optimal and deceived
+attack gains.
+Col. 1 Col. 2 Col. 3 Col. 4 Col. 5
+Row 1 Row 2 0.0827 0.1581 0.9429 0.0046 0.0545 0.2179 0.2748 0.1103 0.2439
+0.2189
+8
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+eigenvalues of the state matrix in closed-loop with the decep-
+tive attack gain are equal to´17.6911,´7.7253,´2.5628 `
+0.4642i,´2.5628´0.4642i,´1.6568. This means that the
+learned optimal attack under deception is not destabilizing,
+as opposed to the nominal optimal attack K‹
+.
+Fig. 3: Case 2: The evolution of the entries of Λi during Algorithm
+15000
+0.32
+10000
+0.3
+0.28
+5000
+8000 10000 12000
+0
+0 2000 4000 6000 8000 10000 12000
+VIII. CONCLUSION
+1.
+We study the problem of deception in the context of data-
+driven linear-quadratic control. Given an adversary (defender)
+who wants to learn the optimal linear-quadratic attack (control)
+for a system using data, we design a deceptive input that
+optimally corrupts this data and forces the learner to con-
+verge to a prespecified suboptimal policy. We characterize the
+deceptive input as the solution of coupled matrix equations,
+which we subsequently solve using fixed-point iteration and
+with convergence guarantees.
+Future work includes an extension of the presented setup to
+the deception of nonlinear data-driven optimal control. While
+such a problem is significantly more challenging, both compu-
+tationally and mathematically, one can tackle it using partial
+differential equations to characterize the optimal control, in
+lieu of a Riccati equation.
+REFERENCES
+[1] J. P. Hespanha and S. D. Bopardikar, “Output-feedback Linear Quadratic
+Robust Control under Actuation and Deception Attacks,” in 2019
+American Control Conference (ACC), pp. 489–496, 2019.
+[2] C.-Z. Bai, V. Gupta, and F. Pasqualetti, “On Kalman Filtering with
+Compromised Sensors: Attack Stealthiness and Performance Bounds,”
+IEEE Transactions on Automatic Control, vol. 62, no. 12, pp. 6641–
+6648, 2017.
+[3] J. Shim and R. C. Arkin, “Robot Deception and Squirrel Behavior: A
+Case Study in Bio-inspired Robotics,” Georgia Institute of Technology,
+Tech. Rep. ADA608845, 2014.
+[4] W. McEneaney and R. Singh, “Deception in Autonomous Vehicle
+Fig. 4: Case 2: The evolution of the cost (11) during Algorithm 1.
+Decision Making in an Adversarial Environment,” in AIAA Guidance,
+Navigation, and Control Conference and Exhibit, p. 6152, 2005.
+[5] B. Whaley, Stratagem: Deception and Surprise in War. Artech, 2007.
+[6] C. De Persis and P. Tesi, “Formulas for Data-Driven Control: Stabi-
+if we a priori know that¯
+K is a gain that is more benign than
+K‹ – as in the preceding example – then the condition of
+Lemma 1 is usually not required.
+lization, Optimality, and Robustness,” IEEE Transactions on Automatic
+Control, vol. 65, no. 3, pp. 909–924, 2020.
+[7] F. L. Lewis and D. Vrabie, “Reinforcement Learning and Adaptive Dy-
+namic Programming for Feedback Control,” IEEE Circuits and Systems
+Magazine, vol. 9, no. 3, pp. 32–50, 2009.
+[8] J. Berberich, J. K¨ ohler, M. A. M¨ uller, and F. Allg¨ ower, “Data-Driven
+B. Case 2: Deception against a Destabilizing Attack
+Model Predictive Control With Stability and Robustness Guarantees,”
+IEEE Transactions on Automatic Control, vol. 66, no. 4, pp. 1702–1717,
+In Case 2, we consider the same setup for the adversary,
+2021.
+but where R“ 0.1I2 in their optimization problem (4). In
+[9] B. Pang, T. Bian, and Z.-P. Jiang, “Robust Policy Iteration for
+Continuous-Time Linear Quadratic Regulation,” IEEE Transactions on
+this case, the optimal attack K‹ is destabilizing. To find a
+Automatic Control, vol. 67, no. 1, pp. 504–511, 2022.
+deception gain that will force the adversary to learn a more
+[10] M. Tang, U. Javed, X. Chen, M. Krstic, and J. I. Poveda, “Deception in
+benign attack instead, we re-employ the same scheme as in
+Nash Equilibrium Seeking,” arXiv preprint arXiv:2407.05168, 2024.
+[11] L. Mu˜ noz-Gonz´ alez, B. Biggio, A. Demontis, A. Paudice, V. Wongras-
+Case 1 for the defender. However, following the discussion in
+samee, E. C. Lupu, and F. Roli, “Towards Poisoning of Deep Learning
+Section VI, we select Λ0 in Algorithm 1 so that it makes the
+Algorithms with Back-gradient Optimization,” in Proceedings of the
+eigenvalues of A`BuΛ0 sufficiently negative; in particular,
+10th ACM Workshop on Artificial Intelligence and Security, pp. 27–38,
+2017.
+equal to´100.
+[12] M. Jagielski, A. Oprea, B. Biggio, C. Liu, C. Nita-Rotaru, and B. Li,
+The evolution of the deception gain sequence Λi and the
+“Manipulating Machine Learning: Poisoning Attacks and Countermea-
+deception cost (11) during Algorithm 1 is shown in Figures
+sures for Regression Learning,” in 2018 IEEE Symposium on Security
+and Privacy (SP), pp. 19–35, 2018.
+3-4. While we still observe a decreasing deception cost and
+[13] B. Biggio, B. Nelson, and P. Laskov, “Poisoning Attacks Against Support
+a convergent deception gain, the number of iterations needed
+Vector Machines,” in Proceedings of the 29th International Conference
+to achieve the same level of tolerance increased significantly.
+on Machine Learning, p. 1467–1474, 2012.
+This was due to the conservative initialization of Λ0 very
+[14] X. Chen, C. Liu, B. Li, K. Lu, and D. Song, “Targeted Backdoor Attacks
+on Deep Learning Systems Using Data Poisoning,” arXiv preprint
+far from the optimal deception gain Λ‹. Meanwhile, the
+arXiv:1712.05526, 2017.
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+9
+[15] A. Shafahi, W. R. Huang, M. Najibi, O. Suciu, C. Studer, T. Dumitras,
+and T. Goldstein, “Poison Frogs! Targeted Clean-Label Poisoning At-
+tacks on Neural Networks,” Advances in Neural Information Processing
+Systems, vol. 31, 2018.
+[16] A. Russo, M. Molinari, and A. Proutiere, “Data-Driven Control and
+Data-Poisoning attacks in Buildings: the KTH Live-In Lab case study,”
+in 2021 29th Mediterranean Conference on Control and Automation
+(MED), pp. 53–58, 2021.
+[17] A. Russo and A. Proutiere, “Poisoning Attacks against Data-Driven Con-
+trol Methods,” in 2021 American Control Conference (ACC), pp. 3234–
+3241, 2021.
+[18] Y. Yu, R. Zhao, S. Chinchali, and U. Topcu, “Poisoning Attacks Against
+Data-Driven Predictive Control,” in 2023 American Control Conference
+(ACC), pp. 545–550, 2023.
+[19] Y. Mao, D. Data, S. Diggavi, and P. Tabuada, “Decentralized Learning
+Robust to Data Poisoning Attacks,” in 2022 IEEE 61st Conference on
+Decision and Control (CDC), pp. 6788–6793, 2022.
+[20] A. Khazraei, H. Pfister, and M. Pajic, “Resiliency of Perception-Based
+Controllers Against Attacks,” in Proceedings of The 4th Annual Learning
+for Dynamics and Control Conference, pp. 713–725, 2022.
+[21] R. Zhang and Q. Zhu, “A Game-Theoretic Defense Against Data Poi-
+soning Attacks in Distributed Support Vector Machines,” in 2017 IEEE
+56th Annual Conference on Decision and Control (CDC), pp. 4582–
+4587, 2017.
+[22] J. A. Chekan and C. Langbort, “Regret bounds for online-learning-based
+linear quadratic control under database attacks,” Automatica, vol. 151,
+p. 110876, 2023.
+[23] A. Kanellopoulos and K. G. Vamvoudakis, “A Moving Target Defense
+Control Framework for Cyber-Physical Systems,” IEEE Transactions on
+Automatic Control, vol. 65, no. 3, pp. 1029–1043, 2020.
+[24] D. Umsonst, S. Sarıtas¸, G. D´ an, and H. Sandberg, “A Bayesian Nash
+Equilibrium-Based Moving Target Defense Against Stealthy Sensor
+Attacks,” IEEE Transactions on Automatic Control, vol. 69, no. 3,
+pp. 1659–1674, 2024.
+[25] P. Griffioen, S. Weerakkody, and B. Sinopoli, “A Moving Target Defense
+for Securing Cyber-Physical Systems,” IEEE Transactions on Automatic
+Control, vol. 66, no. 5, pp. 2016–2031, 2021.
+[26] F. Fotiadis, A. Kanellopoulos, K. G. Vamvoudakis, and J. Hugues,
+“Poisoning Actuation Attacks Against the Learning of an Optimal
+Controller,” in 2024 American Control Conference (ACC), pp. 4838–
+4843, 2024.
+[27] T. Bas¸ar and G. J. Olsder, Dynamic Noncooperative Game Theory.
+SIAM, 2nd ed., 1999.
+[28] J. M. Ortega and W. C. Rheinboldt, Iterative Solution of Nonlinear
+Equations in Several Variables. SIAM, 2000.
+[29] D. P. Bertsekas, Nonlinear Programming. Athena Scientific, 3rd. ed.,
+2016.
+[30] X. Yu and J. Jiang, “Hybrid Fault-Tolerant Flight Control System
+Design Against Partial Actuator Failures,” IEEE Transactions on Control
+Systems Technology, vol. 20, no. 4, pp. 871–886, 2012.
+[31] D. S. Bernstein, Matrix Mathematics: Theory, Facts, and Formulas.
+Princeton University Press, 2nd ed., 2009.
+[32] W. Rudin, Principles of Mathematical Analysis. New York: McGraw-
+Hill, 3rd ed., 1976.
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+Proofs of Main Results
+The following lemma presents matrix differentiation for-
+mulas from [31], which will be central to the proofs of the
+main results. Note that since [31] follows the convention
+“ d
+dX‰ij“
+d
+drXsji , these formulas have been transposed.
+Lemma 5. The following formulas hold true by [31]
+‚ For any APRnˆm,B PRlˆn:
+d
+d
+X PRmˆn :
+dXtrAX“
+dXtrXA“AT
+, (32)
+d
+X PRmˆl :
+dXtrAXB“ATBT
+, (33)
+d
+X PRlˆm :
+dXtrAXTB“BA. (34)
+‚ For any APRnˆm,B PRmˆn,X PRmˆm:
+d
+dXtrAX2B“ATBTXT `XTATBT
+. (35)
+‚ For any A,B PRnˆm,X PRmˆn:
+d
+dXtrAXBX“ATXTBT `BTXTAT
+. (36)
+‚ For any APRnˆn,B PRmˆm,X PRnˆm:
+d
+dXtrAXBXT
+“AXB`ATXBT
+. (37)
+The proofs of the main results follow next.
+Proof of Lemma 1: Let tˆ
+ˆ
+Λn
+Pn
+,
+uunPN be a minimizing
+sequence of (11), i.e., a sequence that satisfies the constraints
+of (11), and for which Jpˆ
+ˆ
+Λn
+Pn
+,
+uqconverges to the infimum of
+(11) as nÑ8. Note thatˆ
+Λn and Kupˆ
+Λnqmust be bounded
+uniformly; for if they are not, then limnÑ8Jpˆ
+ˆ
+Λn
+Pn
+,
+uq“8
+owing to the fact that Jpˆ
+ˆ
+Λn
+Pn
+,
+uq ě Kupˆ
+Λnq´¯
+K
+2
+`
+F
+λminpΓqˆ
+Λn
+2
+, whereas Jp0,Pq ă 8, which contradicts
+F
+optimality. Therefore, one can extract from tˆ
+ˆ
+Λn
+Pn
+,
+uunPN a
+subsequence t¯
+¯
+Λn
+Pn
+,
+uunPN such that limnÑ8¯
+Λn
+“¯
+Λ P
+Rmu ˆn and limnÑ8Kup¯
+Λnq“¯
+Ku PRma ˆn [Theorem 3.6
+in [32]]. Using these limits and (12), we have
+¯
+¯
+pA`Bu
+Λ `Ba
+KuqTS`SpA`Bu
+¯
+¯
+Λ `Ba
+Kuqq
+“pA`BaK‹qTS`SpA`BaK‹q`SBu
+¯
+¯
+Λ `pSBu
+ΛqT
+`SBap¯
+Ku´K‹q`pSBap¯
+Ku´K‹qqT
+¯
+¯
+“´2I`SBu
+Λ `pSBu
+ΛqT
+`SBap¯
+Ku´K‹q`pSBap¯
+Ku´K‹qqT
+.
+Based on the Lyapunov theorem and the equality above, A`
+¯
+¯
+Bu
+Λ `Ba
+Ku will be strictly stable if
+¯
+¯
+}SBu
+Λ `pSBu
+ΛqT `SBap¯
+Ku´K‹q
+`pSBap¯
+Ku´K‹qqT}F ă2.
+APPENDIX
+System Matrices in the Simulation Example
+The system matrices used in the simulation example are
+given by
+Ao “
+BT
+u
+“
+» — — –
+´1.0649 0.0034´0.0000 0.9728 0.0000
+0.0000´0.2492 0.0656´0.0000´0.9879
+0.0000´22.5462´2.0457´0.0000 0.5432
+8.1633´0.0057´0.0000´1.0478 0.0000
+0.0000 1.7970´0.1096 0.0000´0.4357
+fi ffi ffi fl,
+» — — — — — –
+´0.0062´0.0072 1.2456 2.7172´0.7497
+´0.0062 0.0072´1.2456 2.7172 0.7497
+´0.0709 0.0039´10.6058´2.4724´0.4923
+´0.1172 0.0188´9.2345´4.0101´1.1415
+´0.1172´0.0188 9.2345´4.0101 1.1415
+´0.0709´0.0039 10.6058´2.4724 0.4923
+0.0003 0.0627 5.3223 0.0108´3.7367
+fi ffi ffi ffi ffi ffi fl.
+This holds true if
+∥SBu∥F
+¯
+Λ F `∥SBa∥F
+¯
+Ku´K‹
+F ă1. (38)
+So we need to obtain a condition that will allow (38) to hold.
+To that end, note that Λ“0 and Pu “P from (6) are feasible
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+10
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+solutions to (11). As a result, by optimality of the limit of the
+minimizing sequence, we have:
+lim
+Jp¯
+¯
+Λn
+Pn
+,
+uqďJp0,Pqùñ
+nÑ8
+lim
+nÑ8
+Kup¯
+Λnq´K‹ 2
+¯
+F ` lim
+trp¯
+ΛnTΓ
+Λnqď K‹
+¯
+´
+K 2
+F
+nÑ8
+ùñ¯
+Ku´K‹ 2
+F `trp¯
+ΛTΓ
+¯
+Λqď K‹
+¯
+´
+K 2
+F.
+This implies that
+¯
+Ku´K‹
+F ď K‹
+¯
+´
+K F ,
+¯
+1
+Λ F ď
+aλminpΓq
+¯
+(39)
+K‹
+´
+K F.
+Hence, using (39), (38) will hold by imposing the condition
+1
+aλminpΓq∥SBu∥F K‹
+¯
+´
+K F `∥SBa∥F K‹
+¯
+´
+K F ă1
+ùñ K‹
+¯
+´
+K F ă aλminpΓq
+. (40)
+aλminpΓq∥SBa∥F `∥SBu∥F
+¯
+¯
+Therefore, under (40), A`Bu
+Λ `Ba
+Ku is strictly stable.
+Accordingly, the following LE admits a unique symmetric
+solution¯
+Pu PRnˆn:
+¯
+¯
+pA`Bu
+Λ `Ba
+KuqT¯
+Pu `¯
+¯
+¯
+PupA`Bu
+Λ `Ba
+Kuq
+¯
+`Q´
+KT
+uR¯
+Ku “0. (41)
+Subtracting (41) from (10) for Λ“¯
+Λn and Pu “¯
+Pn
+u, and
+defining˜
+Pn
+“¯
+¯
+Pn
+u
+u´
+Pu,˜
+¯
+Λn
+“¯
+Λn
+´
+u
+Λ,˜
+Kn
+u
+“Kup¯
+Λnq´¯
+Ku
+gives:
+where Π PRnˆn denotes the Lagrange multiplier. Note that
+because the left-hand side of the ARE (10) is symmetric, Π
+is symmetric as well. Applying the first of the three necessary
+conditions for optimality, namely BL
+BΠ
+“0, we get
+B
+BΠtr´ΠppA`BuΛqTPu `PupA`BuΛq
+`Q`PuBaR´1BT
+aPuq¯“0 (32)
+ùñ
+pA`BuΛqTPu`PupA`BuΛq`Q`PuBaR´1BT
+aPu “0,
+which yields (14a). Next, by applying the second of the three
+necessary conditions for optimality, namely BL
+BΛ “0, and the
+fact that trpΛTΓΛq“trpΓΛΛTqwe get:
+B
+BΛ ´tr´ΛTΓΛ`ΠppA`BuΛqTPu`PupA`BuΛqq¯“0
+(37),(34),(32)
+ùñ 2ΓΛ `2BT
+uPuΠ“0 ùñΛ“´Γ´1BT
+uPuΠ,
+where we used the fact that Π and Pu are symmetric, hence we
+obtain (14c). Finally, applying the third of the three necessary
+conditions for optimality, namely BL
+BPu
+“0, and using the fact
+that R´1BT
+¯
+aPu´
+K 2
+F
+“trppR´1BT
+¯
+aPu´
+KqpR´1BT
+aPu´
+¯
+KqTq, we require:
+B
+BPu´tr´R´1BT
+aP2
+uBaR´1
+´R´1BT
+¯
+aPu
+KT
+¯
+´
+KPuBaR´1¯`tr´ΠppA`BuΛqTPu
+`PupA`BuΛq`PuBaR´1BT
+aPuq¯“0.
+¯
+pA`Bu
+Λn`BaKup¯
+ΛnqqT˜
+Pn
+u `˜
+¯
+Pn
+upA`Bu
+Λn`BaKup¯
+Λnqq
+Using properties (35), (33), (32), (36), we obtain
+`˜
+ΛnTBT
+˜
+¯
+u
+Pu `¯
+PuBu
+Λn `˜
+KnT
+u BT
+˜
+¯
+a
+Pu `¯
+PuBa
+Kn
+u
+pA`BuΛqΠ `ΠpA`BuΛqT `ΠPuBaR´1BT
+a
+¯
+´
+KT
+up¯
+ΛnqR¯
+Kup¯
+Λnq`¯
+KT
+uR¯
+Ku “0. (42)
+`BaR´1BT
+¯
+aPuΠ´
+KTR´1BT
+a´BaR´1¯
+K
+¯
+Note that A`Bu
+Λn`BaKup¯
+Λnqmust remain strictly stable
+`PuBaR´2BT
+a `BaR´2BT
+aPu “0,
+uniformly, since it converges to the strictly stable matrix
+¯
+¯
+A`Bu
+Λ `Ba
+Ku as nÑ8. In addition, for each n (42) is
+which, after grouping together the terms containing Π, is
+an LE for˜
+Pn
+u, the cost matrix of which (the last six terms)
+equivalent to (14b).
+converges to zero as n Ñ 8 because limnÑ8¯
+Λn
+“¯
+Λ and
+Proof of Lemma 2: Note that we can write the cost as
+˜
+limnÑ8Kup¯
+Λnq“¯
+Ku. Therefore,˜
+Pn
+Ñ0 and thus¯
+Pn
+Ñ
+JpΛq “˜
+J1pΛq`˜
+J2pΛq, where˜
+J1pΛq “ trpΛTΓΛq and
+u
+u
+˜
+¯
+Pu as n Ñ 8. In addition, note that since¯
+Pn
+u are positive
+J2pΛq “ KupΛq´¯
+K 2
+F. In that respect, on the one hand,
+definite for all n,¯
+Pu must be positive semi-definite, and in
+we have:
+˜
+fact positive definite owing to Theorem 6.23(ii) in [27]. At the
+d
+same time, it is straightforward to see that¯
+Ku “R´1BT
+¯
+J1pΛq
+d
+a
+Pu
+dΛ“
+dΛtrpΛTΓΛq“ d
+dΛtrpΓΛΛTq(37)
+“ 2ΓΛ. (43)
+since¯
+Ku “ limnÑ8Kup¯
+Λnq “ limnÑ8R´1BT
+¯
+Pn
+“
+a
+u
+R´1BT
+¯
+On the other hand, using the definition of the Frobe-
+a
+Pu, thus¯
+Pu is the stabilizing solution to (10) for
+nius norm we can write˜
+J2pΛq “ trppR´1BT
+aPupΛq ´
+Λ“¯
+Λ and hence its minimal one because of Theorem 6.23(vi)
+¯
+in [27], i.e.,¯
+Pu PS`. Thus p¯
+¯
+KqpR´1BT
+aPupΛq´¯
+KqTq. In that respect, denoting Λij“
+Λ,
+Puqis a feasible solution of
+rΛsij and using the commutative property of the derivative
+(11) that is also minimizing, hence (11) admits a minimizer.
+¯
+¯
+operator and the trace, we get:
+The second part follows from the fact that A`Bu
+Λ `Ba
+Ku
+˜
+was proved to be strictly stable.
+d
+J2pΛq
+d
+“
+Proof of Theorem 1: Define the Lagrangian of the optimiza-
+dΛij
+dΛij´tr´R´1BT
+aP2
+uBaR´1
+´R´1BT
+¯
+aPu
+KT
+tion (11) as:
+¯
+´
+KPuBaR´1 `¯
+KT¯
+LpΛ,Pu,Πq“ R´1BT
+¯
+K¯
+aPu´
+K 2
+F `trpΛTΓΛq
+`tr´ΠppA`BuΛqTPu `PupA`BuΛq
+“tr´R´1BT
+dPu
+dPu
+aPu
+BaR´1
+´R´1BT
+¯
+KT
+dΛij
+a
+dΛij
+dPu
+`Q`PuBaR´1BT
+aPuq¯,
+`R´1BT
+PuBaR´1
+¯
+´
+KdPu
+a
+dΛij
+dΛij
+BaR´1¯
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+11
+“tr´´´
+¯
+KTR´1BT
+a´BaR´1¯
+K
+`PuBaR´2BT
+a`BaR´2BT
+aPu¯dPu
+dΛij¯, (44)
+where we also applied the cyclic property of the trace. Next,
+note that since (19) is an equality constraint, we can take the
+total derivative with respect to Λij on both sides and obtain:
+d
+0“
+dΛij´pA`BuΛqTPupΛq`PupΛqpA`BuΛq
+`Q`PupΛqBaR´1BT
+aPupΛq¯
+“ejeT
+i BT
+uPupΛq`pA`BuΛqT dPu
+`PuBueieT
+dΛij
+j
+dPu
+`
+pA`BuΛq` dPu
+BaR´1BT
+aPupΛq
+dΛij
+dΛij
+dPu
+`PupΛqBaR´1BT
+a
+dΛij
+,
+where we used the fact that dΛ
+“eieT
+dΛij
+j . Grouping together
+the differential terms yields the LE:
+˜
+ATpΛqdPu
+dPu
+˜
+`
+ApΛq`˜
+QpΛq“0 (45)
+dΛij
+dΛij
+where
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+Proof of Lemma 3: Based on (12), we have:
+pA`BuΛ `BaKupΛqqTS`SpA`BuΛ `BaKupΛqq
+“pA`BaK‹qTS`SpA`BaK‹q`pKupΛq´K‹qTBT
+aS
+`SBapKupΛq´K‹q`ΛBT
+uS`SBuΛ
+“´2I`pKupΛq´K‹qTBT
+aS`SBapKupΛq´K‹q
+`ΛTBT
+uS`SBuΛ. (51)
+However:
+}pKupΛq´K‹qTBT
+aS`SBapKupΛq´K‹q
+`ΛTBT
+uS`SBuΛ}F
+ď2 ∥SBa∥F ∥KupΛq´K‹∥F `2 ∥SBu∥F ∥Λ∥F
+ď2 ∥SBa∥F KupΛq´¯
+K F `2 ∥SBu∥F ∥Λ∥F
+`2 ∥SBa∥F
+¯
+K´K‹
+F. (52)
+In addition, if Λ PS0, since Λ0 “0 then
+˜
+JpΛqď˜
+Jp0q
+ùñ KupΛq´¯
+K 2
+F `trpΛTΓΛqď K‹
+¯
+´
+K 2
+F
+ùñ KupΛq´¯
+K 2
+F `λminpΓq∥Λ∥2
+F ď K‹
+¯
+´
+K 2
+F. (53)
+Combining (52)-(53) yields
+˜
+ApΛq“A`BuΛ `BaR´1BT
+aPupΛq, (46)
+˜
+QpΛq“ejeT
+i BT
+uPupΛq`PupΛqBueieT
+j. (47)
+Note that since PupΛqPS`,˜
+ApΛqis Hurwitz. Therefore, the
+LE (45) admits the following unique symmetric solution:
+dPu
+dΛij
+“ż8
+˜
+AT pΛqτ˜
+˜
+e
+QpΛqe
+ApΛqτdτ. (48)
+0
+Combining (48) with (44), and using the trace cyclic property,
+}pKupΛq´K‹qTBT
+aS`SBapKupΛq´K‹q`ΛTBT
+uS`SBuΛ}F
+ď4p∥SBa∥F `λ´1{2
+min pΓq∥SBu∥Fq K‹
+¯
+´
+K F.
+Using (24), we conclude:
+}pKupΛq´K‹qTBT
+aS`SBapKupΛq´K‹q
+`ΛTBT
+uS`SBuΛ}F ď2ϵ. (54)
+Combining (54) with (51), we obtain
+yields
+˜
+d
+J2pΛq
+“tr´´´
+¯
+KTR´1BT
+a´BaR´1¯
+K`PuBaR´2BT
+a
+`BaR´2BT
+aPu¯ż8
+˜
+AT pΛqτ˜
+˜
+e
+QpΛqe
+ApΛqτdτ¯
+0
+“tr´˜
+QpΛqż8
+˜
+e
+ApΛqτ´´
+¯
+KTR´1BT
+a´BaR´1¯
+K
+0
+`PuBaR´2BT
+a`BaR´2BT
+aPu¯e
+˜
+AT pΛqτdτ¯.(49)
+Note that the integral inside the trace expression above is
+exactly the solution of the LE (21). Hence, in light also of
+the formula (47) for˜
+Q, (49) turns into:
+˜
+d
+J2pΛq
+dΛij
+“tr´pejeT
+i BT
+uPupΛq`PupΛqBueieT
+j qΠpΛq¯
+“2eT
+i BT
+uPupΛqΠpΛqej“2rBT
+uPupΛqΠpΛqsij.
+Therefore
+pA`BuΛ `BaKupΛqqTS
+`SpA`BuΛ `BaKupΛqqĺ´2p1´ϵqI. (55)
+Since S is constant, this implies that A`BuΛ `BaKupΛq
+remains strictly stable uniformly in S0. In light of this and the
+fact that KupΛq is bounded uniformly in S0, it follows that
+the value matrix PupΛqis also bounded uniformly in S0, i.e.,
+supΛPS0 ∥PupΛq∥F ď¯
+P for some finite¯
+P ą 0. Because of
+this, the cost matrix of the LE (21), i.e. its last four terms, is
+uniformly bounded, so ΠpΛqalso remains bounded uniformly,
+i.e., supΛPS0 ∥ΠpΛq∥F ď¯
+Π for some finite¯
+Π ą0.
+Proof of Lemma 4: Let Λ1,Λ2 PS0. Denote˜
+Λ“Λ1´Λ2,
+˜
+Pu “PupΛ1q´PupΛ2q,˜
+Π“ΠpΛ1q´ΠpΛ2q. Then, using
+the formula (20):
+˜
+˜
+d
+JpΛ1q
+d
+JpΛ2q
+dΛ´
+dΛ“2ΓpΛ1´Λ2q
+`2BT
+upPupΛ1qΠpΛ1q´PupΛ2qΠpΛ2qq
+˜
+“2Γ
+Λ `2BT
+up˜
+PuΠpΛ1q`PupΛ2q˜
+Πq.
+˜
+d
+J2pΛq
+dΛ“2BT
+uPupΛqΠpΛq. (50)
+˜
+˜
+Since we defined˜
+JpΛq“˜
+J1pΛq`˜
+J2pΛq, the results follows
+by (43) and (50).
+Using Lemma 3, this equation implies that:
+d
+JpΛ1q
+d
+JpΛ2q
+dΛ´
+dΛ
+ď2 ∥Γ∥F
+˜
+Λ
+F
+F
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+dΛij
+12
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+¯
+`2
+Π BT
+u F
+˜
+Pu
+¯
+`2
+P BT
+F
+u F
+˜
+Π
+˜
+. (56)
+`BaR´1BT
+a
+PuΠpΛ2q`ΠpΛ2q˜
+PuBaR´1BT
+a. Since˜
+ApΛ1q
+F
+is Hurwitz, we obtain the explicit formula˜
+Π“
+Hence, to get a Lipschitz continuity result, one needs to relate
+ş8
+0 e˜
+ApΛ1 qτ˜
+Q1e˜
+the errors˜
+Pu
+F
+and˜
+Π
+F
+back to˜
+Λ
+. To that end, recall
+F
+that PupΛ1q and PupΛ2q are the minimal positive definite
+AT pΛ1 qτdτ, and thus
+˜
+Π
+F
+ď˜
+Q1
+solutions of the AREs:
+F ż8
+0
+˜
+e
+ApΛ1 qτ
+2
+F
+dτ ďc2
+˜
+Q1
+, (60)
+F
+pA`BuΛ1qTPupΛ1q`PupΛ1qpA`BuΛ1q
+where c2 “ supΛPS0 ş8
+0 e˜
+A1 pΛqτ
+2
+dτ ą 0 is finite since
+F
+`Q`PupΛ1qBaR´1BT
+˜
+aPupΛ1q“0,
+ApΛqis Hurwitz uniformly in S0 by Lemma 3. On the other
+pA`BuΛ2qTPupΛ2q`PupΛ2qpA`BuΛ2q
+`Q`PupΛ2qBaR´1BT
+aPupΛ2q“0.
+hand, we have
+˜
+Q1
+ď2p BaR´2BT
+a F ` BaR´1BT
+a F
+¯
+F
+Πq˜
+Pu
+F
+Subtracting these equations yields the following quadratic
+matrix equation for the error˜
+`2
+Pu:
+Π ∥Bu∥F
+˜
+¯
+Λ
+F. (61)
+ˆA`BuΛ1 `BaKupΛ1q´1
+BaR´1BT
+˜
+2
+a
+Pu˙T
+˜
+Pu
+Combining (59), (60) and (61), we conclude
+˜
+Π
+ďc2´4c1
+¯
+P∥Bu∥F ` BaR´2BT
+a F
+`˜
+PuˆA`BuΛ1 `BaKupΛ1q´1
+BaR´1BT
+˜
+2
+a
+Pu˙
+F
+` BaR´1BT
+a F
+¯
+Π˘`2
+¯
+Π ∥Bu∥F ¯˜
+Λ
+. (62)
+F
+˜
+`PupΛ2qBu
+Λ `˜
+ΛTBT
+uPupΛ2q“0. (57)
+Therefore, in view of (56), (59) and (62), we conclude that
+˜
+d
+JpΛq
+Note that this is an equation that yields more than one
+dΛ is locally Lipschitz on S0.
+solutions. Nevertheless, the solution of interest has the prop-
+Next, note that the set S0 is bounded; for if Λ P S0
+erty that˜
+Pu Ñ 0 as˜
+Λ Ñ 0. For this solution, since
+and ∥Λ∥2
+F ą λmaxpΓq K‹
+¯
+´
+K 2
+F, then˜
+JpΛq ą˜
+Jp0q by
+A`BuΛ1 `BaKupΛ1q is Hurwitz as P1 P S`, it follows
+definition, and thus Λ RS0, which is contradicting. In addition,
+that˜
+A1p˜
+˜
+Puq “ A`BuΛ1 `BaKupΛ1q´ 1
+2 BaR´1BT
+a
+Pu
+the set S0 is closed. To prove this, let tΛnunPN P S0 be
+is also Hurwitz for some small ϵ ą 0 such that˜
+Λ
+ă ϵ.
+a sequence such that Λn Ñ Λ8 P Rmu ˆn. Then, based
+F
+on Lemma 3, the eigenvalues of the matrix sequence A`
+Hence, for this solution˜
+Pu and for˜
+Λ
+ăϵ, we get from
+BuΛ `BaKupΛnqremain in the left half plan uniformly on
+F
+(57) the implicit formula
+n P N. Therefore, the sequence of minimal positive definite
+˜
+Pu “ż8
+˜
+˜
+solutions PupΛnq is bounded, and following [32] one can
+AT
+e
+1 p˜
+Pu qτpPupΛ2qBu
+˜
+Λ`˜
+ΛTBT
+uPupΛ2qqe
+A1 p˜
+Pu qτdτ.
+extract a subsequence tΛnk ukPN such that PupΛnk q Ñ P8
+u
+0
+and KupΛnk qÑR´1BT
+aP8
+“K8
+u
+u for some positive semi-
+Therefore,
+definite P8
+u PRnˆn. Note that A`BuΛ8`BaK8
+u will be
+˜
+Pu
+¯
+ď2
+F
+P∥Bu∥F
+˜
+Λ
+F ż8
+0
+˜
+A1 p˜
+e
+Pu qτ
+2
+strictly stable, because A`BuΛnk `BaKupΛnk qare strictly
+dτ. (58)
+F
+stable uniformly and converge to A`BuΛ8`BaK8
+u . Thus,
+plugging Λ“Λnk in (19) and taking the limit as kÑ8, we
+Recall that˜
+A1p˜
+PuqÑA`BuΛ1 `BaKupΛ1qas˜
+Λ Ñ0, and
+obtain:
+A`BuΛ1`BaKupΛ1qis strictly stable uniformly for all Λ1 P
+S0 owing to Lemma 3. Hence, the real parts of the eigenvalues
+pA`BuΛ8qTP8
+u `P8
+u pA`BuΛ8q
+of˜
+A1p˜
+Puqremain in the left half plane for some small ϵą0
+`Q`P8
+u BaR´1BT
+aP8
+such that˜
+Λ
+u
+“0,
+ă ϵ there exists
+F
+ă ϵ. Hence, for all˜
+Λ
+F
+a finite constant c1 ą 0 such that ş8
+0 e˜
+A1 p˜
+Pu qτ
+2
+meaning that PpΛ8q exists and is equal to P8
+u , and is also
+dτ ă c1.
+in S` since A`BuΛ8 `BaK8
+u was proved to be strictly
+F
+˜
+Putting this in (58) we get the following inequality, locally for
+stable. Given this, the continuity of˜
+J implies
+Λ
+F
+ăϵ:
+˜
+Pu
+P∥Bu∥F
+˜
+¯
+ď2c1
+F
+Λ
+F. (59)
+Subsequently, we proceed to derive a similar bound for˜
+Π. To
+that end, note that subtracting (21) for Λ“Λ1 and Λ“Λ2
+yields
+˜
+Jp0qě˜
+JpΛnqùñ˜
+Jp0qě lim
+nÑ8
+˜
+JpΛnq
+˜
+“
+J´lim
+nÑ8
+Λn¯“
+˜
+JpΛ8q.
+Hence Λ8 is such that DPupΛ8qPS` and˜
+Jp0qě˜
+JpΛ8q,
+hence Λ8 PS0, which means S0 is closed. Since S0 is a finite-
+dimensional set that is closed and bounded, it is compact.
+pA`BuΛ1 `BaKupΛ1qq˜
+Π `˜
+ΠpA`BuΛ1`BaKupΛ1qqT
+˜
+Therefore, since d
+JpΛq
+dΛ is locally Lipschitz on S0, it is also
+`˜
+PuBaR´2BT
+a `BaR´2BT
+˜
+˜
+a
+Pu`Bu
+ΛΠpΛ2q`ΠpΛ2q˜
+ΛTBT
+u
+globally Lipschitz on S0.
+`BaR´1BT
+˜
+a
+PuΠpΛ2q`ΠpΛ2q˜
+PuBaR´1BT
+“0.
+Proof of Theorem 2: To prove item 1, it suffices to show
+a
+that Λi PS0 for all iPN, because in this case both the ARE
+Denote˜
+ApΛ1q “ A ` BuΛ1 ` BaKupΛ1q and˜
+Q1 “
+(15) and the LE (16) admit the solutions of interest. We will
+˜
+˜
+˜
+PuBaR´2BT
+a `BaR´2BT
+a
+Pu `Bu
+ΛΠpΛ2q`ΠpΛ2q˜
+ΛTBT
+u
+use induction for that purpose.
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+13
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+- For i“0 we have Λi
+“0 and it is thus straightforward
+that Λi PS0.
+- For a general i P N, suppose that Λi P S0. We want
+to show that Λi`1 P S0. To that end, suppose in seek of
+contradiction that Λi`1 R S0. Defineˆ
+Λpaq “ aΛi`1 `p1´
+aqΛi. Then, there must exist some a‹ P p0,1s for which
+the ARE (10) does not admit a strictly stabilizing solution
+ˆ
+ˆ
+for Λ“
+Λpa‹q, whereas it does for Λ“
+Λpaq and for all
+a P r0,a‹q. For the latter, it follows that˜
+Jpˆ
+Λpaqq ď˜
+JpΛiq
+becauseˆ
+Λpaqis in the direction of the negation of the gradient
+and ω ă 2
+λmin pΓ´1 q
+L
+λ2
+2. Therefore, since Λi P S0 we obtain
+max pΓ´1 q
+˜
+Jpˆ
+Λpaqq ď˜
+Jp0q, and thusˆ
+Λpaq P S0 for all a P r0,a‹q.
+ˆ
+Using Lemma 3 it follows that A`Bu
+Λpaq`BaKupˆ
+Λpaqq
+remains strictly stable uniformly for all aPr0,a‹q. Therefore,
+following continuity arguments similar to those of Lemma
+4, it follows that (10) admits a stabilizing solution also for
+ˆ
+Λ“
+Λpa‹q, which is contradicting. Hence, Λi`1 PS0. This
+completes the induction and shows equations (15)-(17) admit
+solutions for all iPN.
+To prove items 2-3, note that they follow from i) standard
+arguments regarding the convergence of gradient descent and
+the selection of the step size ω [29]; ii) the fact that the
+iteration of Algorithm 1 on Λi is equivalent to (22); and iii)
+the fact that the sequence of iterates Λi always remains inside
+S0 for all iPN.
+To prove item 4, using Lemma 2 we have
+1
+d2˜
+JpΛq
+1
+d
+“
+2
+2
+dΛkl «d
+˜
+JpΛq
+dΛ ffij
+In addition, eT
+becomes
+Using the bounds of Lemma 3, which are independent of Γ,
+we get from (64) the inequality:
+descent; see [29].
+dΠpΛq
+dΛkl F
+remain bounded uniformly as λminpΓqincreases. To
+that end, from (48), we get
+dPu
+dΛkl F
+¯
+ď2 ∥Bu∥F
+Pż8
+0
+epA`Bu Λ`Ba R´1 BT
+a Pu pΛqqτ
+2
+dτ.
+F
+But by Lemma 3, A`BuΛ `BaR´1BT
+aPupΛq is strictly
+stable uniformly on S0 and independently of Γ (see (55)), so
+there exists a finite constant c1 independent of Γ and Λ such
+that ş8
+0 epA`Bu Λ`Ba R´1 BT
+a Pu pΛqqτ
+2
+F
+dτ ăc1, and thus
+dPupΛq
+dΛkl F
+¯
+ď2 ∥Bu∥F
+Pc1. (66)
+On the other hand, a differentiation of (21) yields:
+pA`BuΛ `BaR´1BT
+aPupΛqqdΠpΛq
+dΛkl
+dΠpΛq
+`
+pA`BuΛ`BaR´1BT
+aPupΛqqT
+dΛkl
+dPupΛq
+`
+BaR´2BT
+a `BaR´2BT
+a
+dΛkl
+dPupΛq
+dΛkl
+`BueieT
+jΠpΛq`ΠpΛqejeT
+iBT
+u
+dPupΛq
+`BaR´1BT
+a
+ΠpΛq`ΠpΛqdPupΛq
+BaR´1BT
+a
+“0.
+dΛkl
+dΛkl
+This is an LE for dΠpΛq
+dΛkl , the plant matrix of which, i.e. A`
+BuΛ `BaR´1BT
+aPupΛq, is uniformly strictly stable owing
+to Lemma 3, and the cost matrix of which, i.e. its last six
+terms, is uniformly bounded owing to Lemma 3 and (66).
+dΛijdΛkl
+Hence, following the line of proof of the previous paragraph,
+d
+we conclude the existence of a finite constant c2 ą0 such that
+“
+eT
+ipΓΛ `BT
+uPupΛqΠpΛqqej
+dΛkl
+“eT
+iΓ dΛ
+ej `eT
+i BT
+u´dPupΛq
+ΠpΛq
+for all Λ PS0:
+dΠpΛq
+dΛkl
+dΛkl
+dΛkl F
+`PupΛqdΠpΛq
+dΛkl ¯ej. (63)
+Combining (65) with (66)-(67) we obtain
+1
+d2˜
+JpΛq
+iΓ dΛ
+dΛkl
+ej“eT
+iΓekeT
+lej “rΓsikδl,j. Thus, (63)
+ěrΓsikδl,j
+´ BT
+u F ´2c1 ∥Bu∥F
+1
+d2˜
+JpΛq
+“rΓsikδl,j
+To proceed, define the Hessian matrix:
+2
+dΛijdΛkl
+`eT
+i BT
+u´dPupΛq
+ΠpΛq`PupΛqdΠpΛq
+dΛkl
+dΛkl ¯ej. (64)
+dvecpΛq2
+» — — — — — –
+d2˜
+JpΛq
+d2˜
+JpΛq
+d2˜
+JpΛq
+dΛ11 dΛ21...
+dΛ11 dΛmu ,n
+d2˜
+JpΛq
+d2˜
+JpΛq
+dΛ21 dΛ11
+.
+.
+...
+.
+dΛ21 dΛmu ,n
+.
+.
+.
+.
+.
+.
+d2˜
+JpΛq
+d2˜
+JpΛq
+1
+d2˜
+dΛmu ,n dΛ11
+dΛmu ,n dΛ21...
+dΛ2
+fi ffi ffi ffi ffi ffi fl.
+JpΛq
+mu ,n
+ěrΓsikδl,j
+2
+dΛijdΛkl
+Based on the inequality (68), this Hessian becomes diagonally
+dominant for sufficiently large values of rΓsii, i“1,...,mu,
+´ BT
+u F ´¯
+Π dPupΛq
+dΛkl F
+`¯
+P dΠpΛq
+dΛkl F ¯. (65)
+while keeping rΓsij constant for i ‰ j, i,j“ 1,...,mu.
+Therefore, there exists γ‹ ą 0 such that if Γ ą γ‹I then
+d2˜
+JpΛq
+The equation above implies the possibility that if Γ is suffi-
+dvecpΛq2 is positive definite uniformly. Therefore, if Γ ą γ‹I
+ciently large in terms of eigenvalues, then˜
+J is strictly convex
+then˜
+J, when viewed as a function of vecpΛq, is strictly
+on S0. However, it first needs to be shown that dPu pΛq
+dΛkl F
+and
+convex, and thus any stationary point is a minimum. Therefore,
+by item 3, Algorithm 1 converges to a minimum of˜
+J, and thus
+2This follows from standard argument regarding the convergence of gradient
+of (11).
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Time
+ďc2. (67)
+2
+dΛijdΛkl
+¯
+P¯
+Π `¯
+Pc2¯. (68)
+dΛ2
+11
+d2˜
+JpΛq
+d2˜
+JpΛq
+“
+dΛ2
+21
+.
+.
+.
+d2˜
+JpΛq
+14
+Limited circulation. For review only
+IEEE-TAC Submission no.: 24-2206.1
+Filippos Fotiadis (Member, IEEE) was born
+in Thessaloniki, Greece. He received the PhD
+degree in Aerospace Engineering in 2024, and
+the MS degrees in Aerospace Engineering and
+Mathematics in 2022 and 2023, all from Georgia
+Tech. Prior to his graduate studies, he received
+a diploma in Electrical & Computer Engineer-
+ing from the Aristotle University of Thessaloniki.
+He is currently a postdoctoral researcher at the
+Oden Institute for Computational Engineering &
+Sciences at the University of Texas at Austin.
+His research interests are in the intersection of systems & control
+theory, game theory, and learning, with applications to the security and
+resilience of cyber-physical systems.
+Ufuk Topcu (Fellow, IEEE) is currently a Profes-
+sor with the Department of Aerospace Engineer-
+ing and Engineering Mechanics, The University
+of Texas at Austin, Austin, TX, USA, where he
+holds the Temple Foundation Endowed Profes-
+sorship No. 1 Professorship. He is a core Fac-
+ulty Member with the Oden Institute for Com-
+putational Engineering and Sciences and Texas
+Robotics and the director of the Autonomous
+Systems Group. His research interests include
+the theoretical and algorithmic aspects of the de-
+sign and verification of autonomous systems, typically in the intersection
+of formal methods, reinforcement learning, and control theory.
+Aris Kanellopoulos (Member, IEEE) received
+his diploma equivalent to a Master of Science in
+Mechanical Engineering from the National Tech-
+nical University of Athens, Greece in 2017. He
+was awarded a Ph.D. in Aerospace Engineering
+at the Georgia Institute of Technology where he
+worked as a Research Engineer in 2021. He is
+currently a Postdoctoral Researcher at the Royal
+Institute of Technology, Stockholm, Sweden. His
+research interests include optimal control, game
+theory and cyber-physical security.
+Kyriakos G. Vamvoudakis (Senior Member,
+IEEE) was born in Athens, Greece. He received
+the Diploma in Electronic and Computer Engi-
+neering from the Technical University of Crete,
+Greece in 2006, and the MSc and PhD degrees
+in Electrical Engineering at The University of
+Texas, Arlington in 2008 and 2011, respectively.
+During the period from 2012 to 2016 he was
+a project research scientist at the Center for
+Control, Dynamical Systems and Computation
+at the University of California, Santa Barbara.
+He was an assistant professor at the Kevin T. Crofton Department of
+Aerospace and Ocean Engineering at Virginia Tech until 2018.
+He currently serves as the Dutton-Ducoffe Endowed Professor at
+The Daniel Guggenheim School of Aerospace Engineering at Georgia
+Tech. He holds a secondary appointment in the School of Electrical and
+Computer Engineering. His research interests include reinforcement
+learning, control theory, cyber-physical security, bounded rationality, and
+safe/assured autonomy.
+Dr. Vamvoudakis is the recipient of a 2019 ARO YIP award, a 2018
+NSF CAREER award, a 2018 DoD Minerva Research Initiative Award,
+a 2021 GT Chapter Sigma Xi Young Faculty Award and his work has
+been recognized with best paper nominations and several international
+awards including the 2016 International Neural Network Society Young
+Investigator Award, the Best Paper Award for Autonomous/Unmanned
+Vehicles at the 27th Army Science Conference in 2010, and the Best
+Researcher Award from the Automation and Robotics Research Institute
+in 2011. He currently is a member of the IEEE Control Systems Society
+Conference Editorial Board, an Associate Editor of: Automatica; IEEE
+Transactions on Automatic Control; IEEE Transactions on Systems,
+Man, and Cybernetics: Systems; IEEE Transactions on Artificial Intel-
+ligence; Neurocomputing; Journal of Optimization Theory and Applica-
+tions; IEEE Transactions on Neural Networks and Learning Systems.
+Preprint submitted to IEEE Transactions on Automatic Control. Received: October 1, 2024 13:17:31 Pacific Timetest

@@ -25,6 +25,7 @@
                     <th class="py-2 px-4 text-left">Version</th>
                     <th class="py-2 px-4 text-left">Database Entity</th>
                     <th class="py-2 px-4 text-left">Status</th>
+                    <th class="py-2 px-4 text-left">Valid from</th>
                     <th class="py-2 px-4 text-left">Created By</th>
                     <th class="py-2 px-4 text-left">Created At</th>
                     <th class="py-2 px-4 text-center">Actions</th>
@@ -50,6 +51,12 @@
                         </span>
                       @endif
                     </td>
+                    <td class="py-2 px-4">
+                      @if($template->valid_from)
+                        {{ $template->valid_from->format('Y-m-d') }}
+                      @else
+                        N/A
+                      @endif
                     <td class="py-2 px-4">{{ $template->creator->full_name ?? 'N/A' }}</td>
                     <td class="py-2 px-4">{{ $template->created_at ? $template->created_at->format('Y-m-d H:i') : 'N/A' }}</td>
                     <td class="py-2 px-4 text-center">

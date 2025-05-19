@@ -23,7 +23,7 @@ class TemplateController extends Controller
         $templates = Template::with(['databaseEntity', 'creator', 'updater'])
             ->orderBy('created_at', 'desc')
             ->get();
-            // dd($templates);
+            
         return view('backend.templates.index', compact('templates'));
     }
 
@@ -53,6 +53,7 @@ class TemplateController extends Controller
             'name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'version' => 'nullable|string|max:20',
+            'valid_from' => 'nullable|date',
             'database_entity_id' => 'nullable|exists:database_entities,id',
             'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt|max:10240', // 10MB max
             'is_active' => 'boolean',
@@ -68,6 +69,7 @@ class TemplateController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'version' => $request->version ?? '1',
+            'valid_from' => $request->valid_from,
             'database_entity_id' => $request->database_entity_id,
             'is_active' => $request->has('is_active'),
             'created_by' => Auth::id(),
@@ -128,6 +130,7 @@ class TemplateController extends Controller
             'name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'version' => 'nullable|string|max:20',
+            'valid_from' => 'nullable|date',
             'database_entity_id' => 'nullable|exists:database_entities,id',
             'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt|max:10240', // 10MB max
             'is_active' => 'boolean',
@@ -142,6 +145,7 @@ class TemplateController extends Controller
         $template->name = $request->name;
         $template->description = $request->description;
         $template->version = $request->version ?? $template->version;
+        $template->valid_from = $request->valid_from;
         $template->database_entity_id = $request->database_entity_id;
         $template->is_active = $request->has('is_active');
         $template->updated_by = Auth::id();

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('database_entity_id')->nullable()->default(null)->constrained('database_entities')->onDelete('restrict');
             $table->string('file_path')->nullable()->default(null);
             $table->boolean('is_active')->nullable()->default(true);
+            $table->date('valid_from')->nullable()->default(null);
             $table->foreignId('created_by')->nullable()->default(null)->constrained('users')->onDelete('set null');
             $table->foreignId('updated_by')->nullable()->default(null)->constrained('users')->onDelete('set null');
             $table->timestamps();

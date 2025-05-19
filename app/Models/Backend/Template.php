@@ -32,6 +32,7 @@ class Template extends Model
         'database_entity_id',
         'file_path',
         'is_active',
+        'valid_from',
         'created_by',
         'updated_by',
     ];
@@ -46,6 +47,7 @@ class Template extends Model
         'is_active' => 'boolean',
         'created_by' => 'integer',
         'updated_by' => 'integer',
+        'valid_from' => 'date',
     ];
 
     /**

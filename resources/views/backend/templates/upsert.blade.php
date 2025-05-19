@@ -1,14 +1,15 @@
 <x-app-layout>
   <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-      {{ isset($isCreate) && $isCreate ? 'Create New Template' : 'Edit Template' }}
-    </h2>
+    @include('dashboard.header')
   </x-slot>
 
-  <div class="py-12">
+  <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 text-gray-900">
+          <div class="mb-6 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">Templates</h2>
+          </div>
           <form 
             action="{{ isset($isCreate) && $isCreate ? route('templates.store') : route('templates.update', $template) }}" 
             method="POST" 
@@ -61,6 +62,21 @@
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
               @error('version')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+              @enderror
+            </div>
+
+            <!-- Valid From -->
+            <div>
+              <label for="valid_from" class="block text-sm font-medium text-gray-700">Valid From</label>
+              <input 
+                type="date" 
+                name="valid_from" 
+                id="valid_from" 
+                value="{{ old('valid_from', $template->valid_from ? date('Y-m-d', strtotime($template->valid_from)) : '') }}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              >
+              @error('valid_from')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
               @enderror
             </div>
