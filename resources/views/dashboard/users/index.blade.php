@@ -95,7 +95,7 @@
                       </template>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a :href="'/dashboard/users/' + user.id + '/edit'" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                      <a :href="'/backend/users/' + user.id + '/edit'" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                     </td>
                   </tr>
                 </template>
@@ -167,7 +167,7 @@
           console.log('Fetching users with search:', this.search);
           
           // Build URL with search parameters
-          const url = new URL('dashboard/user-data', window.location.origin);
+          const url = new URL('backend/user-data', window.location.origin);
           url.searchParams.append('page', this.currentPage);
           url.searchParams.append('per_page', this.perPage);
           url.searchParams.append('sort', this.sortColumn);

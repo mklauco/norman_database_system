@@ -27,3 +27,12 @@ _pgadmin_data/
 _secrets/*
 composer.lock
 database/seeders/seeds/ecotox_tables/ecotox_pnec3.csv
+
+# Exclude storage directory
+/storage/*
+
+# But include templates directory
+!/storage/app
+!/storage/app/public
+!/storage/app/public/templates
+!/storage/app/public/templates/*

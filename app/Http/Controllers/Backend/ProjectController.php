@@ -109,8 +109,9 @@ class ProjectController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
+public function destroy(string $id)
+{
+    try {
         $project = Project::findOrFail($id);
         
         // Delete project user relationships in pivot table
@@ -122,5 +123,23 @@ class ProjectController extends Controller
         return redirect()
             ->route('projects.index')
             ->with('success', 'Project deleted successfully!');
+    } catch (\Illuminate\Database\QueryException $e) {
+        // Check if it's a foreign key constraint violation
+        if ($e->getCode() == "23503") {
+            return redirect()
+                ->route('projects.index')
+                ->with('error', 'Cannot delete this project because it is associated with one or more files. Please remove all file associations before deleting this project.');
+        }
+        
+        // For other database errors
+        return redirect()
+            ->route('projects.index')
+            ->with('error', 'An error occurred while trying to delete the project. Please try again later.');
+    } catch (\Exception $e) {
+        // For any other exceptions
+        return redirect()
+            ->route('projects.index')
+            ->with('error', 'An error occurred while trying to delete the project. Please try again later.');
     }
+}
 }

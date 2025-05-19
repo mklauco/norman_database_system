@@ -5,50 +5,62 @@
   
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <!-- Success Message Display -->
-      
       <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 text-gray-900">
-          <!-- Project Actions -->
+          <!-- File Actions -->
           <div class="mb-6 flex justify-between items-center">
-            <h2 class="text-xl font-semibold text-gray-800">Projects</h2>
-            <a href="{{ route('projects.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-              Add New Project
+            <h2 class="text-xl font-semibold text-gray-800">Files</h2>
+            <a href="{{ route('files.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+              Upload New File
             </a>
           </div>
           
-          <!-- Projects Table -->
+          <!-- Files Table -->
           <div class="overflow-x-auto">
-            @if($projects->count() > 0)
+            @if($files->count() > 0)
               <table class="table-standard w-full">
                 <thead>
                   <tr class="bg-gray-600 text-white">
-                    <th class="py-2 px-4 text-left">Project Name</th>
-                    <th class="py-2 px-4 text-left">Abbreviation</th>
-                    <th class="py-2 px-4 text-left">Description</th>
+                    <th class="py-2 px-4 text-left">Name</th>
+                    <th class="py-2 px-4 text-left">Template</th>
+                    <th class="py-2 px-4 text-left">Database Entity</th>
+                    <th class="py-2 px-4 text-left">Size</th>
+                    <th class="py-2 px-4 text-left">Uploaded By</th>
+                    <th class="py-2 px-4 text-left">Uploaded At</th>
                     <th class="py-2 px-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @foreach ($projects as $project)
+                  @foreach ($files as $file)
                   <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif hover:bg-slate-300 transition">
-                    <td class="py-2 px-4">{{ $project->name }}</td>
-                    <td class="py-2 px-4">{{ $project->abbreviation }}</td>
-                    <td class="py-2 px-4">{{ Str::limit($project->description, 100) }}</td>
+                    <td class="py-2 px-4">
+                      <div class="font-medium">{{ $file->name ?? $file->original_name ?? 'N/A' }}</div>
+                      <div class="text-sm text-gray-600">{{ Str::limit($file->description, 50) }}</div>
+                    </td>
+                    <td class="py-2 px-4">{{ $file->template->name ?? 'N/A' }}</td>
+                    <td class="py-2 px-4">{{ $file->databaseEntity->name ?? 'N/A' }}</td>
+                    <td class="py-2 px-4">{{ $file->file_size ? number_format($file->file_size / 1024, 2) . ' KB' : 'N/A' }}</td>
+                    <td class="py-2 px-4">{{ $file->uploader->name ?? 'N/A' }}</td>
+                    <td class="py-2 px-4">{{ $file->uploaded_at ? $file->uploaded_at->format('Y-m-d H:i') : ($file->created_at ? $file->created_at->format('Y-m-d H:i') : 'N/A') }}</td>
                     <td class="py-2 px-4 text-center">
                       <div class="flex justify-center space-x-2">
-                        <a href="{{ route('projects.show', $project->id) }}" class="text-blue-600 hover:text-blue-800" title="View">
+                        <a href="{{ route('files.show', $file) }}" class="text-blue-600 hover:text-blue-800" title="View">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </a>
-                        <a href="{{ route('projects.edit', $project->id) }}" class="text-yellow-600 hover:text-yellow-800" title="Edit">
+                        <a href="{{ route('files.edit', $file) }}" class="text-yellow-600 hover:text-yellow-800" title="Edit">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </a>
-                        <form action="{{ route('projects.destroy', $project->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this project?');">
+                        <a href="{{ route('files.download', $file) }}" class="text-green-600 hover:text-green-800" title="Download">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </a>
+                        <form action="{{ route('files.destroy', $file) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this file?');">
                           @csrf
                           @method('DELETE')
                           <button type="submit" class="text-red-600 hover:text-red-800" title="Delete">
@@ -64,13 +76,15 @@
                 </tbody>
               </table>
               
-              <!-- Pagination Links -->
-              <div class="mt-4">
-                {{ $projects->links() }}
-              </div>
+              <!-- Pagination Links - if you're using pagination -->
+              @if(method_exists($files, 'links'))
+                <div class="mt-4">
+                  {{ $files->links() }}
+                </div>
+              @endif
             @else
               <div class="bg-gray-100 p-4 rounded text-center">
-                <p>No projects found. Create your first project to get started.</p>
+                <p>No files found. Upload your first file to get started.</p>
               </div>
             @endif
           </div>

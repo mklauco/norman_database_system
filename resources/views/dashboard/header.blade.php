@@ -2,6 +2,14 @@
   Main panel
 </x-nav-link-header>
 
+<x-nav-link-header :href="route('templates.index')" :active="request()->routeIs('templates.index')">
+  Templates
+</x-nav-link-header>
+
+<x-nav-link-header :href="route('files.index')" :active="request()->routeIs('files.index')">
+  Files
+</x-nav-link-header>
+
 @role('user_manager')
 <x-nav-link-header :href="route('users.index')" :active="request()->routeIs('users.index')">
   Users
