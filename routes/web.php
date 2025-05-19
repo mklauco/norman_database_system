@@ -7,11 +7,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ARBG\GeneController;
 use App\Http\Controllers\EmailTestController;
 use App\Http\Controllers\Sars\SarsController;
+use App\Http\Controllers\Backend\FileController;
 use App\Http\Controllers\ARBG\ARBGHomeController;
+
 use App\Http\Controllers\ARBG\BacteriaController;
 
 use App\Http\Controllers\Ecotox\EcotoxController;
-
 use App\Http\Controllers\Indoor\IndoorController;
 use App\Http\Controllers\Sars\SarsHomeController;
 use App\Http\Controllers\Backend\GeneralController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Backend\ProjectController;
 use App\Http\Controllers\Empodat\EmpodatController;
 use App\Http\Controllers\Passive\PassiveController;
 use App\Http\Controllers\Backend\QueryLogController;
+use App\Http\Controllers\Backend\TemplateController;
 use App\Http\Controllers\Susdat\DuplicateController;
 use App\Http\Controllers\Susdat\SubstanceController;
 use App\Http\Controllers\Bioassay\BioassayController;
@@ -46,13 +48,21 @@ Route::get('/', function () {
 
 Route::get('/landing', [DatabaseDirectoryController::class, 'index'])->name('landing.index');
 
-Route::prefix('dashboard')->middleware('auth')->group(function () {
+Route::prefix('backend')->middleware('auth')->group(function () {
     Route::get('overview', [DashboardMainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::get('/user-data', [UserController::class, 'getUserData'])->middleware('auth');
 
     Route::resource('projects', ProjectController::class);
-    
+
+    Route::resource('templates', TemplateController::class);
+    Route::get('templates/{template}/download', [TemplateController::class, 'download'])->name('templates.download');
+
+    Route::resource('files', FileController::class);
+    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+
+    Route::resource('general_route', GeneralController::class);
+    Route::resource('querylog', QueryLogController::class)->middleware('auth');
 });
 
 Route::middleware('auth')->group(function () {
@@ -268,10 +278,7 @@ Route::prefix('prioritisation')->group(function () {
     Route::get('prioritisation/countAll', [PrioritisationHomeController::class, 'countAll'])->middleware('auth')->name('prioritisation.countAll');
 });
 
-Route::prefix('backend')->group(function () {
-    Route::resource('general_route', GeneralController::class);
-    Route::resource('querylog', QueryLogController::class)->middleware('auth');
-});
+
 
 
 Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
