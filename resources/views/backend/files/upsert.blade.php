@@ -7,6 +7,10 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 text-gray-900">
+          <!-- File Actions -->
+          <div class="mb-6 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">New File Upload</h2>
+          </div>
           <form 
             action="{{ isset($isCreate) && $isCreate ? route('files.store') : route('files.update', $file) }}" 
             method="POST" 
