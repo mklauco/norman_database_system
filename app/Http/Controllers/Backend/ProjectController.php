@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Backend;
 
-use Illuminate\Http\Request;
-use App\Models\Backend\Project;
 use App\Http\Controllers\Controller;
+use App\Models\Backend\Project;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectController extends Controller
 {
@@ -13,8 +14,9 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        //
-        $projects = Project::orderBy('created_at', 'desc')->orderBy('id', 'desc')->get();
+        $projects = Project::orderBy('created_at', 'desc')
+            ->paginate(10); // Added pagination for better performance with large datasets
+            
         return view('backend.projects.index', [
             'projects' => $projects
         ]);
@@ -25,7 +27,14 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        //
+        $project = new Project(); // Create empty project for form
+        $fillables = $project->getFillable();
+        
+        return view('backend.projects.upsert', [
+            'project' => $project,
+            'fillables' => $fillables,
+            'isCreate' => true
+        ]);
     }
 
     /**
@@ -33,7 +42,22 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|min:3|max:255',
+            'abbreviation' => 'required|string|min:2|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+        
+        $project = Project::create($validated);
+        
+        // Automatically assign current user to project
+        if ($project) {
+            $project->users()->attach(Auth::id());
+        }
+        
+        return redirect()
+            ->route('projects.index')
+            ->with('success', 'Project created successfully!');
     }
 
     /**
@@ -41,7 +65,11 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $project = Project::with('users')->findOrFail($id);
+        
+        return view('backend.projects.show', [
+            'project' => $project
+        ]);
     }
 
     /**
@@ -49,11 +77,13 @@ class ProjectController extends Controller
      */
     public function edit(string $id)
     {
-        //
-        $fillables = app(Project::class)->getFillable();
-        return view('backend.projects.edit', [
-            'project' => Project::findOrFail($id),
-            'fillables' => $fillables
+        $project = Project::findOrFail($id);
+        $fillables = $project->getFillable();
+        
+        return view('backend.projects.upsert', [
+            'project' => $project,
+            'fillables' => $fillables,
+            'isCreate' => false
         ]);
     }
 
@@ -62,15 +92,18 @@ class ProjectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
-        $request->validate([
-            'name' => 'required|string|min:3',
-            'description' => 'nullable|string',
-            'abbreviation' => 'required|nullable|string|min:2',
+        $validated = $request->validate([
+            'name' => 'required|string|min:3|max:255',
+            'abbreviation' => 'required|string|min:2|max:255',
+            'description' => 'nullable|string|max:1000',
         ]);
+        
         $project = Project::findOrFail($id);
-        $project->update($request->all());
-        return redirect()->route('projects.index');
+        $project->update($validated);
+        
+        return redirect()
+            ->route('projects.index')
+            ->with('success', 'Project updated successfully!');
     }
 
     /**
@@ -78,6 +111,16 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $project = Project::findOrFail($id);
+        
+        // Delete project user relationships in pivot table
+        $project->users()->detach();
+        
+        // Delete the project
+        $project->delete();
+        
+        return redirect()
+            ->route('projects.index')
+            ->with('success', 'Project deleted successfully!');
     }
 }
