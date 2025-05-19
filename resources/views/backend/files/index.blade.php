@@ -10,9 +10,9 @@
           <!-- File Actions -->
           <div class="mb-6 flex justify-between items-center">
             <h2 class="text-xl font-semibold text-gray-800">Files</h2>
-            <a href="{{ route('files.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-              Upload New File
-            </a>
+              <a href="{{ route('files.create') }}" class="btn-create">
+                Upload New File
+              </a>
           </div>
           
           <!-- Files Table -->
