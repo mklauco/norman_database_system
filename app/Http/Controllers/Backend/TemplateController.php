@@ -212,4 +212,26 @@ class TemplateController extends Controller
             $template->name . '_v' . $template->version . '.' . pathinfo($template->file_path, PATHINFO_EXTENSION)
         );
     }
+
+    /**
+     * Display a listing of active templates for a specific database entity code.
+     *
+     * @param  string  $code
+     * @return \Illuminate\View\View
+     */
+    public function specificIndex($code)
+    {
+        // Find the database entity by code
+        $databaseEntity = DatabaseEntity::where('code', $code)->firstOrFail();
+        
+        // Get active templates for this database entity
+        $templates = Template::with(['databaseEntity', 'creator'])
+            ->where('database_entity_id', $databaseEntity->id)
+            ->where('is_active', true)
+            ->orderBy('valid_from', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return view('backend.templates.specific_index', compact('templates', 'databaseEntity'));
+    }
 }

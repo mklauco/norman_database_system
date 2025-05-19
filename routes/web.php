@@ -60,6 +60,9 @@ Route::prefix('backend')->middleware('auth')->group(function () {
 
     Route::resource('files', FileController::class);
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+    // Specific templates for a database entity code
+    Route::get('templates/entity/{code}', [TemplateController::class, 'specificIndex'])->name('templates.specific.index');
+
 
     Route::resource('general_route', GeneralController::class);
     Route::resource('querylog', QueryLogController::class)->middleware('auth');
