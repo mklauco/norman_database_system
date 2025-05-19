@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('empodat_main_file', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('empodat_main_id')->nullable()->default(null)->constrained('empodat_main')->onDelete('cascade');
-            $table->foreignId('file_id')->nullable()->default(null)->constrained('files')->onDelete('cascade');
+            $table->foreignId('empodat_main_id')->nullable()->default(null)->constrained('empodat_main')->onDelete('restrict');
+            $table->foreignId('file_id')->nullable()->default(null)->constrained('files')->onDelete('restrict');
             $table->text('notes')->nullable()->default(null);
             $table->timestamps();
             

@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('file_project', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('file_id')->nullable()->default(null)->constrained('files')->onDelete('cascade');
-            $table->foreignId('project_id')->nullable()->default(null)->constrained('projects')->onDelete('cascade');
+            $table->foreignId('file_id')->nullable()->default(null)->constrained('files')->onDelete('restrict');
+            $table->foreignId('project_id')->nullable()->default(null)->constrained('projects')->onDelete('restrict');
             $table->text('notes')->nullable()->default(null);
             $table->timestamps();
             
