@@ -25,11 +25,13 @@ class DashboardMainController extends Controller
         
         // Get database entities for dashboard display
         $databaseEntities = DatabaseEntity::where('show_in_dashboard', true)
+            ->where('dashboard_route_name', 'not like', '%https%')
             ->orderBy('name')
             ->get();
             
         // Get database entities with active templates
         $entitiesWithTemplates = DatabaseEntity::where('show_in_dashboard', true)
+            ->where('dashboard_route_name', 'not like', '%https%')
             ->whereHas('templates', function($query) {
                 $query->where('is_active', true);
             })
@@ -128,7 +130,22 @@ class DashboardMainController extends Controller
                         'name' => 'ARBG',
                         'route' => 'arbg.countAll',
                         'method' => 'GET'
-                    ]
+                    ],
+                    [
+                        'name' => 'Lowest PNEC',
+                        'route' => 'ecotox.lowestpnec.countAll',
+                        'method' => 'GET'
+                    ],
+                    [
+                        'name' => 'Ecotox ',
+                        'route' => 'ecotox.ecotox.countAll',
+                        'method' => 'GET'
+                    ],
+                    [
+                        'name' => 'Entire Ecotox DB',
+                        'route' => 'ecotox.countAll',
+                        'method' => 'GET'
+                    ],
                 ]
             ]
         ];

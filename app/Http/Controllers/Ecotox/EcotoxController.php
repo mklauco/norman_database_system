@@ -165,4 +165,13 @@ class EcotoxController extends Controller
             'searchParameters'    => $searchParameters,
         ], $main_request);
     }
+    
+    public function countAll(){
+        DatabaseEntity::where('code', 'ecotox.ecotox')->update([
+            'last_update' => EcotoxPrimary::max('updated_at'),
+            'number_of_records' => EcotoxPrimary::count()
+        ]);
+        session()->flash('success', 'Database counts updated successfully');
+        return redirect()->back();
+    }
 }
