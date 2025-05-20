@@ -4,6 +4,7 @@ namespace App\Models\Empodat;
 
 use App\Models\Backend\File;
 use App\Models\Susdat\Substance;
+use App\Models\Empodat\AnalyticalMethod AS EmpodatAnalyticalMethod;
 use App\Models\List\ConcentrationIndicator;
 use App\Models\List\Matrix;
 use Illuminate\Database\Eloquent\Model;
@@ -58,8 +59,7 @@ class EmpodatMain extends Model
     /**
      * Get the concentration indicator associated with this record.
      */
-    public function concentrationIndicator()
-    {
+    public function concentrationIndicator(){
         return $this->belongsTo(ConcentrationIndicator::class, 'concentration_indicator_id');
     }
 
@@ -92,7 +92,7 @@ class EmpodatMain extends Model
      */
     public function analyticalMethod()
     {
-        return $this->belongsTo(AnalyticalMethod::class, 'method_id');
+        return $this->belongsTo(EmpodatAnalyticalMethod::class, 'method_id');
     }
 
     /**
@@ -100,7 +100,7 @@ class EmpodatMain extends Model
      */
     public function dataSource()
     {
-        return $this->belongsTo(DataSource::class, 'data_source_id');
+        return $this->belongsTo(DataSources::class, 'data_source_id');
     }
 
     /**
@@ -118,13 +118,13 @@ class EmpodatMain extends Model
      * 
      * @return string|null
      */
-    public function getFormattedConcentrationAttribute()
-    {
-        if ($this->concentration_value === null) {
-            return null;
-        }
+    // public function getFormattedConcentrationAttribute()
+    // {
+    //     if ($this->concentration_value === null) {
+    //         return null;
+    //     }
 
-        $indicator = $this->concentrationIndicator ? $this->concentrationIndicator->symbol : '';
-        return $indicator . number_format($this->concentration_value, 4);
-    }
+    //     $indicator = $this->concentrationIndicator ? $this->concentrationIndicator->symbol : '';
+    //     return $indicator . number_format($this->concentration_value, 4);
+    // }
 }

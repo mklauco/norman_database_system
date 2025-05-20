@@ -76,7 +76,7 @@ class EmpodatController extends Controller
     $empodat = EmpodatMain::query()
     
     // Eager load relationships (as needed)
-    ->with('concetrationIndicator') 
+    ->with('concentrationIndicator') 
     ->with('station') 
     ->with('analyticalMethod') 
     ->with('dataSource') 
@@ -372,7 +372,7 @@ class EmpodatController extends Controller
       'empodat_data_sources' => false,
     ];
     
-    $empodats = EmpodatMain::with('concetrationIndicator')
+    $empodats = EmpodatMain::with('concentrationIndicator')
     ->leftjoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
     ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
     ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
@@ -531,7 +531,7 @@ class EmpodatController extends Controller
       
     }
     
-    if ($request->displayOptiondisplayOption == 1) {
+    if ($request->displayOption == 1) {
       // use simple pagination
       $empodats = $empodats->orderBy('empodat_main.id', 'asc')
       ->simplePaginate(200)
