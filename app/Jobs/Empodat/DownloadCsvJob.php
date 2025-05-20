@@ -10,9 +10,11 @@ use App\Models\Backend\QueryLog;
 use Illuminate\Support\Facades\DB;
 use App\Mail\Empodat\CsvExportReady;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Backend\ExportDownload;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
@@ -39,6 +41,9 @@ class DownloadCsvJob implements ShouldQueue
     */
     public function handle(): void
     {
+        
+        
+        
         // Increase memory limit if possible
         ini_set('memory_limit', '2G');
         
@@ -53,8 +58,28 @@ class DownloadCsvJob implements ShouldQueue
             'download_link' => route('csv.download', ['filename' => $filename]),
             'total_records' => 0,
             'processing_time' => 0,
+            'file_size' => '0 KB',
             'export_failed' => false
         ];
+        
+        // Get request information
+        $request = request();
+        $ip = $request->ip();
+        $userAgent = $request->userAgent();
+        
+        // Create an export download record
+        $exportDownload = ExportDownload::create([
+            'user_id' => $this->user->id,
+            'filename' => $filename,
+            'format' => 'csv',
+            'ip_address' => $ip,
+            'user_agent' => $userAgent,
+            'database_key' => 'empodat',
+            'status' => 'processing'
+        ]);
+        
+        // Associate with the query log
+        $exportDownload->queryLogs()->attach($this->queryLogId);
         
         try {
             $startTime = microtime(true);
@@ -135,13 +160,25 @@ class DownloadCsvJob implements ShouldQueue
             
             fclose($handle);
             
+            // Get file size
+            $fileSize = Storage::size("{$directory}/{$filename}");
+            $formattedFileSize = $this->formatBytes($fileSize);
+            
             $processingTime = round(microtime(true) - $startTime, 2);
             
             // Update message content
             $messageContent['total_records'] = $totalExported;
             $messageContent['processing_time'] = $processingTime;
+            $messageContent['file_size'] = $formattedFileSize;
             
-            \Log::info("EmpodatMain export complete: {$totalExported} records exported in {$processingTime} seconds");
+            \Log::info("EmpodatMain export complete: {$totalExported} records exported in {$processingTime} seconds. File size: {$formattedFileSize}");
+            // Update the export download record if it exists
+            $exportDownload = ExportDownload::where('filename', $filename)->first();
+            if ($exportDownload) {
+                $exportDownload->update([
+                    'status' => 'completed'
+                ]);
+            }
             
         } catch (Exception $e) {
             \Log::error('EmpodatMain export failed: ' . $e->getMessage() . ' at line ' . $e->getLine() . ' in ' . $e->getFile());
@@ -154,23 +191,39 @@ class DownloadCsvJob implements ShouldQueue
             // Update message content with error information
             $messageContent['export_failed'] = true;
             $messageContent['error'] = $e->getMessage();
+
+            $exportDownload = ExportDownload::where('filename', $filename)->first();
+            if ($exportDownload) {
+                $exportDownload->update([
+                    'status' => 'failed',
+                    'message' => $e->getMessage()
+                ]);
+            }
+
         }
         
         try {
             Mail::to($this->user->email)->queue(new CsvExportReady($messageContent));
         } catch (Exception $e) {
             \Log::error('Failed to send email: ' . $e->getMessage() . ' at line ' . $e->getLine());
+            $exportDownload = ExportDownload::where('filename', $filename)->first();
+            if ($exportDownload) {
+                $exportDownload->update([
+                    'status' => 'failed',
+                    'message' => $e->getMessage()
+                ]);
+            }
         }
     }
     
     /**
-     * Process a batch of IDs and write records to CSV
-     * 
-     * @param array $idBatch Array of IDs to process
-     * @param resource $handle File handle for writing
-     * @param string $exportDate Formatted export date
-     * @param int &$totalExported Counter for exported records (passed by reference)
-     */
+    * Process a batch of IDs and write records to CSV
+    * 
+    * @param array $idBatch Array of IDs to process
+    * @param resource $handle File handle for writing
+    * @param string $exportDate Formatted export date
+    * @param int &$totalExported Counter for exported records (passed by reference)
+    */
     protected function processIdBatch(array $idBatch, $handle, string $exportDate, &$totalExported): void
     {
         try {
@@ -179,20 +232,20 @@ class DownloadCsvJob implements ShouldQueue
             
             // Use a generator to process records one at a time without loading all into memory
             $recordGenerator = DB::table('empodat_main')
-                ->select(
-                    'empodat_main.id',
-                    'empodat_main.dct_analysis_id',
-                    'empodat_main.sampling_date_year',
-                    'empodat_main.concentration_value',
-                    'empodat_stations.name as station_name',
-                    'list_countries.name as country_name',
-                    'list_countries.code as country_code',
-                    'list_matrices.name as matrix_name',
-                    'list_matrices.unit as concentration_unit',
-                    'susdat_substances.name as substance_name',
-                    'susdat_substances.cas_number',
-                    'empodat_stations.latitude',
-                    'empodat_stations.longitude'
+            ->select(
+                'empodat_main.id',
+                'empodat_main.dct_analysis_id',
+                'empodat_main.sampling_date_year',
+                'empodat_main.concentration_value',
+                'empodat_stations.name as station_name',
+                'list_countries.name as country_name',
+                'list_countries.code as country_code',
+                'list_matrices.name as matrix_name',
+                'list_matrices.unit as concentration_unit',
+                'susdat_substances.name as substance_name',
+                'susdat_substances.cas_number',
+                'empodat_stations.latitude',
+                'empodat_stations.longitude'
                 )
                 ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
                 ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
@@ -201,33 +254,53 @@ class DownloadCsvJob implements ShouldQueue
                 ->whereIn('empodat_main.id', $idBatch)
                 ->cursor();
                 
-            foreach ($recordGenerator as $record) {
-                // Write to CSV - only do field access right when needed
-                fputcsv($handle, [
-                    $record->id ?? 'N/A',
-                    $record->dct_analysis_id ?? 'N/A',
-                    $record->station_name ?? 'N/A',
-                    $record->country_name ?? 'N/A',
-                    $record->country_code ?? 'N/A',
-                    $record->matrix_name ?? 'N/A',
-                    $record->concentration_unit ?? 'N/A',
-                    $record->substance_name ?? 'N/A',
-                    $record->cas_number ?? 'N/A',
-                    $record->sampling_date_year ?? 'N/A',
-                    $record->concentration_value ?? 'N/A',
-                    $record->latitude ?? 'N/A',
-                    $record->longitude ?? 'N/A',
-                    $exportDate
-                ]);
-                $totalExported++;
+                foreach ($recordGenerator as $record) {
+                    // Write to CSV - only do field access right when needed
+                    fputcsv($handle, [
+                        $record->id ?? 'N/A',
+                        $record->dct_analysis_id ?? 'N/A',
+                        $record->station_name ?? 'N/A',
+                        $record->country_name ?? 'N/A',
+                        $record->country_code ?? 'N/A',
+                        $record->matrix_name ?? 'N/A',
+                        $record->concentration_unit ?? 'N/A',
+                        $record->substance_name ?? 'N/A',
+                        $record->cas_number ?? 'N/A',
+                        $record->sampling_date_year ?? 'N/A',
+                        $record->concentration_value ?? 'N/A',
+                        $record->latitude ?? 'N/A',
+                        $record->longitude ?? 'N/A',
+                        $exportDate
+                    ]);
+                    $totalExported++;
+                }
+                
+                // Force database cursor to be released
+                unset($recordGenerator);
+                
+            } catch (Exception $e) {
+                \Log::error("Error processing batch: " . $e->getMessage());
+                throw $e; // Re-throw to be caught by main try-catch
             }
+        }
+        
+        /**
+        * Format bytes to human-readable file size
+        *
+        * @param int $bytes Number of bytes
+        * @param int $precision Decimal precision
+        * @return string Formatted file size with units
+        */
+        protected function formatBytes($bytes, $precision = 2): string
+        {
+            $units = ['B', 'KB', 'MB', 'GB', 'TB'];
             
-            // Force database cursor to be released
-            unset($recordGenerator);
+            $bytes = max($bytes, 0);
+            $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+            $pow = min($pow, count($units) - 1);
             
-        } catch (Exception $e) {
-            \Log::error("Error processing batch: " . $e->getMessage());
-            throw $e; // Re-throw to be caught by main try-catch
+            $bytes /= (1 << (10 * $pow));
+            
+            return round($bytes, $precision) . ' ' . $units[$pow];
         }
     }
-}

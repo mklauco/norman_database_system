@@ -45,6 +45,7 @@
     <!-- Export Details -->
     <div style="background-color: #e9f7f6; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
       <p style="margin: 0 0 8px 0;"><strong>File:</strong> {{ $messageContent['filename'] ?? 'Export file' }}</p>
+      <p style="margin: 0 0 8px 0;"><strong>File Size:</strong> {{ $messageContent['file_size'] ?? 'Unknown' }}</p>
       @if(isset($messageContent['total_records']))
       <p style="margin: 0 0 8px 0;"><strong>Records:</strong> {{ number_format($messageContent['total_records']) }}</p>
       @endif
