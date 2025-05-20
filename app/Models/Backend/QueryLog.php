@@ -15,7 +15,7 @@ class QueryLog extends Model
     /**
      * Get the user that performed the query.
      */
-    public function user(): BelongsTo
+    public function users(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
