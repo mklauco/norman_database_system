@@ -24,7 +24,7 @@ class ShowEmpodatEntry extends Component
         $empodat = EmpodatMain::query()
 
         // Eager load relationships (as needed)
-        ->with('concetrationIndicator') 
+        ->with('concentrationIndicator') 
         ->with('station') 
         ->with('analyticalMethod') 
         // ->with('substance') 

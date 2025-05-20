@@ -10,7 +10,7 @@
   Search
 </x-nav-link-header>
 
-<x-nav-link-header :href="route('templates.specific.index', ['code' => 'empodat'])" :active="request()->is('*dctitems*')">
+<x-nav-link-header :href="route('empodat.templates', ['code' => 'empodat'])" :active="request()->is('empodat/templates/entity/empodat*')">
   DCT Download
 </x-nav-link-header>
 

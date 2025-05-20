@@ -119,7 +119,7 @@
               <td class="p-1 text-center">
                 @if($e->concentration_indicator_id == 0) {{ $e->concentration_indicator_id }} @endif
                 @if($e->concentration_indicator_id > 1)
-                {{ $e->concetrationIndicator->name }}
+                {{ $e->concentrationIndicator->name }}
                 @else
                 <span class="font-medium">{{ $e->concentration_value}}</span>&nbsp;{{$e->concentration_unit }}
                 @endif

@@ -59,13 +59,16 @@ Route::prefix('backend')->middleware('auth')->group(function () {
     Route::get('templates/{template}/download', [TemplateController::class, 'download'])->name('templates.download');
 
     Route::resource('files', FileController::class);
-    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
     // Specific templates for a database entity code
-    Route::get('templates/entity/{code}', [TemplateController::class, 'specificIndex'])->name('templates.specific.index');
 
 
     Route::resource('general_route', GeneralController::class);
     Route::resource('querylog', QueryLogController::class)->middleware('auth');
+});
+
+Route::prefix('backend')->group(function () {
+        Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+        Route::get('templates/entity/{code}', [TemplateController::class, 'specificIndex'])->name('templates.specific.index');
 });
 
 Route::middleware('auth')->group(function () {
@@ -141,6 +144,9 @@ Route::prefix('empodat')->group(function () {
     
     
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
+
+    Route::get('templates/entity/{code}', [EmpodatHomeController::class, 'specificIndex'])->name('empodat.templates');
+
     
 });
 
