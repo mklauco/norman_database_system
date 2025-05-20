@@ -144,6 +144,9 @@ Route::prefix('empodat')->group(function () {
     
     
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
+
+    Route::get('templates/entity/{code}', [EmpodatHomeController::class, 'specificIndex'])->name('empodat.templates');
+
     
 });
 

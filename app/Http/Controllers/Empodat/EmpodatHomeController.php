@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Empodat;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\DatabaseEntity;
+use App\Models\Backend\Template;
+use App\Http\Controllers\Controller;
 
 class EmpodatHomeController extends Controller
 {
@@ -62,5 +64,21 @@ class EmpodatHomeController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function specificIndex($code)
+    {
+        // Find the database entity by code
+        $databaseEntity = DatabaseEntity::where('code', $code)->firstOrFail();
+        
+        // Get active templates for this database entity
+        $templates = Template::with(['databaseEntity', 'creator'])
+            ->where('database_entity_id', $databaseEntity->id)
+            ->where('is_active', true)
+            ->orderBy('valid_from', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return view('backend.templates.specific_index', compact('templates', 'databaseEntity'));
     }
 }
