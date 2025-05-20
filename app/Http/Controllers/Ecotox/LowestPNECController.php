@@ -15,44 +15,44 @@ use Illuminate\Support\Facades\Auth;
 class LowestPNECController extends Controller
 {
     /**
-     * Display a listing of the LowestPNEC resources.
-     */
+    * Display a listing of the LowestPNEC resources.
+    */
     public function index()
     {
         $lowestPnecs = LowestPNEC::with('substance')
-            ->orderBy('id')
-            ->paginate(50);
-            
+        ->orderBy('id')
+        ->paginate(50);
+        
         return view('ecotox.lowestpnec.index', [
             'lowestPnecs' => $lowestPnecs,
             'displayOption' => 0,
         ]);
     }
-
+    
     /**
-     * Show the form for filtering LowestPNEC records.
-     */
+    * Show the form for filtering LowestPNEC records.
+    */
     public function filter(Request $request)
     {
         // Fetch the substance list for filtering
         $substanceList = Substance::whereIn('id', function($query) {
-                $query->select('substance_id')
-                    ->from('ecotox_lowest_pnec')
-                    ->whereNotNull('substance_id');
-            })
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->toArray();
-            
+            $query->select('substance_id')
+            ->from('ecotox_lowest_pnec')
+            ->whereNotNull('substance_id');
+        })
+        ->orderBy('name')
+        ->pluck('name', 'id')
+        ->toArray();
+        
         return view('ecotox.lowestpnec.filter', [
             'request' => $request,
             'substanceList' => $substanceList,
         ]);
     }
-
+    
     /**
-     * Search for LowestPNEC records based on filter criteria.
-     */
+    * Search for LowestPNEC records based on filter criteria.
+    */
     public function search(Request $request)
     {
         // Define the input fields to process
@@ -61,8 +61,8 @@ class LowestPNECController extends Controller
         // Process each field with the same logic
         foreach ($searchFields as $field) {
             ${$field} = is_array($request->input($field))
-                ? $request->input($field) 
-                : json_decode($request->input($field), true);
+            ? $request->input($field) 
+            : json_decode($request->input($field), true);
         }
         
         $searchParameters = [];
@@ -164,19 +164,19 @@ class LowestPNECController extends Controller
             'displayOption'       => $request->displayOption,
         ], $main_request);
     }
-
+    
     /**
-     * Display the specified resource as JSON.
-     */
+    * Display the specified resource as JSON.
+    */
     public function show($id)
     {
         $lowestPnec = LowestPNEC::with('substance')->findOrFail($id);
         
         // Find the related LowestPNECMain record if exists
         $lowestPnecMain = LowestPNECMain::with(['substance', 'editor'])
-            ->where('sus_id', $lowestPnec->sus_id)
-            ->first();
-            
+        ->where('sus_id', $lowestPnec->sus_id)
+        ->first();
+        
         // Prepare the response data
         $responseData = $lowestPnec->toArray();
         
@@ -203,4 +203,15 @@ class LowestPNECController extends Controller
         
         return response()->json($responseData);
     }
+    
+    public function countAll(){
+        DatabaseEntity::where('code', 'ecotox.pnec')->update([
+            'last_update' => LowestPNEC::max('updated_at'),
+            'number_of_records' => LowestPNEC::count()
+        ]);
+        session()->flash('success', 'Database counts updated successfully');
+        return redirect()->back();
+    }
+    
+    
 }

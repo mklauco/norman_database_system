@@ -55,7 +55,7 @@ class TemplateController extends Controller
             'version' => 'nullable|string|max:20',
             'valid_from' => 'nullable|date',
             'database_entity_id' => 'nullable|exists:database_entities,id',
-            'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt|max:10240', // 10MB max
+            'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt,zip,rar|max:10240', // 10MB max
             'is_active' => 'boolean',
         ]);
 
@@ -132,7 +132,7 @@ class TemplateController extends Controller
             'version' => 'nullable|string|max:20',
             'valid_from' => 'nullable|date',
             'database_entity_id' => 'nullable|exists:database_entities,id',
-            'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt|max:10240', // 10MB max
+            'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt,zip,rar|max:10240', // 10MB max
             'is_active' => 'boolean',
         ]);
 

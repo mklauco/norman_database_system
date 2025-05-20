@@ -5,18 +5,32 @@ namespace App\Models\Backend;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class QueryLog extends Model
 {
-    //
     protected $fillable = ['content', 'query', 'user_id', 'total_count', 'database_key', 'query_hash', 'actual_count'];
     
-    public function users()
+    /**
+     * Get the user that performed the query.
+     */
+    public function users(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // created_at in Europe/Berlin timezone
+    /**
+     * Get the export downloads associated with this query log.
+     */
+    public function exportDownloads(): BelongsToMany
+    {
+        return $this->belongsToMany(ExportDownload::class, 'export_download_query_log');
+    }
+
+    /**
+     * Get created_at in Europe/Berlin timezone
+     */
     public function getCreatedAtAttribute($value)
     {
         return \Carbon\Carbon::parse($value)->timezone('Europe/Berlin')->format('Y-m-d G:i:s');

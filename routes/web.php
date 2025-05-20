@@ -52,23 +52,23 @@ Route::prefix('backend')->middleware('auth')->group(function () {
     Route::get('overview', [DashboardMainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::get('/user-data', [UserController::class, 'getUserData'])->middleware('auth');
-
+    
     Route::resource('projects', ProjectController::class);
-
+    
     Route::resource('templates', TemplateController::class);
     Route::get('templates/{template}/download', [TemplateController::class, 'download'])->name('templates.download');
-
+    
     Route::resource('files', FileController::class);
     // Specific templates for a database entity code
-
-
+    
+    
     Route::resource('general_route', GeneralController::class);
     Route::resource('querylog', QueryLogController::class)->middleware('auth');
 });
 
 Route::prefix('backend')->group(function () {
-        Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
-        Route::get('templates/entity/{code}', [TemplateController::class, 'specificIndex'])->name('templates.specific.index');
+    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+    Route::get('templates/entity/{code}', [TemplateController::class, 'specificIndex'])->name('templates.specific.index');
 });
 
 Route::middleware('auth')->group(function () {
@@ -144,27 +144,30 @@ Route::prefix('empodat')->group(function () {
     
     
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
-
+    
     Route::get('templates/entity/{code}', [EmpodatHomeController::class, 'specificIndex'])->name('empodat.templates');
-
+    
     
 });
 
 Route::prefix('ecotox')->group(function () {
     Route::resource('ecotoxhome', EcotoxHomeController::class)->only(['index']);;
     Route::resource('ecotoxhome', EcotoxHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
-
+    
     Route::prefix('lowestpnec')->group(function () {
         Route::get('index', [LowestPNECController::class, 'index'])->name('ecotox.lowestpnec.index');
         Route::get('show/{sus_id}', [LowestPNECController::class, 'show'])->name('ecotox.lowestpnec.show');
+        Route::get('countAll', [LowestPNECController::class, 'countAll'])->middleware('auth')->name('ecotox.lowestpnec.countAll');
     });
-
-
-        Route::get('search/filter/', [EcotoxController::class, 'filter'])->name('ecotox.search.filter');
-        Route::get('search/search/', [EcotoxController::class, 'search'])->name('ecotox.search.search');
-
+    
+    
+    Route::get('search/filter/', [EcotoxController::class, 'filter'])->name('ecotox.search.filter');
+    Route::get('search/search/', [EcotoxController::class, 'search'])->name('ecotox.search.search');
+    Route::get('e/countAll', [EcotoxController::class, 'countAll'])->middleware('auth')->name('ecotox.ecotox.countAll');
+    Route::get('ee/countAll', [EcotoxHomeController::class, 'countAll'])->middleware('auth')->name('ecotox.countAll');
+    
     Route::get('unique/search/substances', [EcotoxHomeController::class, 'syncNewSubstances'])->name('ecotox.unique.search.substances');
-
+    
 });
 
 Route::prefix('sle')->group(function () {
@@ -178,8 +181,8 @@ Route::prefix('arbg')->group(function () {
     Route::resource('arbghome', ARBGHomeController::class)->only(['index']);
     Route::resource('arbghome', ARBGHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::get('countAll', [ARBGHomeController::class, 'countAll'])->middleware('auth')->name('arbg.countAll');
-
-
+    
+    
     
     Route::prefix('bacteria')->group(function () {
         Route::get('search/filter/', [BacteriaController::class, 'filter'])->name('arbg.bacteria.search.filter');
