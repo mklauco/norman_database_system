@@ -16,7 +16,7 @@ class CreateIndoorMainTable extends Migration
         Schema::create('indoor_main', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('sus_id')->zerofill(8);
-            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
 
             
             // Countries

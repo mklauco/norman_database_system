@@ -43,7 +43,7 @@ return new class extends Migration
             
             // Substance information
             $table->unsignedInteger('sus_id')->index();
-            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             
             $table->text('substance_name')->nullable();
             $table->text('cas_number')->nullable();

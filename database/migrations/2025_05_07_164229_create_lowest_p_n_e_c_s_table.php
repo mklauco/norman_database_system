@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('ecotox_lowest_pnec', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('sus_id');
-            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             $table->double('lowest_pnec_value_1')->nullable()->comment('Lowest PNECfw [µg/l]');
             $table->double('lowest_pnec_value_2')->nullable()->comment('Lowest PNECmarine [µg/l]');
             $table->double('lowest_pnec_value_3')->nullable()->comment('Lowest PNECfw*2.6*(0.615+0.019*Koc) [µg/kg dw]');

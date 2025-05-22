@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->integer('pri_nr');
             $table->text('pri_use_for_priority_list');
-            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             $table->text('pri_substance');
             $table->text('pri_cas_no');
             $table->integer('pri_no_sites_new');

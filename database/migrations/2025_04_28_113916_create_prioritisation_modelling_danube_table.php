@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('prioritisation_modelling_danube', function (Blueprint $table) {
             $table->id();
             $table->integer('pri_id');
-            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             $table->text('pri_cas');
             $table->text('pri_name');
             $table->text('pri_emissions');

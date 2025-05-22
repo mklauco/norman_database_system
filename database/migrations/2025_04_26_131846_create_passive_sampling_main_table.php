@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('passive_sampling_main', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('sus_id');
-            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
 
             $table->char('country_id', 2);
             $table->char('country_other', 2)->nullable();
