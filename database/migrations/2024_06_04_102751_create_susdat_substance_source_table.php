@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('susdat_source_substance', function (Blueprint $table) {
             $table->foreignId('source_id')->constrained()->nullable()->default(null)->references('id')->on('suspect_list_exchange_sources');
-            $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             $table->primary(['source_id', 'substance_id']);
             $table->timestamps();
         });

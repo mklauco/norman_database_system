@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            /*
+            
             AdminSeeder::class,
             RolesAndPermissionsSeeder::class,
             DatabaseEntitySeeder::class,
@@ -63,8 +63,12 @@ class DatabaseSeeder extends Seeder
             ListMatricesSeeder::class,
             EmpodatDataSourceSeeder::class,
 
+            // EMPODAT
+            EmpodatStationSeeder::class,
+
             //ListTypeStationSeeder::class,
 
+            
             // SUSDAT
             SusdatSusdatMigrator::class,
             SuspectListExchangeSourceSeeder::class,
@@ -73,12 +77,12 @@ class DatabaseSeeder extends Seeder
             SusdatCategorySubstanceJoinSeeder::class,
 
 
+            /*
             // Migrators for SLE
             // SuspectListExchangeMigrator::class,
             // SuspectListExchangeSourceJoinSeeder::class,
 
-            // EMPODAT
-            EmpodatStationSeeder::class,
+
 
             //BIOASSAY SEEDER
             BioassayMonitorXSeeder::class,

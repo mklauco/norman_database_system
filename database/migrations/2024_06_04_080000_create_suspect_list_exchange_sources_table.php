@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable()->default(null);
             $table->tinyInteger('order')->nullable()->default(null);
             $table->tinyInteger('show')->nullable()->default(1);
-            $table->foreignId('added_by')->constrained()->nullable()->default(null)->references('id')->on('users');
+            $table->foreignId('added_by')->nullable()->default(null)->references('id')->on('users')->onDelete('set null')->onUpdate('cascade');
             $table->timestamps();
         });
     }

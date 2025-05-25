@@ -343,50 +343,6 @@ return new class extends Migration
             $table->timestamps();
         });  
 
-        Schema::create('empodat_main', function (Blueprint $table) {
-            $table->id();
-            $table->bigInteger('dct_analysis_id')->nullable()->default(0);
-            // Filter:  Country, Sampling site/station 
-            $table->foreignId('station_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_stations');
-            // Filter: Ecosystems/matrices
-            $table->foreignId('matrix_id')->constrained()->nullable()->default(null)->references('id')->on('list_matrices');
-            // Filter: Substance
-            $table->foreignId('substance_id')->constrained()->nullable()->default(null)->references('id')->on('susdat_substances');
-            // Filter: Year from, Year to
-            $table->unsignedSmallInteger('sampling_date_year')->nullable()->default(null);
-            // Filter: Concentration data
-            // Filter: Concentration equal or higher than
-            $table->foreignId('concentration_indicator_id')->constrained()->nullable()->default(null)->references('id')->on('list_concentration_indicators');
-            $table->float('concentration_value', 10)->nullable()->default(null);
-            // $table->string('unit_extra')->nullable()->default(null); // ???????????
-            $table->foreignId('method_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_analytical_methods');
-            $table->foreignId('data_source_id')->constrained()->nullable()->default(null)->references('id')->on('empodat_data_sources');
-        });
-
-        Schema::create('empodat_minor', function (Blueprint $table) {
-            // TASK: is this allowed? the table empodat_minor has metatada asoociated with the main table empodat_main, and the relation will be always 1:1
-            $table->foreignId('id')->references('id')->on('empodat_main')->primary()->onDelete('restrict')->onUpdate('cascade'); 
-
-            $table->foreignId('coordinate_precision_id')->constrained()->nullable()->default(null)->references('id')->on('list_coordinate_precisions');
-            $table->foreignId('proxy_pressure_id')->constrained()->nullable()->default(null)->references('id')->on('list_proxy_pressures'); // cca
-            $table->float('altitude', 10)->nullable()->default(null);
-            $table->foreignId('sampling_technique_id')->constrained()->nullable()->default(null)->references('id')->on('list_sampling_techniqueXs');
-
-            $table->date('sampling_date')->nullable()->default(null);
-            $table->unsignedSmallInteger('sampling_date_month')->nullable()->default(null);
-            $table->unsignedSmallInteger('sampling_date_date')->nullable()->default(null);
-            $table->time('sampling_date_time')->nullable()->default(null);
-            $table->unsignedSmallInteger('sampling_duration_day')->nullable()->default(null);
-            $table->unsignedSmallInteger('sampling_duration_hour')->nullable()->default(null);
-            $table->string('description')->nullable()->default(null);
-            $table->json('remarks')->nullable()->default(null);
-            $table->foreignId('treatment_less_id')->nullable()->default(null)->references('id')->on('list_treatment_less');
-            $table->foreignId('availability_id')->nullable()->default(null)->references('id')->on('availabilities');
-            $table->foreignId('file_source_id')->nullable()->default(null)->references('id')->on('file_sources');
-            $table->foreignId('added_by')->nullable()->default(null)->references('id')->on('users');
-
-            $table->timestamps();
-        });
     }
     
     /**
@@ -395,6 +351,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('empodat_stations');
-        Schema::dropIfExists('empodat_main');
+        Schema::dropIfExists('empodat_minor');
     }
 };

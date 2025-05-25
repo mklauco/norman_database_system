@@ -27,7 +27,7 @@ class SuspectListExchangeSourceSeeder extends Seeder
                 'description'   => $r['ss_description'],
                 'order'         => $r['ss_order'],
                 'show'          => $r['ss_show'],
-                'added_by'      => 1,
+                'added_by'      => null,
                 'created_at'    => $now,
                 'updated_at'    => $now,
             ];

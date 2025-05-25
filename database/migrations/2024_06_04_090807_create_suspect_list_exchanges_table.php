@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('suspect_list_exchanges', function (Blueprint $table) {
             $table->id();
             $table->foreignId('source_id')->constrained()->nullable()->default(null)->references('id')->on('suspect_list_exchange_sources');
-            $table->foreignId('substance_id')->nullable()->default(null)->constrained()->references('id')->on('susdat_substances');
+            $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             $table->text('name')->nullable()->default(null);
             $table->text('name_iupac')->nullable()->default(null);
             $table->text('cas_number')->nullable()->default(null);
