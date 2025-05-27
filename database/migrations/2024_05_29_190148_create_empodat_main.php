@@ -28,41 +28,41 @@ return new class extends Migration
             // $table->timestamps();
 
             // Foreign key constraints
-            $table->foreign('station_id')
-                  ->references('id')
-                  ->on('empodat_stations')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+            // $table->foreign('station_id')
+            //       ->references('id')
+            //       ->on('empodat_stations')
+            //       ->onUpdate('cascade')
+            //       ->onDelete('restrict');
 
-            $table->foreign('matrix_id')
-                  ->references('id')
-                  ->on('list_matrices')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+            // $table->foreign('matrix_id')
+            //       ->references('id')
+            //       ->on('list_matrices')
+            //       ->onUpdate('cascade')
+            //       ->onDelete('restrict');
 
-            $table->foreign('substance_id')
-                  ->references('id')
-                  ->on('susdat_substances')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+            // $table->foreign('substance_id')
+            //       ->references('id')
+            //       ->on('susdat_substances')
+            //       ->onUpdate('cascade')
+            //       ->onDelete('restrict');
 
-            $table->foreign('concentration_indicator_id')
-                  ->references('id')
-                  ->on('list_concentration_indicators')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+            // $table->foreign('concentration_indicator_id')
+            //       ->references('id')
+            //       ->on('list_concentration_indicators')
+            //       ->onUpdate('cascade')
+            //       ->onDelete('restrict');
 
-            $table->foreign('method_id')
-                  ->references('id')
-                  ->on('empodat_analytical_methods')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+            // $table->foreign('method_id')
+            //       ->references('id')
+            //       ->on('empodat_analytical_methods')
+            //       ->onUpdate('cascade')
+            //       ->onDelete('restrict');
 
-            $table->foreign('data_source_id')
-                  ->references('id')
-                  ->on('empodat_data_sources')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+            // $table->foreign('data_source_id')
+            //       ->references('id')
+            //       ->on('empodat_data_sources')
+            //       ->onUpdate('cascade')
+            //       ->onDelete('restrict');
         });
     }
 

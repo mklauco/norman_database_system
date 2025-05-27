@@ -87,7 +87,7 @@ class IndoorDataSeeder extends Seeder
                     ->headersToSnakeCase(false);
 
                 // Use lazy collection to process the CSV file in chunks without loading it all
-                $chunkSize = 50; // Increased from 100
+                $chunkSize = 200; // Increased from 100
                 $k = 1;
                 $reader->getRows()
                     ->chunk($chunkSize)

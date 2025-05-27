@@ -26,12 +26,12 @@ return new class extends Migration
             $table->tinyInteger('sampling_technique')->nullable();
             
             // Date and time fields
-            $table->datetime('sampling_date')->nullable();
-            $table->time('sampling_date_t')->nullable();
+            $table->string('sampling_date')->nullable();
+            $table->string('sampling_date_t')->nullable();
             $table->string('sampling_date1_y', 4)->nullable(); // year as string
-            $table->tinyInteger('sampling_date1_m')->nullable();
-            $table->tinyInteger('sampling_date1_d')->nullable();
-            $table->time('sampling_date1_t')->nullable();
+            $table->string('sampling_date1_m')->nullable();
+            $table->string('sampling_date1_d')->nullable();
+            $table->string('sampling_date1_t')->nullable();
             $table->datetime('sampling_date1')->nullable();
             
             // Analysis date fields
