@@ -11,6 +11,7 @@ use App\Http\Controllers\Backend\FileController;
 use App\Http\Controllers\ARBG\ARBGHomeController;
 
 use App\Http\Controllers\ARBG\BacteriaController;
+use App\Http\Controllers\Empodat\StatisticsController as EmpodatStastisticsController;
 
 use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Indoor\IndoorController;
@@ -146,7 +147,18 @@ Route::prefix('empodat')->group(function () {
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
     
     Route::get('templates/entity/{code}', [EmpodatHomeController::class, 'specificIndex'])->name('empodat.templates');
-    
+
+    Route::prefix('statistics')->group(function () {
+        Route::get('/', [EmpodatStastisticsController::class, 'index'])->name('empodat.statistics.index');
+        Route::get('country-year', [EmpodatStastisticsController::class, 'countryYear'])->name('empodat.statistics.countryYear');
+        Route::get('matrix', [EmpodatStastisticsController::class, 'matrix'])->name('empodat.statistics.matrix');
+        Route::get('sub-matrix', [EmpodatStastisticsController::class, 'subMatrix'])->name('empodat.statistics.submatrix');
+        Route::get('country', [EmpodatStastisticsController::class, 'country'])->name('empodat.statistics.country');
+        Route::get('method', [EmpodatStastisticsController::class, 'method'])->name('empodat.statistics.method');
+        Route::get('qaqc', [EmpodatStastisticsController::class, 'qaqc'])->name('empodat.statistics.qaqc');
+        Route::get('download', [EmpodatStastisticsController::class, 'downloadCsv'])->name('empodat.statistics.download');
+    });
+
     
 });
 

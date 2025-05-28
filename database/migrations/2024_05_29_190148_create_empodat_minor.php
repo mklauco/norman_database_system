@@ -32,12 +32,12 @@ return new class extends Migration
             $table->string('sampling_date1_m')->nullable();
             $table->string('sampling_date1_d')->nullable();
             $table->string('sampling_date1_t')->nullable();
-            $table->datetime('sampling_date1')->nullable();
+            $table->string('sampling_date1')->nullable();
             
             // Analysis date fields
             $table->string('analysis_date_y', 4)->nullable(); // year as string
-            $table->tinyInteger('analysis_date_m')->nullable();
-            $table->tinyInteger('analysis_date_d')->nullable();
+            $table->string('analysis_date_m')->nullable();
+            $table->string('analysis_date_d')->nullable();
             
             // Duration fields
             $table->string('sampling_duration_day', 20)->default('')->nullable();
@@ -49,7 +49,7 @@ return new class extends Migration
             $table->text('remark_add')->default('')->nullable();
             
             // Other fields
-            $table->integer('show_date')->nullable();
+            $table->string('show_date')->nullable();
             $table->integer('dtod_id')->unsigned()->nullable();
             $table->string('dtod_other')->default('')->nullable();
             $table->string('agg_uncertainty')->default('')->nullable();
@@ -67,7 +67,7 @@ return new class extends Migration
             $table->tinyInteger('noexport')->unsigned()->default(0)->nullable();
             $table->integer('list_id')->nullable();
 
-            $table->foreignId('added_by')->nullable()->default(null)->on('users')->onUpdate('cascade')->onDelete('restrict'); // User who added the record
+            // $table->foreignId('added_by')->nullable()->default(null)->on('users')->onUpdate('cascade')->onDelete('restrict'); // User who added the record
             
             // $table->timestamps();
             

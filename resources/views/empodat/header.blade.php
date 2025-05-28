@@ -14,6 +14,10 @@
   DCT Download
 </x-nav-link-header>
 
+<x-nav-link-header :href="route('empodat.statistics.index')" :active="request()->is('empodat/statistics*')">
+  Statistics
+</x-nav-link-header>
+
 @role('super_admin')
 <x-nav-link-header :href="route('querylog.index')" :active="request()->is('*querylog*')">
   History of search
