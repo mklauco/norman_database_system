@@ -21,9 +21,10 @@ class FileController extends Controller
      */
     public function index()
     {
-        $files = File::with(['template', 'databaseEntity', 'uploader', 'projects'])
+        $files = File::with(['template', 'databaseEntity', 'uploader', 'project'])
+            // ->notDeleted()
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(50);
             
         return view('backend.files.index', compact('files'));
     }
@@ -39,7 +40,6 @@ class FileController extends Controller
         $templates = Template::where('is_active', true)->orderBy('name')->get();
         $databaseEntities = DatabaseEntity::orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
-        $selectedProjects = [];
         $isCreate = true;
         
         return view('backend.files.upsert', compact(
@@ -47,7 +47,6 @@ class FileController extends Controller
             'templates', 
             'databaseEntities', 
             'projects', 
-            'selectedProjects',
             'isCreate'
         ));
     }
@@ -65,9 +64,8 @@ class FileController extends Controller
             'description' => 'nullable|string',
             'template_id' => 'nullable|exists:templates,id',
             'database_entity_id' => 'nullable|exists:database_entities,id',
+            'project_id' => 'nullable|exists:projects,id',
             'file' => 'required|file|max:20480', // 20MB max
-            'project_ids' => 'nullable|array',
-            'project_ids.*' => 'exists:projects,id',
             'processing_notes' => 'nullable|string',
         ]);
 
@@ -93,17 +91,14 @@ class FileController extends Controller
             'mime_type' => $uploadedFile->getMimeType(),
             'template_id' => $request->template_id,
             'database_entity_id' => $request->database_entity_id,
+            'project_id' => $request->project_id,
             'processing_notes' => $request->processing_notes,
             'uploaded_by' => Auth::id(),
             'uploaded_at' => now(),
+            'is_deleted' => false,
         ]);
 
         $file->save();
-
-        // Attach projects if any
-        if ($request->has('project_ids')) {
-            $file->projects()->attach($request->project_ids);
-        }
 
         return redirect()->route('files.index')
             ->with('success', 'File uploaded successfully');
@@ -117,7 +112,7 @@ class FileController extends Controller
      */
     public function show(File $file)
     {
-        $file->load(['template', 'databaseEntity', 'uploader', 'projects', 'empodatRecords']);
+        $file->load(['template', 'databaseEntity', 'uploader', 'project', 'empodatRecords']);
         
         return view('backend.files.show', compact('file'));
     }
@@ -133,7 +128,6 @@ class FileController extends Controller
         $templates = Template::where('is_active', true)->orderBy('name')->get();
         $databaseEntities = DatabaseEntity::orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
-        $selectedProjects = $file->projects->pluck('id')->toArray();
         $isCreate = false;
         
         return view('backend.files.upsert', compact(
@@ -141,7 +135,6 @@ class FileController extends Controller
             'templates', 
             'databaseEntities', 
             'projects', 
-            'selectedProjects',
             'isCreate'
         ));
     }
@@ -160,9 +153,8 @@ class FileController extends Controller
             'description' => 'nullable|string',
             'template_id' => 'nullable|exists:templates,id',
             'database_entity_id' => 'nullable|exists:database_entities,id',
+            'project_id' => 'nullable|exists:projects,id',
             'new_file' => 'nullable|file|max:20480', // 20MB max
-            'project_ids' => 'nullable|array',
-            'project_ids.*' => 'exists:projects,id',
             'processing_notes' => 'nullable|string',
         ]);
 
@@ -195,28 +187,36 @@ class FileController extends Controller
         $file->description = $request->description;
         $file->template_id = $request->template_id;
         $file->database_entity_id = $request->database_entity_id;
+        $file->project_id = $request->project_id;
         $file->processing_notes = $request->processing_notes;
 
         $file->save();
-
-        // Sync projects
-        if ($request->has('project_ids')) {
-            $file->projects()->sync($request->project_ids);
-        } else {
-            $file->projects()->detach();
-        }
 
         return redirect()->route('files.index')
             ->with('success', 'File updated successfully');
     }
 
     /**
-     * Remove the specified file from storage.
+     * Soft delete the specified file.
      *
      * @param  \App\Models\Backend\File  $file
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(File $file)
+    {
+        $file->softDelete();
+
+        return redirect()->route('files.index')
+            ->with('success', 'File deleted successfully');
+    }
+
+    /**
+     * Permanently delete the specified file.
+     *
+     * @param  \App\Models\Backend\File  $file
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function forceDestroy(File $file)
     {
         // Delete the file from storage
         if ($file->file_path && Storage::disk('public')->exists($file->file_path)) {
@@ -224,12 +224,40 @@ class FileController extends Controller
         }
 
         // Delete the file record and its relationships
-        $file->projects()->detach();
         $file->empodatRecords()->detach();
         $file->delete();
 
         return redirect()->route('files.index')
-            ->with('success', 'File deleted successfully');
+            ->with('success', 'File permanently deleted');
+    }
+
+    /**
+     * Restore a soft deleted file.
+     *
+     * @param  \App\Models\Backend\File  $file
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function restore(File $file)
+    {
+        $file->restore();
+
+        return redirect()->route('files.index')
+            ->with('success', 'File restored successfully');
+    }
+
+    /**
+     * Show deleted files.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function deleted()
+    {
+        $files = File::with(['template', 'databaseEntity', 'uploader', 'project'])
+            ->deleted()
+            ->orderBy('updated_at', 'desc')
+            ->paginate(20);
+            
+        return view('backend.files.deleted', compact('files'));
     }
 
     /**
@@ -249,5 +277,53 @@ class FileController extends Controller
             $file->file_path, 
             $file->original_name
         );
+    }
+
+    /**
+     * Filter files by project.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
+     */
+    public function filterByProject(Request $request)
+    {
+        $projectId = $request->get('project_id');
+        
+        $query = File::with(['template', 'databaseEntity', 'uploader', 'project'])
+            ->notDeleted()
+            ->orderBy('created_at', 'desc');
+            
+        if ($projectId) {
+            $query->byProject($projectId);
+        }
+        
+        $files = $query->paginate(20);
+        $projects = Project::orderBy('name')->get();
+        
+        return view('backend.files.index', compact('files', 'projects', 'projectId'));
+    }
+
+    /**
+     * Filter files by database entity.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
+     */
+    public function filterByEntity(Request $request)
+    {
+        $entityId = $request->get('database_entity_id');
+        
+        $query = File::with(['template', 'databaseEntity', 'uploader', 'project'])
+            ->notDeleted()
+            ->orderBy('created_at', 'desc');
+            
+        if ($entityId) {
+            $query->byDatabaseEntity($entityId);
+        }
+        
+        $files = $query->paginate(20);
+        $databaseEntities = DatabaseEntity::orderBy('name')->get();
+        
+        return view('backend.files.index', compact('files', 'databaseEntities', 'entityId'));
     }
 }

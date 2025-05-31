@@ -22,7 +22,10 @@ return new class extends Migration
             $table->foreignId('template_id')->nullable()->default(null)->constrained('templates')->onDelete('restrict');
             $table->foreignId('database_entity_id')->nullable()->default(null)->constrained('database_entities')->onDelete('restrict');
             $table->text('processing_notes')->nullable()->default(null);
-            $table->foreignId('uploaded_by')->nullable()->default(null)->constrained('users')->onDelete('set null');            $table->timestamp('uploaded_at')->nullable()->default(null);
+            $table->foreignId('uploaded_by')->nullable()->default(null)->constrained('users')->onDelete('set null');            
+            $table->timestamp('uploaded_at')->nullable()->default(null);
+            $table->boolean('is_deleted')->default(0);
+            $table->foreignId('project_id')->nullable()->default(null)->constrained('projects')->onDelete('restrict');
             $table->timestamps();
         });
     }
