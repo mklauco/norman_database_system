@@ -18,6 +18,14 @@ class SusdatSusdatMigrator extends Seeder
     {
         //
         DB::table('susdat_substances')->truncate();
+
+$new_susdat_ids = DB::connection('norman-mariadb')
+    ->table('a_substances')
+    ->select('id', 'code')
+    ->get()
+    ->pluck('id', 'code')  // creates ['code' => id]
+    ->toArray();
+
         $count = OldData::max('sus_id'); // max id instead of count.. lebo idecka su neusporiadane :(
         // dd($count);
         $batchSize = 2000;
@@ -93,7 +101,8 @@ class SusdatSusdatMigrator extends Seeder
             $p = [];
             foreach($batch as $item) {
                 $p[] = [
-                    'id'                => (int)ltrim($item->sus_id, '0'),
+                    // 'id'                => (int)ltrim($item->sus_id, '0'),
+                    'id' => $new_susdat_ids[$item->sus_id],
                     'code'              => $item->sus_id,
                     'name'              => $item->sus_name,
                     'name_dashboard'    => $item->{'Name Dashboard'},
@@ -116,7 +125,7 @@ class SusdatSusdatMigrator extends Seeder
                     // 'created_at'        => $now,
                     'created_at'        => $this->checkTimeStamp($item->sus_id, $item->{'c_at'}, $now), // TAKES TOO LONG TO PARSE
                     'updated_at'        => $now,
-                    'added_by'          => 1,
+                    'added_by'          => null,
                 ];
             }
             Substance::insert($p);
@@ -148,7 +157,7 @@ class SusdatSusdatMigrator extends Seeder
 
 // php artisan make:seeder Migrators/susdat 
 // php artisan make:model MariaDB/Susdat 
-// php artisan db:seed --class=Database\Seeders\migrators\SusdatSusdatMigrator
+// php artisan db:seed --class=Database/Seeders/migrators/SusdatSusdatMigrator
 
 // sus_id
 // sus_name

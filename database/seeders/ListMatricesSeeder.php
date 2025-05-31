@@ -26,11 +26,15 @@ class ListMatricesSeeder extends Seeder
             
             // dd($r);
             $p[] = [
-                'id'            => $r['matrice_id'],
-                'name'          => $this->isEmptyThenNull($r['matrice_title']),
-                'unit'          => $this->isEmptyThenNull($r['matrice_unit']),
-                'created_at'    => $now,
-                'updated_at'    => $now,
+                'id'         => $r['matrice_id'],
+                'title'      => $this->isEmptyThenNull($r['matrice_title1']),
+                'subtitle'   => $this->isEmptyThenNull($r['matrice_title2']),
+                'type'       => $this->isEmptyThenNull($r['matrice_title3']),
+                'name'       => $this->isEmptyThenNull($r['matrice_title']),
+                'dct_name'   => $this->isEmptyThenNull($r['matrice_dct_name']),
+                'unit'       => $this->isEmptyThenNull($r['matrice_unit']),
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
         }
         

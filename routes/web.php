@@ -11,6 +11,7 @@ use App\Http\Controllers\Backend\FileController;
 use App\Http\Controllers\ARBG\ARBGHomeController;
 
 use App\Http\Controllers\ARBG\BacteriaController;
+use App\Http\Controllers\Empodat\StatisticsController as EmpodatStatisticsController;
 
 use App\Http\Controllers\Ecotox\EcotoxController;
 use App\Http\Controllers\Indoor\IndoorController;
@@ -146,7 +147,35 @@ Route::prefix('empodat')->group(function () {
     Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
     
     Route::get('templates/entity/{code}', [EmpodatHomeController::class, 'specificIndex'])->name('empodat.templates');
-    
+
+    Route::prefix('statistics')->group(function () {
+        // Main statistics overview
+        Route::get('/', [EmpodatStatisticsController::class, 'index'])->name('empodat.statistics.index');
+        
+        // Country Year Statistics
+        Route::get('country-year', [EmpodatStatisticsController::class, 'viewCountryStats'])->name('empodat.statistics.countryYear');
+        Route::post('generate-country', [EmpodatStatisticsController::class, 'generateCountryStats'])->name('empodat.statistics.generateCountry');
+        
+        // Matrix Statistics
+        Route::get('matrix', [EmpodatStatisticsController::class, 'matrix'])->name('empodat.statistics.matrix');
+        Route::post('generate-matrix', [EmpodatStatisticsController::class, 'generateMatrixStats'])->name('empodat.statistics.generateMatrix');
+        
+        // Substance Statistics
+        Route::get('substance', [EmpodatStatisticsController::class, 'substance'])->name('empodat.statistics.substance');
+        Route::post('generate-substance', [EmpodatStatisticsController::class, 'generateSubstanceStats'])->name('empodat.statistics.generateSubstance');
+        
+        // Country Statistics (simple, without years)
+        Route::get('country', [EmpodatStatisticsController::class, 'country'])->name('empodat.statistics.country');
+        Route::post('generate-country-simple', [EmpodatStatisticsController::class, 'generateCountrySimpleStats'])->name('empodat.statistics.generateCountrySimple');
+        
+        // QA/QC Statistics (placeholder for future)
+        Route::get('quality', [EmpodatStatisticsController::class, 'quality'])->name('empodat.statistics.quality');
+        Route::post('generate-quality', [EmpodatStatisticsController::class, 'generateQualityStats'])->name('empodat.statistics.generateQuality');
+        
+        // CSV Downloads
+        Route::get('download', [EmpodatStatisticsController::class, 'downloadCsv'])->name('empodat.statistics.download');
+
+    });
     
 });
 
