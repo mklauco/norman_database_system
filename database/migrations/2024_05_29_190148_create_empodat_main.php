@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('substance_id')->nullable()->index();
             $table->smallInteger('sampling_date_year')->nullable()->index();
             $table->unsignedBigInteger('concentration_indicator_id')->nullable()->index();
-            $table->float('concentration_value')->nullable()->index();
+            $table->float('concentration_value')->nullable()->default(null);
             $table->unsignedBigInteger('method_id')->nullable()->index();
             $table->unsignedBigInteger('data_source_id')->nullable()->index();
 

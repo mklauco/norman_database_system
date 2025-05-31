@@ -24,7 +24,7 @@ class MigrateOldUsersSeeder extends Seeder
         $this->command->info('Starting user migration from CSV...');
 
         // 1. First seed the admin user(s)
-        $this->call(AdminSeeder::class);
+        // $this->call(AdminSeeder::class);
         $this->command->info('Admin user(s) seeded.');
         
         // 2. Path to the CSV file
@@ -122,11 +122,11 @@ class MigrateOldUsersSeeder extends Seeder
         // Reset sequence for the id column to ensure future inserts work correctly
         // This is a PostgreSQL-specific operation
         try {
-            DB::statement("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))");
-            $this->command->info("User ID sequence reset.");
+            // DB::statement("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users))");
+            // $this->command->info("User ID sequence reset.");
 
         } catch (\Exception $e) {
-            $this->command->error("Error resetting sequence: " . $e->getMessage());
+            // $this->command->error("Error resetting sequence: " . $e->getMessage());
         }
         
         // Re-enable foreign key constraints

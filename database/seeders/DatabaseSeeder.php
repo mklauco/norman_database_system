@@ -53,6 +53,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             
             AdminSeeder::class,
+            MigrateOldUsersSeeder::class,
             RolesAndPermissionsSeeder::class,
             DatabaseEntitySeeder::class,
 
@@ -147,11 +148,11 @@ class DatabaseSeeder extends Seeder
             
 
             // Ecotox
-            /*
+            
             EcotoxLowestPNECSeeder::class,
             EcotoxLowestPNECMainSeeder::class,
             EcotoxPNEC3Seeder::class,
-            */
+            
         ]);
     }
 }

@@ -33,7 +33,11 @@ return new class extends Migration
         
         Schema::create('list_matrices', function (Blueprint $table) {
             $table->id();
+            $table->string('title')->nullable()->default(null);
+            $table->string('subtitle')->nullable()->default(null);
+            $table->string('type')->nullable()->default(null);
             $table->string('name')->nullable()->default(null);
+            $table->string('dct_name')->nullable()->default(null);
             $table->string('unit')->nullable()->default(null);;
             $table->timestamps();
         });
