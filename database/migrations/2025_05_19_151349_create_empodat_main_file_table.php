@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('empodat_main_id')->nullable()->default(null)->constrained('empodat_main')->onDelete('restrict');
             $table->bigInteger('dct_analysis_id')->nullable()->default(null)->index();
             $table->foreignId('file_id')->nullable()->default(null)->constrained('files')->onDelete('restrict');
-            $table->timestamps();
+            // $table->timestamps();
             
             $table->unique(['empodat_main_id', 'file_id']);
         });

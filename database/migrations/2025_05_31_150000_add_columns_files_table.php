@@ -11,22 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('file_project', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('file_id')->nullable()->default(null)->constrained('files')->onDelete('restrict');
+        Schema::table('files', function (Blueprint $table) {
+            $table->boolean('is_deleted')->default(0);
             $table->foreignId('project_id')->nullable()->default(null)->constrained('projects')->onDelete('restrict');
-            $table->text('notes')->nullable()->default(null);
-            $table->timestamps();
-            
-            $table->unique(['file_id', 'project_id']);
         });
     }
+
+    
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('file_project');
+        Schema::table('files', function (Blueprint $table) {
+            //
+            // Drop columns
+            $table->dropColumn('is_deleted');
+
+        });
     }
 };

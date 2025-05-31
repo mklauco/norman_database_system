@@ -63,12 +63,15 @@ Route::prefix('backend')->middleware('auth')->group(function () {
     // Specific templates for a database entity code
     
     
-    Route::resource('general_route', GeneralController::class);
-    Route::resource('querylog', QueryLogController::class)->middleware('auth');
-});
-
-Route::prefix('backend')->group(function () {
+    // File management routes
+    Route::resource('files', FileController::class)->middleware('auth');
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+    Route::get('files-deleted', [FileController::class, 'deleted'])->name('files.deleted')->middleware('auth');
+    Route::patch('files/{file}/restore', [FileController::class, 'restore'])->name('files.restore')->middleware('auth');
+    Route::delete('files/{file}/force-destroy', [FileController::class, 'forceDestroy'])->name('files.forceDestroy')->middleware('auth');
+    Route::get('files-filter/project', [FileController::class, 'filterByProject'])->name('files.filterByProject')->middleware('auth');
+    Route::get('files-filter/entity', [FileController::class, 'filterByEntity'])->name('files.filterByEntity')->middleware('auth');
+
     Route::get('templates/entity/{code}', [TemplateController::class, 'specificIndex'])->name('templates.specific.index');
 });
 
