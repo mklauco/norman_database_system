@@ -1,140 +1,263 @@
-<x-app-layout>
-  <x-slot name="header">
-    @include('empodat.header')
-  </x-slot>
-  
-  <div class="py-4">
-    <div class="w-full mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white shadow-lg sm:rounded-lg">
-        <div class="p-6 text-gray-900">
-          
-          <!-- Summary Section -->
-          <div class="mb-8">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">Summary</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                <span class="text-lg text-gray-700">Total no. of data</span>
-                <span class="text-xl font-bold text-gray-900">{{ number_format($totalRecords) }}</span>
-              </div>
-              
-              <div class="flex justify-between items-center py-3 border-b border-gray-200">
-                <span class="text-lg text-gray-700">No. of substances</span>
-                <span class="text-xl font-bold text-gray-900">{{ number_format($substanceCount) }}</span>
-              </div>
-            </div>
-            
-            <div class="mt-4">
-              <a href="{{ route('substances.filter') }}" class="text-blue-600 hover:text-blue-800 font-medium underline">
-                Full list of substances
-              </a>
-            </div>
+@extends('empodat.statistics.layout')
+
+@section('page-title', 'Empodat Statistics Overview')
+
+@section('main-content')
+  <!-- Database Overview Card -->
+  <div class="bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg p-6 mb-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h3 class="text-2xl font-bold mb-2">Empodat Database</h3>
+        <p class="text-slate-200">Chemical occurrence monitoring data</p>
+      </div>
+      <div class="text-right">
+        <div class="text-3xl font-bold">{{ number_format($totalRecords) }}</div>
+        <div class="text-slate-200">Total Records</div>
+        @if($empodatEntity && $empodatEntity->last_update)
+          <div class="text-xs text-slate-300 mt-1">
+            Updated: {{ \Carbon\Carbon::parse($empodatEntity->last_update)->format('Y-m-d') }}
           </div>
-
-          <!-- Number of Data per Ecosystem/Matrix Section -->
-          <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Number of Data per Ecosystem/Matrix</h2>
-            
-            <div class="space-y-3">
-              <a href="{{ route('empodat.statistics.matrix') }}" 
-                 class="block text-green-600 hover:text-green-800 font-medium text-lg underline">
-                No. of data per matrix
-              </a>
-              
-              <a href="{{ route('empodat.statistics.submatrix') }}" 
-                 class="block text-green-600 hover:text-green-800 font-medium text-lg underline">
-                No. of data per matrix/sub-matrix
-              </a>
-            </div>
-          </div>
-
-          <!-- Number of Data per QA/QC Information Category Section -->
-          <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Number of Data per QA/QC Information Category</h2>
-            
-            <div class="space-y-3">
-              <a href="{{ route('empodat.statistics.qaqc') }}" 
-                 class="block text-green-600 hover:text-green-800 font-medium text-lg underline">
-                No. of data per category
-              </a>
-            </div>
-          </div>
-
-          <!-- Number of Data per Country/Method Section -->
-          <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Number of Data per Country/Method</h2>
-            
-            <div class="space-y-3">
-              <a href="{{ route('empodat.statistics.method') }}" 
-                 class="block text-green-600 hover:text-green-800 font-medium text-lg underline">
-                No. of data per data collection method
-              </a>
-              
-              <a href="{{ route('empodat.statistics.country') }}" 
-                 class="block text-green-600 hover:text-green-800 font-medium text-lg underline">
-                No. of data per country
-              </a>
-              
-              <a href="{{ route('empodat.statistics.countryYear') }}" 
-                 class="block text-green-600 hover:text-green-800 font-medium text-lg underline">
-                No. of data per country (per years)
-              </a>
-            </div>
-          </div>
-
-          <!-- Additional Statistics Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-            
-            <!-- Countries Card -->
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-blue-600">Countries</p>
-                  <p class="text-2xl font-bold text-blue-900">{{ number_format($countryCount) }}</p>
-                </div>
-                <div class="p-3 bg-blue-200 rounded-full">
-                  <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <!-- Matrices Card -->
-            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-green-600">Matrices</p>
-                  <p class="text-2xl font-bold text-green-900">{{ number_format($matrixCount) }}</p>
-                </div>
-                <div class="p-3 bg-green-200 rounded-full">
-                  <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <!-- Year Range Card -->
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-purple-600">Year Range</p>
-                  <p class="text-2xl font-bold text-purple-900">{{ $minYear }} - {{ $maxYear }}</p>
-                </div>
-                <div class="p-3 bg-purple-200 rounded-full">
-                  <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
+        @endif
       </div>
     </div>
   </div>
-  
-</x-app-layout>
+
+  @if(!empty($allStats))
+    <!-- Statistics Summary Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      
+      <!-- Country Year Statistics -->
+      @if(isset($allStats['country_year']))
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="font-semibold text-slate-800">Geographic Coverage</h4>
+            <a href="{{ route('empodat.statistics.countryYear') }}" 
+               class="text-slate-600 hover:text-slate-800 text-xs underline">
+              View Details
+            </a>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-sm text-slate-600">Countries:</span>
+              <span class="font-medium text-slate-900">{{ $allStats['country_year']['total_countries'] }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-slate-600">Time Span:</span>
+              <span class="font-medium text-slate-900">
+                {{ $allStats['country_year']['year_range']['max_year'] - $allStats['country_year']['year_range']['min_year'] + 1 }} years
+              </span>
+            </div>
+            <div class="text-xs text-slate-500 mt-2">
+              {{ $allStats['country_year']['year_range']['min_year'] }} - {{ $allStats['country_year']['year_range']['max_year'] }}
+            </div>
+          </div>
+        </div>
+      @endif
+
+      <!-- Matrix Statistics -->
+      @if(isset($allStats['matrix']))
+        <div class="bg-stone-50 border border-stone-200 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="font-semibold text-stone-800">Environmental Matrices</h4>
+            <a href="{{ route('empodat.statistics.matrix') }}" 
+               class="text-stone-600 hover:text-stone-800 text-xs underline">
+              View Details
+            </a>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-sm text-stone-600">Total Matrices:</span>
+              <span class="font-medium text-stone-900">{{ $allStats['matrix']['total_matrices'] }}</span>
+            </div>
+            @php
+              $topMatrix = collect($allStats['matrix']['data'])->sortByDesc('record_count')->first();
+            @endphp
+            @if($topMatrix)
+              <div class="text-xs text-stone-500 mt-2">
+                Most common: {{ $topMatrix['title'] ?? 'Unknown' }}
+                <br>{{ number_format($topMatrix['record_count']) }} records
+              </div>
+            @endif
+          </div>
+        </div>
+      @endif
+
+      <!-- Substance Statistics -->
+      @if(isset($allStats['substance']))
+        <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="font-semibold text-zinc-800">Chemical Substances</h4>
+            <a href="{{ route('empodat.statistics.substance') }}" 
+               class="text-zinc-600 hover:text-zinc-800 text-xs underline">
+              View Details
+            </a>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-sm text-zinc-600">Total Substances:</span>
+              <span class="font-medium text-zinc-900">{{ number_format($allStats['substance']['total_substances']) }}</span>
+            </div>
+            @php
+              $topSubstance = collect($allStats['substance']['data'])->first(); // Already sorted by record_count desc
+              $avgRecordsPerSubstance = $allStats['substance']['total_substances'] > 0 ? 
+                round($allStats['substance']['total_records'] / $allStats['substance']['total_substances']) : 0;
+            @endphp
+            @if($topSubstance)
+              <div class="text-xs text-zinc-500 mt-2">
+                Most monitored: {{ Str::limit($topSubstance['substance_name'], 20) }}
+                <br>Avg: {{ $avgRecordsPerSubstance }} records/substance
+              </div>
+            @endif
+          </div>
+        </div>
+      @endif
+
+      <!-- Quality Statistics -->
+      @if(isset($allStats['quality']))
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <div class="flex justify-between items-start mb-3">
+            <h4 class="font-semibold text-gray-800">Data Quality</h4>
+            <a href="{{ route('empodat.statistics.quality') }}" 
+               class="text-gray-600 hover:text-gray-800 text-xs underline">
+              View Details
+            </a>
+          </div>
+          <div class="space-y-2">
+            @php
+              // Calculate high quality percentage (rating >= 68)
+              $highQualityCount = collect($allStats['quality']['data'])->filter(function($item) {
+                return !is_null($item['min_rating']) && $item['min_rating'] >= 68;
+              })->sum('record_count');
+              
+              $highQualityPercentage = $allStats['quality']['total_records'] > 0 ? 
+                round(($highQualityCount / $allStats['quality']['total_records']) * 100, 1) : 0;
+              
+              $noRatingCount = collect($allStats['quality']['data'])->filter(function($item) {
+                return is_null($item['min_rating']);
+              })->sum('record_count');
+              
+              $noRatingPercentage = $allStats['quality']['total_records'] > 0 ? 
+                round(($noRatingCount / $allStats['quality']['total_records']) * 100, 1) : 0;
+            @endphp
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">High Quality:</span>
+              <span class="font-medium text-gray-900">{{ $highQualityPercentage }}%</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm text-gray-600">No Rating:</span>
+              <span class="font-medium text-gray-900">{{ $noRatingPercentage }}%</span>
+            </div>
+            <div class="text-xs text-gray-500 mt-2">
+              {{ $allStats['quality']['total_categories'] }} quality categories
+            </div>
+          </div>
+        </div>
+      @endif
+
+      <!-- Dynamic sections for any other statistics -->
+      @foreach($allStats as $key => $data)
+        @if(!in_array($key, ['country_year', 'matrix', 'substance', 'quality']))
+          <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+            <div class="flex justify-between items-start mb-3">
+              <h4 class="font-semibold text-neutral-800">{{ ucfirst(str_replace('_', ' ', $key)) }} Statistics</h4>
+              @if(Route::has('empodat.statistics.' . $key))
+                <a href="{{ route('empodat.statistics.' . $key) }}" 
+                   class="text-neutral-600 hover:text-neutral-800 text-xs underline">
+                  View Details
+                </a>
+              @endif
+            </div>
+            <div class="space-y-2">
+              <div class="text-sm text-neutral-600">
+                Generated: {{ \Carbon\Carbon::parse($data['generated_at'])->format('M d, Y') }}
+              </div>
+              @if(isset($data['total_records']))
+                <div class="flex justify-between">
+                  <span class="text-sm text-neutral-600">Records:</span>
+                  <span class="font-medium text-neutral-900">{{ number_format($data['total_records']) }}</span>
+                </div>
+              @endif
+            </div>
+          </div>
+        @endif
+      @endforeach
+
+    </div>
+
+    <!-- Key Insights -->
+    <div class="bg-stone-50 border border-stone-200 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-stone-800 mb-4">Key Insights</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        @if(isset($allStats['country_year']) && isset($allStats['substance']))
+          <div class="flex items-start space-x-2">
+            <div class="w-2 h-2 bg-stone-500 rounded-full mt-2"></div>
+            <div>
+              <strong>Data Density:</strong> 
+              {{ round($totalRecords / $allStats['country_year']['total_countries']) }} records per country on average
+            </div>
+          </div>
+        @endif
+        
+        @if(isset($allStats['substance']) && isset($allStats['matrix']))
+          <div class="flex items-start space-x-2">
+            <div class="w-2 h-2 bg-stone-500 rounded-full mt-2"></div>
+            <div>
+              <strong>Monitoring Scope:</strong> 
+              {{ number_format($allStats['substance']['total_substances']) }} substances across {{ $allStats['matrix']['total_matrices'] }} matrix types
+            </div>
+          </div>
+        @endif
+        
+        @if(isset($allStats['quality']))
+          <div class="flex items-start space-x-2">
+            <div class="w-2 h-2 bg-stone-500 rounded-full mt-2"></div>
+            <div>
+              <strong>Quality Assessment:</strong> 
+              {{ $highQualityPercentage }}% of data has adequate quality support
+            </div>
+          </div>
+        @endif
+        
+        @if(isset($allStats['country_year']))
+          <div class="flex items-start space-x-2">
+            <div class="w-2 h-2 bg-stone-500 rounded-full mt-2"></div>
+            <div>
+              <strong>Temporal Coverage:</strong> 
+              {{ $allStats['country_year']['year_range']['max_year'] - $allStats['country_year']['year_range']['min_year'] + 1 }} years of monitoring data
+            </div>
+          </div>
+        @endif
+      </div>
+    </div>
+
+  @else
+    <!-- No Statistics Available -->
+    <div class="text-center py-12">
+      <div class="text-gray-500 text-xl mb-4">
+        No statistics generated yet
+      </div>
+      <div class="text-sm text-gray-400 mb-8">
+        Generate statistics to see comprehensive data insights and coverage analysis.
+      </div>
+      
+      @auth
+        @if(auth()->user()->hasRole('super_admin'))
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+            <div class="text-sm text-blue-800 font-medium mb-2">Admin Quick Start:</div>
+            <div class="text-sm text-blue-600">
+              Use the generation tools above to create your first statistics overview.
+            </div>
+          </div>
+        @else
+          <div class="text-sm text-gray-500">
+            Statistics generation is available for administrators only.
+          </div>
+        @endif
+      @else
+        <div class="text-sm text-gray-500">
+          Please log in to access statistics generation.
+        </div>
+      @endauth
+    </div>
+  @endif
+@endsection
