@@ -56,7 +56,7 @@
               </div>
             </div>
             <div class="mt-4 text-center">
-              <a href="{{ route('landing.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm">
+              <a href="{{ route('home') }}" class="text-indigo-600 hover:text-indigo-800 text-sm">
                 View All Databases
               </a>
             </div>

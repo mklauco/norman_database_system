@@ -13,7 +13,7 @@ class GeneralController extends Controller
     public function index()
     {
         //
-        return redirect()->route('landing.index');
+        return redirect()->route('home');
     }
 
     /**

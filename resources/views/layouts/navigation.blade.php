@@ -19,7 +19,7 @@
                     </x-nav-link>
                     @endauth
                     
-                    <x-nav-link :href="route('landing.index')" :active="(request()->routeIs('databases.index') || request()->is('landing'))">
+                    <x-nav-link :href="route('home')" :active="(request()->routeIs('databases.index') || request()->is('landing'))">
                         {{ __('Databases index') }}
                     </x-nav-link>
                     

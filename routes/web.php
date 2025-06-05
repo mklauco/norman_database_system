@@ -43,11 +43,14 @@ use App\Http\Controllers\Prioritisation\PrioritisationHomeController;
 use App\Http\Controllers\Empodat\DataCollectionTemplateFileController;
 use App\Http\Controllers\ARGB\AntibioticResistanceBacteriaGeneHomeController;
 
-Route::get('/', function () {
-    return redirect()->route('landing.index');
-});
+// Route::get('/', function () {
+//     return redirect()->route('landing.index');
+// });
 
-Route::get('/landing', [DatabaseDirectoryController::class, 'index'])->name('landing.index');
+// Route::get('/landing', [DatabaseDirectoryController::class, 'index'])->name('landing.index');
+
+Route::get('/', [DatabaseDirectoryController::class, 'index'])->name('home');
+
 
 Route::prefix('backend')->middleware('auth')->group(function () {
     Route::get('overview', [DashboardMainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
@@ -319,7 +322,6 @@ Route::prefix('prioritisation')->group(function () {
     Route::get('prioritisation/countAll', [PrioritisationHomeController::class, 'countAll'])->middleware('auth')->name('prioritisation.countAll');
 });
 
-Route::get('/')->name('general_route.index');
 
 
 
