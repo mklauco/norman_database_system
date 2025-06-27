@@ -102,6 +102,9 @@ Route::prefix('susdat')->group(function () {
     Route::resource('substances', SubstanceController::class)->only(['index', 'show']);
     Route::resource('substances', SubstanceController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::resource('duplicates', DuplicateController::class)->middleware('auth');
+
+    Route::get('substances-audited', [SubstanceController::class, 'withAudits'])->name('substances.audited');
+    Route::get('substances/{substance}/audits', [SubstanceController::class, 'audits'])->name('substances.audits');
 });
 
 Route::prefix('empodat')->group(function () {
