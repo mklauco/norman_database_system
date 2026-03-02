@@ -119,6 +119,16 @@ class DashboardMainController extends Controller
                 ],
             ],
             [
+                'name' => 'Hazards',
+                'processes' => [
+                    [
+                        'name' => 'Fetch Hazards API Data',
+                        'route' => 'hazards.fetch',
+                        'method' => 'POST',
+                    ],
+                ],
+            ],
+            [
                 // Ordered by database_entity.id: 3=ecotox, 4=sle, 5=arbg, 8=indoor, 9=passive, 11=prioritisation, 12=bioassay, 17=literature, 18=empodat_suspect
                 'name' => 'Database Counts',
                 'processes' => [

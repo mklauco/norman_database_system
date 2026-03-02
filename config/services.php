@@ -39,4 +39,10 @@ return [
         'tracking_id' => env('GOOGLE_ANALYTICS_ID'),
     ],
 
+    'hazards_comptox' => [
+        'api_key' => env('HAZARDS_COMPTOX_API_KEY'),
+        'base_url' => env('HAZARDS_COMPTOX_BASE_URL', 'https://comptox.epa.gov/ctx-api'),
+        'notify_to' => env('HAZARDS_API_NOTIFY_TO'),
+    ],
+
 ];

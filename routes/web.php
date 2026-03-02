@@ -40,6 +40,7 @@ use App\Http\Controllers\EmpodatSuspect\EmpodatSuspectHomeController;
 use App\Http\Controllers\EmpodatSuspect\StatisticsController as EmpodatSuspectStatisticsController;
 use App\Http\Controllers\Factsheet\FactsheetController;
 use App\Http\Controllers\Factsheet\FactsheetStatisticsController;
+use App\Http\Controllers\Hazards\HazardsController;
 use App\Http\Controllers\Indoor\IndoorController;
 use App\Http\Controllers\Indoor\IndoorHomeController;
 use App\Http\Controllers\Indoor\IndoorStatisticsController;
@@ -815,6 +816,10 @@ Route::prefix('prioritisation')->group(function () {
     Route::get('/monitoring-scarce/download/csv', [MonitoringScarceController::class, 'downloadCsv'])->middleware('auth')->name('prioritisation.monitoring-scarce.csv');
 
     Route::get('prioritisation/countAll', [PrioritisationHomeController::class, 'countAll'])->middleware('auth')->name('prioritisation.countAll');
+});
+
+Route::prefix('hazards')->middleware(['auth', 'role:super_admin|admin'])->group(function () {
+    Route::post('fetch', [HazardsController::class, 'fetch'])->name('hazards.fetch');
 });
 
 Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
