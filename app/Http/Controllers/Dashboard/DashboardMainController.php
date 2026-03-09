@@ -126,6 +126,11 @@ class DashboardMainController extends Controller
                         'route' => 'hazards.fetch',
                         'method' => 'POST',
                     ],
+                    [
+                        'name' => 'Fill Hazards Substance Data',
+                        'route' => 'hazards.substance_data.fill',
+                        'method' => 'POST',
+                    ],
                 ],
             ],
             [
@@ -185,6 +190,11 @@ class DashboardMainController extends Controller
                     [
                         'name' => 'Empodat Suspect',
                         'route' => 'empodat_suspect.countAll',
+                        'method' => 'GET',
+                    ],
+                    [
+                        'name' => 'Hazards',
+                        'route' => 'hazards.countAll',
                         'method' => 'GET',
                     ],
                 ],

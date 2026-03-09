@@ -151,26 +151,38 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
                     $payloadDtxid = (string) $payload->dtxid;
 
                     $fateItems = $this->extractFateItems($payload->fate, $payloadDtxid);
+                    $processedFateIds = [];
                     foreach ($fateItems as $item) {
+                        if (! is_array($item)) {
+                            continue;
+                        }
+
+                        $fateId = $this->buildFateRecordId($item);
+                        if ($fateId !== '' && isset($processedFateIds[$fateId])) {
+                            continue;
+                        }
+
                         $actions[] = $this->handleFateData($run->id, $payload, $item);
+                        if ($fateId !== '') {
+                            $processedFateIds[$fateId] = true;
+                        }
                     }
 
-                    $propertyItems = $this->normalizeItems($payload->property);
+                    $propertyItems = $this->extractPropertyItems($payload->property, $payloadDtxid);
                     $processedPropertyIds = [];
                     foreach ($propertyItems as $item) {
                         if (! is_array($item)) {
                             continue;
                         }
 
-                        if (($item['dtxsid'] ?? null) !== $payloadDtxid) {
+                        if (! $this->isWantedPropertyName((string) ($item['name'] ?? ''))) {
                             continue;
                         }
 
-                        if (! in_array((string) ($item['name'] ?? ''), self::WANTED_PROPERTY_NAMES, true)) {
-                            continue;
-                        }
-
-                        $propertyId = (string) ($item['id'] ?? '');
+                        $propertyId = $this->buildPropertyRecordId(
+                            $item,
+                            $this->toNullableString($item['propType'] ?? $item['prop_type'] ?? null)
+                        );
                         if ($propertyId !== '' && in_array($propertyId, $processedPropertyIds, true)) {
                             continue;
                         }
@@ -269,10 +281,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
     private function handleFateData(int $parseRunId, ComptoxPayload $payload, array $item): array
     {
         $sourceJson = $item['_source'] ?? $item;
-        $fateId = (string) ($item['id'] ?? '');
-        if ($fateId === '') {
-            $fateId = sha1(json_encode($sourceJson));
-        }
+        $fateId = $this->buildFateRecordId($item);
 
         $data = [
             'parse_run_id' => $parseRunId,
@@ -312,12 +321,22 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
         return ['action' => 'unchanged', 'record_type' => 'fate'];
     }
 
+    private function buildFateRecordId(array $item): string
+    {
+        $sourceJson = $item['_source'] ?? $item;
+        $fateId = trim((string) ($item['id'] ?? ''));
+
+        if ($fateId !== '') {
+            return $fateId;
+        }
+
+        return sha1(json_encode($sourceJson));
+    }
+
     private function handlePropertyData(int $parseRunId, ComptoxPayload $payload, array $item): array
     {
-        $propertyId = (string) ($item['id'] ?? '');
-        if ($propertyId === '') {
-            $propertyId = sha1(json_encode($item));
-        }
+        $propertyType = $this->toNullableString($item['propType'] ?? null);
+        $propertyId = $this->buildPropertyRecordId($item, $propertyType);
 
         $data = [
             'parse_run_id' => $parseRunId,
@@ -328,7 +347,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
             'name' => (string) ($item['name'] ?? ''),
             'value' => $this->toNullableString($item['value'] ?? null),
             'unit' => $this->toNullableString($item['unit'] ?? null),
-            'prop_type' => $this->toNullableString($item['propType'] ?? null),
+            'prop_type' => $propertyType,
             'source' => $this->toNullableString($item['source'] ?? null),
             'property_string_id' => $this->toNullableString($item['propertyId'] ?? null),
             'source_json' => $item,
@@ -357,6 +376,26 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
         }
 
         return ['action' => 'unchanged', 'record_type' => 'property'];
+    }
+
+    private function buildPropertyRecordId(array $item, ?string $propertyType): string
+    {
+        $baseId = trim((string) ($item['id'] ?? ''));
+        $normalizedType = strtolower(trim((string) $propertyType));
+
+        if ($baseId !== '') {
+            return $normalizedType !== '' ? $baseId.'|'.$normalizedType : $baseId;
+        }
+
+        return sha1(json_encode([
+            'dtxsid' => $item['dtxsid'] ?? null,
+            'name' => $item['name'] ?? null,
+            'value' => $item['value'] ?? null,
+            'unit' => $item['unit'] ?? null,
+            'propType' => $propertyType,
+            'propertyId' => $item['propertyId'] ?? null,
+            'source' => $item['source'] ?? null,
+        ]));
     }
 
     private function handleDetailData(int $parseRunId, ComptoxPayload $payload, array $item): array
@@ -425,6 +464,138 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
         return $value;
     }
 
+    private function extractPropertyItems(mixed $rawProperty, string $payloadDtxid): array
+    {
+        $rows = [];
+        $propertyItems = $this->normalizeItems($rawProperty);
+
+        foreach ($propertyItems as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            if (isset($item['properties']) && is_array($item['properties'])) {
+                $topDtxid = (string) ($item['dtxsid'] ?? $item['dtxid'] ?? '');
+                if ($topDtxid !== '' && $topDtxid !== $payloadDtxid) {
+                    continue;
+                }
+
+                foreach ($item['properties'] as $propertyRow) {
+                    if (! is_array($propertyRow)) {
+                        continue;
+                    }
+
+                    $rows = array_merge(
+                        $rows,
+                        $this->extractPropertyRowsFromNestedProperty(
+                            $propertyRow,
+                            $topDtxid ?: $payloadDtxid
+                        )
+                    );
+                }
+
+                continue;
+            }
+
+            $normalized = $this->normalizeFlatPropertyRow($item, $payloadDtxid);
+            if ($normalized !== null) {
+                $rows[] = $normalized;
+            }
+        }
+
+        return $rows;
+    }
+
+    private function extractPropertyRowsFromNestedProperty(array $propertyRow, string $fallbackDtxid): array
+    {
+        $rows = [];
+        $propertyName = (string) ($propertyRow['name'] ?? $propertyRow['propName'] ?? $propertyRow['prop_name'] ?? '');
+
+        $directNormalized = $this->normalizeFlatPropertyRow(
+            $propertyRow + ['name' => $propertyName, 'dtxsid' => $propertyRow['dtxsid'] ?? $fallbackDtxid],
+            $fallbackDtxid
+        );
+        if ($directNormalized !== null && $this->rowLooksLikePropertyValue($directNormalized)) {
+            $rows[] = $directNormalized;
+        }
+
+        $bucketMap = [
+            'experimentalPropertyData' => 'experimental',
+            'predictedPropertyData' => 'predicted',
+            'experimentalProperties' => 'experimental',
+            'predictedProperties' => 'predicted',
+            'experimentalData' => 'experimental',
+            'predictedData' => 'predicted',
+        ];
+
+        foreach ($bucketMap as $bucketKey => $bucketType) {
+            if (! isset($propertyRow[$bucketKey]) || ! is_array($propertyRow[$bucketKey])) {
+                continue;
+            }
+
+            foreach ($propertyRow[$bucketKey] as $entry) {
+                if (! is_array($entry)) {
+                    continue;
+                }
+
+                $normalized = $this->normalizeFlatPropertyRow(
+                    $entry + [
+                        'name' => $entry['name'] ?? $propertyName,
+                        'propType' => $entry['propType'] ?? $entry['prop_type'] ?? $bucketType,
+                        'dtxsid' => $entry['dtxsid'] ?? $fallbackDtxid,
+                    ],
+                    $fallbackDtxid
+                );
+
+                if ($normalized !== null) {
+                    $rows[] = $normalized;
+                }
+            }
+        }
+
+        return $rows;
+    }
+
+    private function normalizeFlatPropertyRow(array $item, string $payloadDtxid): ?array
+    {
+        $dtxsid = (string) ($item['dtxsid'] ?? $item['dtxid'] ?? $payloadDtxid);
+        if ($dtxsid === '' || $dtxsid !== $payloadDtxid) {
+            return null;
+        }
+
+        $name = (string) ($item['name'] ?? $item['propName'] ?? $item['prop_name'] ?? '');
+        if ($name === '') {
+            return null;
+        }
+
+        return [
+            'id' => $item['id'] ?? null,
+            'dtxsid' => $dtxsid,
+            'name' => $name,
+            'value' => $item['value'] ?? $item['propValue'] ?? $item['prop_value_string'] ?? $item['prop_value'] ?? null,
+            'unit' => $item['unit'] ?? $item['propUnit'] ?? $item['prop_unit'] ?? null,
+            'propType' => $item['propType'] ?? $item['prop_type'] ?? $item['valueType'] ?? null,
+            'source' => $item['source']
+                ?? $item['sourceName']
+                ?? $item['source_name']
+                ?? $item['modelName']
+                ?? $item['model_name']
+                ?? $item['dataset']
+                ?? null,
+            'propertyId' => $item['propertyId']
+                ?? $item['property_string_id']
+                ?? $item['propValueId']
+                ?? $item['prop_value_id']
+                ?? null,
+            'source_json' => $item,
+        ];
+    }
+
+    private function rowLooksLikePropertyValue(array $row): bool
+    {
+        return $row['value'] !== null || $row['unit'] !== null || $row['propertyId'] !== null;
+    }
+
     private function extractFateItems(mixed $rawFate, string $payloadDtxid): array
     {
         $rows = [];
@@ -474,7 +645,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
                                 'resultValue' => $entry['prop_value_string'] ?? $entry['prop_value'] ?? null,
                                 'modelSource' => $entry['source_name'] ?? $entry['model_name'] ?? null,
                                 'unit' => $entry['prop_unit'] ?? null,
-                                'valueType' => $entry['prop_type'] ?? null,
+                                'valueType' => $entry['prop_type'] ?? ($bucket === 'experimentalFateData' ? 'experimental' : 'predicted'),
                                 '_source' => $entry,
                             ];
                         }
@@ -513,6 +684,35 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
     private function isWantedFateEndpoint(string $endpointName): bool
     {
         return in_array($endpointName, self::WANTED_FATE_ENDPOINTS, true);
+    }
+
+    private function isWantedPropertyName(string $propertyName): bool
+    {
+        $normalizedPropertyName = $this->normalizePropertyName($propertyName);
+        if ($normalizedPropertyName === '') {
+            return false;
+        }
+
+        foreach (self::WANTED_PROPERTY_NAMES as $wantedPropertyName) {
+            if ($this->normalizePropertyName($wantedPropertyName) === $normalizedPropertyName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizePropertyName(string $value): string
+    {
+        $normalized = str_replace(
+            ["\xc2\xa0", "\xe2\x80\x93", "\xe2\x80\x94"],
+            [' ', '-', '-'],
+            trim($value)
+        );
+
+        $normalized = preg_replace('/\s+/', ' ', $normalized) ?? $normalized;
+
+        return strtolower($normalized);
     }
 
     private function toNullableString(mixed $value): ?string

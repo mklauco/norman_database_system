@@ -42,3 +42,4 @@ database/seeders/seeds/ecotox_tables/ecotox3.csv
 database/seeders/seeds/literature/2025-6-20_ULEI_Wildlife_Exposure_data.csv
 database/seeders/seeds/literature/DCT_BIOTA_LITERATURE_TerraChem_NILU Heimstad_2013_2023_11122025_v3.xlsx
 database/seeders/seeds/literature/DCT_BIOTA_TerraChem_LiteratureData_ POPs_19102025_v1.xlsx
+database/seeders/seeds/hazards/hazards_pikme.csv

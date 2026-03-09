@@ -31,13 +31,13 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
     public int $timeout = 3600;
     public int $tries = 1;
     public int $uniqueFor = 7200;
-    private const BATCH_SIZE = 100;
-    private const HTTP_TIMEOUT_SECONDS = 30;
+    private const BATCH_SIZE = 25;
+    private const HTTP_TIMEOUT_SECONDS = 60;
     private const HTTP_RETRY_TIMES = 2;
     private const HTTP_RETRY_SLEEP_MS = 500;
 
     // Testing limit: set to null for full run.
-    private const FETCH_LIMIT = 10;
+    private const FETCH_LIMIT = 120;
     public string $trigger;
     public ?string $requestToken;
 
@@ -123,7 +123,8 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
             $endpoints = [
                 'fate' => $baseUrl.'/chemical/fate/search/by-dtxsid/',
                 'detail' => $baseUrl.'/chemical/detail/search/by-dtxsid/',
-                'property' => $baseUrl.'/chemical/property/search/by-dtxsid/',
+                'property_experimental' => $baseUrl.'/chemical/property/experimental/search/by-dtxsid/',
+                'property_predicted' => $baseUrl.'/chemical/property/predicted/search/by-dtxsid/',
                 'synonym' => $baseUrl.'/chemical/synonym/search/by-dtxsid/',
             ];
 
@@ -185,7 +186,7 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
                 $allEndpointsFailed = ! in_array('ok', $endpointStatus, true);
 
                 $indexedByEndpoint = [];
-                foreach (['fate', 'detail', 'property', 'synonym'] as $endpointKey) {
+                foreach (['fate', 'detail', 'property_experimental', 'property_predicted', 'synonym'] as $endpointKey) {
                     $indexedByEndpoint[$endpointKey] = [];
                     if (! is_array($responsesByEndpoint[$endpointKey])) {
                         continue;
@@ -238,8 +239,19 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
                     if (is_array($responsesByEndpoint['detail'])) {
                         $payload->detail = $indexedByEndpoint['detail'][$dtxid] ?? [];
                     }
-                    if (is_array($responsesByEndpoint['property'])) {
-                        $payload->property = $indexedByEndpoint['property'][$dtxid] ?? [];
+                    if (
+                        is_array($responsesByEndpoint['property_experimental']) ||
+                        is_array($responsesByEndpoint['property_predicted'])
+                    ) {
+                        $payload->property = $this->mergePropertyPayload(
+                            existingPropertyRows: $payload->property,
+                            experimentalRows: is_array($responsesByEndpoint['property_experimental'])
+                                ? ($indexedByEndpoint['property_experimental'][$dtxid] ?? [])
+                                : null,
+                            predictedRows: is_array($responsesByEndpoint['property_predicted'])
+                                ? ($indexedByEndpoint['property_predicted'][$dtxid] ?? [])
+                                : null
+                        );
                     }
                     if (is_array($responsesByEndpoint['synonym'])) {
                         $payload->synonym = $indexedByEndpoint['synonym'][$dtxid] ?? [];
@@ -337,6 +349,90 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
         }
 
         return null;
+    }
+
+    private function mergePropertyPayload(
+        mixed $existingPropertyRows,
+        ?array $experimentalRows,
+        ?array $predictedRows
+    ): array {
+        $existingRows = $this->normalizeItems($existingPropertyRows);
+
+        $existingExperimental = [];
+        $existingPredicted = [];
+        $existingUnknown = [];
+
+        foreach ($existingRows as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $bucket = $this->resolvePropertyBucket($row);
+            if ($bucket === 'experimental') {
+                $existingExperimental[] = $row;
+            } elseif ($bucket === 'predicted') {
+                $existingPredicted[] = $row;
+            } else {
+                $existingUnknown[] = $row;
+            }
+        }
+
+        $mergedExperimental = $experimentalRows !== null
+            ? $this->annotatePropertyRows($experimentalRows, 'experimental')
+            : $existingExperimental;
+
+        $mergedPredicted = $predictedRows !== null
+            ? $this->annotatePropertyRows($predictedRows, 'predicted')
+            : $existingPredicted;
+
+        return array_values(array_merge($mergedExperimental, $mergedPredicted, $existingUnknown));
+    }
+
+    private function annotatePropertyRows(array $rows, string $propertyType): array
+    {
+        return array_values(array_map(static function ($row) use ($propertyType) {
+            if (! is_array($row)) {
+                return $row;
+            }
+
+            if (! isset($row['propType']) || $row['propType'] === null || $row['propType'] === '') {
+                $row['propType'] = $propertyType;
+            }
+
+            if (! isset($row['prop_type']) || $row['prop_type'] === null || $row['prop_type'] === '') {
+                $row['prop_type'] = $propertyType;
+            }
+
+            return $row;
+        }, $rows));
+    }
+
+    private function resolvePropertyBucket(array $row): ?string
+    {
+        $value = strtolower(trim((string) ($row['propType'] ?? $row['prop_type'] ?? '')));
+
+        if (in_array($value, ['experimental', 'exp', '2'], true)) {
+            return 'experimental';
+        }
+
+        if (in_array($value, ['predicted', 'pred', '3'], true)) {
+            return 'predicted';
+        }
+
+        return null;
+    }
+
+    private function normalizeItems(mixed $value): array
+    {
+        if (! is_array($value) || $value === []) {
+            return [];
+        }
+
+        if (array_keys($value) !== range(0, count($value) - 1)) {
+            return [$value];
+        }
+
+        return $value;
     }
 
     private function sendMailSafely(?string $notifyTo, object $mailable, string $phase, int $runId): void
