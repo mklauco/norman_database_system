@@ -12,6 +12,25 @@ use Illuminate\Support\Facades\Auth;
 
 class HazardsDataController extends Controller
 {
+    private const WANTED_FATE_ENDPOINTS = [
+        'ReadyBiodeg',
+        'Biodeg. Half-Life',
+        'Soil Adsorp. Coeff. (Koc)',
+        'Bioconcentration Factor',
+    ];
+
+    private const WANTED_PROPERTY_NAMES = [
+        'Water Solubility',
+        'LogKoa: Octanol-Air',
+        'LogKow: Octanol-Water',
+        'pKa Acidic - Apparent',
+        'pKa Acidic – Apparent',
+        'pKa Basic - Apparent',
+        'pKa Basic – Apparent',
+        'LogD5.5',
+        'LogD7.4',
+    ];
+
     private const PBMT_ASSESSMENT_CLASSES = [
         'vP',
         'P',
@@ -160,6 +179,11 @@ class HazardsDataController extends Controller
             }, $testTypes);
         }
 
+        $sourceRecordTypes = $this->normalizeArrayInput($request->input('sourceRecordTypeSearch'));
+        if (! empty($sourceRecordTypes)) {
+            $resultsQuery->whereIn('source_record_type', $sourceRecordTypes);
+        }
+
         $mainRequest = $request->all();
         $databaseKey = 'hazards';
         $resultsObjectsCount = ComptoxSubstanceData::count();
@@ -234,7 +258,8 @@ class HazardsDataController extends Controller
         int $queryLogId,
         array $mainRequest
     ) {
-        $summaryRows = (clone $filteredQuery)
+        $summaryScopeQuery = $this->applySummaryScope(clone $filteredQuery);
+        $summaryRows = (clone $summaryScopeQuery)
             ->whereNotNull('value_assessment_index')
             ->selectRaw(
                 'susdat_substance_id, data_domain, norman_parameter_name, specific_parameter_name, unit, test_type,
@@ -249,6 +274,10 @@ class HazardsDataController extends Controller
             ->orderBy('data_domain')
             ->orderBy('norman_parameter_name')
             ->get();
+
+        $filteredRecordsCount = (clone $summaryScopeQuery)->count();
+        $resultsObjectsCount = $this->summaryTotalCount();
+        $searchParameters['summary_scope'] = 'CompTox API fate/property only';
 
         $summaryBySubstance = [];
         $otherTestTypeRowsCount = 0;
@@ -553,6 +582,38 @@ class HazardsDataController extends Controller
             'physchem' => (int) ($groupedCounts['physchem'] ?? 0),
             'fate_transport' => (int) ($groupedCounts['fate_transport'] ?? 0),
         ];
+    }
+
+    private function applySummaryScope(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder) {
+            $builder
+                ->where(function (Builder $inner) {
+                    $inner->where('source_record_type', 'fate')
+                        ->whereIn('norman_parameter_name', self::WANTED_FATE_ENDPOINTS);
+                })
+                ->orWhere(function (Builder $inner) {
+                    $inner->where('source_record_type', 'property')
+                        ->whereIn('norman_parameter_name', self::WANTED_PROPERTY_NAMES);
+                });
+        });
+    }
+
+    private function summaryTotalCount(): int
+    {
+        return ComptoxSubstanceData::query()
+            ->where(function (Builder $builder) {
+                $builder
+                    ->where(function (Builder $inner) {
+                        $inner->where('source_record_type', 'fate')
+                            ->whereIn('norman_parameter_name', self::WANTED_FATE_ENDPOINTS);
+                    })
+                    ->orWhere(function (Builder $inner) {
+                        $inner->where('source_record_type', 'property')
+                            ->whereIn('norman_parameter_name', self::WANTED_PROPERTY_NAMES);
+                    });
+            })
+            ->count();
     }
 
     public function show(string $id)

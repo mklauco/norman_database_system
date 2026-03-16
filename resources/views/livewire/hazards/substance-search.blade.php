@@ -125,7 +125,7 @@
 <script>
     document.addEventListener('livewire:initialized', () => {
         @this.on('autoSubmitForm', () => {
-            const form = document.getElementById('searchHazards');
+            const form = document.getElementById(@js($formId ?? 'searchHazards'));
             if (form) {
                 setTimeout(() => {
                     form.dispatchEvent(new Event('submit', { bubbles: true }));

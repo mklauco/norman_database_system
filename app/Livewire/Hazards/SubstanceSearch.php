@@ -14,9 +14,12 @@ class SubstanceSearch extends Component
     public $selectedSubstanceIds = [];
     public $selectedSubstances = [];
     public $existingSubstances = [];
+    public $formId = 'searchHazards';
 
-    public function mount($existingSubstances = [])
+    public function mount($existingSubstances = [], $formId = 'searchHazards')
     {
+        $this->formId = $formId ?: 'searchHazards';
+
         if (! empty($existingSubstances)) {
             $this->selectedSubstanceIds = is_array($existingSubstances)
                 ? [array_values($existingSubstances)[0]]
@@ -72,6 +75,7 @@ class SubstanceSearch extends Component
             'resultsAvailable' => $resultsAvailable,
             'searchType' => $this->searchType,
             'selectedSubstances' => $this->selectedSubstances,
+            'formId' => $this->formId,
         ]);
     }
 

@@ -150,6 +150,7 @@
                                 'dataDomainSearch' => [$domainData['domain_key']],
                                 'normanParameterSearch' => [$parameter['norman_parameter_name']],
                                 'testTypeSearch' => ['2'],
+                                'sourceRecordTypeSearch' => [$domainData['domain_key'] === 'physchem' ? 'property' : 'fate'],
                               ]);
 
                               $predictedDetailsQuery = array_merge($detailBaseQuery, [
@@ -157,6 +158,7 @@
                                 'dataDomainSearch' => [$domainData['domain_key']],
                                 'normanParameterSearch' => [$parameter['norman_parameter_name']],
                                 'testTypeSearch' => ['3'],
+                                'sourceRecordTypeSearch' => [$domainData['domain_key'] === 'physchem' ? 'property' : 'fate'],
                               ]);
 
                               if (!empty($parameter['specific_parameter_name'])) {

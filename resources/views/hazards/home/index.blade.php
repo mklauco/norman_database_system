@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
   <x-slot name="header">
     @include('hazards.header')
   </x-slot>
@@ -12,18 +12,20 @@
           </h1>
 
           <p class="text-gray-700 leading-relaxed mb-4">
-            This module will provide hazard and property information sourced from CompTox API integrations.
+            The Hazards module combines CompTox, JANUS, and PIKME substance data for search, review, and expert derivation workflows.
+          </p>
+
+          <p class="text-gray-700 leading-relaxed mb-4">
+            Search and review of Hazards records is available under <span class="font-semibold">Search Data</span>.
+            The derivation workspace for P, B, M, and T buckets is available under <span class="font-semibold">Derivation</span> for admin users.
           </p>
 
           <h2 class="text-lg font-bold text-gray-800 mb-2">Current status</h2>
-          <ul class="list-disc list-inside text-gray-700 mb-4">
-            <li>Hazards API fetch and parse pipeline is available for manual triggering.</li>
-            <li>Module UI and search pages will be added in next steps.</li>
+          <ul class="list-disc list-inside text-gray-700">
+            <li>Hazards API fetch, parse, and fill pipeline is available.</li>
+            <li>JANUS and PIKME data are included in Hazards substance data.</li>
+            <li>Derivation buckets are available through the Hazards navigation.</li>
           </ul>
-
-          <p class="text-gray-700 leading-relaxed">
-            This is a placeholder home page following the Ecotoxicology module structure.
-          </p>
         </div>
       </div>
     </div>

@@ -11,6 +11,12 @@
     Search Data
   </x-nav-link-header>
 
+  @role('super_admin|admin')
+  <x-nav-link-header :href="route('hazards.derivation.search.filter')" :active="request()->is('hazards/derivation*')">
+    Derivation
+  </x-nav-link-header>
+  @endrole
+
   @role('super_admin')
   <x-nav-link-header :href="route('querylog.index', ['module' => 'hazards'])" :active="request()->is('*querylog*')">
     History of search
