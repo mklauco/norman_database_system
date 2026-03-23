@@ -4,6 +4,17 @@
   </x-slot>
 
   @php
+    $currentUserDisplayName = trim((string) (auth()->user()?->formatted_name ?? ''));
+    if ($currentUserDisplayName === '') {
+      $currentUserDisplayName = trim((string) (auth()->user()?->full_name ?? ''));
+    }
+    if ($currentUserDisplayName === '') {
+      $currentUserDisplayName = trim((string) (auth()->user()?->username ?? ''));
+    }
+    if ($currentUserDisplayName === '') {
+      $currentUserDisplayName = (string) (auth()->user()?->email ?? 'NDSEXPERT');
+    }
+
     $bucketGroups = [
       'P' => ['pred' => 'P_pred', 'exp' => 'P_exp'],
       'B' => ['pred' => 'B_pred', 'exp' => 'B_exp'],
@@ -594,7 +605,7 @@
         T: ['T+', 'T', 'sT', 'nT', 'probably-nT'],
     };
     const hazardsVoteRowUrlTemplate = @js(route('hazards.derivation.substance-data.show', ['id' => '__ID__']));
-    const hazardsVoteCurrentUser = @js(auth()->user()->name ?? 'NDSEXPERT');
+    const hazardsVoteCurrentUser = @js($currentUserDisplayName);
 
     function getHazardsVoteModal() {
       return document.getElementById('hazards-vote-modal');

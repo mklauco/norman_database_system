@@ -15,6 +15,10 @@
   <x-nav-link-header :href="route('hazards.derivation.search.filter')" :active="request()->is('hazards/derivation*')">
     Derivation
   </x-nav-link-header>
+
+  <x-nav-link-header :href="route('hazards.classification.search.filter')" :active="request()->is('hazards/classification*')">
+    Classification
+  </x-nav-link-header>
   @endrole
 
   @role('super_admin')

@@ -27,7 +27,7 @@
             }
             this.stopTimer();
             this.loading = false;
-            alert('Derivation request has been cancelled.');
+            alert('Classification request has been cancelled.');
           },
           formatTime(totalSeconds) {
             const minutes = Math.floor(totalSeconds / 60);
@@ -49,12 +49,12 @@
                 if (response.ok) {
                   window.location.href = url;
                 } else {
-                  throw new Error('Derivation open failed');
+                  throw new Error('Classification open failed');
                 }
               })
               .catch(error => {
                 if (error.name !== 'AbortError') {
-                  alert('There was an error opening derivation. Please try again.');
+                  alert('There was an error opening classification. Please try again.');
                 }
                 this.loading = false;
                 this.stopTimer();
@@ -62,20 +62,20 @@
           }
         }"
         @submit="submitForm($event)"
-        name="searchHazardsDerivation"
-        id="searchHazardsDerivation"
-        action="{{ route('hazards.derivation.search.search') }}"
+        name="searchHazardsClassification"
+        id="searchHazardsClassification"
+        action="{{ route('hazards.classification.search.search') }}"
         method="GET">
 
           <div x-show="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900 bg-opacity-80" style="display: none;">
             <div class="text-center p-8 bg-white rounded-lg shadow-xl max-w-md w-full">
-              <h2 class="text-xl font-bold text-slate-700 mb-2">Hazards Derivation</h2>
+              <h2 class="text-xl font-bold text-slate-700 mb-2">Hazards Classification</h2>
               <svg class="mx-auto animate-spin h-20 w-20 text-slate-500 my-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               <p class="text-lg font-semibold text-gray-800">Processing Your Request</p>
-              <p class="text-gray-600 mt-2">Opening Hazards derivation workspace...</p>
+              <p class="text-gray-600 mt-2">Opening Hazards classification workspace...</p>
               <div class="flex items-center justify-center mt-6 space-x-2">
                 <div class="text-3xl font-mono font-bold text-slate-600" x-text="formatTime(seconds)">00:00</div>
                 <span class="text-gray-500">elapsed</span>
@@ -89,25 +89,25 @@
           <div class="p-4 text-gray-900 grid grid-cols-1 gap-4">
             <div class="bg-gray-100 p-2">
               <div class="font-bold mb-2">Substance:</div>
-              @livewire('hazards.substance-search', ['existingSubstances' => $request->substances, 'formId' => 'searchHazardsDerivation'])
+              @livewire('hazards.substance-search', ['existingSubstances' => $request->substances, 'formId' => 'searchHazardsClassification'])
             </div>
 
             <div class="flex justify-end m-2">
-              <a href="{{ route('hazards.derivation.search.filter') }}" class="btn-clear mx-2">Reset</a>
+              <a href="{{ route('hazards.classification.search.filter') }}" class="btn-clear mx-2">Reset</a>
               <button type="submit" class="btn-submit flex items-center" :class="{ 'opacity-50 cursor-not-allowed': loading }" :disabled="loading">
                 <svg x-show="loading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span x-text="loading ? 'Processing...' : 'Open Derivation'"></span>
+                <span x-text="loading ? 'Processing...' : 'Open Classification'"></span>
               </button>
             </div>
 
             <div class="m-2">
               <ul class="list-disc list-inside text-gray-700 text-sm">
-                <li>Select one Hazards substance to open the derivation workspace.</li>
-                <li>The derivation page groups data into P, B, M, and T buckets with Predicted and Experimental sections.</li>
-                <li>Shared votes are visible to all admins and super admins.</li>
+                <li>Select one Hazards substance to open the classification workspace.</li>
+                <li>Opening classification automatically syncs derivation auto selections first.</li>
+                <li>The page combines current auto derivation state, expert derivation rows, and conclusion history.</li>
               </ul>
             </div>
           </div>

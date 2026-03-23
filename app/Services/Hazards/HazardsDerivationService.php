@@ -47,27 +47,8 @@ class HazardsDerivationService
 
         foreach (self::BUCKETS as $bucket) {
             $items = $buckets[$bucket] ?? collect();
-            DerivationSelection::query()
-                ->where('susdat_substance_id', $substanceId)
-                ->where('bucket', $bucket)
-                ->where('kind', 'auto')
-                ->where('is_current', true)
-                ->update(['is_current' => false]);
-
             $pick = $this->pickAutoCandidate($items, $bucket);
-            if (! $pick) {
-                continue;
-            }
-
-            DerivationSelection::create([
-                'susdat_substance_id' => $substanceId,
-                'bucket' => $bucket,
-                'hazards_substance_data_id' => (int) $pick->id,
-                'source_label' => $this->autoSourceLabel($pick),
-                'kind' => 'auto',
-                'user_id' => self::AUTO_USER_ID,
-                'is_current' => true,
-            ]);
+            $this->syncAutoSelection($substanceId, $bucket, $pick);
         }
     }
 
@@ -215,7 +196,7 @@ class HazardsDerivationService
             return null;
         }
 
-        $editorName = $userName ?: ($selection->user?->name ?? 'NDSEXPERT');
+        $editorName = $userName ?: $this->resolveUserDisplayName($selection);
         $hazardCalculated = strtoupper(substr($selection->bucket, 0, 1));
         $normanVoteInput = $metadataOverrides['meta_norman_vote'] ?? null;
         $normanVote = ($normanVoteInput !== null && $normanVoteInput !== '')
@@ -314,6 +295,48 @@ class HazardsDerivationService
             ->where('hazards_substance_data_id', $selection->hazards_substance_data_id)
             ->latest('id')
             ->first();
+    }
+
+    private function syncAutoSelection(int $substanceId, string $bucket, ?ComptoxSubstanceData $pick): void
+    {
+        $current = DerivationSelection::query()
+            ->with(['hazardsSubstanceData', 'user'])
+            ->where('susdat_substance_id', $substanceId)
+            ->where('bucket', $bucket)
+            ->where('kind', 'auto')
+            ->where('is_current', true)
+            ->latest('id')
+            ->first();
+
+        if (! $pick) {
+            if ($current) {
+                $current->update(['is_current' => false]);
+            }
+
+            return;
+        }
+
+        if ($current && (int) $current->hazards_substance_data_id === (int) $pick->id) {
+            $this->ensureMetadataSnapshot($current);
+
+            return;
+        }
+
+        if ($current) {
+            $current->update(['is_current' => false]);
+        }
+
+        $selection = DerivationSelection::create([
+            'susdat_substance_id' => $substanceId,
+            'bucket' => $bucket,
+            'hazards_substance_data_id' => (int) $pick->id,
+            'source_label' => $this->autoSourceLabel($pick),
+            'kind' => 'auto',
+            'user_id' => self::AUTO_USER_ID,
+            'is_current' => true,
+        ]);
+
+        $this->createMetadataSnapshot($selection);
     }
 
     private function loadCandidateRows(int $susdatSubstanceId): Collection
@@ -515,6 +538,7 @@ class HazardsDerivationService
     private function normalizeSelectionRow(DerivationSelection $selection): array
     {
         $row = $selection->hazardsSubstanceData;
+        $metadata = $this->getMetadataForSelection((int) $selection->id);
         $classificationType = $selection->kind === 'vote'
             ? $this->resolveSelectionSourceType($row)
             : ($selection->source_label ?: $this->resolveSelectionSourceType($row));
@@ -522,20 +546,60 @@ class HazardsDerivationService
         return [
             'selection_id' => (int) $selection->id,
             'hazards_substance_data_id' => (int) ($selection->hazards_substance_data_id),
-            'data_source' => $row?->data_source ?? 'N/A',
-            'test_type' => $this->resolveTestTypeLabel($row?->test_type),
-            'norman_parameter_name' => $row?->norman_parameter_name ?? 'N/A',
-            'original_value' => $this->formatNumber($row?->original_value),
-            'original_unit' => $row?->original_unit ?? 'N/A',
-            'value_assessment_index' => $this->formatNumber($row?->value_assessment_index),
-            'unit' => $row?->unit ?? 'N/A',
-            'assessment_class' => $row?->assessment_class ?? 'N/A',
+            'data_source' => $metadata?->data_source ?? $row?->data_source ?? 'N/A',
+            'test_type' => $metadata?->test_type ?? $this->resolveTestTypeLabel($row?->test_type),
+            'norman_parameter_name' => $metadata?->assessment_parameter_name ?? $row?->norman_parameter_name ?? 'N/A',
+            'original_value' => $this->formatNumber($metadata?->original_value ?? $row?->original_value),
+            'original_unit' => $metadata?->original_unit ?? $row?->original_unit ?? 'N/A',
+            'value_assessment_index' => $this->formatNumber($metadata?->assessment_value ?? $row?->value_assessment_index),
+            'unit' => $metadata?->assessment_unit ?? $row?->unit ?? 'N/A',
+            'assessment_class' => $metadata?->norman_classification ?? $row?->assessment_class ?? 'N/A',
             'classification_type' => $classificationType,
-            'vote' => $selection->kind === 'vote' ? 3 : $this->defaultNormanVoteForRow($row),
-            'expert' => $selection->user?->name ?? 'NDSEXPERT',
-            'date' => $selection->created_at,
+            'vote' => $metadata?->norman_vote ?? ($selection->kind === 'vote' ? 3 : $this->defaultNormanVoteForRow($row)),
+            'expert' => $metadata?->editor ?? $this->resolveUserDisplayName($selection),
+            'date' => $metadata?->record_date ?? $selection->created_at,
             'active' => (bool) $selection->is_current,
         ];
+    }
+
+    private function ensureMetadataSnapshot(DerivationSelection $selection): void
+    {
+        $existingMetadata = DerivationMetadata::query()
+            ->where('selection_id', $selection->id)
+            ->exists();
+
+        if (! $existingMetadata) {
+            $this->createMetadataSnapshot($selection);
+        }
+    }
+
+    private function resolveUserDisplayName(DerivationSelection $selection): string
+    {
+        if ((int) $selection->user_id === self::AUTO_USER_ID) {
+            return 'NDSEXPERT';
+        }
+
+        $user = $selection->user;
+        if (! $user) {
+            return 'N/A';
+        }
+
+        $formattedName = trim((string) ($user->formatted_name ?? ''));
+        if ($formattedName !== '') {
+            return $formattedName;
+        }
+
+        $fullName = trim((string) ($user->full_name ?? ''));
+        if ($fullName !== '') {
+            return $fullName;
+        }
+
+        $username = trim((string) ($user->username ?? ''));
+        if ($username !== '') {
+            return $username;
+        }
+
+        return (string) ($user->email ?? 'N/A');
     }
 
     private function resolveTestTypeLabel(mixed $value): string
@@ -660,3 +724,5 @@ class HazardsDerivationService
         return (string) $value;
     }
 }
+
+

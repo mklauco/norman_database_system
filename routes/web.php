@@ -41,6 +41,7 @@ use App\Http\Controllers\EmpodatSuspect\StatisticsController as EmpodatSuspectSt
 use App\Http\Controllers\Factsheet\FactsheetController;
 use App\Http\Controllers\Factsheet\FactsheetStatisticsController;
 use App\Http\Controllers\Hazards\HazardsComptoxSubstanceDataController;
+use App\Http\Controllers\Hazards\HazardsClassificationController;
 use App\Http\Controllers\Hazards\HazardsDerivationController;
 use App\Http\Controllers\Hazards\HazardsController;
 use App\Http\Controllers\Hazards\HazardsHomeController;
@@ -843,11 +844,17 @@ Route::prefix('hazards')->middleware(['auth', 'role:super_admin|admin'])->group(
     Route::post('derivation/vote/remove', [HazardsDerivationController::class, 'removeVote'])->name('hazards.derivation.vote.remove');
     Route::get('derivation/substance-data/{id}', [HazardsDerivationController::class, 'substanceDataJson'])->name('hazards.derivation.substance-data.show');
     Route::get('derivation/selection/{selectionId}', [HazardsDerivationController::class, 'selectionJson'])->name('hazards.derivation.selection.show');
-    Route::get('derivation/metadata/{selectionId}', [HazardsDerivationController::class, 'metadataJson'])->name('hazards.derivation.metadata.show');
+    Route::get('derivation/metadata/{selectionId}', [HazardsDerivationController::class, 'metadataShow'])->name('hazards.derivation.metadata.show');
+    Route::get('derivation/metadata/{selectionId}/json', [HazardsDerivationController::class, 'metadataJson'])->name('hazards.derivation.metadata.json');
+    Route::get('classification/search/filter', [HazardsClassificationController::class, 'filter'])->name('hazards.classification.search.filter');
+    Route::get('classification/search/search', [HazardsClassificationController::class, 'search'])->name('hazards.classification.search.search');
+    Route::get('classification/{susdatSubstanceId}', [HazardsClassificationController::class, 'index'])->name('hazards.classification.index');
+    Route::post('classification/vote', [HazardsClassificationController::class, 'vote'])->name('hazards.classification.vote');
     Route::get('countAll', [HazardsHomeController::class, 'countAll'])->name('hazards.countAll');
 });
 
 Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
 
 require __DIR__.'/auth.php';
+
 

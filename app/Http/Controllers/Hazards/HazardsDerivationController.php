@@ -88,7 +88,7 @@ class HazardsDerivationController extends Controller
             hazardsSubstanceDataId: (int) $data['hazards_substance_data_id'],
             userId: (int) ($request->user()?->id ?? 0),
             metadataOverrides: $request->all(),
-            userName: $request->user()?->name
+            userName: null
         );
 
         return back()->with('success', 'Derivation vote stored.');
@@ -115,6 +115,32 @@ class HazardsDerivationController extends Controller
         return response()->json($row);
     }
 
+    public function metadataShow(int $selectionId)
+    {
+        $selection = DerivationSelection::with(['hazardsSubstanceData', 'substance', 'user'])->find($selectionId);
+        if (! $selection) {
+            abort(404);
+        }
+
+        $metadata = $this->derivationService->getMetadataForSelection($selectionId);
+        if (! $metadata) {
+            abort(404);
+        }
+
+        $substance = $selection->substance;
+        $row = $selection->hazardsSubstanceData;
+
+        return view('hazards.derivation.metadata', [
+            'selection' => $selection,
+            'metadata' => $metadata,
+            'substance' => (object) [
+                'substance_name' => $substance?->display_name ?? $substance?->name ?? $metadata->substance_name ?? $row?->substance_name,
+                'cas_no' => $substance?->formatted_cas ?? $metadata->cas_number ?? $row?->cas_no,
+                'inchikey' => $substance?->stdinchikey ?? $row?->inchikey,
+            ],
+        ]);
+    }
+
     public function metadataJson(int $selectionId): JsonResponse
     {
         $metadata = $this->derivationService->getMetadataForSelection($selectionId);
@@ -135,3 +161,5 @@ class HazardsDerivationController extends Controller
         return response()->json($selection);
     }
 }
+
+
