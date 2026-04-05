@@ -68,7 +68,7 @@ class FactsheetEntitySeeder extends Seeder
             [
                 'name' => 'PBT/vPvB & PMT/vPvM (NORMAN)',
                 'sort_order' => 8,
-                'data' => json_encode(['method_of_presentation' => 'banner', 'color' => 'green', 'text' => 'This module is currently under development.']),
+                'data' => json_encode(['method_of_presentation' => 'controller_method', 'method' => 'getHazardsPbtPmtData']),
                 'created_at' => $now,
                 'updated_at' => $now,
             ],

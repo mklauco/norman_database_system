@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Hazards;
 use App\Http\Controllers\Controller;
 use App\Models\Hazards\ComptoxSubstanceData;
 use App\Models\Hazards\DerivationSelection;
+use App\Services\Hazards\HazardsClassificationService;
 use App\Services\Hazards\HazardsDerivationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,8 @@ use App\Models\Susdat\Substance;
 class HazardsDerivationController extends Controller
 {
     public function __construct(
-        private readonly HazardsDerivationService $derivationService
+        private readonly HazardsDerivationService $derivationService,
+        private readonly HazardsClassificationService $classificationService
     ) {
     }
 
@@ -60,12 +62,18 @@ class HazardsDerivationController extends Controller
         return redirect()->route('hazards.derivation.index', ['susdatSubstanceId' => $substanceId]);
     }
 
-    public function index(string $susdatSubstanceId)
+    public function index(Request $request, string $susdatSubstanceId)
     {
-        $data = $this->derivationService->getDerivationPageData((int) $susdatSubstanceId);
+        $substanceId = (int) $susdatSubstanceId;
+
+        $this->classificationService->run($substanceId);
+        $data = $this->derivationService->getDerivationPageData(
+            $substanceId,
+            (int) ($request->user()?->id ?? 0)
+        );
 
         return view('hazards.derivation.index', [
-            'susdatSubstanceId' => (int) $susdatSubstanceId,
+            'susdatSubstanceId' => $substanceId,
             'substance' => $data['substance'],
             'candidates' => $data['candidates'],
             'currentAuto' => $data['current_auto'],
@@ -82,13 +90,18 @@ class HazardsDerivationController extends Controller
             'hazards_substance_data_id' => ['required', 'integer', 'exists:hazards_comptox_substance_data,id'],
         ]);
 
-        $this->derivationService->storeVote(
+        $selection = $this->derivationService->storeVote(
             susdatSubstanceId: (int) $data['susdat_substance_id'],
             bucket: (string) $data['bucket'],
             hazardsSubstanceDataId: (int) $data['hazards_substance_data_id'],
             userId: (int) ($request->user()?->id ?? 0),
             metadataOverrides: $request->all(),
             userName: null
+        );
+
+        $this->classificationService->syncDerivationSnapshot(
+            (int) $selection->susdat_substance_id,
+            (int) ($request->user()?->id ?? 0)
         );
 
         return back()->with('success', 'Derivation vote stored.');
@@ -100,7 +113,17 @@ class HazardsDerivationController extends Controller
             'selection_id' => ['required', 'integer', 'exists:hazards_derivation_selections,id'],
         ]);
 
-        $this->derivationService->removeVote((int) $data['selection_id']);
+        $selection = DerivationSelection::find((int) $data['selection_id']);
+        $this->derivationService->removeVote(
+            (int) $data['selection_id']
+        );
+
+        if ($selection) {
+            $this->classificationService->syncDerivationSnapshot(
+                (int) $selection->susdat_substance_id,
+                (int) ($request->user()?->id ?? 0)
+            );
+        }
 
         return back()->with('success', 'Derivation vote removed.');
     }
@@ -161,5 +184,3 @@ class HazardsDerivationController extends Controller
         return response()->json($selection);
     }
 }
-
-

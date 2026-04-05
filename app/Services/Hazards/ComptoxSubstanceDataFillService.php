@@ -21,6 +21,11 @@ class ComptoxSubstanceDataFillService
         'Bioconcentration Factor',
     ];
 
+    public function __construct(
+        private readonly HazardsClassificationService $classificationService
+    ) {
+    }
+
     public function fillFromParsedData(?int $editorUserId = null): array
     {
         $summary = [
@@ -43,6 +48,7 @@ class ComptoxSubstanceDataFillService
             'inserted_records' => 0,
             'updated_records' => 0,
             'unchanged_records' => 0,
+            'bootstrapped_substances' => 0,
         ];
 
         $detailsByDtxid = ComptoxDetailRecord::query()
@@ -223,8 +229,23 @@ class ComptoxSubstanceDataFillService
 
         $this->fillJanusData($summary, $editorUserId);
         $this->fillPikmeData($summary, $editorUserId, $detailsByDtxid);
+        $this->bootstrapDerivationAndClassification($summary);
 
         return $summary;
+    }
+
+    private function bootstrapDerivationAndClassification(array &$summary): void
+    {
+        $substanceIds = ComptoxSubstanceData::query()
+            ->whereNotNull('susdat_substance_id')
+            ->distinct()
+            ->orderBy('susdat_substance_id')
+            ->pluck('susdat_substance_id');
+
+        foreach ($substanceIds as $substanceId) {
+            $this->classificationService->run((int) $substanceId);
+            $summary['bootstrapped_substances']++;
+        }
     }
 
     private function fillJanusData(array &$summary, ?int $editorUserId = null): void

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class HazardsDerivationService
 {
-    private const AUTO_USER_ID = 100;
+    private const AUTO_USER_ID = 3;
 
     private const BUCKETS = [
         'P_pred',
@@ -52,9 +52,10 @@ class HazardsDerivationService
         }
     }
 
-    public function getDerivationPageData(int|string $susdatSubstanceId): array
+    public function getDerivationPageData(int|string $susdatSubstanceId, ?int $currentUserId = null): array
     {
         $substanceId = (int) $susdatSubstanceId;
+        $currentUserId = $currentUserId !== null ? (int) $currentUserId : null;
         $this->runAutoSelections($substanceId);
 
         $rows = $this->loadCandidateRows($substanceId);
@@ -68,14 +69,6 @@ class HazardsDerivationService
             ->get()
             ->keyBy('bucket');
 
-        $currentVotes = DerivationSelection::query()
-            ->with(['hazardsSubstanceData', 'user'])
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'vote')
-            ->where('is_current', true)
-            ->get()
-            ->groupBy('bucket');
-
         $voteHistory = DerivationSelection::query()
             ->with(['hazardsSubstanceData', 'user'])
             ->where('susdat_substance_id', $substanceId)
@@ -87,7 +80,19 @@ class HazardsDerivationService
 
         $votedMap = [];
         foreach (self::BUCKETS as $bucket) {
-            $votedMap[$bucket] = ($currentVotes->get($bucket) ?? collect())
+            $currentUserVotes = DerivationSelection::query()
+                ->where('susdat_substance_id', $substanceId)
+                ->where('bucket', $bucket)
+                ->where('kind', 'vote')
+                ->where('is_current', true)
+                ->when(
+                    $currentUserId !== null && $currentUserId > 0,
+                    fn ($query) => $query->where('user_id', $currentUserId),
+                    fn ($query) => $query->whereRaw('1 = 0')
+                )
+                ->get();
+
+            $votedMap[$bucket] = $currentUserVotes
                 ->pluck('id', 'hazards_substance_data_id')
                 ->toArray();
         }
@@ -153,6 +158,7 @@ class HazardsDerivationService
                 ->where('susdat_substance_id', $substanceId)
                 ->where('bucket', $bucket)
                 ->where('kind', 'vote')
+                ->where('user_id', $userId)
                 ->where('is_current', true)
                 ->update(['is_current' => false]);
 
@@ -172,11 +178,15 @@ class HazardsDerivationService
         });
     }
 
-    public function removeVote(int $selectionId): void
+    public function removeVote(int $selectionId, ?int $userId = null): void
     {
         $selection = DerivationSelection::query()
             ->where('id', $selectionId)
             ->where('kind', 'vote')
+            ->when(
+                $userId !== null && $userId > 0,
+                fn ($query) => $query->where('user_id', (int) $userId)
+            )
             ->first();
 
         if (! $selection) {
@@ -545,6 +555,7 @@ class HazardsDerivationService
 
         return [
             'selection_id' => (int) $selection->id,
+            'user_id' => $selection->user_id ? (int) $selection->user_id : null,
             'hazards_substance_data_id' => (int) ($selection->hazards_substance_data_id),
             'data_source' => $metadata?->data_source ?? $row?->data_source ?? 'N/A',
             'test_type' => $metadata?->test_type ?? $this->resolveTestTypeLabel($row?->test_type),
@@ -575,11 +586,30 @@ class HazardsDerivationService
 
     private function resolveUserDisplayName(DerivationSelection $selection): string
     {
-        if ((int) $selection->user_id === self::AUTO_USER_ID) {
-            return 'NDSEXPERT';
+        $user = $selection->user;
+        if ((int) $selection->user_id === self::AUTO_USER_ID && $user) {
+            $formattedName = trim((string) ($user->formatted_name ?? ''));
+            if ($formattedName !== '') {
+                return $formattedName;
+            }
+
+            $fullName = trim((string) ($user->full_name ?? ''));
+            if ($fullName !== '') {
+                return $fullName;
+            }
+
+            $username = trim((string) ($user->username ?? ''));
+            if ($username !== '') {
+                return $username;
+            }
+
+            return (string) ($user->email ?? 'NDS EXPERT');
         }
 
-        $user = $selection->user;
+        if ((int) $selection->user_id === self::AUTO_USER_ID) {
+            return 'NDS EXPERT';
+        }
+
         if (! $user) {
             return 'N/A';
         }
@@ -724,5 +754,3 @@ class HazardsDerivationService
         return (string) $value;
     }
 }
-
-

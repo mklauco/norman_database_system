@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 
 class HazardsClassificationController extends Controller
 {
+    private const AUTO_USER_ID = 3;
+
     public function __construct(
         private readonly HazardsClassificationService $classificationService
     ) {
@@ -97,7 +99,7 @@ class HazardsClassificationController extends Controller
         $conclusions = SubstanceClassification::query()
             ->with(['editor', 'supports'])
             ->where('susdat_substance_id', $substanceId)
-            ->orderByRaw('editor_user_id = 100 ASC')
+            ->orderByRaw('editor_user_id = ' . self::AUTO_USER_ID . ' ASC')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get()
@@ -110,29 +112,22 @@ class HazardsClassificationController extends Controller
         $activeAutoBaseline = $conclusions
             ->first(fn (SubstanceClassification $row) => $row->kind === 'auto_baseline' && $row->is_current);
 
+        $activeDerivationConclusion = $conclusions
+            ->first(fn (SubstanceClassification $row) => $row->kind === 'derivation' && $row->is_current);
+
         $classificationRows = $this->buildClassificationRows($selections, $currentUserVotes, $currentUserId);
-        $activeEditorId = 100;
+        $activeEditorId = self::AUTO_USER_ID;
+        $activeConclusionId = $activeAutoBaseline?->id;
 
         if ($currentUserVotes->isNotEmpty()) {
             $activeEditorId = $currentUserId;
+            $activeConclusionId = $conclusions
+                ->first(function (SubstanceClassification $row) use ($activeEditorId) {
+                    return $row->is_current && (int) $row->editor_user_id === $activeEditorId;
+                })?->id;
+        } elseif ($activeDerivationConclusion) {
+            $activeConclusionId = $activeDerivationConclusion->id;
         }
-
-        $activeDerivationVote = DerivationSelection::query()
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'vote')
-            ->where('is_current', true)
-            ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->first();
-
-        if ($currentUserVotes->isEmpty() && $activeDerivationVote?->user_id) {
-            $activeEditorId = (int) $activeDerivationVote->user_id;
-        }
-
-        $activeConclusionId = $conclusions
-            ->first(function (SubstanceClassification $row) use ($activeEditorId) {
-                return $row->is_current && (int) $row->editor_user_id === $activeEditorId;
-            })?->id;
 
         return view('hazards.classification.index', [
             'susdatSubstanceId' => $substanceId,
@@ -237,7 +232,7 @@ class HazardsClassificationController extends Controller
     private function resolveClassificationType(DerivationSelection $selection): string
     {
         if ($selection->kind === 'vote') {
-            return 'Expert derivation';
+            return $this->resolveSelectionUserDisplayName($selection);
         }
 
         $row = $selection->hazardsSubstanceData;
@@ -257,13 +252,80 @@ class HazardsClassificationController extends Controller
         return 'PikMe';
     }
 
-    private function resolveEditorDisplayName(SubstanceClassification $row): string
+    private function resolveSelectionUserDisplayName(DerivationSelection $selection): string
     {
-        if ((int) $row->editor_user_id === 100) {
-            return 'NDSEXPERT';
+        $user = $selection->user;
+        if ((int) $selection->user_id === self::AUTO_USER_ID && $user) {
+            $formattedName = trim((string) ($user->formatted_name ?? ''));
+            if ($formattedName !== '') {
+                return $formattedName;
+            }
+
+            $fullName = trim((string) ($user->full_name ?? ''));
+            if ($fullName !== '') {
+                return $fullName;
+            }
+
+            $username = trim((string) ($user->username ?? ''));
+            if ($username !== '') {
+                return $username;
+            }
+
+            return (string) ($user->email ?? 'NDS EXPERT');
         }
 
+        if ((int) $selection->user_id === self::AUTO_USER_ID) {
+            return 'NDS EXPERT';
+        }
+
+        if (! $user) {
+            return 'Expert derivation';
+        }
+
+        $formattedName = trim((string) ($user->formatted_name ?? ''));
+        if ($formattedName !== '') {
+            return $formattedName;
+        }
+
+        $fullName = trim((string) ($user->full_name ?? ''));
+        if ($fullName !== '') {
+            return $fullName;
+        }
+
+        $username = trim((string) ($user->username ?? ''));
+        if ($username !== '') {
+            return $username;
+        }
+
+        return (string) ($user->email ?? 'Expert derivation');
+    }
+
+    private function resolveEditorDisplayName(SubstanceClassification $row): string
+    {
         $user = $row->editor;
+        if ((int) $row->editor_user_id === self::AUTO_USER_ID && $user) {
+            $formattedName = trim((string) ($user->formatted_name ?? ''));
+            if ($formattedName !== '') {
+                return $formattedName;
+            }
+
+            $fullName = trim((string) ($user->full_name ?? ''));
+            if ($fullName !== '') {
+                return $fullName;
+            }
+
+            $username = trim((string) ($user->username ?? ''));
+            if ($username !== '') {
+                return $username;
+            }
+
+            return (string) ($user->email ?? 'NDS EXPERT');
+        }
+
+        if ((int) $row->editor_user_id === self::AUTO_USER_ID) {
+            return 'NDS EXPERT';
+        }
+
         if (! $user) {
             return 'N/A';
         }
@@ -293,4 +355,3 @@ class HazardsClassificationController extends Controller
         return $testType === '2' ? 2 : 1;
     }
 }
-

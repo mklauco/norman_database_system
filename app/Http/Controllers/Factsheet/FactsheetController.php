@@ -9,6 +9,7 @@ use App\Models\Factsheet\FactsheetEntity;
 use App\Models\Factsheet\FactsheetStatistic;
 use App\Models\Ecotox\LowestPNEC;
 use App\Models\Ecotox\LowestPNECMain;
+use App\Models\Hazards\SubstanceClassification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -68,6 +69,11 @@ class FactsheetController extends Controller
         
         // Process each entity to prepare presentation data
         foreach ($factsheetEntities as $entity) {
+            if ($entity->name === 'PBT/vPvB & PMT/vPvM (NORMAN)') {
+                $entity->processed_data = $this->getHazardsPbtPmtData($substance);
+                continue;
+            }
+
             if (isset($entity->data['method_of_presentation'])) {
                 if ($entity->data['method_of_presentation'] === 'database_table') {
                     // CASE 1: Database table presentation
@@ -235,6 +241,14 @@ class FactsheetController extends Controller
                             'matrix_data' => $methodData['matrix_data'] ?? [],
                             'summary' => $methodData['summary'] ?? []
                         ];
+                    } elseif ($methodData['type'] === 'hazards_pbt_table') {
+                        return [
+                            'type' => 'hazards_pbt_table',
+                            'rows' => $methodData['rows'] ?? [],
+                            'source_label' => $methodData['source_label'] ?? null,
+                            'updated_at' => $methodData['updated_at'] ?? null,
+                            'legend' => $methodData['legend'] ?? [],
+                        ];
                     }
                 }
                 
@@ -360,6 +374,221 @@ class FactsheetController extends Controller
         }
 
         return $pnecValues;
+    }
+
+    private function getHazardsPbtPmtData($substance): array
+    {
+        try {
+            $currentConclusion = SubstanceClassification::query()
+                ->with('supports')
+                ->where('susdat_substance_id', $substance->id)
+                ->where('is_current', true)
+                ->orderByRaw("CASE kind WHEN 'classification' THEN 1 WHEN 'derivation' THEN 2 WHEN 'auto_baseline' THEN 3 ELSE 4 END")
+                ->orderByDesc('updated_at')
+                ->orderByDesc('id')
+                ->first();
+
+            if (! $currentConclusion) {
+                return [
+                    'type' => 'banner',
+                    'color' => 'light-green',
+                    'text' => 'No Hazards derivation or classification data available for this substance yet.',
+                ];
+            }
+
+            $rows = [];
+            foreach (['P', 'B', 'M', 'T'] as $criterion) {
+                $classification = $currentConclusion->{$criterion} ?? null;
+                $winnerPoints = $currentConclusion->{strtolower($criterion) . '_total_points'};
+                $allPoints = $currentConclusion->{strtolower($criterion) . '_all_points'};
+                $supports = $currentConclusion->supports
+                    ->where('criterion', $criterion)
+                    ->where('is_winner', true)
+                    ->pluck('source_type')
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $rows[] = [
+                    'criterion' => match ($criterion) {
+                        'P' => 'P (Persistence)',
+                        'B' => 'B (Bioaccumulation)',
+                        'M' => 'M (Mobility)',
+                        'T' => 'T (Toxicity)',
+                    },
+                    'classification' => $classification ?: 'no data',
+                    'score' => $this->getHazardsCriterionScore($classification),
+                    'reference' => $supports->isNotEmpty() ? $supports->implode('; ') : 'N/A',
+                    'consensus' => $this->formatHazardsConsensus($winnerPoints, $allPoints),
+                ];
+            }
+
+            return [
+                'type' => 'hazards_pbt_table',
+                'rows' => $rows,
+                'classification_rows' => $this->getHazardsPbtPmtClassificationRows($currentConclusion),
+                'pbmt_score' => $this->getHazardsPbmtPrioritizationScore($currentConclusion),
+                'source_label' => $currentConclusion->kind,
+                'updated_at' => $currentConclusion->updated_at,
+                'legend' => [
+                    'P' => ['vP = 1', 'P = 0.75', 'sP (suspectP) = 0.5', 'not P = 0', 'probably-nP = 0.1', 'no data = 0.1'],
+                    'B' => ['vB = 1', 'B = 0.75', 'sB (suspectB) = 0.5', 'not B = 0', 'probably-nB = 0.1', 'no data = 0.1'],
+                    'M' => ['vM = 1', 'M = 0.75', 'sM (suspectM) = 0.5', 'not M = 0', 'probably-nM = 0.1', 'no data = 0.1'],
+                    'T' => ['T+ = 1', 'T = 0.75', 'sT (suspectT) = 0.5', 'not T = 0', 'probably-nT = 0.1', 'no data = 0.1'],
+                ],
+                'classification_legend' => [
+                    'PBT' => [
+                        'if ((P or vP) and (B or vB) and (T or T+)):',
+                        'Classification: PBT',
+                        'PBT score = 1',
+                        'else:',
+                        'Classification: not PBT',
+                        'PBT score = 0',
+                    ],
+                    'vPvB' => [
+                        'if (vP and vB):',
+                        'Classification: vPvB',
+                        'vPvB score = 1',
+                        'else:',
+                        'Classification: not vPvB',
+                        'vPvB score = 0',
+                    ],
+                    'PMT' => [
+                        'if ((P or vP) and (M or vM) and (T or T+)):',
+                        'Classification: PMT',
+                        'PMT score = 1',
+                        'else:',
+                        'Classification: not PMT',
+                        'PMT score = 0',
+                    ],
+                    'vPvM' => [
+                        'if (vP and vM):',
+                        'Classification: vPvM',
+                        'vPvM score = 1',
+                        'else:',
+                        'Classification: not vPvM',
+                        'vPvM score = 0',
+                    ],
+                ],
+                'pbmt_legend' => 'PBMT = P score + B score + M score + T score + PBT score + vPvB score + PMT score + vPvM score',
+            ];
+        } catch (\Throwable $e) {
+            Log::error('Error loading Hazards PBT/PMT factsheet data: ' . $e->getMessage());
+
+            return [
+                'type' => 'banner',
+                'color' => 'light-green',
+                'text' => 'Hazards PBT/PMT data could not be loaded.',
+            ];
+        }
+    }
+
+    private function getHazardsCriterionScore(?string $classification): string
+    {
+        return number_format($this->getHazardsCriterionScoreValue($classification), 2, '.', '');
+    }
+
+    private function getHazardsCriterionScoreValue(?string $classification): float
+    {
+        $code = trim((string) ($classification ?? ''));
+
+        $scores = [
+            'vP' => 1.00,
+            'P' => 0.75,
+            'sP' => 0.50,
+            'nP' => 0.00,
+            'probably-nP' => 0.10,
+            'vB' => 1.00,
+            'B' => 0.75,
+            'sB' => 0.50,
+            'nB' => 0.00,
+            'probably-nB' => 0.10,
+            'vM' => 1.00,
+            'M' => 0.75,
+            'sM' => 0.50,
+            'nM' => 0.00,
+            'probably-nM' => 0.10,
+            'T+' => 1.00,
+            'T' => 0.75,
+            'sT' => 0.50,
+            'nT' => 0.00,
+            'probably-nT' => 0.10,
+        ];
+
+        if ($code === '' || strtolower($code) === 'no data') {
+            return 0.10;
+        }
+
+        return (float) ($scores[$code] ?? 0.10);
+    }
+
+    private function formatHazardsConsensus($winnerPoints, $allPoints): string
+    {
+        if (! is_numeric($winnerPoints) || ! is_numeric($allPoints) || (float) $allPoints <= 0) {
+            return 'N/A';
+        }
+
+        $percent = ((float) $winnerPoints / (float) $allPoints) * 100;
+        $formatted = number_format($percent, 1, '.', '');
+        $formatted = rtrim(rtrim($formatted, '0'), '.');
+
+        return $formatted . '%';
+    }
+
+    private function getHazardsPbtPmtClassificationRows(SubstanceClassification $currentConclusion): array
+    {
+        $p = (string) ($currentConclusion->P ?? '');
+        $b = (string) ($currentConclusion->B ?? '');
+        $m = (string) ($currentConclusion->M ?? '');
+        $t = (string) ($currentConclusion->T ?? '');
+
+        $isPOrvP = in_array($p, ['P', 'vP'], true);
+        $isVvP = $p === 'vP';
+        $isBOrvB = in_array($b, ['B', 'vB'], true);
+        $isVvB = $b === 'vB';
+        $isMOrvM = in_array($m, ['M', 'vM'], true);
+        $isVvM = $m === 'vM';
+        $isTOrTPlus = in_array($t, ['T', 'T+'], true);
+
+        return [
+            [
+                'classification' => 'PBT',
+                'result' => ($isPOrvP && $isBOrvB && $isTOrTPlus) ? 'PBT' : 'not PBT',
+                'score' => ($isPOrvP && $isBOrvB && $isTOrTPlus) ? '1' : '0',
+            ],
+            [
+                'classification' => 'vPvB',
+                'result' => ($isVvP && $isVvB) ? 'vPvB' : 'not vPvB',
+                'score' => ($isVvP && $isVvB) ? '1' : '0',
+            ],
+            [
+                'classification' => 'PMT',
+                'result' => ($isPOrvP && $isMOrvM && $isTOrTPlus) ? 'PMT' : 'not PMT',
+                'score' => ($isPOrvP && $isMOrvM && $isTOrTPlus) ? '1' : '0',
+            ],
+            [
+                'classification' => 'vPvM',
+                'result' => ($isVvP && $isVvM) ? 'vPvM' : 'not vPvM',
+                'score' => ($isVvP && $isVvM) ? '1' : '0',
+            ],
+        ];
+    }
+
+    private function getHazardsPbmtPrioritizationScore(SubstanceClassification $currentConclusion): string
+    {
+        $classificationRows = $this->getHazardsPbtPmtClassificationRows($currentConclusion);
+
+        $criterionScore = $this->getHazardsCriterionScoreValue($currentConclusion->P)
+            + $this->getHazardsCriterionScoreValue($currentConclusion->B)
+            + $this->getHazardsCriterionScoreValue($currentConclusion->M)
+            + $this->getHazardsCriterionScoreValue($currentConclusion->T);
+
+        $classificationScore = collect($classificationRows)
+            ->sum(fn (array $row) => (float) ($row['score'] ?? 0));
+
+        $formatted = number_format($criterionScore + $classificationScore, 2, '.', '');
+
+        return rtrim(rtrim($formatted, '0'), '.');
     }
 
     /**
@@ -511,3 +740,6 @@ class FactsheetController extends Controller
     }
 
 }
+
+
+

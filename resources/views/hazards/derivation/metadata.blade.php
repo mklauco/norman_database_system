@@ -3,155 +3,185 @@
     @include('hazards.header')
   </x-slot>
 
-  @php
-    $formatDate = static function ($value) {
-      if (empty($value)) {
-        return 'N/A';
-      }
+  <div class="container mx-auto px-4 py-8">
+    @php
+      $formatDate = static function ($value) {
+        if (empty($value)) {
+          return null;
+        }
 
-      try {
-        return \Illuminate\Support\Carbon::parse($value)->format('Y-m-d H:i');
-      } catch (\Throwable $e) {
-        return (string) $value;
-      }
-    };
+        try {
+          return \Illuminate\Support\Carbon::parse($value)->format('Y-m-d H:i');
+        } catch (\Throwable $e) {
+          return (string) $value;
+        }
+      };
 
-    $formatNumber = static function ($value) {
-      if ($value === null || $value === '') {
-        return 'N/A';
-      }
+      $valueOrNull = static function ($value) {
+        if (is_null($value)) {
+          return null;
+        }
 
-      if (! is_numeric($value)) {
-        return (string) $value;
-      }
+        if (is_string($value)) {
+          $value = trim($value);
 
-      $numericValue = (float) $value;
-      $absoluteValue = abs($numericValue);
+          return $value === '' ? null : $value;
+        }
 
-      if ($numericValue === 0.0) {
-        return '0';
-      }
+        return $value;
+      };
 
-      if ($absoluteValue > 0 && $absoluteValue < 0.001) {
-        $formatted = sprintf('%.3e', $numericValue);
-        $formatted = preg_replace('/\.?0+e/i', 'e', $formatted) ?? $formatted;
-        $formatted = preg_replace('/e\+?(-?)0*(\d+)/i', 'e$1$2', $formatted) ?? $formatted;
+      $numberLabel = static function ($value, int $decimals = 4) {
+        if ($value === null || $value === '') {
+          return null;
+        }
 
-        return strtolower($formatted);
-      }
+        if (! is_numeric($value)) {
+          return (string) $value;
+        }
 
-      $formatted = number_format($numericValue, 4, '.', '');
+        $numericValue = (float) $value;
+        $absoluteValue = abs($numericValue);
 
-      return rtrim(rtrim($formatted, '0'), '.');
-    };
+        if ($numericValue === 0.0) {
+          return '0';
+        }
 
-    $sections = [
-      'Source and Reference' => [
-        'Selection ID' => $selection->id,
-        'Bucket' => $selection->bucket,
-        'Selection type' => ucfirst((string) $selection->kind),
-        'Data source' => $metadata->data_source,
-        'Editor' => $metadata->editor,
-        'Record date' => $formatDate($metadata->record_date),
-        'Reference type' => $metadata->reference_type,
-        'Title' => $metadata->title,
-        'Authors' => $metadata->authors,
-        'Year' => $metadata->year,
-        'Bibliographic source' => $metadata->bibliographic_source,
-        'DOI' => $metadata->hazards_file_doi,
-      ],
-      'Substance and Test' => [
-        'Substance name' => $metadata->substance_name,
-        'CAS number' => $metadata->cas_number,
-        'Test type' => $metadata->test_type,
-        'Performed under GLP' => $metadata->performed_under_glp,
-        'Standard test' => $metadata->standard_test,
-        'Radio labeled substance' => $metadata->radio_labeled_substance,
-        'Standard qualifier' => $metadata->standard_qualifier,
-        'Standard used' => $metadata->standard_used,
-        'Test matrix' => $metadata->test_matrix,
-        'Test species' => $metadata->test_species,
-        'Duration days' => $formatNumber($metadata->duration_days),
-        'Exposure concentration' => $formatNumber($metadata->exposure_concentration),
-        'pH' => $formatNumber($metadata->ph),
-        'Temperature C' => $formatNumber($metadata->temperature_c),
-        'Total organic carbon' => $formatNumber($metadata->total_organic_carbon),
-      ],
-      'Original and Assessment' => [
-        'Original parameter name' => $metadata->original_parameter_name,
-        'Original qualifier' => $metadata->original_qualifier,
-        'Original value' => $formatNumber($metadata->original_value),
-        'Original value range' => $metadata->original_value_range,
-        'Original unit' => $metadata->original_unit,
-        'Assessment parameter name' => $metadata->assessment_parameter_name,
-        'Assessment qualifier' => $metadata->assessment_qualifier,
-        'Assessment value' => $formatNumber($metadata->assessment_value),
-        'Assessment unit' => $metadata->assessment_unit,
-      ],
-      'Classification and Quality' => [
-        'Hazard criterion' => $metadata->hazard_criterion,
-        'Original classification' => $metadata->original_classification,
-        'Classification score' => $formatNumber($metadata->classification_score),
-        'NORMAN classification' => $metadata->norman_classification,
-        'NORMAN vote' => $metadata->norman_vote,
-        'Automated expert vote' => $metadata->automated_expert_vote,
-        'Applicability domain' => $metadata->applicability_domain,
-        'Applicability domain score' => $formatNumber($metadata->applicability_domain_score),
-        'Reliability score' => $formatNumber($metadata->reliability_score),
-        'Reliability score system' => $metadata->reliability_score_system,
-        'Reliability rational' => $metadata->reliability_rational,
-        'Institution of reliability score' => $metadata->institution_of_reliability_score,
-        'Regulatory context' => $metadata->regulatory_context,
-        'Institution original classification' => $metadata->institution_original_classification,
-        'General comment' => $metadata->general_comment,
-      ],
-    ];
-  @endphp
+        if ($absoluteValue > 0 && $absoluteValue < 0.001) {
+          $formatted = sprintf('%.3e', $numericValue);
+          $formatted = preg_replace('/\.?0+e/i', 'e', $formatted) ?? $formatted;
+          $formatted = preg_replace('/e\+?(-?)0*(\d+)/i', 'e$1$2', $formatted) ?? $formatted;
 
-  <div class="py-4">
-    <div class="w-full mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white shadow-lg sm:rounded-lg">
-        <div class="p-6 text-gray-900 space-y-6">
-          <div class="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900">Hazards Derivation Metadata</h1>
-              <div class="text-sm text-gray-600 mt-2">
-                <span class="font-medium">{{ $substance->substance_name ?? 'Substance' }}</span>
-                |
-                CAS: {{ $substance->cas_no ?? 'N/A' }}
-                |
-                NORMAN SusDat ID: {{ $selection->susdat_substance_id ? 'NS' . str_pad((string) $selection->susdat_substance_id, 8, '0', STR_PAD_LEFT) : 'N/A' }}
-                |
-                {{ $substance->inchikey ?? 'N/A' }}
-              </div>
-            </div>
+          return strtolower($formatted);
+        }
 
-            <div class="flex gap-2">
-              <a href="{{ route('hazards.derivation.index', ['susdatSubstanceId' => $selection->susdat_substance_id]) }}" class="btn-clear">Back to Derivation</a>
-            </div>
-          </div>
+        $formatted = number_format($numericValue, $decimals, '.', '');
 
-          @foreach ($sections as $sectionTitle => $fields)
-            <div class="border border-gray-200 rounded-lg overflow-hidden">
-              <div class="bg-slate-100 px-4 py-3 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">{{ $sectionTitle }}</h2>
-              </div>
+        return rtrim(rtrim($formatted, '0'), '.');
+      };
 
-              <div class="overflow-x-auto">
-                <table class="table-standard text-sm">
-                  <tbody>
-                    @foreach ($fields as $label => $value)
-                      <tr class="@if ($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
-                        <th class="p-2 text-left font-semibold w-72">{{ $label }}</th>
-                        <td class="p-2">{{ filled($value) ? $value : 'N/A' }}</td>
-                      </tr>
-                    @endforeach
-                  </tbody>
-                </table>
-              </div>
+      $bucketLabel = strtoupper(substr((string) $selection->bucket, 0, 1));
+      $modeLabel = str_contains((string) $selection->bucket, '_exp') ? 'Experimental' : 'Predicted';
+      $selectionTypeLabel = $selection->kind === 'vote' ? 'Expert Vote' : 'Auto Selection';
+
+      $detailSections = [
+        'Selection Overview' => [
+          ['label' => 'Selection ID', 'value' => $selection->id],
+          ['label' => 'Bucket', 'value' => $selection->bucket],
+          ['label' => 'Selection Type', 'value' => $selectionTypeLabel],
+          ['label' => 'Hazard Criterion', 'value' => $valueOrNull($metadata->hazard_criterion) ?? $bucketLabel],
+          ['label' => 'Source Record ID', 'value' => $selection->hazards_substance_data_id],
+        ],
+        'Substance Identity' => [
+          ['label' => 'Substance Name', 'value' => $valueOrNull($substance->substance_name) ?? $valueOrNull($metadata->substance_name)],
+          ['label' => 'CAS Number', 'value' => $valueOrNull($substance->cas_no) ?? $valueOrNull($metadata->cas_number)],
+          ['label' => 'InChIKey', 'value' => $valueOrNull($substance->inchikey)],
+        ],
+        'Parameter and Classification' => [
+          ['label' => 'Assessment Parameter', 'value' => $valueOrNull($metadata->assessment_parameter_name)],
+          ['label' => 'NORMAN Classification', 'value' => $valueOrNull($metadata->norman_classification)],
+          ['label' => 'NORMAN Vote', 'value' => $valueOrNull($metadata->norman_vote)],
+          ['label' => 'Automated Expert Vote', 'value' => $valueOrNull($metadata->automated_expert_vote)],
+          ['label' => 'Original Classification', 'value' => $valueOrNull($metadata->original_classification)],
+          ['label' => 'Classification Score', 'value' => $numberLabel($metadata->classification_score)],
+        ],
+        'Reference and Source' => [
+          ['label' => 'Data Source', 'value' => $valueOrNull($metadata->data_source)],
+          ['label' => 'Editor', 'value' => $valueOrNull($metadata->editor)],
+          ['label' => 'Record Date', 'value' => $formatDate($metadata->record_date)],
+          ['label' => 'Reference Type', 'value' => $valueOrNull($metadata->reference_type)],
+          ['label' => 'Title', 'value' => $valueOrNull($metadata->title)],
+          ['label' => 'Authors', 'value' => $valueOrNull($metadata->authors)],
+          ['label' => 'Year', 'value' => $valueOrNull($metadata->year)],
+          ['label' => 'Bibliographic Source', 'value' => $valueOrNull($metadata->bibliographic_source)],
+          ['label' => 'DOI', 'value' => $valueOrNull($metadata->hazards_file_doi)],
+        ],
+        'Test Context' => [
+          ['label' => 'Test Type', 'value' => $valueOrNull($metadata->test_type)],
+          ['label' => 'Performed Under GLP', 'value' => $valueOrNull($metadata->performed_under_glp)],
+          ['label' => 'Standard Test', 'value' => $valueOrNull($metadata->standard_test)],
+          ['label' => 'Radio-Labeled Substance', 'value' => $valueOrNull($metadata->radio_labeled_substance)],
+          ['label' => 'Standard Qualifier', 'value' => $valueOrNull($metadata->standard_qualifier)],
+          ['label' => 'Standard Used', 'value' => $valueOrNull($metadata->standard_used)],
+          ['label' => 'Test Matrix', 'value' => $valueOrNull($metadata->test_matrix)],
+          ['label' => 'Test Species', 'value' => $valueOrNull($metadata->test_species)],
+        ],
+        'Reported Values and Quality Notes' => [
+          ['label' => 'Original Parameter', 'value' => $valueOrNull($metadata->original_parameter_name)],
+          ['label' => 'Original Qualifier', 'value' => $valueOrNull($metadata->original_qualifier)],
+          ['label' => 'Original Value', 'value' => $numberLabel($metadata->original_value)],
+          ['label' => 'Original Value Range', 'value' => $valueOrNull($metadata->original_value_range)],
+          ['label' => 'Original Unit', 'value' => $valueOrNull($metadata->original_unit)],
+          ['label' => 'Assessment Qualifier', 'value' => $valueOrNull($metadata->assessment_qualifier)],
+          ['label' => 'Assessment Value', 'value' => $numberLabel($metadata->assessment_value)],
+          ['label' => 'Assessment Unit', 'value' => $valueOrNull($metadata->assessment_unit)],
+          ['label' => 'Duration (days)', 'value' => $numberLabel($metadata->duration_days)],
+          ['label' => 'Exposure Concentration', 'value' => $numberLabel($metadata->exposure_concentration)],
+          ['label' => 'pH', 'value' => $numberLabel($metadata->ph)],
+          ['label' => 'Temperature (C)', 'value' => $numberLabel($metadata->temperature_c)],
+          ['label' => 'Total Organic Carbon', 'value' => $numberLabel($metadata->total_organic_carbon)],
+          ['label' => 'Applicability Domain', 'value' => $valueOrNull($metadata->applicability_domain)],
+          ['label' => 'Applicability Domain Score', 'value' => $numberLabel($metadata->applicability_domain_score)],
+          ['label' => 'Reliability Score', 'value' => $numberLabel($metadata->reliability_score)],
+          ['label' => 'Reliability Score System', 'value' => $valueOrNull($metadata->reliability_score_system)],
+          ['label' => 'Reliability Rational', 'value' => $valueOrNull($metadata->reliability_rational)],
+          ['label' => 'Institution of Reliability Score', 'value' => $valueOrNull($metadata->institution_of_reliability_score)],
+          ['label' => 'Regulatory Context', 'value' => $valueOrNull($metadata->regulatory_context)],
+          ['label' => 'Institution Original Classification', 'value' => $valueOrNull($metadata->institution_original_classification)],
+          ['label' => 'General Comment', 'value' => $valueOrNull($metadata->general_comment)],
+        ],
+      ];
+
+      $visibleSections = collect($detailSections)
+        ->map(function ($rows) {
+          return array_values(array_filter($rows, static function ($row) {
+            return array_key_exists('value', $row) && ! is_null($row['value']);
+          }));
+        })
+        ->filter(static fn ($rows) => count($rows) > 0);
+    @endphp
+
+    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+      <h1 class="text-2xl font-bold text-gray-900 mb-4">Hazards Derivation Metadata</h1>
+
+      <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+        <span class="px-2 py-1 rounded bg-blue-100 text-blue-800">{{ $bucketLabel }}</span>
+        <span class="px-2 py-1 rounded bg-emerald-100 text-emerald-800">{{ $modeLabel }}</span>
+        <span class="px-2 py-1 rounded bg-slate-100 text-slate-800">{{ $selectionTypeLabel }}</span>
+      </div>
+
+      <div class="mb-6 text-sm text-gray-600">
+        <span class="font-medium">{{ $substance->substance_name ?? 'Substance' }}</span>
+        |
+        CAS: {{ $substance->cas_no ?? 'N/A' }}
+        |
+        NORMAN SusDat ID: {{ $selection->susdat_substance_id ? 'NS' . str_pad((string) $selection->susdat_substance_id, 8, '0', STR_PAD_LEFT) : 'N/A' }}
+        |
+        {{ $substance->inchikey ?? 'N/A' }}
+      </div>
+
+      @if ($visibleSections->isNotEmpty())
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm">
+          @foreach ($visibleSections as $sectionTitle => $rows)
+            <div class="space-y-2">
+              <h2 class="text-base font-semibold text-gray-800 border-b pb-1">{{ $sectionTitle }}</h2>
+              @foreach ($rows as $row)
+                <div class="leading-relaxed">
+                  <span class="font-semibold">{{ $row['label'] }}:</span>
+                  <span class="break-words">{{ $row['value'] }}</span>
+                </div>
+              @endforeach
             </div>
           @endforeach
         </div>
+      @else
+        <div class="text-sm text-gray-600">
+          No metadata details are available for this selection.
+        </div>
+      @endif
+
+      <div class="mt-6">
+        <a href="{{ route('hazards.derivation.index', ['susdatSubstanceId' => $selection->susdat_substance_id]) }}" class="btn-submit">Back</a>
       </div>
     </div>
   </div>

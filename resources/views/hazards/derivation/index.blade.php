@@ -4,6 +4,7 @@
   </x-slot>
 
   @php
+    $currentUserId = (int) (auth()->id() ?? 0);
     $currentUserDisplayName = trim((string) (auth()->user()?->formatted_name ?? ''));
     if ($currentUserDisplayName === '') {
       $currentUserDisplayName = trim((string) (auth()->user()?->full_name ?? ''));
@@ -12,7 +13,7 @@
       $currentUserDisplayName = trim((string) (auth()->user()?->username ?? ''));
     }
     if ($currentUserDisplayName === '') {
-      $currentUserDisplayName = (string) (auth()->user()?->email ?? 'NDSEXPERT');
+      $currentUserDisplayName = (string) (auth()->user()?->email ?? 'NDS EXPERT');
     }
 
     $bucketGroups = [
@@ -119,6 +120,9 @@
                     $bucketAuto = $currentAuto[$bucket] ?? null;
                     $bucketVotes = $currentVotes[$bucket] ?? [];
                     $bucketVotedMap = $votedMap[$bucket] ?? [];
+                    $bucketActiveVotesByRow = collect($bucketVotes)
+                      ->filter(fn ($vote) => ! empty($vote['active']))
+                      ->groupBy('hazards_substance_data_id');
                   @endphp
 
                   <div class="border border-gray-200 rounded-lg overflow-hidden bg-white">
@@ -143,8 +147,6 @@
                               <th rowspan="2">AD</th>
                               <th rowspan="2">Reliability score</th>
                               <th rowspan="2">Select</th>
-                              <th rowspan="2">Auto</th>
-                              <th rowspan="2">Expert</th>
                             </tr>
                             <tr class="bg-gray-600 text-white">
                               <th>Value</th>
@@ -155,6 +157,9 @@
                           </thead>
                           <tbody>
                             @forelse ($bucketCandidates as $row)
+                              @php
+                                $activeVotesForRow = $bucketActiveVotesByRow->get($row['hazards_substance_data_id'], collect());
+                              @endphp
                               <tr class="@if ($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
                                 <td class="p-1 text-center">
                                   <a href="{{ route('hazards.data.form', $row['hazards_substance_data_id']) }}" class="link-lime-text" target="_blank">
@@ -174,39 +179,47 @@
                                 <td class="p-1 text-center">
                                   @if ($row['auto_selected'])
                                     <span class="text-xs px-2 py-1 bg-gray-200 text-gray-700">Auto</span>
-                                  @elseif (isset($bucketVotedMap[$row['hazards_substance_data_id']]))
-                                    <form method="POST" action="{{ route('hazards.derivation.vote.remove') }}">
-                                      @csrf
-                                      <input type="hidden" name="selection_id" value="{{ $bucketVotedMap[$row['hazards_substance_data_id']] }}">
-                                      <button type="submit" class="text-xs px-2 py-1 bg-red-100 text-red-700">Remove vote</button>
-                                    </form>
                                   @else
-                                    <button
-                                      type="button"
-                                      class="text-xs px-2 py-1 bg-lime-100 text-lime-800"
-                                      data-susdat-substance-id="{{ $susdatSubstanceId }}"
-                                      data-bucket="{{ $bucket }}"
-                                      data-hazard-criterion="{{ $criterion }}"
-                                      data-hazards-substance-data-id="{{ $row['hazards_substance_data_id'] }}"
-                                      data-data-source="{{ $row['data_source'] }}"
-                                      data-test-type="{{ $row['test_type'] }}"
-                                      data-original-value="{{ $row['original_value'] }}"
-                                      data-original-unit="{{ $row['original_unit'] }}"
-                                      data-assessment-value="{{ $row['value_assessment_index'] }}"
-                                      data-unit="{{ $row['unit'] }}"
-                                      data-assessment-class="{{ $row['assessment_class'] }}"
-                                      data-reliability-score="{{ $row['reliability_score'] }}"
-                                      onclick="openHazardsVoteModal(this)">
-                                      Vote
-                                    </button>
+                                    <div class="flex flex-col items-center gap-2">
+                                      @if ($activeVotesForRow->isNotEmpty())
+                                        <div class="flex flex-col items-center gap-1">
+                                          @foreach ($activeVotesForRow as $activeVote)
+                                            <div class="flex items-center gap-1 flex-wrap justify-center">
+                                              <form method="POST" action="{{ route('hazards.derivation.vote.remove') }}">
+                                                @csrf
+                                                <input type="hidden" name="selection_id" value="{{ $activeVote['selection_id'] }}">
+                                                <button type="submit" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded">Remove vote</button>
+                                              </form>
+                                            </div>
+                                          @endforeach
+                                        </div>
+                                      @else
+                                        <button
+                                          type="button"
+                                          class="text-xs px-2 py-1 bg-lime-100 text-lime-800 rounded"
+                                          data-susdat-substance-id="{{ $susdatSubstanceId }}"
+                                          data-bucket="{{ $bucket }}"
+                                          data-hazard-criterion="{{ $criterion }}"
+                                          data-hazards-substance-data-id="{{ $row['hazards_substance_data_id'] }}"
+                                          data-data-source="{{ $row['data_source'] }}"
+                                          data-test-type="{{ $row['test_type'] }}"
+                                          data-original-value="{{ $row['original_value'] }}"
+                                          data-original-unit="{{ $row['original_unit'] }}"
+                                          data-assessment-value="{{ $row['value_assessment_index'] }}"
+                                          data-unit="{{ $row['unit'] }}"
+                                          data-assessment-class="{{ $row['assessment_class'] }}"
+                                          data-reliability-score="{{ $row['reliability_score'] }}"
+                                          onclick="openHazardsVoteModal(this)">
+                                          Vote
+                                        </button>
+                                      @endif
+                                    </div>
                                   @endif
                                 </td>
-                                <td class="p-1 text-center">@if ($row['auto_selected']) yes @endif</td>
-                                <td class="p-1 text-center">-</td>
                               </tr>
                             @empty
                               <tr>
-                                <td colspan="14" class="p-3 text-center text-gray-500">No data</td>
+                                <td colspan="12" class="p-3 text-center text-gray-500">No data</td>
                               </tr>
                             @endforelse
                           </tbody>
@@ -339,11 +352,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Editor</label>
-                    <input type="text" id="vote-editor" name="meta_editor" class="w-full border-gray-300 focus:border-lime-500 focus:ring-lime-500 text-sm">
+                    <input type="text" id="vote-editor" name="meta_editor" readonly class="w-full border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed focus:border-gray-300 focus:ring-0 text-sm">
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Record date</label>
-                    <input type="text" id="vote-date" name="meta_date" class="w-full border-gray-300 focus:border-lime-500 focus:ring-lime-500 text-sm">
+                    <input type="text" id="vote-date" name="meta_date" readonly class="w-full border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed focus:border-gray-300 focus:ring-0 text-sm">
                   </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -371,7 +384,7 @@
                   </div>
                   <div class="sm:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">DOI</label>
-                    <input type="text" id="vote-doi" name="meta_doi" class="w-full border-gray-300 focus:border-lime-500 focus:ring-lime-500 text-sm">
+                    <input type="text" id="vote-doi" name="meta_doi" readonly class="w-full border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed focus:border-gray-300 focus:ring-0 text-sm">
                   </div>
                 </div>
                 <div>
@@ -399,11 +412,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Substance name</label>
-                    <input type="text" id="vote-substance-name" name="meta_substance_name" class="w-full border-gray-300 focus:border-lime-500 focus:ring-lime-500 text-sm">
+                    <input type="text" id="vote-substance-name" name="meta_substance_name" readonly class="w-full border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed focus:border-gray-300 focus:ring-0 text-sm">
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">CAS</label>
-                    <input type="text" id="vote-cas" name="meta_cas" class="w-full border-gray-300 focus:border-lime-500 focus:ring-lime-500 text-sm">
+                    <input type="text" id="vote-cas" name="meta_cas" readonly class="w-full border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed focus:border-gray-300 focus:ring-0 text-sm">
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Radio labeled substance</label>
@@ -503,7 +516,7 @@
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Hazard criterion</label>
-                    <input type="text" id="vote-hazard-criterion" name="meta_hazard_criterion" class="w-full border-gray-300 focus:border-lime-500 focus:ring-lime-500 text-sm">
+                    <input type="text" id="vote-hazard-criterion" name="meta_hazard_criterion" readonly class="w-full border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed focus:border-gray-300 focus:ring-0 text-sm">
                   </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -755,7 +768,6 @@
           .then(function (row) {
             fields.classificationCode.value = row.data_source || fields.classificationCode.value;
             fields.editor.value = hazardsVoteCurrentUser;
-            fields.date.value = row.date || fields.date.value;
             fields.referenceType.value = row.reference_type || fields.referenceType.value;
             fields.title.value = row.title || '';
             fields.authors.value = row.authors || '';
