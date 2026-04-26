@@ -77,7 +77,6 @@ class CleanupExpiredExports extends Command
                 }
 
                 $updated = ExportDownload::where('filename', $filename)
-                    ->whereNotNull('file_size_bytes')
                     ->update([
                         'message' => "File deleted after {$hours}h retention window.",
                         'file_size_bytes' => null,
@@ -95,30 +94,111 @@ class CleanupExpiredExports extends Command
             $bytesFreed += $size;
         }
 
+        // Reconcile pass: rows still claiming the file is available but whose
+        // file is no longer on disk (e.g. deleted manually, or by an earlier
+        // buggy run of this command). Mark them so the UI can hide the link.
+        $reconciled = $this->reconcileOrphanRows($root, $dryRun);
+
         $summary = sprintf(
-            '%s%d file(s), %s freed, %d ExportDownload row(s) updated, %d orphan file(s), %d error(s)',
+            '%s%d file(s), %s freed, %d row(s) updated by file scan, %d orphan file(s), %d row(s) reconciled, %d error(s)',
             $dryRun ? '[dry-run] would delete: ' : 'deleted: ',
             $deleted,
             $this->formatBytes($bytesFreed),
             $dbUpdated,
             $orphans,
+            $reconciled,
             $errors
         );
 
         $this->info($summary);
 
-        if (! $dryRun && $deleted > 0) {
+        if (! $dryRun && ($deleted > 0 || $reconciled > 0)) {
             Log::info('exports:cleanup completed', [
                 'hours' => $hours,
                 'deleted_files' => $deleted,
                 'bytes_freed' => $bytesFreed,
                 'db_rows_updated' => $dbUpdated,
                 'orphan_files' => $orphans,
+                'rows_reconciled' => $reconciled,
                 'errors' => $errors,
             ]);
         }
 
         return $errors > 0 ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * Find ExportDownload rows that still advertise a file (file_size_bytes
+     * not null, status=completed) but whose file is missing on disk, and
+     * mark them so the UI can render an "expired" state.
+     */
+    private function reconcileOrphanRows(string $root, bool $dryRun): int
+    {
+        $candidates = ExportDownload::query()
+            ->where('status', 'completed')
+            ->whereNotNull('file_size_bytes')
+            ->select(['id', 'filename', 'database_key'])
+            ->get();
+
+        $reconciled = 0;
+
+        foreach ($candidates as $row) {
+            $candidatePaths = $this->candidatePathsFor($root, $row->filename, $row->database_key);
+
+            $found = false;
+            foreach ($candidatePaths as $path) {
+                if (is_file($path)) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            if ($found) {
+                continue;
+            }
+
+            $this->line("[reconcile] row {$row->id} filename={$row->filename}: file missing, marking expired");
+
+            if (! $dryRun) {
+                ExportDownload::where('id', $row->id)->update([
+                    'message' => 'Export file no longer available.',
+                    'file_size_bytes' => null,
+                    'file_size_formatted' => null,
+                ]);
+            }
+
+            $reconciled++;
+        }
+
+        return $reconciled;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function candidatePathsFor(string $root, string $filename, ?string $databaseKey): array
+    {
+        // Map database_key → expected subdir; fall back to a recursive glob so
+        // we work for module exports we haven't explicitly mapped.
+        $subdirByKey = [
+            'empodat' => 'empodat',
+            'empodat_suspect' => 'empodat_suspect',
+            'sars' => 'sars',
+            'passive' => 'passive',
+            'indoor' => 'indoor',
+            'literature' => 'literature',
+            'prioritisation' => 'prioritisation',
+            'susdat' => 'susdat',
+        ];
+
+        $paths = [];
+        if ($databaseKey !== null && isset($subdirByKey[$databaseKey])) {
+            $paths[] = $root.'/'.$subdirByKey[$databaseKey].'/'.$filename;
+        }
+
+        $paths = array_merge($paths, glob($root.'/*/'.$filename) ?: []);
+
+        return array_values(array_unique($paths));
     }
 
     private function formatBytes(int $bytes): string

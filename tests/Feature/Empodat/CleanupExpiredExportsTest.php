@@ -131,6 +131,62 @@ class CleanupExpiredExportsTest extends TestCase
         );
     }
 
+    public function test_reconcile_marks_db_rows_whose_files_are_missing(): void
+    {
+        $filename = 'reconcile_'.bin2hex(random_bytes(4)).'.csv';
+
+        $rowId = DB::table('export_downloads')->insertGetId([
+            'user_id' => null,
+            'filename' => $filename,
+            'format' => 'csv',
+            'database_key' => 'empodat',
+            'status' => 'completed',
+            'file_size_bytes' => 5000,
+            'file_size_formatted' => '4.9 KB',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->artisan('exports:cleanup', ['--hours' => 24])
+            ->assertExitCode(0);
+
+        $row = ExportDownload::find($rowId);
+        $this->assertNotNull($row);
+        $this->assertNull($row->file_size_bytes, 'reconcile must clear file_size_bytes');
+        $this->assertNull($row->file_size_formatted);
+        $this->assertSame('completed', $row->status, 'status must be preserved for history');
+        $this->assertStringContainsString(
+            'no longer available',
+            (string) $row->message,
+            'reconcile message should distinguish from retention deletion'
+        );
+    }
+
+    public function test_reconcile_leaves_rows_alone_when_file_still_exists(): void
+    {
+        $filename = 'present_'.bin2hex(random_bytes(4)).'.csv';
+        // Recent file (within retention) inside sandbox; reconcile glob will find it.
+        $this->writeFile($filename, 'still here', age: 60);
+
+        $rowId = DB::table('export_downloads')->insertGetId([
+            'user_id' => null,
+            'filename' => $filename,
+            'format' => 'csv',
+            'database_key' => 'empodat',
+            'status' => 'completed',
+            'file_size_bytes' => 10,
+            'file_size_formatted' => '10 B',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->artisan('exports:cleanup', ['--hours' => 24])
+            ->assertExitCode(0);
+
+        $row = ExportDownload::find($rowId);
+        $this->assertSame(10, $row->file_size_bytes, 'row must be untouched when file still on disk');
+    }
+
     public function test_invalid_hours_returns_failure(): void
     {
         $this->artisan('exports:cleanup', ['--hours' => 0])

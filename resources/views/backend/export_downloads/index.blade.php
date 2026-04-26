@@ -120,7 +120,11 @@
                         @endif
                       </td>
                       <td class="py-2 px-2 text-center">
-                        @if($download->status === 'completed')
+                        @if($download->status === 'completed' && $download->file_size_bytes === null)
+                          <span class="text-gray-500 text-xs italic" title="Export files are deleted automatically 24 hours after creation.">
+                            Expired (auto-deleted after 24h)
+                          </span>
+                        @elseif($download->status === 'completed')
                           @php
                             $downloadRoute = '';
                             try {
