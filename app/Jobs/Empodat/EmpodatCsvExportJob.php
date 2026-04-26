@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Empodat;
 
 use App\Jobs\AbstractCsvExportJob;
@@ -406,28 +408,25 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
     }
 
     /**
-     * Export using PostgreSQL COPY for large datasets
-     * This method streams data directly from PostgreSQL to a CSV file
-     * with minimal PHP memory usage.
+     * Export large datasets via a PostgreSQL server-side cursor.
+     * Streams rows over the existing PDO connection — no subprocess,
+     * no shell escaping, errors surface as PDOException for Sentry.
      *
      * @return int Number of records exported
      */
     public function exportWithPostgresCopy(QueryLog $queryLog, string $filePath): int
     {
         $exportDate = Carbon::now()->format('Y-m-d H:i:s');
+        $selectSql = $this->buildCopyQuery($queryLog, $exportDate);
 
-        // Build the COPY query with all JOINs and the export date
-        $copyQuery = $this->buildCopyQuery($queryLog, $exportDate);
-
-        Log::info('Starting PostgreSQL COPY export', [
+        Log::info('Starting PDO server-side cursor export', [
             'query_log_id' => $queryLog->id,
             'file_path' => $filePath,
         ]);
 
-        // Execute the COPY command using psql
-        $rowCount = $this->executePsqlCopy($copyQuery, $filePath);
+        $rowCount = $this->streamSelectToCsv($selectSql, $this->getHeaders(), $filePath);
 
-        Log::info('PostgreSQL COPY export completed', [
+        Log::info('PDO server-side cursor export completed', [
             'query_log_id' => $queryLog->id,
             'rows_exported' => $rowCount,
         ]);
@@ -532,72 +531,101 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
     }
 
     /**
-     * Execute psql COPY command and stream output to file
+     * Stream a SELECT to a CSV file using a PostgreSQL server-side cursor.
+     * Writes UTF-8 BOM, headers, then fetches rows in fixed-size batches
+     * so PHP memory stays bounded regardless of result-set size.
      *
-     * @return int Number of rows exported
+     * On error: closes cursor, rolls back, removes partial file, rethrows.
+     *
+     * @param  array<int, string>  $headers
+     * @return int Number of data rows written (excludes header)
      */
-    protected function executePsqlCopy(string $query, string $filePath): int
+    protected function streamSelectToCsv(string $selectSql, array $headers, string $filePath): int
     {
-        // Get database connection details from config
-        $host = config('database.connections.pgsql.host');
-        $port = config('database.connections.pgsql.port');
-        $database = config('database.connections.pgsql.database');
-        $username = config('database.connections.pgsql.username');
-        $password = config('database.connections.pgsql.password');
+        $pdo = DB::connection('pgsql')->getPdo();
+        $cursorName = 'empodat_export_cursor_'.bin2hex(random_bytes(8));
+        $fetchSize = 10000;
 
-        // Escape single quotes in the query for psql -c
-        $escapedQuery = str_replace("'", "''", $query);
+        $handle = null;
+        $cursorOpen = false;
+        $inTransaction = false;
 
-        // Build the psql command with COPY TO STDOUT
-        // Using \copy which is client-side and writes to local file
-        $copyCommand = "\\copy ({$query}) TO STDOUT WITH (FORMAT CSV, HEADER true, ENCODING 'UTF8')";
-
-        // Build the full psql command
-        $command = sprintf(
-            'PGPASSWORD=%s psql -h %s -p %s -U %s -d %s -c %s > %s 2>&1',
-            escapeshellarg($password),
-            escapeshellarg($host),
-            escapeshellarg($port),
-            escapeshellarg($username),
-            escapeshellarg($database),
-            escapeshellarg($copyCommand),
-            escapeshellarg($filePath)
-        );
-
-        Log::debug('Executing psql COPY command', [
-            'host' => $host,
-            'database' => $database,
-            'output_file' => $filePath,
-        ]);
-
-        // Execute the command
-        $output = [];
-        $returnCode = 0;
-        exec($command, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            $errorMessage = implode("\n", $output);
-            Log::error('psql COPY command failed', [
-                'return_code' => $returnCode,
-                'output' => $errorMessage,
-            ]);
-            throw new \RuntimeException("PostgreSQL COPY export failed: {$errorMessage}");
-        }
-
-        // Count the lines in the output file (subtract 1 for header)
-        $lineCount = 0;
-        if (file_exists($filePath)) {
-            $handle = fopen($filePath, 'r');
-            if ($handle) {
-                while (fgets($handle) !== false) {
-                    $lineCount++;
-                }
-                fclose($handle);
+        try {
+            $handle = fopen($filePath, 'wb');
+            if ($handle === false) {
+                throw new \RuntimeException("Cannot open file for writing: {$filePath}");
             }
-        }
 
-        // Subtract header row
-        return max(0, $lineCount - 1);
+            // UTF-8 BOM for Excel compatibility, then header row
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, $headers);
+
+            $pdo->beginTransaction();
+            $inTransaction = true;
+
+            $pdo->exec("DECLARE {$cursorName} NO SCROLL CURSOR FOR {$selectSql}");
+            $cursorOpen = true;
+
+            $totalRows = 0;
+
+            while (true) {
+                $stmt = $pdo->query("FETCH FORWARD {$fetchSize} FROM {$cursorName}");
+                $rows = $stmt->fetchAll(\PDO::FETCH_NUM);
+                $stmt->closeCursor();
+
+                if (empty($rows)) {
+                    break;
+                }
+
+                foreach ($rows as $row) {
+                    fputcsv($handle, $row);
+                }
+
+                $totalRows += count($rows);
+
+                unset($rows, $stmt);
+            }
+
+            $pdo->exec("CLOSE {$cursorName}");
+            $cursorOpen = false;
+
+            $pdo->commit();
+            $inTransaction = false;
+
+            if (! fclose($handle)) {
+                $handle = null;
+                throw new \RuntimeException("Failed to close output file: {$filePath}");
+            }
+            $handle = null;
+
+            return $totalRows;
+        } catch (\Throwable $e) {
+            if ($handle !== null) {
+                @fclose($handle);
+            }
+
+            if ($cursorOpen) {
+                try {
+                    $pdo->exec("CLOSE {$cursorName}");
+                } catch (\Throwable $closeEx) {
+                    Log::warning('Failed to CLOSE cursor on error path: '.$closeEx->getMessage());
+                }
+            }
+
+            if ($inTransaction) {
+                try {
+                    $pdo->rollBack();
+                } catch (\Throwable $rollbackEx) {
+                    Log::warning('Failed to rollback transaction on error path: '.$rollbackEx->getMessage());
+                }
+            }
+
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+
+            throw $e;
+        }
     }
 
     /**
