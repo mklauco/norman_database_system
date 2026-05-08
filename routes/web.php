@@ -95,6 +95,8 @@ Route::prefix('backend')->middleware('auth')->group(function () {
     Route::resource('templates', TemplateController::class);
     Route::get('templates/{template}/download', [TemplateController::class, 'download'])->name('templates.download');
 
+    Route::get('files/export-csv', [FileController::class, 'exportCsv'])->name('files.export.csv');
+    Route::get('files/export-markdown', [FileController::class, 'exportMarkdown'])->name('files.export.markdown');
     Route::resource('files', FileController::class);
     Route::get('/file-data', [FileController::class, 'getFileData'])->middleware('auth');
     // Specific templates for a database entity code

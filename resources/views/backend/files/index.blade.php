@@ -23,6 +23,20 @@
           <div class="mb-6 flex justify-between items-center">
             <h2 class="text-xl font-semibold text-gray-800">Files Management</h2>
             <div class="flex space-x-3">
+              @php
+                $exportParams = array_filter([
+                    'database_entity_id' => $databaseEntityId,
+                    'search' => $search,
+                    'sort' => $sort,
+                    'direction' => $direction,
+                ], fn($v) => $v !== '' && $v !== null);
+              @endphp
+              <a href="{{ route('files.export.csv', $exportParams) }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" title="Download filtered list as CSV">
+                Export CSV
+              </a>
+              <a href="{{ route('files.export.markdown', $exportParams) }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" title="Download filtered list as Markdown">
+                Export Markdown
+              </a>
               <a href="{{ route('files.create') }}" class="btn-submit">
                 Upload New File
               </a>
