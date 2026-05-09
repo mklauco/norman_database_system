@@ -42,25 +42,24 @@ Set in **Settings → Secrets and variables → Actions**:
 |---|---|
 | `DEPLOY_SSH_HOST` | Server hostname or IP |
 | `DEPLOY_SSH_USER` | SSH user that owns `/opt/projects/norman_database_system` and is in the `docker` group |
-| `DEPLOY_SSH_KEY` | Private SSH key (full PEM contents). Generate fresh: `ssh-keygen -t ed25519 -f ~/.ssh/nds_deploy -C github-actions-deploy`. Paste **private** key here, append **public** key to the deploy user's `~/.ssh/authorized_keys` on the server. |
-| `DEPLOY_NOTIFY_EMAIL` | Email for deploy success/failure notifications |
-| `SMTP_USERNAME` | SMTP username for sending notification emails (e.g. Gmail address) |
-| `SMTP_PASSWORD` | SMTP app password (NOT your real Gmail password — use an app-specific password) |
+| `DEPLOY_SSH_KEY` | Private SSH key (full PEM contents). Generate fresh on the server: `ssh-keygen -t ed25519 -f ~/.ssh/nds_deploy -C github-actions-deploy -N ""`. Paste the **private** key here. Append the **public** key (`~/.ssh/nds_deploy.pub`) to the deploy user's `~/.ssh/authorized_keys` on the server. |
+| `DEPLOY_KNOWN_HOSTS` | Output of `ssh-keyscan <host>` from your laptop — pins the server's host key. |
 
 Optional:
 
 | Secret | Value |
 |---|---|
 | `DEPLOY_SSH_PORT` | SSH port if not 22 |
-| `DEPLOY_KNOWN_HOSTS` | Output of `ssh-keyscan <hostname>` — pins the host key. Strongly recommended. |
 
 To populate `DEPLOY_KNOWN_HOSTS`:
 
 ```bash
-ssh-keyscan nds.mkassets.sk 2>/dev/null
+ssh-keyscan 145.223.117.219 2>/dev/null
 ```
 
 Paste the entire output into the secret.
+
+Notification emails on workflow failure are handled by GitHub itself — repo watchers receive them automatically based on their account notification settings. To customise, see your GitHub account → Settings → Notifications.
 
 ## One-time bootstrap (Martin, weekend window)
 
