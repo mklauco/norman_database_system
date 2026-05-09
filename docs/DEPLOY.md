@@ -101,9 +101,36 @@ ls -la /opt/projects/norman_database_system
 docker compose ps
 # All containers Up
 
+# Rebuild the public/storage symlink so uploads/exports remain reachable
+docker exec nds-app php artisan storage:link --force
+docker exec nds-app ls -la public/storage
+
 curl -I https://nds.mkassets.sk
 # 200 OK (or 503 only if you forgot to disable maintenance)
 ```
+
+### If bootstrap fails partway through
+
+The bootstrap script does multiple `mv` operations and a symlink swap. If it dies mid-way, the layout is half-restructured. To restore the pre-bootstrap state:
+
+```bash
+cd /opt/projects/norman_database_system
+docker compose down
+
+# Use rsync (preserves dotfiles, ownership, and symlinks) to copy everything back
+rsync -a releases/initial/ ./
+mv shared/.env .
+rm -rf storage && mv shared/storage ./storage
+
+# Remove the new layout
+rm -rf releases shared current
+
+# The original docker-compose.yml is now back at the project root (it was inside releases/initial/).
+# Bring the old stack back up.
+docker compose up -d
+```
+
+`rsync -a` is used (not `mv releases/initial/* .`) because `*` does not match dotfiles like `.gitignore`, `.dockerignore`, `.editorconfig`, `.github/`. Using `mv *` would silently leave those behind.
 
 ## Normal deploy (zero-downtime)
 

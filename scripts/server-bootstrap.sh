@@ -74,7 +74,14 @@ if [[ ! -f "$REPO_COMPOSE_FILE" ]]; then
     fail "$REPO_COMPOSE_FILE not found. Pull the latest main before bootstrapping."
 fi
 
-log "Preflight checks passed."
+# Verify enough disk space for atomic-deploy layout (5 retained releases × ~500 MB each)
+required_kb=2000000
+available_kb=$(df -Pk "$PROJECT_ROOT" | awk 'NR==2 {print $4}')
+if (( available_kb < required_kb )); then
+    fail "Only $((available_kb / 1024)) MB free at $PROJECT_ROOT — need at least $((required_kb / 1024)) MB."
+fi
+
+log "Preflight checks passed (free disk: $((available_kb / 1024)) MB)."
 log "About to restructure $PROJECT_ROOT for atomic deploys."
 log "This will stop containers (~1–2 min downtime), then restart them."
 confirm "Continue?"

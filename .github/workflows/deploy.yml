@@ -62,6 +62,13 @@ jobs:
           [[ -d shared ]]       || { echo "shared/ missing — bootstrap not run?";          exit 1; }
           [[ -f shared/.env ]]  || { echo "shared/.env missing — fix before deploying.";   exit 1; }
 
+          # Refuse to proceed if disk is nearly full (need ~500 MB headroom for a release)
+          available_kb=$(df -Pk "$PROJECT_ROOT" | awk 'NR==2 {print $4}')
+          if (( available_kb < 500000 )); then
+            echo "Only $((available_kb / 1024)) MB free at $PROJECT_ROOT — need at least 500 MB. Prune old releases manually."
+            exit 1
+          fi
+
           # ---- 1. clone fresh release ----------------------------------------
           RELEASE_NAME="$(date +%Y%m%d_%H%M%S)_${GIT_SHA:0:7}"
           RELEASE_PATH="releases/$RELEASE_NAME"
@@ -153,11 +160,13 @@ jobs:
 
           # ---- 10. prune old releases ----------------------------------------
           echo "::group::Prune old releases (keeping last $KEEP_RELEASES)"
+          active_canonical="$(readlink -f "$PROJECT_ROOT/current")"
           cd "$PROJECT_ROOT/releases"
           ls -1tr | head -n -"$KEEP_RELEASES" | while read -r old; do
-            # Never delete the initial release or the current one
+            # Never delete the initial release or the active one (canonical-path compare)
             if [[ "$old" == "initial" ]]; then continue; fi
-            if [[ "releases/$old" == "$(readlink "$PROJECT_ROOT/current")" ]]; then continue; fi
+            candidate_canonical="$(readlink -f "$PROJECT_ROOT/releases/$old")"
+            if [[ "$candidate_canonical" == "$active_canonical" ]]; then continue; fi
             echo "Removing old release: $old"
             rm -rf -- "$old"
           done
