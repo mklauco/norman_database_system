@@ -315,8 +315,27 @@ This guard exists because the live `nds` database was wiped once by a stray `mig
 (Brief — full setup belongs in the README. This is the deploy-relevant part.)
 
 - Local dev uses the repo's `docker-compose.yml`, NOT `docker-compose.production.yml`.
-- `php artisan test` runs against in-memory SQLite — no postgres needed locally.
 - Your local `.env` is yours, not committed. Use `.env.example` as a starting point.
+
+### One-time test database setup
+
+Tests run against a real PostgreSQL database (matches production). Each developer needs an empty `norman_test` database in their local Postgres instance — same host/port/user as the dev `nds` database.
+
+```bash
+psql -h 127.0.0.1 -p 5433 -U app -d nds -c "CREATE DATABASE norman_test OWNER app;"
+```
+
+(Adjust `-h`, `-p`, `-U` to match your local Postgres if different. The default in `phpunit.xml` is `127.0.0.1:5433` with user `app`.)
+
+That's all. The `tests/TestCase.php` guard already permits any database name starting with `norman_test`, so you're protected from a stray `migrate:fresh` accidentally hitting your dev `nds` database.
+
+Run tests with:
+
+```bash
+php artisan test
+```
+
+Each run starts with a clean schema (`RefreshDatabase` trait drops and recreates tables). Your `nds` dev database is never touched.
 
 ---
 
