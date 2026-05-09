@@ -18,8 +18,12 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        // RegisteredUserController requires the 'user' role to exist (assigned at registration).
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'user']);
+
         $response = $this->post('/register', [
-            'name' => 'Test User',
+            'first_name' => 'Test',
+            'last_name' => 'User',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
