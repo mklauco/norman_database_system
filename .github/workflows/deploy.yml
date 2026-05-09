@@ -101,9 +101,13 @@ jobs:
           # because the bind mount is of the parent dir's symlink target.
           # Safer approach: docker run a fresh ephemeral container with the new
           # release bind-mounted directly.
+          # The ephemeral containers must also see $PROJECT_ROOT/shared at the
+          # absolute path the symlinks point at, otherwise .env and storage/
+          # are dangling and Laravel boot fails.
           echo "::group::composer install (--no-dev)"
           docker run --rm \
             -v "$PROJECT_ROOT/$RELEASE_PATH:/var/www" \
+            -v "$PROJECT_ROOT/shared:$PROJECT_ROOT/shared" \
             -w /var/www \
             --user "$(id -u):$(id -g)" \
             laravel-app \
@@ -113,6 +117,7 @@ jobs:
           echo "::group::npm ci && npm run build"
           docker run --rm \
             -v "$PROJECT_ROOT/$RELEASE_PATH:/var/www" \
+            -v "$PROJECT_ROOT/shared:$PROJECT_ROOT/shared" \
             -w /var/www \
             --user "$(id -u):$(id -g)" \
             laravel-app \
