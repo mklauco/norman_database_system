@@ -19,29 +19,13 @@ use Tests\TestCase;
  */
 class EmpodatCsvExportPipelineTest extends TestCase
 {
-    /**
-     * phpunit.xml overrides DB_DATABASE to ":memory:" for the sqlite default.
-     * The streaming code targets the named "pgsql" connection (which still
-     * pulls DB_DATABASE from env), so restore the real database name from
-     * the project's .env before each test.
-     */
     protected function setUp(): void
     {
         parent::setUp();
 
-        $database = $this->resolveRealPostgresDatabase();
-
-        if ($database === null) {
-            $this->markTestSkipped(
-                'Cannot resolve a real PostgreSQL database (read .env DB_DATABASE or set TEST_PG_DATABASE).'
-            );
-        }
-
-        config(['database.connections.pgsql.database' => $database]);
-        DB::purge('pgsql');
-
+        // Default connection is now Postgres (norman_test) per phpunit.xml.
         try {
-            DB::connection('pgsql')->getPdo();
+            DB::connection()->getPdo();
         } catch (\Throwable $e) {
             $this->markTestSkipped('Cannot connect to PostgreSQL: '.$e->getMessage());
         }

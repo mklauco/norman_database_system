@@ -16,30 +16,16 @@ use Tests\TestCase;
  */
 class CleanupExpiredExportsTest extends TestCase
 {
-    private string $sandboxDir;
+    private string $sandboxDir = '';
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // ExportDownload writes go through the default Laravel connection,
-        // which phpunit.xml points at sqlite/:memory:. Restore the real
-        // database so the model can read/write the export_downloads table.
-        $database = $this->resolveRealPostgresDatabase();
-        if ($database === null) {
-            $this->markTestSkipped(
-                'Cannot resolve a real PostgreSQL database (read .env DB_DATABASE or set TEST_PG_DATABASE).'
-            );
-        }
-
-        config([
-            'database.default' => 'pgsql',
-            'database.connections.pgsql.database' => $database,
-        ]);
-        DB::purge('pgsql');
-
+        // The phpunit.xml default connection is now Postgres (norman_test) —
+        // ExportDownload reads/writes go through it directly, no manual switch needed.
         try {
-            DB::connection('pgsql')->getPdo();
+            DB::connection()->getPdo();
         } catch (\Throwable $e) {
             $this->markTestSkipped('Cannot connect to PostgreSQL: '.$e->getMessage());
         }
@@ -52,9 +38,11 @@ class CleanupExpiredExportsTest extends TestCase
 
     protected function tearDown(): void
     {
-        DB::rollBack();
+        if (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
 
-        if (is_dir($this->sandboxDir)) {
+        if ($this->sandboxDir !== '' && is_dir($this->sandboxDir)) {
             foreach (glob($this->sandboxDir.'/*') as $f) {
                 @unlink($f);
             }
