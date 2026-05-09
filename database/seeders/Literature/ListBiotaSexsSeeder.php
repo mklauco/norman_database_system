@@ -2,7 +2,6 @@
 
 namespace Database\Seeders\Literature;
 
-use App\Models\List\BiotaSex;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -22,10 +21,11 @@ class ListBiotaSexsSeeder extends Seeder
         DB::table($target_table_name)->truncate();
 
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/literature/list_biota_sexs.csv';
+        $path = base_path().'/database/seeders/seeds/literature/list_biota_sexs.csv';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
+
             return;
         }
 
@@ -35,7 +35,7 @@ class ListBiotaSexsSeeder extends Seeder
         $p = [];
         $rowCount = 0;
 
-        foreach($rows as $r) {
+        foreach ($rows as $r) {
             // Skip empty rows
             if (empty($r['sex'])) {
                 continue;
@@ -50,9 +50,9 @@ class ListBiotaSexsSeeder extends Seeder
             }
 
             $p[] = [
-                'name'        => $cleanedValue,
-                'created_at'  => $now,
-                'updated_at'  => $now,
+                'name' => $cleanedValue,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
             $rowCount++;
         }
@@ -62,8 +62,8 @@ class ListBiotaSexsSeeder extends Seeder
         $k = 0;
         $count = ceil(count($p) / $chunkSize);
 
-        foreach($chunks as $c){
-            $this->command->info("Processing chunk " . ($k + 1) . "/{$count}");
+        foreach ($chunks as $c) {
+            $this->command->info('Processing chunk '.($k + 1)."/{$count}");
             DB::table($target_table_name)->insert($c);
             $k++;
         }
@@ -74,7 +74,7 @@ class ListBiotaSexsSeeder extends Seeder
     /**
      * Clean and trim the value, return null if empty
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return string|null
      */
     protected function cleanValue($value)

@@ -28,7 +28,7 @@ class ExportDownload extends Model
         'file_size_formatted',
         'processing_time_seconds',
         'started_at',
-        'completed_at'
+        'completed_at',
     ];
 
     /**
@@ -72,7 +72,10 @@ class ExportDownload extends Model
      */
     public function getStartedAtAttribute($value)
     {
-        if (!$value) return null;
+        if (! $value) {
+            return null;
+        }
+
         return \Carbon\Carbon::parse($value)->timezone('Europe/Bratislava')->format('Y-m-d G:i:s');
     }
 
@@ -81,7 +84,10 @@ class ExportDownload extends Model
      */
     public function getCompletedAtAttribute($value)
     {
-        if (!$value) return null;
+        if (! $value) {
+            return null;
+        }
+
         return \Carbon\Carbon::parse($value)->timezone('Europe/Bratislava')->format('Y-m-d G:i:s');
     }
 
@@ -102,36 +108,36 @@ class ExportDownload extends Model
         if ($this->processing_time_seconds) {
             $seconds = (float) $this->processing_time_seconds;
             if ($seconds < 60) {
-                return $seconds . 's';
+                return $seconds.'s';
             } elseif ($seconds < 3600) {
-                return round($seconds / 60, 1) . 'm';
+                return round($seconds / 60, 1).'m';
             } else {
-                return round($seconds / 3600, 1) . 'h';
+                return round($seconds / 3600, 1).'h';
             }
         }
-        
+
         // Fall back to calculating from timestamps if processing_time_seconds is not available
         $startedAtRaw = $this->getOriginal('started_at') ?? $this->attributes['started_at'] ?? null;
         $completedAtRaw = $this->getOriginal('completed_at') ?? $this->attributes['completed_at'] ?? null;
-        
+
         if ($startedAtRaw && $completedAtRaw) {
             try {
                 $startedAt = \Carbon\Carbon::parse($startedAtRaw);
                 $completedAt = \Carbon\Carbon::parse($completedAtRaw);
                 $duration = abs($completedAt->diffInSeconds($startedAt));
-                
+
                 if ($duration < 60) {
-                    return $duration . 's';
+                    return $duration.'s';
                 } elseif ($duration < 3600) {
-                    return round($duration / 60, 1) . 'm';
+                    return round($duration / 60, 1).'m';
                 } else {
-                    return round($duration / 3600, 1) . 'h';
+                    return round($duration / 3600, 1).'h';
                 }
             } catch (\Exception $e) {
                 // If there's an error, return null
             }
         }
-        
+
         return null;
     }
 
@@ -143,11 +149,11 @@ class ExportDownload extends Model
         if ($this->file_size_formatted) {
             return $this->file_size_formatted;
         }
-        
+
         if ($this->file_size_bytes) {
             return $this->formatBytes($this->file_size_bytes);
         }
-        
+
         return null;
     }
 
@@ -165,13 +171,13 @@ class ExportDownload extends Model
     private function formatBytes($bytes, $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
-        
+
         $bytes /= (1 << (10 * $pow));
-        
-        return round($bytes, $precision) . ' ' . $units[$pow];
+
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

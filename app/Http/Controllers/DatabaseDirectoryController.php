@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\DatabaseEntity;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +20,7 @@ class DatabaseDirectoryController extends Controller
         });
 
         return view('landing.index', [
-            'databases' => $databases
+            'databases' => $databases,
         ]);
     }
 
@@ -43,7 +42,7 @@ class DatabaseDirectoryController extends Controller
         }
 
         // Module is private - check if user is logged in
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return false;
         }
 

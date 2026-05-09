@@ -7,16 +7,16 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-    * Run the migrations.
-    */
+     * Run the migrations.
+     */
     public function up(): void
     {
-        
+
         Schema::create('empodat_analytical_methods', function (Blueprint $table) {
             $table->id();
             $table->double('lod')->nullable(); // Limit of Detection (LoD)
             $table->double('loq')->nullable(); // Limit of Quantification (LoQ)
-            $table->decimal('uncertainty_loq')->nullable(); // Uncertainty at LoQ [%] 
+            $table->decimal('uncertainty_loq')->nullable(); // Uncertainty at LoQ [%]
             $table->foreignId('coverage_factor_id')->nullable()->default(null)->references('id')->on('list_coverage_factors'); // Coverage factor
             $table->foreignId('sample_preparation_method_id')->nullable()->default(null)->references('id')->on('list_sample_preparation_methods'); // Sample preparation method
             $table->string('sample_preparation_method_other')->nullable(); // Sample preparation method - other
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->text('remark')->nullable(); // Remark
             $table->foreignId('sampling_method_id')->nullable()->default(null)->references('id')->on('list_sampling_methods'); // Sampling method (Outdoor Air)
             $table->foreignId('sampling_collection_device_id')->nullable()->default(null)->references('id')->on('list_sampling_collection_devices'); // Sampling collection device (Outdoor Air)
-            $table->float('foa')->nullable(); // FOA <- UoA_EUDust_DCT_target_IndoorAir.xlsb           
+            $table->float('foa')->nullable(); // FOA <- UoA_EUDust_DCT_target_IndoorAir.xlsb
             $table->timestamps();
         });
 
@@ -53,12 +53,12 @@ return new class extends Migration
             $table->foreignId('data_accessibility_id')->nullable()->default(null)->references('id')->on('list_data_accessibilities'); // Data accessibility
             $table->string('data_accessibility_other')->nullable()->default(null); // Data accessibility - other
             $table->string('project_title')->nullable()->default(null); // Title of project
-            //$table->string('id_laboratory')->nullable()->default(null); // Laboratory ID  - deprecated  
-            //$table->foreignId('organisation_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_organisations'); // Organisation
+            // $table->string('id_laboratory')->nullable()->default(null); // Laboratory ID  - deprecated
+            // $table->foreignId('organisation_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_organisations'); // Organisation
             $table->foreignId('organisation_id')->nullable()->default(null)->references('id')->on('list_data_source_organisations'); // Organisation
             // Question: 2*1:N OR 1*N:M ???
-            //$table->foreignId('laboratory1_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 1
-            //$table->foreignId('laboratory2_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 2
+            // $table->foreignId('laboratory1_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 1
+            // $table->foreignId('laboratory2_id')->constrained()->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 2
             $table->foreignId('laboratory1_id')->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 1
             $table->foreignId('laboratory2_id')->nullable()->default(null)->references('id')->on('list_data_source_laboratories'); // Laboratory 2
             $table->string('author')->nullable()->default(null); // Contact person - First name(s) Family name
@@ -67,12 +67,12 @@ return new class extends Migration
             $table->text('reference2')->nullable()->default(null); // Reference 2 (reference - website/DOI/etc.)
             $table->timestamps();
         });
-  
+
     }
-    
+
     /**
-    * Reverse the migrations.
-    */
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('empodat_minor');

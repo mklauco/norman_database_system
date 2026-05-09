@@ -33,15 +33,18 @@ class EmpodatStation extends Model
         'is_deprecated' => 'boolean',
     ];
 
-    public function countryRelation(){
+    public function countryRelation()
+    {
         return $this->belongsTo(Country::class, 'country_id');
     }
-    
-    public function country(){
+
+    public function country()
+    {
         return $this->belongsTo(Country::class, 'country_id');
     }
-    
-    public function countryOtherRelation(){
+
+    public function countryOtherRelation()
+    {
         return $this->belongsTo(Country::class, 'country_other_id');
     }
 
@@ -93,6 +96,7 @@ class EmpodatStation extends Model
         if ($mergeRecord = $this->mergeRecord) {
             return $mergeRecord->canonicalStation;
         }
+
         return $this;
     }
 }

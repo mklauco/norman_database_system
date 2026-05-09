@@ -82,7 +82,7 @@ class MonitoringScarce extends Model
 
     /**
      * Get formatted category name based on pri_cat
-     * 
+     *
      * @return string
      */
     public function getCategoryNameAttribute()

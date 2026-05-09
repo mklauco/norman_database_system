@@ -12,8 +12,6 @@ class FileSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -23,10 +21,11 @@ class FileSeeder extends Seeder
         $startTime = microtime(true);
 
         // Path to old system CSV file
-        $csvPath = base_path() . '/database/seeders/seeds/dct_list.csv';
+        $csvPath = base_path().'/database/seeders/seeds/dct_list.csv';
 
-        if (!file_exists($csvPath)) {
+        if (! file_exists($csvPath)) {
             $this->command->error("CSV file not found at: {$csvPath}");
+
             return;
         }
 
@@ -37,12 +36,12 @@ class FileSeeder extends Seeder
         $this->command->info('Truncating files table...');
         // DB::table($target_table_name)->truncate();
         $this->command->info('Files table truncated successfully.');
-        
+
         // Use lower memory usage options for SimpleExcelReader
         $reader = SimpleExcelReader::create($csvPath)
             ->useDelimiter(',')
             ->headersToSnakeCase(false);
-        
+
         // Process the CSV file in chunks
         $chunkSize = 100;
         $reader->getRows()
@@ -50,15 +49,15 @@ class FileSeeder extends Seeder
             ->each(function ($rows, $key) use ($target_table_name, $now, $startTime) {
                 $chunkStartTime = microtime(true);
                 $records = [];
-                
+
                 foreach ($rows as $r) {
-                    
+
                     $records[] = [
                         'id' => $this->safeInt($r['list_id']),
                         'name' => $this->safeString($r['list_title']),
                         'original_name' => $this->safeString($r['list_file']) ?: $this->safeString($r['list_name']),
                         'description' => $this->safeString($r['list_description']),
-                        'file_path' => 'uploads/migrated/' . $this->safeString($r['list_file']),
+                        'file_path' => 'uploads/migrated/'.$this->safeString($r['list_file']),
                         'file_size' => 0,
                         'mime_type' => $this->getMimeType($r['list_file']),
                         'template_id' => null,
@@ -73,26 +72,26 @@ class FileSeeder extends Seeder
                         'updated_at' => $now,
                     ];
                 }
-                
+
                 // Insert records
-                if (!empty($records)) {
+                if (! empty($records)) {
                     try {
                         DB::table($target_table_name)->insert($records);
-                        
+
                         $chunkEndTime = microtime(true);
                         $chunkElapsedTime = round($chunkEndTime - $chunkStartTime, 2);
                         $totalElapsedTime = round($chunkEndTime - $startTime, 2);
-                        
-                        $this->command->info("Processed chunk " . ($key + 1) . " with " . count($records) . " records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
+
+                        $this->command->info('Processed chunk '.($key + 1).' with '.count($records)." records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
                     } catch (\Exception $e) {
-                        $this->command->error("Error in chunk " . ($key + 1) . ": " . $e->getMessage());
+                        $this->command->error('Error in chunk '.($key + 1).': '.$e->getMessage());
                     }
                 }
             });
-        
+
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
-        
+
         $this->command->info('File seeding completed!');
     }
 
@@ -104,6 +103,7 @@ class FileSeeder extends Seeder
         if ($value === '' || $value === null) {
             return $default;
         }
+
         return (int) $value;
     }
 
@@ -115,6 +115,7 @@ class FileSeeder extends Seeder
         if ($value === null || $value === '') {
             return $default;
         }
+
         return (string) $value;
     }
 
@@ -126,14 +127,13 @@ class FileSeeder extends Seeder
         if (empty($value)) {
             return null;
         }
-        
+
         try {
             return Carbon::parse($value);
         } catch (\Exception $e) {
             return null;
         }
     }
-
 
     /**
      * Get mime type based on file extension
@@ -145,7 +145,7 @@ class FileSeeder extends Seeder
         }
 
         $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        
+
         $mimeTypes = [
             'csv' => 'text/csv',
             'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

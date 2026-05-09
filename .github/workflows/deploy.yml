@@ -1,0 +1,177 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout (for ref only)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "${{ secrets.DEPLOY_KNOWN_HOSTS }}" ]; then
+            echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+            chmod 644 ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "${{ secrets.DEPLOY_SSH_PORT || '22' }}" -H "${{ secrets.DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+
+      - name: Run remote deploy
+        id: deploy
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
+          GIT_SHA: ${{ github.sha }}
+          GIT_REF: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key \
+              -p "$DEPLOY_SSH_PORT" \
+              -o StrictHostKeyChecking=yes \
+              "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+              GIT_SHA="$GIT_SHA" GIT_REF="$GIT_REF" bash -s <<'REMOTE'
+          set -euo pipefail
+
+          PROJECT_ROOT="/opt/projects/norman_database_system"
+          REPO_URL="https://github.com/mklauco/norman_database_system.git"
+          KEEP_RELEASES=5
+
+          cd "$PROJECT_ROOT"
+
+          # ---- preflight ------------------------------------------------------
+          [[ -L current ]]      || { echo "current/ symlink missing — bootstrap not run?"; exit 1; }
+          [[ -d shared ]]       || { echo "shared/ missing — bootstrap not run?";          exit 1; }
+          [[ -f shared/.env ]]  || { echo "shared/.env missing — fix before deploying.";   exit 1; }
+
+          # Refuse to proceed if disk is nearly full (need ~500 MB headroom for a release)
+          available_kb=$(df -Pk "$PROJECT_ROOT" | awk 'NR==2 {print $4}')
+          if (( available_kb < 500000 )); then
+            echo "Only $((available_kb / 1024)) MB free at $PROJECT_ROOT — need at least 500 MB. Prune old releases manually."
+            exit 1
+          fi
+
+          # ---- 1. clone fresh release ----------------------------------------
+          RELEASE_NAME="$(date +%Y%m%d_%H%M%S)_${GIT_SHA:0:7}"
+          RELEASE_PATH="releases/$RELEASE_NAME"
+          echo "::group::Clone release $RELEASE_NAME"
+          git clone --depth=1 --branch "$GIT_REF" "$REPO_URL" "$RELEASE_PATH"
+          cd "$RELEASE_PATH"
+          # Verify we actually got the expected commit (origin may have moved)
+          ACTUAL_SHA="$(git rev-parse HEAD)"
+          if [[ "$ACTUAL_SHA" != "$GIT_SHA" ]]; then
+            echo "WARNING: cloned $ACTUAL_SHA, expected $GIT_SHA. Origin moved during clone?"
+          fi
+          cd "$PROJECT_ROOT"
+          echo "::endgroup::"
+
+          # ---- 2. link shared resources --------------------------------------
+          echo "::group::Link shared resources"
+          ln -sfn "$PROJECT_ROOT/shared/.env"     "$RELEASE_PATH/.env"
+          rm -rf "$RELEASE_PATH/storage"
+          ln -sfn "$PROJECT_ROOT/shared/storage"  "$RELEASE_PATH/storage"
+          echo "::endgroup::"
+
+          # ---- 3. install dependencies & build assets (in app container) -----
+          # We run inside the existing nds-app container so PHP/Node versions
+          # match production exactly. Container path /var/www maps to the
+          # CURRENT release; we cd into the new release via its host-relative
+          # path. Bind mount of $PROJECT_ROOT lets us reach it.
+          #
+          # Trick: containers mount ./current → /var/www. The new release isn't
+          # current yet, but it IS visible at /var/www/../releases/<name>
+          # because the bind mount is of the parent dir's symlink target.
+          # Safer approach: docker run a fresh ephemeral container with the new
+          # release bind-mounted directly.
+          echo "::group::composer install (--no-dev)"
+          docker run --rm \
+            -v "$PROJECT_ROOT/$RELEASE_PATH:/var/www" \
+            -w /var/www \
+            --user "$(id -u):$(id -g)" \
+            laravel-app \
+            composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+          echo "::endgroup::"
+
+          echo "::group::npm ci && npm run build"
+          docker run --rm \
+            -v "$PROJECT_ROOT/$RELEASE_PATH:/var/www" \
+            -w /var/www \
+            --user "$(id -u):$(id -g)" \
+            laravel-app \
+            sh -c "npm ci && npm run build"
+          echo "::endgroup::"
+
+          # ---- 4. maintenance mode ON ----------------------------------------
+          echo "::group::php artisan down"
+          docker exec nds-app php artisan down --render="errors::503" --retry=15 || true
+          echo "::endgroup::"
+
+          # ---- 5. ATOMIC SWAP ------------------------------------------------
+          echo "::group::Atomic symlink swap"
+          PREVIOUS_RELEASE="$(readlink current)"
+          ln -sfn "$RELEASE_PATH" current
+          echo "current -> $RELEASE_PATH (previous: $PREVIOUS_RELEASE)"
+          echo "::endgroup::"
+
+          # ---- 6. rebuild Laravel caches against new code --------------------
+          echo "::group::artisan optimize"
+          docker exec nds-app php artisan optimize:clear
+          docker exec nds-app php artisan optimize
+          echo "::endgroup::"
+
+          # ---- 7. graceful PHP-FPM reload (picks up new code immediately) ----
+          # PID 1 in nds-app is the php-fpm master. SIGUSR2 = graceful reload.
+          echo "::group::Reload php-fpm"
+          docker exec nds-app sh -c 'kill -USR2 1' || echo "WARN: php-fpm reload signal failed — OPcache will revalidate within seconds anyway."
+          echo "::endgroup::"
+
+          # ---- 8. restart queue workers & scheduler --------------------------
+          # Long-running workers hold old code in memory; must be cycled.
+          echo "::group::Restart queue workers and scheduler"
+          docker compose restart \
+            task-app-schedule \
+            task-app-queue-default \
+            task-app-queue-medium \
+            task-app-queue-exports
+          echo "::endgroup::"
+
+          # ---- 9. maintenance mode OFF ---------------------------------------
+          echo "::group::php artisan up"
+          docker exec nds-app php artisan up
+          echo "::endgroup::"
+
+          # ---- 10. prune old releases ----------------------------------------
+          echo "::group::Prune old releases (keeping last $KEEP_RELEASES)"
+          active_canonical="$(readlink -f "$PROJECT_ROOT/current")"
+          cd "$PROJECT_ROOT/releases"
+          ls -1tr | head -n -"$KEEP_RELEASES" | while read -r old; do
+            # Never delete the initial release or the active one (canonical-path compare)
+            if [[ "$old" == "initial" ]]; then continue; fi
+            candidate_canonical="$(readlink -f "$PROJECT_ROOT/releases/$old")"
+            if [[ "$candidate_canonical" == "$active_canonical" ]]; then continue; fi
+            echo "Removing old release: $old"
+            rm -rf -- "$old"
+          done
+          echo "::endgroup::"
+
+          echo ""
+          echo "Deploy succeeded: $RELEASE_NAME"
+          REMOTE

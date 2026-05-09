@@ -17,14 +17,14 @@ return new class extends Migration
         });
 
         // Update existing deprecated stations
-        DB::statement("
+        DB::statement('
             UPDATE empodat_stations
             SET is_deprecated = true
             WHERE id IN (
                 SELECT DISTINCT deprecated_station_id
                 FROM empodat_station_merge_log
             )
-        ");
+        ');
     }
 
     /**

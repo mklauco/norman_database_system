@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Factsheet;
 
+use App\Http\Controllers\Controller;
+use App\Models\Empodat\EmpodatMain;
+use App\Models\Factsheet\FactsheetStatistic;
+use App\Models\List\Matrix;
+use App\Models\Susdat\Substance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\Empodat\EmpodatMain;
-use App\Models\Empodat\EmpodatStation;
-use App\Models\Susdat\Substance;
-use App\Models\List\Matrix;
-use App\Models\Factsheet\FactsheetStatistic;
-use App\Http\Controllers\Controller;
 
 class FactsheetStatisticsController extends Controller
 {
@@ -45,25 +44,26 @@ class FactsheetStatisticsController extends Controller
             // Create records with NULL meta_data for new substances only
             $records = [];
             $now = now();
-            
+
             foreach ($newSubstanceIds as $substanceId) {
                 $records[] = [
                     'substance_id' => $substanceId,
                     'meta_data' => null,
                     'created_at' => $now,
-                    'updated_at' => $now
+                    'updated_at' => $now,
                 ];
             }
 
-            
             // Insert new records
             FactsheetStatistic::insert($records);
 
             $processed = count($newSubstanceIds);
+
             return back()->with('success', "Successfully created {$processed} factsheet statistic records with NULL meta_data.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to populate factsheet statistics: " . $e->getMessage());
+            Log::error('Failed to populate factsheet statistics: '.$e->getMessage());
+
             return back()->with('error', 'Failed to populate statistics records. Check logs for details.');
         }
     }
@@ -74,22 +74,24 @@ class FactsheetStatisticsController extends Controller
     public function generateForSubstance(Request $request)
     {
         $substanceId = $request->input('substance_id');
-        
-        if (!$substanceId) {
+
+        if (! $substanceId) {
             return back()->with('error', 'Substance ID is required.');
         }
 
         // Verify substance exists
         $substance = Substance::find($substanceId);
-        if (!$substance) {
+        if (! $substance) {
             return back()->with('error', 'Substance not found.');
         }
 
         try {
             $this->generateStatisticsForSubstance($substanceId);
-            return back()->with('success', 'Statistics generated successfully for ' . $substance->name);
+
+            return back()->with('success', 'Statistics generated successfully for '.$substance->name);
         } catch (\Exception $e) {
-            Log::error("Failed to generate statistics for substance {$substance->name} (ID: {$substanceId}): " . $e->getMessage());
+            Log::error("Failed to generate statistics for substance {$substance->name} (ID: {$substanceId}): ".$e->getMessage());
+
             return back()->with('error', 'Failed to generate statistics. Please try again.');
         }
     }
@@ -114,7 +116,7 @@ class FactsheetStatisticsController extends Controller
             'quality' => $qualityStats,
             'year_range' => $yearRangeStats,
             'generated_at' => now()->toISOString(),
-            'total_records' => EmpodatMain::where('substance_id', $substanceId)->count()
+            'total_records' => EmpodatMain::where('substance_id', $substanceId)->count(),
         ];
 
         // Store or update statistics
@@ -165,9 +167,9 @@ class FactsheetStatisticsController extends Controller
             'data' => $countryStats,
             'year_range' => [
                 'min_year' => $dbMinYear,
-                'max_year' => $dbMaxYear
+                'max_year' => $dbMaxYear,
             ],
-            'total_countries' => count($countryStats)
+            'total_countries' => count($countryStats),
         ];
     }
 
@@ -201,9 +203,15 @@ class FactsheetStatisticsController extends Controller
         foreach ($statistics as $stat) {
             // Build the full hierarchy path
             $hierarchy = [];
-            if ($stat->title) $hierarchy[] = $stat->title;
-            if ($stat->subtitle) $hierarchy[] = $stat->subtitle;
-            if ($stat->type) $hierarchy[] = $stat->type;
+            if ($stat->title) {
+                $hierarchy[] = $stat->title;
+            }
+            if ($stat->subtitle) {
+                $hierarchy[] = $stat->subtitle;
+            }
+            if ($stat->type) {
+                $hierarchy[] = $stat->type;
+            }
 
             $fullPath = implode(' → ', $hierarchy);
             $level = count($hierarchy);
@@ -216,7 +224,7 @@ class FactsheetStatisticsController extends Controller
                 'type' => $stat->type,
                 'hierarchy_path' => $fullPath,
                 'hierarchy_level' => $level,
-                'record_count' => $stat->record_count
+                'record_count' => $stat->record_count,
             ];
             $totalRecords += $stat->record_count;
         }
@@ -229,7 +237,7 @@ class FactsheetStatisticsController extends Controller
         return [
             'data' => $matrixStats,
             'total_matrices' => count($matrixStats),
-            'total_records' => $totalRecords
+            'total_records' => $totalRecords,
         ];
     }
 
@@ -253,7 +261,7 @@ class FactsheetStatisticsController extends Controller
 
         return [
             'data' => $countryStats->toArray(),
-            'total_countries' => $countryStats->count()
+            'total_countries' => $countryStats->count(),
         ];
     }
 
@@ -285,8 +293,8 @@ class FactsheetStatisticsController extends Controller
                     'category_name' => $category->name,
                     'min_rating' => $category->min_rating,
                     'max_rating' => $category->max_rating,
-                    'rating_range' => $category->min_rating . '-' . ($category->max_rating - 1),
-                    'record_count' => $recordCount
+                    'rating_range' => $category->min_rating.'-'.($category->max_rating - 1),
+                    'record_count' => $recordCount,
                 ];
                 $totalRecords += $recordCount;
             }
@@ -296,9 +304,9 @@ class FactsheetStatisticsController extends Controller
         $noRatingCount = DB::table('empodat_main as em')
             ->leftJoin('empodat_analytical_methods as eam', 'eam.id', '=', 'em.method_id')
             ->where('em.substance_id', $substanceId)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('eam.rating')
-                      ->orWhereNull('em.method_id');
+                    ->orWhereNull('em.method_id');
             })
             ->count();
 
@@ -309,7 +317,7 @@ class FactsheetStatisticsController extends Controller
                 'min_rating' => null,
                 'max_rating' => null,
                 'rating_range' => 'N/A',
-                'record_count' => $noRatingCount
+                'record_count' => $noRatingCount,
             ];
             $totalRecords += $noRatingCount;
         }
@@ -317,7 +325,7 @@ class FactsheetStatisticsController extends Controller
         return [
             'data' => $qualityStats,
             'total_categories' => count($qualityStats),
-            'total_records' => $totalRecords
+            'total_records' => $totalRecords,
         ];
     }
 
@@ -346,7 +354,7 @@ class FactsheetStatisticsController extends Controller
             'data' => $yearStats->toArray(),
             'min_year' => $yearRange->min_year ?? date('Y'),
             'max_year' => $yearRange->max_year ?? date('Y'),
-            'total_years' => $yearStats->count()
+            'total_years' => $yearStats->count(),
         ];
     }
 
@@ -373,13 +381,13 @@ class FactsheetStatisticsController extends Controller
     {
         // Get the substance
         $substance = Substance::find($substanceId);
-        if (!$substance) {
+        if (! $substance) {
             return response()->json(['error' => 'Substance not found'], 404);
         }
 
         // Get the statistics record
         $statisticsRecord = FactsheetStatistic::where('substance_id', $substanceId)->first();
-        if (!$statisticsRecord) {
+        if (! $statisticsRecord) {
             return response()->json(['error' => 'No statistics found for this substance'], 404);
         }
 
@@ -388,7 +396,7 @@ class FactsheetStatisticsController extends Controller
             'substance_name' => $substance->name,
             'substance_prefixed_code' => $substance->prefixed_code,
             'substance_id' => $substanceId,
-            'statistics_data' => $statisticsRecord->meta_data
+            'statistics_data' => $statisticsRecord->meta_data,
         ];
 
         return response()->json($output, 200, [], JSON_PRETTY_PRINT);

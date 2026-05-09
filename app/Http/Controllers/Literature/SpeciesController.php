@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Literature;
 
 use App\Http\Controllers\Controller;
-use App\Models\Literature\Species;
 use App\Models\DatabaseEntity;
+use App\Models\Literature\Species;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,17 +18,26 @@ class SpeciesController extends Controller
     private function checkModuleAccess(): void
     {
         $databaseEntity = DatabaseEntity::where('code', 'literature')->first();
-        if (!$databaseEntity) abort(403, 'Module not found.');
-        if ($databaseEntity->is_public === true) return;
-        if (!Auth::check()) abort(403, 'You must be logged in to access this module.');
+        if (! $databaseEntity) {
+            abort(403, 'Module not found.');
+        }
+        if ($databaseEntity->is_public === true) {
+            return;
+        }
+        if (! Auth::check()) {
+            abort(403, 'You must be logged in to access this module.');
+        }
         $user = Auth::user();
-        if ($user->hasRole('admin') || $user->hasRole('super_admin') || $user->hasRole('literature')) return;
+        if ($user->hasRole('admin') || $user->hasRole('super_admin') || $user->hasRole('literature')) {
+            return;
+        }
         abort(403, 'You do not have permission to access this module.');
     }
 
     public function index()
     {
         $species = Species::orderBy('id')->paginate(25);
+
         return view('literature.species.index', compact('species'));
     }
 
@@ -36,13 +45,13 @@ class SpeciesController extends Controller
     {
         $species = Species::orderBy('id')->get();
 
-        $filename = 'species_' . date('Y-m-d_His') . '.csv';
+        $filename = 'species_'.date('Y-m-d_His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($species) {
+        $callback = function () use ($species) {
             $file = fopen('php://output', 'w');
 
             // Add CSV headers
@@ -70,8 +79,9 @@ class SpeciesController extends Controller
 
     public function create()
     {
-        $species = new Species();
+        $species = new Species;
         $isCreate = true;
+
         return view('literature.species.upsert', compact('species', 'isCreate'));
     }
 
@@ -96,6 +106,7 @@ class SpeciesController extends Controller
     public function edit(Species $species)
     {
         $isCreate = false;
+
         return view('literature.species.upsert', compact('species', 'isCreate'));
     }
 
@@ -116,5 +127,4 @@ class SpeciesController extends Controller
         return redirect()->route('literature.species.index')
             ->with('success', 'Species updated successfully.');
     }
-
 }

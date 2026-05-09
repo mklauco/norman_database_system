@@ -2,25 +2,24 @@
 
 namespace App\Http\Controllers\Literature;
 
-use Illuminate\Http\Request;
-use App\Models\DatabaseEntity;
-use App\Models\Backend\QueryLog;
 use App\Http\Controllers\Controller;
 use App\Models\Backend\ExportDownload;
 use App\Models\Backend\Project;
+use App\Models\Backend\QueryLog;
+use App\Models\DatabaseEntity;
+use App\Models\List\Country;
+use App\Models\List\Matrix;
+use App\Models\List\Tissue;
 use App\Models\Literature\LiteratureTempMain;
 use App\Models\Literature\Species;
 use App\Models\Literature\TypeOfNumericQuantity;
-use App\Models\List\Country;
-use App\Models\List\Tissue;
-use App\Models\List\Matrix;
-use App\Models\Susdat\Substance;
 use App\Models\Susdat\Category;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use App\Models\Susdat\Substance;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class LiteratureController extends Controller
 {
@@ -39,7 +38,7 @@ class LiteratureController extends Controller
     {
         $databaseEntity = DatabaseEntity::where('code', 'literature')->first();
 
-        if (!$databaseEntity) {
+        if (! $databaseEntity) {
             abort(403, 'Module not found.');
         }
 
@@ -49,7 +48,7 @@ class LiteratureController extends Controller
         }
 
         // Module is private - check if user is logged in
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'You must be logged in to access this module.');
         }
 
@@ -98,10 +97,10 @@ class LiteratureController extends Controller
             // Build label: Name (Latin) [Class]
             $label = $s->name;
             if ($s->name_latin) {
-                $label .= ' (' . $s->name_latin . ')';
+                $label .= ' ('.$s->name_latin.')';
             }
             if ($s->class) {
-                $label .= ' [' . $s->class . ']';
+                $label .= ' ['.$s->class.']';
             }
 
             $speciesList[$s->id] = $label;
@@ -276,9 +275,9 @@ class LiteratureController extends Controller
             ] + $mainRequest);
 
         } catch (\Exception $e) {
-            Log::error('Literature search failed: ' . $e->getMessage(), [
+            Log::error('Literature search failed: '.$e->getMessage(), [
                 'request' => $request->all(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             // Return to filter page with error message
@@ -325,52 +324,52 @@ class LiteratureController extends Controller
         $searchParameters = [];
 
         // Country parameters
-        if (!empty($searchInputs['countrySearch'])) {
+        if (! empty($searchInputs['countrySearch'])) {
             $searchParameters['countrySearch'] = Country::whereIn('id', $searchInputs['countrySearch'])->pluck('name');
         }
 
         // Species parameters
-        if (!empty($searchInputs['speciesSearch'])) {
+        if (! empty($searchInputs['speciesSearch'])) {
             $searchParameters['speciesSearch'] = Species::whereIn('id', $searchInputs['speciesSearch'])->pluck('name');
         }
 
         // Type of numeric quantity parameters
-        if (!empty($searchInputs['typeOfNumericQuantitySearch'])) {
+        if (! empty($searchInputs['typeOfNumericQuantitySearch'])) {
             $searchParameters['typeOfNumericQuantitySearch'] = TypeOfNumericQuantity::whereIn('id', $searchInputs['typeOfNumericQuantitySearch'])->pluck('name');
         }
 
         // Class parameters
-        if (!empty($searchInputs['classSearch'])) {
+        if (! empty($searchInputs['classSearch'])) {
             $searchParameters['classSearch'] = collect($searchInputs['classSearch']);
         }
 
         // Tissue parameters
-        if (!empty($searchInputs['tissueSearch'])) {
+        if (! empty($searchInputs['tissueSearch'])) {
             $searchParameters['tissueSearch'] = Tissue::whereIn('id', $searchInputs['tissueSearch'])->pluck('name');
         }
 
         // Matrix parameters
-        if (!empty($searchInputs['matrixSearch'])) {
+        if (! empty($searchInputs['matrixSearch'])) {
             $searchParameters['matrixSearch'] = Matrix::whereIn('id', $searchInputs['matrixSearch'])->pluck('name');
         }
 
         // Substance parameters
-        if (!empty($request->input('substances'))) {
+        if (! empty($request->input('substances'))) {
             $searchParameters['substances'] = Substance::whereIn('id', $request->input('substances'))->pluck('name');
         }
 
         // Category parameters
-        if (!empty($searchInputs['categoriesSearch'])) {
+        if (! empty($searchInputs['categoriesSearch'])) {
             $searchParameters['categoriesSearch'] = Category::whereIn('id', $searchInputs['categoriesSearch'])->pluck('name');
         }
 
         // File parameters
-        if (!empty($searchInputs['fileSearch'])) {
+        if (! empty($searchInputs['fileSearch'])) {
             $searchParameters['fileSearch'] = \App\Models\Backend\File::whereIn('id', $searchInputs['fileSearch'])->pluck('name');
         }
 
         // Project parameters
-        if (!empty($searchInputs['projectSearch'])) {
+        if (! empty($searchInputs['projectSearch'])) {
             $searchParameters['projectSearch'] = Project::whereIn('id', $searchInputs['projectSearch'])->pluck('name');
         }
 
@@ -408,8 +407,8 @@ class LiteratureController extends Controller
 
         // Check for existing query with same hash
         $actualCount = QueryLog::where('query_hash', $queryHash)
-                               ->where('total_count', $literatureCount)
-                               ->value('actual_count');
+            ->where('total_count', $literatureCount)
+            ->value('actual_count');
 
         try {
             QueryLog::insert([
@@ -427,12 +426,13 @@ class LiteratureController extends Controller
             return QueryLog::orderBy('id', 'desc')->first()->id;
 
         } catch (\Exception $e) {
-            Log::error('Query logging failed: ' . $e->getMessage(), [
+            Log::error('Query logging failed: '.$e->getMessage(), [
                 'query_hash' => $queryHash,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
 
             session()->flash('error', 'An error occurred while processing your request.');
+
             return null;
         }
     }
@@ -461,8 +461,9 @@ class LiteratureController extends Controller
 
     public function startDownloadJob($query_log_id)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             session()->flash('error', 'You must be logged in to download the CSV file.');
+
             return back();
         }
 
@@ -471,7 +472,7 @@ class LiteratureController extends Controller
             $queryLog = QueryLog::findOrFail($query_log_id);
 
             // Generate filename
-            $filename = 'literature_export_uid_' . Auth::id() . '_' . now()->format('YmdHis') . '.csv';
+            $filename = 'literature_export_uid_'.Auth::id().'_'.now()->format('YmdHis').'.csv';
 
             // Get request information for logging
             $ip = request()->ip();
@@ -486,7 +487,7 @@ class LiteratureController extends Controller
                 'user_agent' => $userAgent,
                 'database_key' => 'literature',
                 'status' => 'processing',
-                'started_at' => Carbon::now()
+                'started_at' => Carbon::now(),
             ]);
 
             // Associate with the query log
@@ -502,7 +503,7 @@ class LiteratureController extends Controller
             $path = Storage::path("{$directory}/{$filename}");
             $handle = fopen($path, 'w');
 
-            if (!$handle) {
+            if (! $handle) {
                 throw new \Exception("Unable to open file for writing: {$path}");
             }
 
@@ -617,7 +618,7 @@ class LiteratureController extends Controller
                 'All Means With 0',
                 'Created At',
                 'Updated At',
-                'Export Date'
+                'Export Date',
             ];
             fputcsv($handle, $headers);
 
@@ -702,7 +703,7 @@ class LiteratureController extends Controller
                     $row = [
                         $record->id,
                         $record->rowid ?? '',
-                        $record->substance && $record->substance->code ? 'NS' . $record->substance->code : '',
+                        $record->substance && $record->substance->code ? 'NS'.$record->substance->code : '',
                         $record->substance->name ?? $record->chemical_name ?? '',
                         $record->species->name ?? '',
                         $record->species->name_latin ?? '',
@@ -809,7 +810,7 @@ class LiteratureController extends Controller
                         $record->all_means_with_0 ?? '',
                         $record->created_at ?? '',
                         $record->updated_at ?? '',
-                        $exportDate
+                        $exportDate,
                     ];
                     fputcsv($handle, $row);
                     $totalExported++;
@@ -830,7 +831,7 @@ class LiteratureController extends Controller
                 'file_size_bytes' => $fileSize,
                 'file_size_formatted' => $formattedFileSize,
                 'processing_time_seconds' => $processingTime,
-                'completed_at' => Carbon::now()
+                'completed_at' => Carbon::now(),
             ]);
 
             Log::info("Literature export complete: {$totalExported} records exported in {$processingTime} seconds. File size: {$formattedFileSize}");
@@ -839,18 +840,19 @@ class LiteratureController extends Controller
             return redirect()->route('literature.csv.download', ['filename' => $filename]);
 
         } catch (\Exception $e) {
-            Log::error("Literature export failed: " . $e->getMessage());
+            Log::error('Literature export failed: '.$e->getMessage());
 
             // Update export download record if it exists
             if (isset($exportDownload)) {
                 $exportDownload->update([
                     'status' => 'failed',
                     'message' => $e->getMessage(),
-                    'completed_at' => Carbon::now()
+                    'completed_at' => Carbon::now(),
                 ]);
             }
 
-            session()->flash('error', 'Export failed: ' . $e->getMessage());
+            session()->flash('error', 'Export failed: '.$e->getMessage());
+
             return back();
         }
     }
@@ -859,8 +861,8 @@ class LiteratureController extends Controller
     {
         $directory = 'exports/literature';
         $path = Storage::path("{$directory}/{$filename}");
-        
-        if (!file_exists($path)) {
+
+        if (! file_exists($path)) {
             return response()->json([
                 'error' => 'File not found',
                 'message' => 'The requested CSV file does not exist.',
@@ -917,13 +919,13 @@ class LiteratureController extends Controller
     protected function formatBytes($bytes, $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
-        
+
         $bytes /= (1 << (10 * $pow));
-        
-        return round($bytes, $precision) . ' ' . $units[$pow];
+
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

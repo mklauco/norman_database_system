@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ecotox_pnec3', function (Blueprint $table) {
-            if (!Schema::hasColumn('ecotox_pnec3', 'substance_id')) {
+            if (! Schema::hasColumn('ecotox_pnec3', 'substance_id')) {
                 $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             }
         });

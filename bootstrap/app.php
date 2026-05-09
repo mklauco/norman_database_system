@@ -1,21 +1,20 @@
 <?php
 
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Sentry\Laravel\Integration;
-
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
-->withRouting(
-    web: __DIR__.'/../routes/web.php',
-    api: __DIR__.'/../routes/api.php',
-    commands: __DIR__.'/../routes/console.php',
-    health: '/up',
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
@@ -32,25 +31,25 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         Integration::handles($exceptions);
         $exceptions->renderable(function (NotFoundHttpException $e, Request $request) {
-            if ($request->wantsJson()) { 
+            if ($request->wantsJson()) {
                 return response()->json(['message' => 'Object not found'], 404);
-            } 
+            }
         });
-        
+
         $exceptions->renderable(function (QueryException $e, Request $request) {
             // Check if it's a connection issue (connection refused, server not responding)
             $message = strtolower($e->getMessage());
             $code = $e->getCode();
-            
+
             // Temporary debugging - log the actual error message and code
             Log::info('Database error detected', [
                 'message' => $e->getMessage(),
                 'code' => $code,
-                'request_url' => $request->url()
+                'request_url' => $request->url(),
             ]);
-            
+
             // Check for connection-related error codes and messages
-            $isConnectionIssue = 
+            $isConnectionIssue =
                 // Common database connection error codes
                 in_array($code, [2002, 2003, 2006, 2013, 2019, 2026, 2054, 2055, 2056, 2057, 2058, 2059]) ||
                 // PostgreSQL connection error codes
@@ -80,13 +79,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 str_contains($message, 'server shutdown') ||
                 str_contains($message, 'database is not available') ||
                 str_contains($message, 'service unavailable');
-            
+
             if ($isConnectionIssue) {
                 return response()->view('errors.database-offline', [], 503);
             }
-            
+
             // For other query errors, show 500 error page
             return response()->view('errors.500', [], 500);
         });
     })->create();
-    

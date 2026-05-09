@@ -1,0 +1,91 @@
+name: Migrate Production DB
+
+# Manual-only. Never runs automatically. Trigger from:
+#   GitHub → Actions → "Migrate Production DB" → Run workflow
+#
+# Runs `php artisan migrate --force` against the database in production's
+# shared/.env, inside the running nds-app container, against whatever code
+# is in `current/` at that moment. Always pull/deploy the new code FIRST,
+# then run this workflow second.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "MIGRATE PRODUCTION" exactly to proceed.'
+        required: true
+        type: string
+      pretend:
+        description: 'Run --pretend (show SQL, change nothing). Recommended first.'
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Run migrations on production
+    runs-on: ubuntu-latest
+    environment:
+      name: production-migrate
+
+    steps:
+      - name: Verify confirmation phrase
+        run: |
+          if [[ "${{ inputs.confirm }}" != "MIGRATE PRODUCTION" ]]; then
+            echo "Confirmation phrase did not match. Aborting."
+            exit 1
+          fi
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "${{ secrets.DEPLOY_KNOWN_HOSTS }}" ]; then
+            echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "${{ secrets.DEPLOY_SSH_PORT || '22' }}" -H "${{ secrets.DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Run migrations on production
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
+          PRETEND: ${{ inputs.pretend }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key \
+              -p "$DEPLOY_SSH_PORT" \
+              -o StrictHostKeyChecking=yes \
+              "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+              PRETEND="$PRETEND" bash -s <<'REMOTE'
+          set -euo pipefail
+          cd /opt/projects/norman_database_system
+
+          [[ -L current ]] || { echo "current/ symlink missing — bootstrap not run."; exit 1; }
+
+          echo "Current release: $(readlink current)"
+          echo "App version: $(docker exec nds-app php artisan --version)"
+          echo ""
+          echo "Pending migrations:"
+          docker exec nds-app php artisan migrate:status | tail -50
+          echo ""
+
+          if [[ "$PRETEND" == "true" ]]; then
+            echo "=== PRETEND MODE — showing SQL only, not executing ==="
+            docker exec nds-app php artisan migrate --pretend
+          else
+            echo "=== EXECUTING MIGRATIONS ==="
+            docker exec nds-app php artisan migrate --force
+            echo ""
+            echo "Post-migration status:"
+            docker exec nds-app php artisan migrate:status | tail -20
+          fi
+          REMOTE

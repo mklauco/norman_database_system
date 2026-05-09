@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('sars_cov_file_uploads', function (Blueprint $table) {
             $table->id();
-            //$table->string('sars_save')->nullable()->default(null); // ==> created_at  
-            $table->string('filename')->nullable()->default(null); //  
-            $table->string('directory')->nullable()->default(null); //  
-            $table->boolean('is_available')->nullable()->default(null); // 0 - available, 1 - not available  
+            // $table->string('sars_save')->nullable()->default(null); // ==> created_at
+            $table->string('filename')->nullable()->default(null); //
+            $table->string('directory')->nullable()->default(null); //
+            $table->boolean('is_available')->nullable()->default(null); // 0 - available, 1 - not available
             $table->timestamps();
         });
     }
@@ -29,4 +29,3 @@ return new class extends Migration
         Schema::dropIfExists('sars_cov_file_uploads');
     }
 };
-

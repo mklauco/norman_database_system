@@ -25,7 +25,7 @@ class LiteratureHomeController extends Controller
     {
         $databaseEntity = DatabaseEntity::where('code', 'literature')->first();
 
-        if (!$databaseEntity) {
+        if (! $databaseEntity) {
             abort(403, 'Module not found.');
         }
 
@@ -35,7 +35,7 @@ class LiteratureHomeController extends Controller
         }
 
         // Module is private - check if user is logged in
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'You must be logged in to access this module.');
         }
 
@@ -70,9 +70,10 @@ class LiteratureHomeController extends Controller
     {
         DatabaseEntity::where('code', 'literature')->update([
             'last_update' => LiteratureTempMain::max('updated_at'),
-            'number_of_records' => LiteratureTempMain::count()
+            'number_of_records' => LiteratureTempMain::count(),
         ]);
         session()->flash('success', 'Literature database counts updated successfully');
+
         return redirect()->back();
     }
 

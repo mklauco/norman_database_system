@@ -2,9 +2,9 @@
 
 namespace App\Models\Ecotox;
 
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Susdat\Substance;
 
 class PNEC2 extends Model
 {
@@ -106,6 +106,4 @@ class PNEC2 extends Model
     {
         return $this->belongsTo(Substance::class, 'substance_id', 'id');
     }
-
-    
 }

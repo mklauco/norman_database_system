@@ -2,7 +2,6 @@
 
 namespace Database\Seeders\Literature;
 
-use App\Models\Literature\Species;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -22,10 +21,11 @@ class ListSpeciesSeeder extends Seeder
         DB::table($target_table_name)->truncate();
 
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/literature/list_species.csv';
+        $path = base_path().'/database/seeders/seeds/literature/list_species.csv';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
+
             return;
         }
 
@@ -35,7 +35,7 @@ class ListSpeciesSeeder extends Seeder
         $p = [];
         $rowCount = 0;
 
-        foreach($rows as $r) {
+        foreach ($rows as $r) {
             // Skip empty rows or header duplicates
             if (empty($r['name']) && empty($r['name_latin'])) {
                 continue;
@@ -47,15 +47,15 @@ class ListSpeciesSeeder extends Seeder
             }
 
             $p[] = [
-                'name'        => $this->cleanValue($r['name']),
-                'name_latin'  => $this->cleanValue($r['name_latin']),
-                'kingdom'     => $this->cleanValue($r['Kingdom']),
-                'phylum'      => $this->cleanValue($r['Phylum']),
-                'order'       => $this->cleanValue($r['Order']),
-                'genus'       => $this->cleanValue($r['Genus']),
-                'class'       => $this->cleanValue($r['Class ']), // Note: there's a space after "Class" in the CSV header
-                'created_at'  => $now,
-                'updated_at'  => $now,
+                'name' => $this->cleanValue($r['name']),
+                'name_latin' => $this->cleanValue($r['name_latin']),
+                'kingdom' => $this->cleanValue($r['Kingdom']),
+                'phylum' => $this->cleanValue($r['Phylum']),
+                'order' => $this->cleanValue($r['Order']),
+                'genus' => $this->cleanValue($r['Genus']),
+                'class' => $this->cleanValue($r['Class ']), // Note: there's a space after "Class" in the CSV header
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
             $rowCount++;
         }
@@ -65,8 +65,8 @@ class ListSpeciesSeeder extends Seeder
         $k = 0;
         $count = ceil(count($p) / $chunkSize);
 
-        foreach($chunks as $c){
-            $this->command->info("Processing chunk " . ($k + 1) . "/{$count}");
+        foreach ($chunks as $c) {
+            $this->command->info('Processing chunk '.($k + 1)."/{$count}");
             DB::table($target_table_name)->insert($c);
             $k++;
         }
@@ -77,7 +77,7 @@ class ListSpeciesSeeder extends Seeder
     /**
      * Clean and trim the value, return null if empty
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return string|null
      */
     protected function cleanValue($value)

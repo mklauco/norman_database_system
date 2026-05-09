@@ -30,9 +30,9 @@ return new class extends Migration
             ) as exists
         ");
 
-        if (!($helperExists[0]->exists ?? false)) {
+        if (! ($helperExists[0]->exists ?? false)) {
             throw new \RuntimeException(
-                'empodat_suspect_stations_helper table does not exist. ' .
+                'empodat_suspect_stations_helper table does not exist. '.
                 'Run empodat-suspect:refresh-filters --create first.'
             );
         }
@@ -67,7 +67,7 @@ return new class extends Migration
     private function createBiotaView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_biota CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_biota AS
             SELECT DISTINCT
                 ss.station_id,
@@ -76,7 +76,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_biota mb ON mb.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esmb_station_id ON empodat_suspect_matrix_biota(station_id)');
         DB::statement('CREATE INDEX idx_esmb_empodat_main_id ON empodat_suspect_matrix_biota(empodat_main_id)');
     }
@@ -84,7 +84,7 @@ return new class extends Migration
     private function createSedimentsView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_sediments CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_sediments AS
             SELECT DISTINCT
                 ss.station_id,
@@ -93,7 +93,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_sediments ms ON ms.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esms_station_id ON empodat_suspect_matrix_sediments(station_id)');
         DB::statement('CREATE INDEX idx_esms_empodat_main_id ON empodat_suspect_matrix_sediments(empodat_main_id)');
     }
@@ -101,7 +101,7 @@ return new class extends Migration
     private function createWaterSurfaceView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_water_surface CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_water_surface AS
             SELECT DISTINCT
                 ss.station_id,
@@ -110,7 +110,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_water_surface mws ON mws.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esmws_station_id ON empodat_suspect_matrix_water_surface(station_id)');
         DB::statement('CREATE INDEX idx_esmws_empodat_main_id ON empodat_suspect_matrix_water_surface(empodat_main_id)');
     }
@@ -118,7 +118,7 @@ return new class extends Migration
     private function createWaterGroundView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_water_ground CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_water_ground AS
             SELECT DISTINCT
                 ss.station_id,
@@ -127,7 +127,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_water_ground mwg ON mwg.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esmwg_station_id ON empodat_suspect_matrix_water_ground(station_id)');
         DB::statement('CREATE INDEX idx_esmwg_empodat_main_id ON empodat_suspect_matrix_water_ground(empodat_main_id)');
     }
@@ -135,7 +135,7 @@ return new class extends Migration
     private function createWaterWasteView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_water_waste CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_water_waste AS
             SELECT DISTINCT
                 ss.station_id,
@@ -144,7 +144,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_water_waste mww ON mww.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esmww_station_id ON empodat_suspect_matrix_water_waste(station_id)');
         DB::statement('CREATE INDEX idx_esmww_empodat_main_id ON empodat_suspect_matrix_water_waste(empodat_main_id)');
     }
@@ -152,7 +152,7 @@ return new class extends Migration
     private function createSuspendedMatterView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_suspended_matter CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_suspended_matter AS
             SELECT DISTINCT
                 ss.station_id,
@@ -161,7 +161,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_suspended_matter msm ON msm.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esmsm_station_id ON empodat_suspect_matrix_suspended_matter(station_id)');
         DB::statement('CREATE INDEX idx_esmsm_empodat_main_id ON empodat_suspect_matrix_suspended_matter(empodat_main_id)');
     }
@@ -169,7 +169,7 @@ return new class extends Migration
     private function createSoilView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_soil CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_soil AS
             SELECT DISTINCT
                 ss.station_id,
@@ -178,7 +178,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_soil mso ON mso.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esmso_station_id ON empodat_suspect_matrix_soil(station_id)');
         DB::statement('CREATE INDEX idx_esmso_empodat_main_id ON empodat_suspect_matrix_soil(empodat_main_id)');
     }
@@ -186,7 +186,7 @@ return new class extends Migration
     private function createAirView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_air CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_air AS
             SELECT DISTINCT
                 ss.station_id,
@@ -195,7 +195,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_air ma ON ma.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esma_station_id ON empodat_suspect_matrix_air(station_id)');
         DB::statement('CREATE INDEX idx_esma_empodat_main_id ON empodat_suspect_matrix_air(empodat_main_id)');
     }
@@ -203,7 +203,7 @@ return new class extends Migration
     private function createSewageSludgeView(): void
     {
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_matrix_sewage_sludge CASCADE');
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_matrix_sewage_sludge AS
             SELECT DISTINCT
                 ss.station_id,
@@ -212,7 +212,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             INNER JOIN empodat_matrix_sewage_sludge mss ON mss.id = em.id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_esmss_station_id ON empodat_suspect_matrix_sewage_sludge(station_id)');
         DB::statement('CREATE INDEX idx_esmss_empodat_main_id ON empodat_suspect_matrix_sewage_sludge(empodat_main_id)');
     }

@@ -16,6 +16,7 @@ class IdsCsvExportReady extends Mailable
      * Create a new message instance.
      */
     public $messageContent;
+
     public function __construct($messageContent)
     {
         $this->messageContent = $messageContent;

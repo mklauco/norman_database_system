@@ -3,10 +3,7 @@
 namespace App\Http\Controllers\Factsheet;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\DatabaseEntity;
 use App\Models\Susdat\Substance;
-use Illuminate\Support\Facades\DB;
 
 class FactsheetHomeController extends Controller
 {

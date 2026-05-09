@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -12,7 +13,7 @@ class SarsCov2Part1Seeder extends Seeder
         // Disable query logging for large inserts
         DB::disableQueryLog();
 
-        $filePath = base_path() . '/database/seeders/seeds_sars/sars1.xlsx';
+        $filePath = base_path().'/database/seeders/seeds_sars/sars1.xlsx';
         $targetTable = 'sars_cov_main';
 
         // Stream rows from the CSV in chunks of 1,000

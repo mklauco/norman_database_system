@@ -36,52 +36,52 @@ return new class extends Migration
             $table->index('concentration_indicator_id');
             $table->index('method_id');
             $table->index('data_source_id');
-            
+
             // Composite indexes for common search patterns
             // $table->index(['station_id', 'sampling_date_year']);
             // $table->index(['substance_id', 'matrix_id']);
             // $table->index(['sampling_date_year', 'substance_id']);
             // $table->index(['matrix_id', 'sampling_date_year']);
-            
+
             // Partial index for non-null concentration values (PostgreSQL specific)
             // $table->index('concentration_value')->where('concentration_value IS NOT NULL');
 
             // Foreign key constraints for data consistency
             $table->foreign('station_id')
-                  ->references('id')
-                  ->on('empodat_stations')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+                ->references('id')
+                ->on('empodat_stations')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
 
             $table->foreign('matrix_id')
-                  ->references('id')
-                  ->on('list_matrices')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+                ->references('id')
+                ->on('list_matrices')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
 
             $table->foreign('substance_id')
-                  ->references('id')
-                  ->on('susdat_substances')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+                ->references('id')
+                ->on('susdat_substances')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
 
             $table->foreign('concentration_indicator_id')
-                  ->references('id')
-                  ->on('list_concentration_indicators')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+                ->references('id')
+                ->on('list_concentration_indicators')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
 
             $table->foreign('method_id')
-                  ->references('id')
-                  ->on('empodat_analytical_methods')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+                ->references('id')
+                ->on('empodat_analytical_methods')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
 
             $table->foreign('data_source_id')
-                  ->references('id')
-                  ->on('empodat_data_sources')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
+                ->references('id')
+                ->on('empodat_data_sources')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
         });
     }
 

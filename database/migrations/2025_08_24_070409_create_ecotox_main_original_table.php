@@ -14,18 +14,18 @@ return new class extends Migration
         Schema::create('ecotox_main_original', function (Blueprint $table) {
             $table->id();
             $table->string('ecotox_id', 30)->primary();
-            
+
             // Data source information
             $table->text('data_source')->nullable();
             $table->text('data_source_id')->nullable();
             $table->text('data_source_ref')->nullable();
             $table->text('data_protection')->nullable();
             $table->text('data_source_link')->nullable();
-            
+
             // Edit information
             $table->text('edit_editor')->nullable();
             $table->date('edit_date')->nullable();
-            
+
             // Reference information
             $table->text('reference_type')->nullable();
             $table->text('reference_id')->nullable();
@@ -33,13 +33,13 @@ return new class extends Migration
             $table->text('authors')->nullable();
             $table->string('year_publication', 255)->nullable();
             $table->text('bibliographic_source')->nullable();
-            
+
             // Test information
             $table->text('testing_laboratory')->nullable();
             $table->text('matrix_habitat')->nullable();
             $table->text('test_type')->nullable();
             $table->text('acute_or_chronic')->nullable();
-            
+
             // Substance information
             $table->unsignedInteger('sus_id')->nullable();
             $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
@@ -53,13 +53,13 @@ return new class extends Migration
             $table->text('known_concentrations')->nullable();
             $table->text('radio_substance')->nullable();
             $table->text('preparation_solutions')->nullable();
-            
+
             // Standard information
             $table->text('standard_qualifier')->nullable();
             $table->text('standard_used')->nullable();
             $table->text('principles')->nullable();
             $table->text('glp_certificate')->nullable();
-            
+
             // Effect information
             $table->text('effect')->nullable();
             $table->text('effect_measurement')->nullable();
@@ -68,7 +68,7 @@ return new class extends Migration
             $table->text('duration_unit')->nullable();
             $table->text('total_test_duration')->nullable();
             $table->text('recovery_considered')->nullable();
-            
+
             // Organism information
             $table->text('scientific_name')->nullable();
             $table->text('common_name')->nullable();
@@ -89,20 +89,20 @@ return new class extends Migration
             $table->text('organism_source')->nullable();
             $table->text('culture_handling')->nullable();
             $table->text('acclimation')->nullable();
-            
+
             // Concentration and exposure information
             $table->text('nominal_concentrations')->nullable();
             $table->text('measured_or_nominal')->nullable();
             $table->text('limit_test')->nullable();
             $table->text('range_finding_study')->nullable();
-            
+
             // Analytical information
             $table->text('analytical_matrix')->nullable();
             $table->text('analytical_schedule')->nullable();
             $table->text('analytical_method')->nullable();
             $table->text('analytical_recovery')->nullable();
             $table->text('limit_of_quantification')->nullable();
-            
+
             // Exposure details
             $table->text('exposure_regime')->nullable();
             $table->text('exposure_duration')->nullable();
@@ -110,14 +110,14 @@ return new class extends Migration
             $table->text('application_freq')->nullable();
             $table->text('application_freq_unit')->nullable();
             $table->text('exposure_route')->nullable();
-            
+
             // Control information
             $table->text('positive_control_used')->nullable();
             $table->text('positive_control_substance')->nullable();
             $table->text('effects_control')->nullable();
             $table->text('vehicle_control')->nullable();
             $table->text('effects_vehicle')->nullable();
-            
+
             // Environmental conditions
             $table->text('intervals_water')->nullable();
             $table->text('intervals_water_unit')->nullable();
@@ -143,7 +143,7 @@ return new class extends Migration
             $table->text('organic_carbon_unit')->nullable();
             $table->text('dissolved_oxygen')->nullable();
             $table->text('dissolved_oxygen_unit')->nullable();
-            
+
             // Test setup
             $table->text('material_vessel')->nullable();
             $table->text('volume_vessel')->nullable();
@@ -155,7 +155,7 @@ return new class extends Migration
             $table->text('type_amount_food')->nullable();
             $table->text('number_organisms')->nullable();
             $table->text('number_replicates')->nullable();
-            
+
             // Statistical and result information
             $table->text('statistical_method')->nullable();
             $table->text('trend')->nullable();
@@ -171,13 +171,13 @@ return new class extends Migration
             $table->text('availability_raw_data')->nullable();
             $table->text('study_available')->nullable();
             $table->text('general_comment')->nullable();
-            
+
             // Quality and reliability information
             $table->text('reliability_study')->nullable();
             $table->text('reliability_score')->nullable();
             $table->text('existing_rational_reliability')->nullable();
             $table->text('regulatory_purpose')->nullable();
-            
+
             // Additional fields
             $table->text('final_cell_density')->nullable();
             $table->text('used_for_regulaltory_purpose')->nullable();
@@ -192,16 +192,16 @@ return new class extends Migration
             $table->text('final_body_weight_of_control')->nullable();
             $table->string('use_study', 255)->nullable();
             $table->foreignId('added_by')
-            ->nullable()
-            ->default(null)
-            ->references('id')
-            ->on('users')
-            ->onUpdate('cascade')
-            ->onDelete('restrict');
-            
+                ->nullable()
+                ->default(null)
+                ->references('id')
+                ->on('users')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
+
             // Laravel timestamps
             $table->timestamps();
-            
+
             // Indexes
             $table->index('sus_id');
             $table->index('ecotox_id');

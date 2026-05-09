@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class AnalyticalMethod extends Model
 {
     //
-    
+
     protected $table = 'empodat_analytical_methods';
-    
+
     protected $fillable = [
         'lod',
         'loq',
@@ -40,12 +40,14 @@ class AnalyticalMethod extends Model
         'created_at',
         'updated_at',
     ];
-    
-    public function listAnalyticalMethod(){
+
+    public function listAnalyticalMethod()
+    {
         return $this->belongsTo(AnalyticalMethod::class, 'analytical_method_id', 'id');
     }
-    
-    public function samplePreparationMethodOther(){
+
+    public function samplePreparationMethodOther()
+    {
         return $this->belongsTo(\App\Models\List\SamplePreparationMethod::class, 'sample_preparation_method_other', 'id');
     }
 }

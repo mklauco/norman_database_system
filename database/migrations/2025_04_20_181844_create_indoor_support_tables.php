@@ -7,11 +7,11 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-    * Run the migrations.
-    */
+     * Run the migrations.
+     */
     public function up(): void
     {
-        
+
         $lookupTables = [
             'data_dam',
             'data_dcf',
@@ -48,23 +48,24 @@ return new class extends Migration
             'data_country',
             'data_country_other',
         ];
-        
+
         // Create each lookup table
         foreach ($lookupTables as $tableName) {
             $this->createLookupTable($tableName);
         }
-        
+
         // Create each lookup table
         foreach ($lookupTablesAbbr as $tableName) {
             $this->createLookupTableAbbr($tableName);
         }
     }
+
     /**
-    * Create a standard lookup table
-    *
-    * @param string $tableName
-    * @return void
-    */
+     * Create a standard lookup table
+     *
+     * @param  string  $tableName
+     * @return void
+     */
     private function createLookupTable($tableName)
     {
         Schema::create('indoor_'.$tableName, function (Blueprint $table) {
@@ -76,7 +77,7 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-    
+
     private function createLookupTableAbbr($tableName)
     {
         Schema::create('indoor_'.$tableName, function (Blueprint $table) {
@@ -89,13 +90,13 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-    
+
     /**
-    * Reverse the migrations.
-    */
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        
+
         $lookupTables = [
             'data_country',
             'data_country_other',
@@ -129,7 +130,7 @@ return new class extends Migration
             'data_dts',
             'data_matrix',
         ];
-        
+
         // Drop each lookup table
         foreach ($lookupTables as $tableName) {
             Schema::dropIfExists('indoor_'.$tableName);

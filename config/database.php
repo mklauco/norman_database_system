@@ -79,7 +79,6 @@ return [
             ]) : [],
         ],
 
-
         'norman_application' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),

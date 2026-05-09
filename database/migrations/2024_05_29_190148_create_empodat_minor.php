@@ -7,14 +7,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-    * Run the migrations.
-    */
+     * Run the migrations.
+     */
     public function up(): void
     {
 
         Schema::create('empodat_minor', function (Blueprint $table) {
             $table->id();
-            
+
             // Basic fields
             $table->tinyInteger('dpc_id')->unsigned()->default(0)->nullable();
             $table->string('altitude', 20)->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('unit_extra', 20)->default('')->nullable();
             $table->tinyInteger('tier')->nullable();
             $table->tinyInteger('sampling_technique')->nullable();
-            
+
             // Date and time fields
             $table->string('sampling_date')->nullable();
             $table->string('sampling_date_t')->nullable();
@@ -33,21 +33,21 @@ return new class extends Migration
             $table->string('sampling_date1_d')->nullable();
             $table->string('sampling_date1_t')->nullable();
             $table->string('sampling_date1')->nullable();
-            
+
             // Analysis date fields
             $table->string('analysis_date_y', 4)->nullable(); // year as string
             $table->string('analysis_date_m')->nullable();
             $table->string('analysis_date_d')->nullable();
-            
+
             // Duration fields
             $table->string('sampling_duration_day', 20)->default('')->nullable();
             $table->string('sampling_duration_hour', 20)->default('')->nullable();
-            
+
             // Text fields
             $table->text('description')->default('')->nullable();
             $table->text('remark')->default('')->nullable();
             $table->text('remark_add')->default('')->nullable();
-            
+
             // Other fields
             $table->string('show_date')->nullable();
             $table->integer('dtod_id')->unsigned()->nullable();
@@ -68,17 +68,17 @@ return new class extends Migration
             $table->integer('list_id')->nullable();
 
             // $table->foreignId('added_by')->nullable()->default(null)->on('users')->onUpdate('cascade')->onDelete('restrict'); // User who added the record
-            
+
             // $table->timestamps();
-            
+
             // Foreign key constraint
             $table->foreign('id')->references('id')->on('empodat_main')->onUpdate('cascade')->onDelete('restrict');
         });
     }
-    
+
     /**
-    * Reverse the migrations.
-    */
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('empodat_minor');

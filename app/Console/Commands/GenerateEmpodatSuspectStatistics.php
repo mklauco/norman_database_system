@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use App\Models\DatabaseEntity;
 use App\Models\EmpodatSuspect\EmpodatSuspectMain;
 use App\Models\Statistic;
-use App\Models\DatabaseEntity;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class GenerateEmpodatSuspectStatistics extends Command
 {
@@ -34,8 +34,9 @@ class GenerateEmpodatSuspectStatistics extends Command
         // Get empodat_suspect database entity
         $empodatSuspectEntity = DatabaseEntity::where('code', 'empodat_suspect')->first();
 
-        if (!$empodatSuspectEntity) {
+        if (! $empodatSuspectEntity) {
             $this->error('Empodat Suspect database entity not found.');
+
             return 1;
         }
 
@@ -52,7 +53,7 @@ class GenerateEmpodatSuspectStatistics extends Command
                 'meta_data' => [
                     'count' => $totalSubstances,
                     'generated_at' => now()->toISOString(),
-                ]
+                ],
             ]);
             $this->info("✓ Total substances: {$totalSubstances}");
 
@@ -79,9 +80,9 @@ class GenerateEmpodatSuspectStatistics extends Command
                     'data' => $substancesBySampleCode,
                     'generated_at' => now()->toISOString(),
                     'total_sample_codes' => count($substancesBySampleCode),
-                ]
+                ],
             ]);
-            $this->info("✓ Substances by sample code: " . count($substancesBySampleCode) . " sample codes");
+            $this->info('✓ Substances by sample code: '.count($substancesBySampleCode).' sample codes');
 
             // 3. Number of records per sample code (xlsx_name)
             $this->info('Generating records by sample code statistic...');
@@ -105,9 +106,9 @@ class GenerateEmpodatSuspectStatistics extends Command
                     'data' => $recordsBySampleCode,
                     'generated_at' => now()->toISOString(),
                     'total_sample_codes' => count($recordsBySampleCode),
-                ]
+                ],
             ]);
-            $this->info("✓ Records by sample code: " . count($recordsBySampleCode) . " sample codes");
+            $this->info('✓ Records by sample code: '.count($recordsBySampleCode).' sample codes');
 
             // 4. Number of substances per country
             $this->info('Generating substances by country statistic...');
@@ -140,9 +141,9 @@ class GenerateEmpodatSuspectStatistics extends Command
                     'data' => $substancesByCountryData,
                     'generated_at' => now()->toISOString(),
                     'total_countries' => count($substancesByCountryData),
-                ]
+                ],
             ]);
-            $this->info("✓ Substances by country: " . count($substancesByCountryData) . " countries");
+            $this->info('✓ Substances by country: '.count($substancesByCountryData).' countries');
 
             // 5. Number of records per country
             $this->info('Generating records by country statistic...');
@@ -174,16 +175,18 @@ class GenerateEmpodatSuspectStatistics extends Command
                     'data' => $recordsByCountryData,
                     'generated_at' => now()->toISOString(),
                     'total_countries' => count($recordsByCountryData),
-                ]
+                ],
             ]);
-            $this->info("✓ Records by country: " . count($recordsByCountryData) . " countries");
+            $this->info('✓ Records by country: '.count($recordsByCountryData).' countries');
 
             $this->info('');
             $this->info('All statistics generated successfully!');
+
             return 0;
 
         } catch (\Exception $e) {
-            $this->error('Error generating statistics: ' . $e->getMessage());
+            $this->error('Error generating statistics: '.$e->getMessage());
+
             return 1;
         }
     }

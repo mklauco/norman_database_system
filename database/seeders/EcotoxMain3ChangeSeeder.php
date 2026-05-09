@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -17,10 +16,10 @@ class EcotoxMain3ChangeSeeder extends Seeder
     {
         $target_table_name = 'ecotox_main_3_changes';
         DB::table($target_table_name)->truncate();
-        $path = base_path() . '/database/seeders/seeds/ecotox_tables/ecotox3_change.csv';
+        $path = base_path().'/database/seeders/seeds/ecotox_tables/ecotox3_change.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
-        
+
         foreach ($rows as $r) {
             $changeDate = $this->parseDateTime($r['change_date']);
             $p[] = [
@@ -41,11 +40,11 @@ class EcotoxMain3ChangeSeeder extends Seeder
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;
         foreach ($chunks as $c) {
-            echo $k++ . '/' . $count . "; \n";
+            echo $k++.'/'.$count."; \n";
             DB::table($target_table_name)->insert($c);
         }
-        
-        $this->command->info('EcotoxMain3ChangeSeeder completed. Seeded ' . count($p) . ' records.');
+
+        $this->command->info('EcotoxMain3ChangeSeeder completed. Seeded '.count($p).' records.');
     }
 
     protected function isEmptyThenNull($value)
@@ -58,7 +57,7 @@ class EcotoxMain3ChangeSeeder extends Seeder
         if (empty($value)) {
             return null;
         }
-        
+
         try {
             return Carbon::parse($value);
         } catch (\Exception $e) {

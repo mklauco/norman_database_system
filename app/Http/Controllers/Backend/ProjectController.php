@@ -16,9 +16,9 @@ class ProjectController extends Controller
     {
         $projects = Project::orderBy('id')
             ->paginate(100);
-            
+
         return view('backend.projects.index', [
-            'projects' => $projects
+            'projects' => $projects,
         ]);
     }
 
@@ -27,13 +27,13 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        $project = new Project(); // Create empty project for form
+        $project = new Project; // Create empty project for form
         $fillables = $project->getFillable();
-        
+
         return view('backend.projects.upsert', [
             'project' => $project,
             'fillables' => $fillables,
-            'isCreate' => true
+            'isCreate' => true,
         ]);
     }
 
@@ -47,14 +47,14 @@ class ProjectController extends Controller
             'abbreviation' => 'required|string|min:2|max:255',
             'description' => 'nullable|string|max:1000',
         ]);
-        
+
         $project = Project::create($validated);
-        
+
         // Automatically assign current user to project
         if ($project) {
             $project->users()->attach(Auth::id());
         }
-        
+
         return redirect()
             ->route('projects.index')
             ->with('success', 'Project created successfully!');
@@ -66,9 +66,9 @@ class ProjectController extends Controller
     public function show(string $id)
     {
         $project = Project::with('users')->findOrFail($id);
-        
+
         return view('backend.projects.show', [
-            'project' => $project
+            'project' => $project,
         ]);
     }
 
@@ -79,11 +79,11 @@ class ProjectController extends Controller
     {
         $project = Project::findOrFail($id);
         $fillables = $project->getFillable();
-        
+
         return view('backend.projects.upsert', [
             'project' => $project,
             'fillables' => $fillables,
-            'isCreate' => false
+            'isCreate' => false,
         ]);
     }
 
@@ -97,10 +97,10 @@ class ProjectController extends Controller
             'abbreviation' => 'required|string|min:2|max:255',
             'description' => 'nullable|string|max:1000',
         ]);
-        
+
         $project = Project::findOrFail($id);
         $project->update($validated);
-        
+
         return redirect()
             ->route('projects.index')
             ->with('success', 'Project updated successfully!');
@@ -109,37 +109,37 @@ class ProjectController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-public function destroy(string $id)
-{
-    try {
-        $project = Project::findOrFail($id);
-        
-        // Delete project user relationships in pivot table
-        $project->users()->detach();
-        
-        // Delete the project
-        $project->delete();
-        
-        return redirect()
-            ->route('projects.index')
-            ->with('success', 'Project deleted successfully!');
-    } catch (\Illuminate\Database\QueryException $e) {
-        // Check if it's a foreign key constraint violation
-        if ($e->getCode() == "23503") {
+    public function destroy(string $id)
+    {
+        try {
+            $project = Project::findOrFail($id);
+
+            // Delete project user relationships in pivot table
+            $project->users()->detach();
+
+            // Delete the project
+            $project->delete();
+
             return redirect()
                 ->route('projects.index')
-                ->with('error', 'Cannot delete this project because it is associated with one or more files. Please remove all file associations before deleting this project.');
+                ->with('success', 'Project deleted successfully!');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Check if it's a foreign key constraint violation
+            if ($e->getCode() == '23503') {
+                return redirect()
+                    ->route('projects.index')
+                    ->with('error', 'Cannot delete this project because it is associated with one or more files. Please remove all file associations before deleting this project.');
+            }
+
+            // For other database errors
+            return redirect()
+                ->route('projects.index')
+                ->with('error', 'An error occurred while trying to delete the project. Please try again later.');
+        } catch (\Exception $e) {
+            // For any other exceptions
+            return redirect()
+                ->route('projects.index')
+                ->with('error', 'An error occurred while trying to delete the project. Please try again later.');
         }
-        
-        // For other database errors
-        return redirect()
-            ->route('projects.index')
-            ->with('error', 'An error occurred while trying to delete the project. Please try again later.');
-    } catch (\Exception $e) {
-        // For any other exceptions
-        return redirect()
-            ->route('projects.index')
-            ->with('error', 'An error occurred while trying to delete the project. Please try again later.');
     }
-}
 }

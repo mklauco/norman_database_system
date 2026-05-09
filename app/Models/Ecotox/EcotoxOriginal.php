@@ -2,10 +2,10 @@
 
 namespace App\Models\Ecotox;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Susdat\Substance;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class EcotoxOriginal extends Model
 {
@@ -168,7 +168,7 @@ class EcotoxOriginal extends Model
         'standard_test',
         'final_body_weight_of_control',
         'use_study',
-        'added_by'
+        'added_by',
     ];
 
     /**
@@ -185,7 +185,7 @@ class EcotoxOriginal extends Model
         'added_by' => 'integer',
         'edit_date' => 'date',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
     ];
 
     /**
@@ -198,7 +198,7 @@ class EcotoxOriginal extends Model
 
     /**
      * Get the substance associated with the ecotox record (using substance_id).
-     * 
+     *
      * This is the preferred relationship method that uses the foreign key constraint.
      */
     public function substance()
@@ -232,7 +232,7 @@ class EcotoxOriginal extends Model
 
     /**
      * Get a formatted concentration with qualifier and unit.
-     * 
+     *
      * @return string|null
      */
     public function getFormattedConcentrationAttribute()
@@ -240,16 +240,16 @@ class EcotoxOriginal extends Model
         if (empty($this->concentration_value)) {
             return null;
         }
-        
-        $qualifier = $this->concentration_qualifier ? $this->concentration_qualifier . ' ' : '';
-        $unit = $this->concentration_unit ? ' ' . $this->concentration_unit : '';
-        
-        return $qualifier . $this->concentration_value . $unit;
+
+        $qualifier = $this->concentration_qualifier ? $this->concentration_qualifier.' ' : '';
+        $unit = $this->concentration_unit ? ' '.$this->concentration_unit : '';
+
+        return $qualifier.$this->concentration_value.$unit;
     }
 
     /**
      * Get a formatted duration with unit.
-     * 
+     *
      * @return string|null
      */
     public function getFormattedDurationAttribute()
@@ -257,14 +257,15 @@ class EcotoxOriginal extends Model
         if (empty($this->duration)) {
             return null;
         }
-        
-        $unit = $this->duration_unit ? ' ' . $this->duration_unit : '';
-        return $this->duration . $unit;
+
+        $unit = $this->duration_unit ? ' '.$this->duration_unit : '';
+
+        return $this->duration.$unit;
     }
 
     /**
      * Get a formatted body length with unit.
-     * 
+     *
      * @return string|null
      */
     public function getFormattedBodyLengthAttribute()
@@ -272,14 +273,15 @@ class EcotoxOriginal extends Model
         if (empty($this->body_length)) {
             return null;
         }
-        
-        $unit = $this->length_unit ? ' ' . $this->length_unit : '';
-        return $this->body_length . $unit;
+
+        $unit = $this->length_unit ? ' '.$this->length_unit : '';
+
+        return $this->body_length.$unit;
     }
 
     /**
      * Get a formatted body weight with unit.
-     * 
+     *
      * @return string|null
      */
     public function getFormattedBodyWeightAttribute()
@@ -287,9 +289,10 @@ class EcotoxOriginal extends Model
         if (empty($this->body_weight)) {
             return null;
         }
-        
-        $unit = $this->weight_unit ? ' ' . $this->weight_unit : '';
-        return $this->body_weight . $unit;
+
+        $unit = $this->weight_unit ? ' '.$this->weight_unit : '';
+
+        return $this->body_weight.$unit;
     }
 
     /**
@@ -297,9 +300,10 @@ class EcotoxOriginal extends Model
      */
     public function scopeWithMatrixHabitat($query, $matrixHabitat)
     {
-        if (is_array($matrixHabitat) && !empty($matrixHabitat)) {
+        if (is_array($matrixHabitat) && ! empty($matrixHabitat)) {
             return $query->whereIn('matrix_habitat', $matrixHabitat);
         }
+
         return $query;
     }
 
@@ -308,9 +312,10 @@ class EcotoxOriginal extends Model
      */
     public function scopeWithTaxonomicGroup($query, $taxonomicGroup)
     {
-        if (is_array($taxonomicGroup) && !empty($taxonomicGroup)) {
+        if (is_array($taxonomicGroup) && ! empty($taxonomicGroup)) {
             return $query->whereIn('taxonomic_group', $taxonomicGroup);
         }
+
         return $query;
     }
 
@@ -319,9 +324,10 @@ class EcotoxOriginal extends Model
      */
     public function scopeWithAcuteOrChronic($query, $acuteOrChronic)
     {
-        if (is_array($acuteOrChronic) && !empty($acuteOrChronic)) {
+        if (is_array($acuteOrChronic) && ! empty($acuteOrChronic)) {
             return $query->whereIn('acute_or_chronic', $acuteOrChronic);
         }
+
         return $query;
     }
 
@@ -330,9 +336,10 @@ class EcotoxOriginal extends Model
      */
     public function scopeWithEndpoint($query, $endpoint)
     {
-        if (is_array($endpoint) && !empty($endpoint)) {
+        if (is_array($endpoint) && ! empty($endpoint)) {
             return $query->whereIn('endpoint', $endpoint);
         }
+
         return $query;
     }
 
@@ -341,9 +348,10 @@ class EcotoxOriginal extends Model
      */
     public function scopeWithScientificName($query, $scientificName)
     {
-        if (is_array($scientificName) && !empty($scientificName)) {
+        if (is_array($scientificName) && ! empty($scientificName)) {
             return $query->whereIn('scientific_name', $scientificName);
         }
+
         return $query;
     }
 
@@ -352,9 +360,10 @@ class EcotoxOriginal extends Model
      */
     public function scopeWithReliabilityStudy($query, $reliabilityStudy)
     {
-        if (!empty($reliabilityStudy)) {
+        if (! empty($reliabilityStudy)) {
             return $query->where('reliability_study', $reliabilityStudy);
         }
+
         return $query;
     }
 
@@ -363,9 +372,10 @@ class EcotoxOriginal extends Model
      */
     public function scopeWithUseStudy($query, $useStudy)
     {
-        if (!empty($useStudy)) {
+        if (! empty($useStudy)) {
             return $query->where('use_study', $useStudy);
         }
+
         return $query;
     }
 }

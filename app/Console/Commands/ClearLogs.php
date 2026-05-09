@@ -26,22 +26,24 @@ class ClearLogs extends Command
     public function handle()
     {
         $logPath = storage_path('logs');
-        
-        if (!is_dir($logPath)) {
+
+        if (! is_dir($logPath)) {
             $this->error('Logs directory not found');
+
             return 1;
         }
 
-        $files = glob($logPath . '/*.log');
-        
+        $files = glob($logPath.'/*.log');
+
         foreach ($files as $file) {
             if (is_file($file)) {
                 file_put_contents($file, '');
-                $this->info('Cleared: ' . basename($file));
+                $this->info('Cleared: '.basename($file));
             }
         }
 
         $this->info('All log files have been cleared');
+
         return 0;
     }
 }

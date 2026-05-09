@@ -113,39 +113,39 @@ class EmpodatMinor extends Model
 
     /**
      * Get formatted sampling date from individual components.
-     * 
+     *
      * @return string|null
      */
     public function getFormattedSamplingDate1Attribute()
     {
-        if (!$this->sampling_date1_y || !$this->sampling_date1_m || !$this->sampling_date1_d) {
+        if (! $this->sampling_date1_y || ! $this->sampling_date1_m || ! $this->sampling_date1_d) {
             return null;
         }
-        
-        return $this->sampling_date1_y . '-' . 
-               str_pad($this->sampling_date1_m, 2, '0', STR_PAD_LEFT) . '-' . 
+
+        return $this->sampling_date1_y.'-'.
+               str_pad($this->sampling_date1_m, 2, '0', STR_PAD_LEFT).'-'.
                str_pad($this->sampling_date1_d, 2, '0', STR_PAD_LEFT);
     }
 
     /**
      * Get formatted analysis date from individual components.
-     * 
+     *
      * @return string|null
      */
     public function getFormattedAnalysisDateAttribute()
     {
-        if (!$this->analysis_date_y || !$this->analysis_date_m || !$this->analysis_date_d) {
+        if (! $this->analysis_date_y || ! $this->analysis_date_m || ! $this->analysis_date_d) {
             return null;
         }
-        
-        return $this->analysis_date_y . '-' . 
-               str_pad($this->analysis_date_m, 2, '0', STR_PAD_LEFT) . '-' . 
+
+        return $this->analysis_date_y.'-'.
+               str_pad($this->analysis_date_m, 2, '0', STR_PAD_LEFT).'-'.
                str_pad($this->analysis_date_d, 2, '0', STR_PAD_LEFT);
     }
 
     /**
      * Check if the record should be exported.
-     * 
+     *
      * @return bool
      */
     public function shouldExport()
@@ -155,7 +155,7 @@ class EmpodatMinor extends Model
 
     /**
      * Get sampling duration in a readable format.
-     * 
+     *
      * @return string|null
      */
     public function getFormattedSamplingDurationAttribute()
@@ -163,17 +163,17 @@ class EmpodatMinor extends Model
         if (empty($this->sampling_duration_day) && empty($this->sampling_duration_hour)) {
             return null;
         }
-        
+
         $parts = [];
-        
-        if (!empty($this->sampling_duration_day)) {
-            $parts[] = $this->sampling_duration_day . ' day(s)';
+
+        if (! empty($this->sampling_duration_day)) {
+            $parts[] = $this->sampling_duration_day.' day(s)';
         }
-        
-        if (!empty($this->sampling_duration_hour)) {
-            $parts[] = $this->sampling_duration_hour . ' hour(s)';
+
+        if (! empty($this->sampling_duration_hour)) {
+            $parts[] = $this->sampling_duration_hour.' hour(s)';
         }
-        
+
         return implode(', ', $parts);
     }
 }

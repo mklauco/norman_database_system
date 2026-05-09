@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -24,7 +24,7 @@ return new class extends Migration
             AND constraint_type = 'FOREIGN KEY'
         ");
 
-        if (!empty($foreignKeyExists)) {
+        if (! empty($foreignKeyExists)) {
             DB::statement('ALTER TABLE empodat_main DROP CONSTRAINT empodat_main_dct_analysis_id_foreign');
         }
 
@@ -54,7 +54,7 @@ return new class extends Migration
             $table->dropColumn(['country_id', 'file_id']);
 
             // Restore dct_analysis_id column only if it doesn't exist
-            if (!Schema::hasColumn('empodat_main', 'dct_analysis_id')) {
+            if (! Schema::hasColumn('empodat_main', 'dct_analysis_id')) {
                 $table->unsignedBigInteger('dct_analysis_id')->nullable();
             }
         });

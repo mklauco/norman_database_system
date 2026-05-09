@@ -16,9 +16,9 @@ return new class extends Migration
 
             // Add foreign key constraint
             $table->foreign('matrix_id')
-                  ->references('id')
-                  ->on('list_matrices')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('list_matrices')
+                ->onDelete('set null');
         });
     }
 

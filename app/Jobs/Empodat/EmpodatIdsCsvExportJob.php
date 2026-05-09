@@ -3,9 +3,8 @@
 namespace App\Jobs\Empodat;
 
 use App\Jobs\AbstractCsvExportJob;
-use App\Models\Backend\QueryLog;
-use Illuminate\Support\Facades\DB;
 use App\Mail\Empodat\IdsCsvExportReady;
+use App\Models\Backend\QueryLog;
 use App\Models\Empodat\EmpodatMain;
 
 class EmpodatIdsCsvExportJob extends AbstractCsvExportJob
@@ -19,6 +18,7 @@ class EmpodatIdsCsvExportJob extends AbstractCsvExportJob
      * Optimized batch sizes for efficient processing of IDs only
      */
     protected $initialBatchSize = 10000;
+
     protected $maxBatchSize = 50000;
 
     /**
@@ -78,63 +78,63 @@ class EmpodatIdsCsvExportJob extends AbstractCsvExportJob
     {
         $content = json_decode($queryLog->content, true);
 
-        if (!is_array($content)) {
+        if (! is_array($content)) {
             return $baseQuery;
         }
 
         $request = $content['request'] ?? [];
 
-        if (!is_array($request)) {
+        if (! is_array($request)) {
             return $baseQuery;
         }
 
         // Handle ID range filters (most common case)
-        if (!empty($request['id_from']) || !empty($request['id_to'])) {
-            if (!empty($request['id_from']) && !empty($request['id_to'])) {
+        if (! empty($request['id_from']) || ! empty($request['id_to'])) {
+            if (! empty($request['id_from']) && ! empty($request['id_to'])) {
                 $baseQuery->whereBetween('empodat_main.id', [$request['id_from'], $request['id_to']]);
-            } elseif (!empty($request['id_from'])) {
+            } elseif (! empty($request['id_from'])) {
                 $baseQuery->where('empodat_main.id', '>=', $request['id_from']);
-            } elseif (!empty($request['id_to'])) {
+            } elseif (! empty($request['id_to'])) {
                 $baseQuery->where('empodat_main.id', '<=', $request['id_to']);
             }
         }
 
         // Use optimized scope methods with JOINs
-        if (!empty($request['countrySearch']) && is_array($request['countrySearch'])) {
+        if (! empty($request['countrySearch']) && is_array($request['countrySearch'])) {
             $baseQuery->byCountries($request['countrySearch']);
         }
 
-        if (!empty($request['matrixSearch']) && is_array($request['matrixSearch'])) {
+        if (! empty($request['matrixSearch']) && is_array($request['matrixSearch'])) {
             $baseQuery->byMatrices($request['matrixSearch']);
         }
 
-        if (!empty($request['substances']) && is_array($request['substances'])) {
+        if (! empty($request['substances']) && is_array($request['substances'])) {
             $baseQuery->bySubstances($request['substances']);
         }
 
-        if (!empty($request['normanRelevantOnly']) && $request['normanRelevantOnly']) {
+        if (! empty($request['normanRelevantOnly']) && $request['normanRelevantOnly']) {
             $baseQuery->normanRelevant();
         }
 
-        if (!empty($request['concentrationIndicatorSearch']) && is_array($request['concentrationIndicatorSearch'])) {
+        if (! empty($request['concentrationIndicatorSearch']) && is_array($request['concentrationIndicatorSearch'])) {
             $baseQuery->byConcentrationIndicators($request['concentrationIndicatorSearch']);
         }
 
-        if (!empty($request['year_from']) || !empty($request['year_to'])) {
+        if (! empty($request['year_from']) || ! empty($request['year_to'])) {
             $baseQuery->byYearRange($request['year_from'], $request['year_to']);
         }
 
-        if (!empty($request['categoriesSearch']) && is_array($request['categoriesSearch'])) {
+        if (! empty($request['categoriesSearch']) && is_array($request['categoriesSearch'])) {
             $baseQuery->byCategories($request['categoriesSearch']);
         }
 
-        if (!empty($request['sourceSearch']) && is_array($request['sourceSearch'])) {
+        if (! empty($request['sourceSearch']) && is_array($request['sourceSearch'])) {
             $baseQuery->bySources($request['sourceSearch']);
         }
 
-        if ((!empty($request['typeDataSourcesSearch']) && is_array($request['typeDataSourcesSearch'])) ||
-            (!empty($request['dataSourceLaboratorySearch']) && is_array($request['dataSourceLaboratorySearch'])) ||
-            (!empty($request['dataSourceOrganisationSearch']) && is_array($request['dataSourceOrganisationSearch']))) {
+        if ((! empty($request['typeDataSourcesSearch']) && is_array($request['typeDataSourcesSearch'])) ||
+            (! empty($request['dataSourceLaboratorySearch']) && is_array($request['dataSourceLaboratorySearch'])) ||
+            (! empty($request['dataSourceOrganisationSearch']) && is_array($request['dataSourceOrganisationSearch']))) {
             $baseQuery->byDataSourceFilters(
                 $request['typeDataSourcesSearch'] ?? [],
                 $request['dataSourceLaboratorySearch'] ?? [],
@@ -142,16 +142,16 @@ class EmpodatIdsCsvExportJob extends AbstractCsvExportJob
             );
         }
 
-        if (!empty($request['analyticalMethodSearch']) && is_array($request['analyticalMethodSearch'])) {
+        if (! empty($request['analyticalMethodSearch']) && is_array($request['analyticalMethodSearch'])) {
             $baseQuery->byAnalyticalMethods($request['analyticalMethodSearch']);
         }
 
-        if (!empty($request['qualityAnalyticalMethodsSearch']) && is_array($request['qualityAnalyticalMethodsSearch'])) {
+        if (! empty($request['qualityAnalyticalMethodsSearch']) && is_array($request['qualityAnalyticalMethodsSearch'])) {
             $ratings = \App\Models\List\QualityEmpodatAnalyticalMethods::whereIn('id', $request['qualityAnalyticalMethodsSearch'])->get();
             $baseQuery->byQualityRatings($ratings);
         }
 
-        if (!empty($request['fileSearch']) && is_array($request['fileSearch'])) {
+        if (! empty($request['fileSearch']) && is_array($request['fileSearch'])) {
             $baseQuery->byFiles($request['fileSearch']);
         }
 
@@ -186,9 +186,9 @@ class EmpodatIdsCsvExportJob extends AbstractCsvExportJob
         $filteredQuery = $this->applyQueryFilters($baseQuery, $queryLog);
 
         $ids = $filteredQuery->select('empodat_main.id')
-                           ->orderBy('empodat_main.id')
-                           ->pluck('empodat_main.id')
-                           ->toArray();
+            ->orderBy('empodat_main.id')
+            ->pluck('empodat_main.id')
+            ->toArray();
 
         foreach ($ids as $id) {
             yield $id;
@@ -205,7 +205,7 @@ class EmpodatIdsCsvExportJob extends AbstractCsvExportJob
 
         // For IDs only, we can just use the IDs directly without any JOINs
         return collect($orderedIds)->map(function ($id) {
-            return (object)['id' => $id];
+            return (object) ['id' => $id];
         });
     }
 

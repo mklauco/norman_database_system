@@ -55,6 +55,7 @@ class MergeEmpodatStationDuplicates extends Command
 
             if ($duplicateGroups->isEmpty()) {
                 $this->info('✓ No duplicate groups found.');
+
                 return Command::SUCCESS;
             }
 
@@ -75,7 +76,7 @@ class MergeEmpodatStationDuplicates extends Command
                     $this->error("  ✗ Error processing group: {$e->getMessage()}");
                     Log::error('Station merge error', [
                         'group' => $group,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -111,7 +112,7 @@ class MergeEmpodatStationDuplicates extends Command
                 'merged' => $totalMerged,
                 'updated' => $totalRecordsUpdated,
                 'errors' => $errors,
-                'dry_run' => $dryRun
+                'dry_run' => $dryRun,
             ]);
 
             return Command::SUCCESS;
@@ -119,15 +120,15 @@ class MergeEmpodatStationDuplicates extends Command
         } catch (\Exception $e) {
             $this->newLine();
             $this->error('✗ Failed to merge stations:');
-            $this->error('  ' . $e->getMessage());
+            $this->error('  '.$e->getMessage());
 
             if ($this->getOutput()->isVerbose()) {
                 $this->newLine();
                 $this->error($e->getTraceAsString());
             }
 
-            Log::error('Station merge failed: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error('Station merge failed: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return Command::FAILURE;
@@ -182,6 +183,7 @@ class MergeEmpodatStationDuplicates extends Command
 
         if ($stations->isEmpty()) {
             $this->warn("  ⚠ No stations found for IDs: {$group->ids}");
+
             return ['merged' => 0, 'updated' => 0];
         }
 
@@ -196,10 +198,10 @@ class MergeEmpodatStationDuplicates extends Command
         $this->line("\n📍 Group: {$group->xlsx_name}");
         $this->line("   Sample Code: {$canonical->short_sample_code}");
         $this->line("   Canonical:   Station ID {$canonical->id} ({$canonical->name})");
-        $this->line("   Duplicates:  " . $duplicates->pluck('id')->implode(', '));
+        $this->line('   Duplicates:  '.$duplicates->pluck('id')->implode(', '));
 
         if ($this->getOutput()->isVerbose()) {
-            $this->line("   Reason:      " . $this->getCanonicalReason($canonical));
+            $this->line('   Reason:      '.$this->getCanonicalReason($canonical));
         }
 
         if ($dryRun) {
@@ -243,7 +245,7 @@ class MergeEmpodatStationDuplicates extends Command
                 ->whereIn('id', $duplicates->pluck('id'))
                 ->update([
                     'is_deprecated' => true,
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
 
             // Update the mapping to point to canonical station
@@ -252,8 +254,8 @@ class MergeEmpodatStationDuplicates extends Command
                 ->update([
                     'station_id' => $canonical->id,
                     'count' => 1,
-                    'ids' => (string)$canonical->id,
-                    'updated_at' => now()
+                    'ids' => (string) $canonical->id,
+                    'updated_at' => now(),
                 ]);
 
             // Handle duplicates
@@ -264,7 +266,7 @@ class MergeEmpodatStationDuplicates extends Command
                 $this->line("   ✓ Deleted {$duplicates->count()} duplicate stations");
             } else {
                 // Just leave them - they're tracked in merge log
-                $this->line("   ✓ Kept duplicate stations (tracked in merge log)");
+                $this->line('   ✓ Kept duplicate stations (tracked in merge log)');
             }
 
             $this->line("   ✓ Updated {$updatedCount} empodat_main records");
@@ -287,13 +289,13 @@ class MergeEmpodatStationDuplicates extends Command
     {
         return $stations->sortBy([
             // 1. Has provider_code (ascending, so nulls last)
-            fn($s) => empty($s->provider_code) ? 1 : 0,
+            fn ($s) => empty($s->provider_code) ? 1 : 0,
             // 2. Has valid coordinates (ascending, so 0,0 or null last)
-            fn($s) => ($s->latitude == 0 && $s->longitude == 0) || !$s->latitude ? 1 : 0,
+            fn ($s) => ($s->latitude == 0 && $s->longitude == 0) || ! $s->latitude ? 1 : 0,
             // 3. Has name (ascending, so nulls last)
-            fn($s) => empty($s->name) ? 1 : 0,
+            fn ($s) => empty($s->name) ? 1 : 0,
             // 4. Lowest ID
-            fn($s) => $s->id,
+            fn ($s) => $s->id,
         ])->first();
     }
 
@@ -302,15 +304,16 @@ class MergeEmpodatStationDuplicates extends Command
      */
     private function getCanonicalReason($station)
     {
-        if (!empty($station->provider_code)) {
+        if (! empty($station->provider_code)) {
             return "Has provider_code: {$station->provider_code}";
         }
         if ($station->latitude != 0 && $station->longitude != 0) {
             return "Has valid coordinates: {$station->latitude}, {$station->longitude}";
         }
-        if (!empty($station->name)) {
+        if (! empty($station->name)) {
             return "Has name: {$station->name}";
         }
+
         return "Lowest ID: {$station->id}";
     }
 
@@ -326,28 +329,28 @@ class MergeEmpodatStationDuplicates extends Command
         try {
             // Get total merges
             $totalMerges = DB::table('empodat_station_merge_log')->count();
-            $this->line("  Total merges logged:     " . number_format($totalMerges));
+            $this->line('  Total merges logged:     '.number_format($totalMerges));
 
             // Get unique canonical stations
             $canonicalCount = DB::table('empodat_station_merge_log')
                 ->distinct('canonical_station_id')
                 ->count('canonical_station_id');
-            $this->line("  Unique canonical IDs:    " . number_format($canonicalCount));
+            $this->line('  Unique canonical IDs:    '.number_format($canonicalCount));
 
             // Get recent merges
             $recentCount = DB::table('empodat_station_merge_log')
                 ->where('created_at', '>', now()->subDay())
                 ->count();
-            $this->line("  Merges (last 24h):       " . number_format($recentCount));
+            $this->line('  Merges (last 24h):       '.number_format($recentCount));
 
             // Get suspect mapping status
             $duplicatesRemaining = DB::table('empodat_suspect_xlsx_stations_mapping')
                 ->where('count', '>=', 2)
                 ->count();
-            $this->line("  Duplicates remaining:    " . number_format($duplicatesRemaining));
+            $this->line('  Duplicates remaining:    '.number_format($duplicatesRemaining));
 
         } catch (\Exception $e) {
-            $this->warn('  Could not retrieve all statistics: ' . $e->getMessage());
+            $this->warn('  Could not retrieve all statistics: '.$e->getMessage());
         }
     }
 }
