@@ -1,8 +1,9 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\Susdat;
 
 use App\Models\Susdat\Substance;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SubstanceFactory extends Factory
@@ -43,7 +44,7 @@ class SubstanceFactory extends Factory
             'metadata_cas' => [],
             'metadata_ms_ready' => [],
             'metadata_general' => [],
-            'added_by' => 1,
+            'added_by' => User::factory(),
         ];
     }
 }
