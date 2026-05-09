@@ -9,13 +9,29 @@ This document is short on purpose. For deeper detail see [CICD_ARCHITECTURE.md](
 ## TL;DR — the short version
 
 ```
-feature/your-change   →   PR   →   development   →   PR   →   main   →   production
+                  branch off
+   development ─────────────────▶  feature/your-change
+        ▲                                  │
+        │  PR (you open)                   │
+        └──────────────────────────────────┘
+        │
+        │  PR (Martin opens, when ready to release)
+        ▼
+       main  ─────▶  production (auto-deploy)
 ```
 
-- Branch off `development` as `feature/<short-name>` or `fix/<short-name>`.
-- Open a PR back to `development`.
-- CI must be green and someone (Martin) must approve before merge.
-- Releases to production happen when **Martin** merges `development → main`. That's automatic — the merge triggers a deploy.
+**Always branch off `development`.** Never branch off `main` (production code is not where new work starts). Never branch off another feature branch (unless explicitly stacked — see §3.4).
+
+**Two PRs, two roles.** Don't confuse them:
+
+| PR | Who opens it | Who reviews & merges |
+|---|---|---|
+| **Feature PR** — `feature/X → development` | The developer who wrote the change (you) | Martin |
+| **Release PR** — `development → main` | Martin | Martin |
+
+- As a developer, you only ever open feature PRs targeting `development`. You never touch `main`.
+- Martin batches accumulated `development` work into a release PR when he decides to ship.
+- Merging the release PR auto-fires the deploy workflow.
 - **Don't push directly to `development` or `main`.** Both should be PR-only.
 - **Never run `php artisan migrate*` on production.** Migrations go through the `Migrate Production DB` GitHub Action.
 
@@ -223,7 +239,9 @@ CI does **not yet** run tests, lint, or static analysis. Don't take this as lice
 
 Nothing automatic. The new code waits in `development` for the next release.
 
-`development` is the integration branch — it's where multiple features pile up before they ship together. If your change is urgent, talk to Martin about a release.
+`development` is the integration branch — it's where multiple features pile up before they ship together.
+
+**Releases are Martin's call.** He decides when there's enough on `development` to justify a release, opens the release PR (`development → main`), reviews the aggregate diff, and merges. As a developer, you don't open the release PR yourself. If your change is urgent and can't wait for the next release, ping Martin — he'll cut the release.
 
 ---
 
