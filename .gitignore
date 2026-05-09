@@ -27,7 +27,6 @@ _postgres_data/
 _postgres_exports/
 _pgadmin_data/
 _secrets/*
-composer.lock
 database/seeders/seeds/ecotox_tables/ecotox_pnec3.csv
 
 # Exclude storage directory

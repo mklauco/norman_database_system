@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Prioritisation;
 
+use App\Http\Controllers\Controller;
+use App\Models\Backend\ExportDownload;
+use App\Models\Prioritisation\ModellingDanube;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Models\Prioritisation\ModellingDanube;
-use App\Models\Backend\ExportDownload;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ModellingDanubeController extends Controller
 {
@@ -84,14 +84,15 @@ class ModellingDanubeController extends Controller
      */
     public function downloadCsv()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             session()->flash('error', 'You must be logged in to download the CSV file.');
+
             return back();
         }
 
         try {
             // Generate filename
-            $filename = 'prioritisation_modelling_danube_uid_' . Auth::id() . '_' . now()->format('YmdHis') . '.csv';
+            $filename = 'prioritisation_modelling_danube_uid_'.Auth::id().'_'.now()->format('YmdHis').'.csv';
             $directory = 'exports/prioritisation';
 
             // Create an export download record for tracking
@@ -114,7 +115,7 @@ class ModellingDanubeController extends Controller
             $path = Storage::path("{$directory}/{$filename}");
             $handle = fopen($path, 'w');
 
-            if (!$handle) {
+            if (! $handle) {
                 throw new \Exception("Unable to open file for writing: {$path}");
             }
 
@@ -191,7 +192,7 @@ class ModellingDanubeController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Prioritisation Modelling Danube export failed: " . $e->getMessage());
+            Log::error('Prioritisation Modelling Danube export failed: '.$e->getMessage());
 
             if (isset($exportDownload)) {
                 $exportDownload->update([
@@ -201,7 +202,8 @@ class ModellingDanubeController extends Controller
                 ]);
             }
 
-            session()->flash('error', 'Export failed: ' . $e->getMessage());
+            session()->flash('error', 'Export failed: '.$e->getMessage());
+
             return back();
         }
     }
@@ -217,6 +219,6 @@ class ModellingDanubeController extends Controller
         $pow = min($pow, count($units) - 1);
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

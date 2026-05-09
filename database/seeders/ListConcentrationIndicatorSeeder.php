@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
@@ -18,15 +16,15 @@ class ListConcentrationIndicatorSeeder extends Seeder
     {
         $target_table_name = 'list_concentration_indicators';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/data_ind_concentration.csv';
+        $path = base_path().'/database/seeders/seeds/data_ind_concentration.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
-        foreach($rows as $r) {
+        foreach ($rows as $r) {
             $p[] = [
-                'id'                  => $r['dic_id'],
-                'name'                => $r['dic_name'],
-                'created_at'          => $now,
-                'updated_at'          => $now,
+                'id' => $r['dic_id'],
+                'name' => $r['dic_name'],
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
         }
 
@@ -34,8 +32,8 @@ class ListConcentrationIndicatorSeeder extends Seeder
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;
-        foreach($chunks as $c){
-            echo ($k++)."/".$count."; \n";
+        foreach ($chunks as $c) {
+            echo ($k++).'/'.$count."; \n";
             DB::table($target_table_name)->insert($c);
         }
 

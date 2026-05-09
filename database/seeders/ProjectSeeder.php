@@ -12,8 +12,6 @@ class ProjectSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -21,23 +19,24 @@ class ProjectSeeder extends Seeder
         $target_table_name = 'projects';
         $now = Carbon::now();
         $startTime = microtime(true);
-        
+
         // Path to CSV file
-        $csvPath = base_path() . '/database/seeders/seeds/dct_list_project.csv';
-        
-        if (!file_exists($csvPath)) {
+        $csvPath = base_path().'/database/seeders/seeds/dct_list_project.csv';
+
+        if (! file_exists($csvPath)) {
             $this->command->error("CSV file not found at: {$csvPath}");
+
             return;
         }
 
         // Temporarily disable foreign key checks
         Schema::disableForeignKeyConstraints();
-        
+
         // Use SimpleExcelReader
         $reader = SimpleExcelReader::create($csvPath)
             ->useDelimiter(',')
             ->headersToSnakeCase(false);
-        
+
         // Process the CSV file in chunks
         $chunkSize = 100;
         $reader->getRows()
@@ -45,7 +44,7 @@ class ProjectSeeder extends Seeder
             ->each(function ($rows, $key) use ($target_table_name, $now, $startTime) {
                 $chunkStartTime = microtime(true);
                 $records = [];
-                
+
                 foreach ($rows as $r) {
                     $records[] = [
                         'id' => $this->safeInt($r['list_project_id']),
@@ -56,26 +55,26 @@ class ProjectSeeder extends Seeder
                         'updated_at' => $now,
                     ];
                 }
-                
+
                 // Insert records
-                if (!empty($records)) {
+                if (! empty($records)) {
                     try {
                         DB::table($target_table_name)->insert($records);
-                        
+
                         $chunkEndTime = microtime(true);
                         $chunkElapsedTime = round($chunkEndTime - $chunkStartTime, 2);
                         $totalElapsedTime = round($chunkEndTime - $startTime, 2);
-                        
-                        $this->command->info("Processed chunk " . ($key + 1) . " with " . count($records) . " records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
+
+                        $this->command->info('Processed chunk '.($key + 1).' with '.count($records)." records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
                     } catch (\Exception $e) {
-                        $this->command->error("Error in chunk " . ($key + 1) . ": " . $e->getMessage());
+                        $this->command->error('Error in chunk '.($key + 1).': '.$e->getMessage());
                     }
                 }
             });
-        
+
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
-        
+
         $this->command->info('Project seeding completed!');
     }
 
@@ -87,6 +86,7 @@ class ProjectSeeder extends Seeder
         if ($value === null || $value === '') {
             return null;
         }
+
         return (string) $value;
     }
 
@@ -102,8 +102,8 @@ class ProjectSeeder extends Seeder
         // Remove common words and get first letters
         $commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
         $words = preg_split('/\s+/', strtolower(trim($title)));
-        $words = array_filter($words, function($word) use ($commonWords) {
-            return !in_array($word, $commonWords) && strlen($word) > 1;
+        $words = array_filter($words, function ($word) use ($commonWords) {
+            return ! in_array($word, $commonWords) && strlen($word) > 1;
         });
 
         // Take first letter of each significant word, max 6 characters
@@ -114,7 +114,8 @@ class ProjectSeeder extends Seeder
 
         return $abbreviation ?: null;
     }
-        /**
+
+    /**
      * Helper function to safely convert empty strings to null for integer fields
      */
     private function safeInt($value, $default = null)
@@ -122,6 +123,7 @@ class ProjectSeeder extends Seeder
         if ($value === '' || $value === null) {
             return $default;
         }
+
         return (int) $value;
     }
 }

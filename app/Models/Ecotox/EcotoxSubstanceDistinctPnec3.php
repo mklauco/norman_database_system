@@ -2,11 +2,11 @@
 
 namespace App\Models\Ecotox;
 
+use App\Models\Susdat\Substance;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Susdat\Substance;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class EcotoxSubstanceDistinctPnec3 extends Model
 {
@@ -88,7 +88,7 @@ class EcotoxSubstanceDistinctPnec3 extends Model
     public static function syncNewSubstances()
     {
         $now = Carbon::now();
-        
+
         // Option 1: Single INSERT INTO ... SELECT query (fastest)
         $insertedRows = DB::insert('
             INSERT INTO ecotox_pnec3_substance_distinct (substance_id, sus_id, record_count, created_at, updated_at)
@@ -119,10 +119,10 @@ class EcotoxSubstanceDistinctPnec3 extends Model
     {
         $now = Carbon::now();
         $totalInserted = 0;
-        
+
         // Get existing substance_ids to avoid duplicates
         $existingIds = static::pluck('substance_id')->toArray();
-        
+
         // Process in chunks to avoid memory issues
         PNEC3::selectRaw('substance_id, sus_id, COUNT(*) as record_count')
             ->whereNotNull('substance_id')
@@ -132,7 +132,7 @@ class EcotoxSubstanceDistinctPnec3 extends Model
                 if ($substances->isEmpty()) {
                     return false;
                 }
-                
+
                 $data = $substances->map(function ($substance) use ($now) {
                     return [
                         'substance_id' => $substance->substance_id,
@@ -142,12 +142,12 @@ class EcotoxSubstanceDistinctPnec3 extends Model
                         'updated_at' => $now,
                     ];
                 })->toArray();
-                
+
                 // Bulk insert
                 DB::table('ecotox_pnec3_substance_distinct')->insert($data);
                 $totalInserted += count($data);
             });
-        
+
         return $totalInserted;
     }
 
@@ -158,26 +158,26 @@ class EcotoxSubstanceDistinctPnec3 extends Model
     public static function fullSync()
     {
         DB::beginTransaction();
-        
+
         try {
             // First, add new substances
             $newSubstances = static::syncNewSubstances();
-            
+
             // Then, refresh counts for existing ones
             $updatedCounts = static::refreshRecordCounts();
-            
+
             // Also update counts for substances that might have been deleted from PNEC3
-            static::whereNotIn('substance_id', function($query) {
+            static::whereNotIn('substance_id', function ($query) {
                 $query->select('substance_id')
                     ->from('pnec3')
                     ->whereNotNull('substance_id');
             })->update(['record_count' => 0]);
-            
+
             DB::commit();
-            
+
             return [
                 'new_substances' => $newSubstances,
-                'updated_counts' => $updatedCounts
+                'updated_counts' => $updatedCounts,
             ];
         } catch (\Exception $e) {
             DB::rollback();
@@ -198,7 +198,7 @@ class EcotoxSubstanceDistinctPnec3 extends Model
      */
     public static function cleanupOrphanedSubstances()
     {
-        return static::whereNotIn('substance_id', function($query) {
+        return static::whereNotIn('substance_id', function ($query) {
             $query->select('substance_id')
                 ->from('pnec3')
                 ->whereNotNull('substance_id');

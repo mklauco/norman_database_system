@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Susdat;
 
-use Illuminate\Http\Request;
-use App\Models\Susdat\Category;
-use App\Models\Susdat\Substance;
 use App\Http\Controllers\Controller;
-use App\Models\SLE\SuspectListExchangeSource;
+use App\Models\Susdat\Substance;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DuplicateController extends Controller
@@ -29,7 +27,7 @@ class DuplicateController extends Controller
     public function filter(Request $request)
     {
         $request->validate([
-            'pivot_id' => 'required|string|in:' . implode(',', $this->getPivotableColumns())
+            'pivot_id' => 'required|string|in:'.implode(',', $this->getPivotableColumns()),
         ]);
 
         $pivot_id = $request->input('pivot_id');
@@ -61,15 +59,15 @@ class DuplicateController extends Controller
     public function records(Request $request, string $pivot, string $pivot_value)
     {
         // Validate pivot is allowed
-        if (!in_array($pivot, $this->getPivotableColumns())) {
+        if (! in_array($pivot, $this->getPivotableColumns())) {
             abort(404, 'Invalid pivot column');
         }
 
         // Get substances, excluding already merged ones
         $substances = Substance::where($pivot, $pivot_value)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('canonical_id')
-                      ->orWhere('status', 'active');
+                    ->orWhere('status', 'active');
             })
             ->orderBy('id')
             ->withTrashed()
@@ -100,11 +98,11 @@ class DuplicateController extends Controller
         if ($request->filled('date_from')) {
             $query->whereDate('merged_at', '>=', $request->input('date_from'));
         }
-        
+
         if ($request->filled('date_to')) {
             $query->whereDate('merged_at', '<=', $request->input('date_to'));
         }
-        
+
         if ($request->filled('merged_by')) {
             $query->where('merged_by', $request->input('merged_by'));
         }
@@ -137,6 +135,7 @@ class DuplicateController extends Controller
         // Additional validation: ensure canonical_id is not in duplicateChoice
         if (in_array($request->input('canonical_id'), $request->input('duplicateChoice'))) {
             session()->flash('error', 'The active substance cannot be marked as deprecated.');
+
             return redirect()->back()->withErrors(['canonical_id' => 'Active substance cannot be deprecated.']);
         }
 
@@ -158,7 +157,7 @@ class DuplicateController extends Controller
     private function executeMerge($canonicalId, $duplicateIds, $mergeReason)
     {
         $canonical = Substance::findOrFail($canonicalId);
-        
+
         // Ensure canonical substance is active
         if ($canonical->status !== 'active') {
             throw new \InvalidArgumentException('Canonical substance must be active');
@@ -173,7 +172,7 @@ class DuplicateController extends Controller
             }
 
             $duplicate = Substance::findOrFail($duplicateId);
-            
+
             // Update duplicate to point to canonical
             $duplicate->update([
                 'canonical_id' => $canonicalId,
@@ -195,14 +194,14 @@ class DuplicateController extends Controller
     private function getSubstanceImpact($substanceId)
     {
         $impact = [];
-        
+
         // Check various related tables - you can expand this based on your actual relationships
         $tables = [
             'categories' => 'susdat_category_substance_joins',
             'sources' => 'susdat_source_substance_joins',
             // Add more tables as needed
         ];
-        
+
         foreach ($tables as $tableName => $table) {
             try {
                 $count = DB::table($table)
@@ -213,7 +212,7 @@ class DuplicateController extends Controller
                 $impact[$tableName] = 0;
             }
         }
-        
+
         return $impact;
     }
 
@@ -282,7 +281,7 @@ class DuplicateController extends Controller
             ->firstOrFail();
 
         // Check if user has permission to restore
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             abort(403, 'You must be logged in to restore substances.');
         }
 
@@ -299,16 +298,18 @@ class DuplicateController extends Controller
             ]);
 
             // Log the restore action (using session flash for now)
-            session()->flash('info', 'Restore action logged for substance ID: ' . $id);
+            session()->flash('info', 'Restore action logged for substance ID: '.$id);
 
             DB::commit();
 
             session()->flash('success', 'Substance has been successfully restored and is now active again.');
+
             return redirect()->route('duplicates.mergeHistory');
 
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Failed to restore substance. Please try again.');
+
             return redirect()->back();
         }
     }
@@ -316,10 +317,27 @@ class DuplicateController extends Controller
     /**
      * Unused resource methods
      */
-    public function create() { /* Not implemented */ }
-    public function store(Request $request) { /* Not implemented */ }
-    public function show(string $id) { /* Not implemented */ }
-    public function edit(string $id) { /* Not implemented */ }
-    public function update(Request $request, string $id) { /* Not implemented */ }
-    public function destroy(string $id) { /* Not implemented */ }
+    public function create()
+    { /* Not implemented */
+    }
+
+    public function store(Request $request)
+    { /* Not implemented */
+    }
+
+    public function show(string $id)
+    { /* Not implemented */
+    }
+
+    public function edit(string $id)
+    { /* Not implemented */
+    }
+
+    public function update(Request $request, string $id)
+    { /* Not implemented */
+    }
+
+    public function destroy(string $id)
+    { /* Not implemented */
+    }
 }

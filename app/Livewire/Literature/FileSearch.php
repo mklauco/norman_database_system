@@ -2,15 +2,19 @@
 
 namespace App\Livewire\Literature;
 
-use Livewire\Component;
 use App\Models\Backend\File;
+use Livewire\Component;
 
 class FileSearch extends Component
 {
     public $search = '';
+
     public $selectedFileIds = [];       // Track selected file IDs
+
     public $selectedFiles = [];         // Store selected file data
+
     public $existingFiles = [];         // For initialization
+
     public $isFocused = false;          // Track input focus state
 
     // Literature database entity ID from database_entities.csv
@@ -18,7 +22,7 @@ class FileSearch extends Component
 
     public function mount($existingFiles = [])
     {
-        if (!empty($existingFiles)) {
+        if (! empty($existingFiles)) {
             $this->selectedFileIds = $existingFiles;
             $this->applyFileFilter();
         }
@@ -48,7 +52,7 @@ class FileSearch extends Component
         if (strlen($this->search) > 2) {
             // Filter files only for Literature module (database_entity_id = 17)
             $results = File::orderBy('id', 'asc')
-                ->where('name', 'ilike', '%' . $this->search . '%')
+                ->where('name', 'ilike', '%'.$this->search.'%')
                 ->byDatabaseEntity(self::LITERATURE_ENTITY_ID)
                 ->notDeleted()
                 ->limit(10)
@@ -111,12 +115,14 @@ class FileSearch extends Component
 
     private function formatFileSize($bytes)
     {
-        if ($bytes <= 0) return '0 B';
+        if ($bytes <= 0) {
+            return '0 B';
+        }
 
         $units = ['B', 'KB', 'MB', 'GB'];
         $power = floor(log($bytes, 1024));
         $power = min($power, count($units) - 1);
 
-        return number_format($bytes / pow(1024, $power), 1) . ' ' . $units[$power];
+        return number_format($bytes / pow(1024, $power), 1).' '.$units[$power];
     }
 }

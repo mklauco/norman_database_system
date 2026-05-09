@@ -19,13 +19,13 @@ return new class extends Migration
         // First, migrate data from pivot table to direct file_id column
         // Only update records where file_id is currently NULL
         if (Schema::hasTable('file_literature_temp_main')) {
-            DB::statement("
+            DB::statement('
                 UPDATE literature_temp_main
                 SET file_id = pivot.file_id
                 FROM file_literature_temp_main pivot
                 WHERE literature_temp_main.id = pivot.literature_temp_main_id
                   AND literature_temp_main.file_id IS NULL
-            ");
+            ');
 
             // Drop the pivot table
             Schema::dropIfExists('file_literature_temp_main');
@@ -48,11 +48,11 @@ return new class extends Migration
         });
 
         // Migrate data back from direct column to pivot table
-        DB::statement("
+        DB::statement('
             INSERT INTO file_literature_temp_main (file_id, literature_temp_main_id, created_at, updated_at)
             SELECT file_id, id, NOW(), NOW()
             FROM literature_temp_main
             WHERE file_id IS NOT NULL
-        ");
+        ');
     }
 };

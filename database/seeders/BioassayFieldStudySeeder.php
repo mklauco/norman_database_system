@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -21,7 +19,7 @@ class BioassayFieldStudySeeder extends Seeder
 
         $target_table_name = 'bioassay_field_studies';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/bioassay_tables/bioassay_monitor_bioassays_field_studies.csv';
+        $path = base_path().'/database/seeders/seeds/bioassay_tables/bioassay_monitor_bioassays_field_studies.csv';
 
         // Temporarily disable foreign key checks
         Schema::disableForeignKeyConstraints();
@@ -132,7 +130,7 @@ class BioassayFieldStudySeeder extends Seeder
                 // Use insert instead of creating a separate array and then chunking it
                 DB::table($target_table_name)->insert($records);
 
-                $this->command->info("Processed chunk " . ($key + 1) . " with " . count($records) . " records");
+                $this->command->info('Processed chunk '.($key + 1).' with '.count($records).' records');
             });
 
         // Re-enable foreign key checks

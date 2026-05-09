@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Empodat;
 
-use Livewire\Component;
 use App\Models\Empodat\EmpodatMain;
+use Livewire\Component;
 
 class ShowEmpodatEntry extends Component
 {
-
     public $showModal = false; // Tracks modal visibility
+
     public $recordId; // Stores the ID passed to the component
+
     public $empodat; // Stores data related to the ID
 
     public function mount($recordId = null)
@@ -24,13 +25,13 @@ class ShowEmpodatEntry extends Component
         $empodat = EmpodatMain::query()
 
         // Eager load relationships (as needed)
-        ->with('concentrationIndicator') 
-        ->with('station') 
-        ->with('analyticalMethod') 
-        // ->with('substance') 
-    
+            ->with('concentrationIndicator')
+            ->with('station')
+            ->with('analyticalMethod')
+        // ->with('substance')
+
         // Joins
-        ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
+            ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
         // ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
         // ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
         // ->leftJoin('list_countries', 'empodat_stations.country_id', '=', 'list_countries.id')
@@ -38,10 +39,10 @@ class ShowEmpodatEntry extends Component
         // ->join('empodat_analytical_methods', 'empodat_analytical_methods.id', '=', 'empodat_main.method_id')
         // ->join('susdat_category_substance', 'susdat_category_substance.substance_id', '=', 'empodat_main.substance_id')
         // ->join('susdat_source_substance', 'susdat_source_substance.substance_id', '=', 'empodat_main.substance_id')
-    
+
         // Finally, constrain it to a single empodat_main.id
-        ->where('empodat_main.id', $this->recordId)
-    
+            ->where('empodat_main.id', $this->recordId)
+
         // Choose which columns you actually need:
         // ->select([
         //     'empodat_main.* AS empodat_main.*',
@@ -54,23 +55,21 @@ class ShowEmpodatEntry extends Component
         // //     'empodat_analytical_methods.rating',
         // //     // etc...
         // ])
-    
+
         // Execute
-        ->first();  // or ->get(), depending on whether you expect one record or multiple
-// dd($empodat);
-// foreach ($empodat->toArray()  as $key => $value) {
-//     dd($key, $value);
-// }
-// dd($empodat->name);
+            ->first();  // or ->get(), depending on whether you expect one record or multiple
+        // dd($empodat);
+        // foreach ($empodat->toArray()  as $key => $value) {
+        //     dd($key, $value);
+        // }
+        // dd($empodat->name);
         // Simulate fetching data based on the ID
         // Replace this with your actual data fetching logic
-        if($empodat) {
+        if ($empodat) {
             $this->empodat = $empodat;
         } else {
             $this->empodat = ['0' => 'No data found'];
         }
-        
-
 
     }
 
@@ -89,7 +88,7 @@ class ShowEmpodatEntry extends Component
     public function render()
     {
         return view('livewire.empodat.show-empodat-entry', [
-            'empodat' => $this->empodat
+            'empodat' => $this->empodat,
         ]);
     }
 }

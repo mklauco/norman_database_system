@@ -28,10 +28,10 @@ return new class extends Migration
         Schema::table('export_downloads', function (Blueprint $table) {
             $table->dropColumn([
                 'file_size_bytes',
-                'file_size_formatted', 
+                'file_size_formatted',
                 'processing_time_seconds',
                 'started_at',
-                'completed_at'
+                'completed_at',
             ]);
         });
     }

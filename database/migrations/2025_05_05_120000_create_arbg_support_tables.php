@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    private $tablePrefix = 'arbg_';
 
-  private $tablePrefix = 'arbg_';
     /**
-    * Run the migrations.
-    */
+     * Run the migrations.
+     */
     public function up(): void
     {
-        
+
         $lookupTables = [
             'data_analytical_method',
             'data_bacteria_isolation_method',
@@ -40,23 +40,24 @@ return new class extends Migration
             'data_country',
 
         ];
-        
+
         // Create each lookup table
         foreach ($lookupTables as $tableName) {
             $this->createLookupTable($tableName);
         }
-        
+
         // Create each lookup table
         foreach ($lookupTablesAbbr as $tableName) {
             $this->createLookupTableAbbr($tableName);
         }
     }
+
     /**
-    * Create a standard lookup table
-    *
-    * @param string $tableName
-    * @return void
-    */
+     * Create a standard lookup table
+     *
+     * @param  string  $tableName
+     * @return void
+     */
     private function createLookupTable($tableName)
     {
         Schema::create($this->tablePrefix.$tableName, function (Blueprint $table) {
@@ -68,7 +69,7 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-    
+
     private function createLookupTableAbbr($tableName)
     {
         Schema::create($this->tablePrefix.$tableName, function (Blueprint $table) {
@@ -81,13 +82,13 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-    
+
     /**
-    * Reverse the migrations.
-    */
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        
+
         $lookupTables = [
             'data_country',
             'data_analytical_method',
@@ -110,7 +111,7 @@ return new class extends Migration
             'data_type_of_monitoring',
             'data_type_of_sample',
         ];
-        
+
         // Drop each lookup table
         foreach ($lookupTables as $tableName) {
             Schema::dropIfExists($this->tablePrefix.$tableName);

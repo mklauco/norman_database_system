@@ -73,8 +73,7 @@ return new class extends Migration
             $table->foreignId('substance_id')->nullable()->default(null)->references('id')->on('susdat_substances')->onUpdate('cascade')->onDelete('restrict');
             $table->timestamps();
             $table->softDeletes();
-            
-            
+
             $table->index('sus_id');
         });
     }

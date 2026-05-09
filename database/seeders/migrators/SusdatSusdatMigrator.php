@@ -2,12 +2,11 @@
 
 namespace Database\Seeders\Migrators;
 
+use App\Models\MariaDB\Susdat as OldData;
+use App\Models\Susdat\Substance;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use App\Models\Susdat\Substance;
 use Illuminate\Support\Facades\DB;
-use App\Models\MariaDB\Susdat as OldData;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class SusdatSusdatMigrator extends Seeder
 {
@@ -19,17 +18,17 @@ class SusdatSusdatMigrator extends Seeder
         //
         DB::table('susdat_substances')->truncate();
 
-$new_susdat_ids = DB::connection('norman-mariadb')
-    ->table('a_substances')
-    ->select('id', 'code')
-    ->get()
-    ->pluck('id', 'code')  // creates ['code' => id]
-    ->toArray();
+        $new_susdat_ids = DB::connection('norman-mariadb')
+            ->table('a_substances')
+            ->select('id', 'code')
+            ->get()
+            ->pluck('id', 'code')  // creates ['code' => id]
+            ->toArray();
 
         $count = OldData::max('sus_id'); // max id instead of count.. lebo idecka su neusporiadane :(
         // dd($count);
         $batchSize = 2000;
-        $batches = ceil(($count / $batchSize) / 1000)*1000;
+        $batches = ceil(($count / $batchSize) / 1000) * 1000;
         echo 'Max id: '.$count.' | '.'number of batches:'.$batches.PHP_EOL;
         $time_start = microtime(true);
         $metadata_synonyms = [
@@ -90,50 +89,50 @@ $new_susdat_ids = DB::connection('norman-mariadb')
             'Prob_minusESI',
             'Pred_ESI_mode',
             'Preferable_Platform_by_decision_Tree',
-        ]; 
+        ];
         // $batches = 2;
         $now = Carbon::now();
         for ($i = 0; $i <= $batches; $i++) {
-            $time_start_for = microtime(true); 
-            echo "Processing batch " . ($i + 1) . " of " . $batches;
-            // $batch = OldData::select('sus_id', 'sus_name')->where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();        
-            $batch = OldData::where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();        
+            $time_start_for = microtime(true);
+            echo 'Processing batch '.($i + 1).' of '.$batches;
+            // $batch = OldData::select('sus_id', 'sus_name')->where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();
+            $batch = OldData::where('sus_id', '>', $i * $batchSize)->where('sus_id', '<=', ($i + 1) * $batchSize)->get();
             $p = [];
-            foreach($batch as $item) {
+            foreach ($batch as $item) {
                 $p[] = [
                     // 'id'                => (int)ltrim($item->sus_id, '0'),
                     'id' => $new_susdat_ids[$item->sus_id],
-                    'code'              => $item->sus_id,
-                    'name'              => $item->sus_name,
-                    'name_dashboard'    => $item->{'Name Dashboard'},
-                    'name_chemspider'   => $item->{'Name ChemSpider'},
-                    'name_iupac'        => $item->{'Name IUPAC'},
-                    'cas_number'        => ltrim($item->{'sus_cas'}, 'CAS_RN: '),
-                    'smiles'            => $item->{'SMILES'},
-                    'smiles_dashboard'  => $item->{'SMILES Dashboard'},
-                    'stdinchi'          => $item->{'StdInChI'},
-                    'stdinchikey'       => $item->{'StdInChIKey'},
-                    'pubchem_cid'       => $item->{'PubChem_CID'},
-                    'chemspider_id'     => $item->{'ChemSpiderID'},
-                    'dtxid'             => $item->{'DTXSID'},
+                    'code' => $item->sus_id,
+                    'name' => $item->sus_name,
+                    'name_dashboard' => $item->{'Name Dashboard'},
+                    'name_chemspider' => $item->{'Name ChemSpider'},
+                    'name_iupac' => $item->{'Name IUPAC'},
+                    'cas_number' => ltrim($item->{'sus_cas'}, 'CAS_RN: '),
+                    'smiles' => $item->{'SMILES'},
+                    'smiles_dashboard' => $item->{'SMILES Dashboard'},
+                    'stdinchi' => $item->{'StdInChI'},
+                    'stdinchikey' => $item->{'StdInChIKey'},
+                    'pubchem_cid' => $item->{'PubChem_CID'},
+                    'chemspider_id' => $item->{'ChemSpiderID'},
+                    'dtxid' => $item->{'DTXSID'},
                     'molecular_formula' => $item->{'Molecular_Formula'},
-                    'mass_iso'          => is_numeric($item->{'Monoiso_Mass'}) ? $item->{'Monoiso_Mass'} : null,
+                    'mass_iso' => is_numeric($item->{'Monoiso_Mass'}) ? $item->{'Monoiso_Mass'} : null,
                     'metadata_synonyms' => json_encode($item->only($metadata_synonyms)),
-                    'metadata_cas'      => json_encode($item->only($metadata_cas)),
+                    'metadata_cas' => json_encode($item->only($metadata_cas)),
                     'metadata_ms_ready' => json_encode($item->only($metadata_ms_ready)),
-                    'metadata_general'  => json_encode($item->only($metadata_general)),
+                    'metadata_general' => json_encode($item->only($metadata_general)),
                     // 'created_at'        => $now,
-                    'created_at'        => $this->checkTimeStamp($item->sus_id, $item->{'c_at'}, $now), // TAKES TOO LONG TO PARSE
-                    'updated_at'        => $now,
-                    'added_by'          => null,
+                    'created_at' => $this->checkTimeStamp($item->sus_id, $item->{'c_at'}, $now), // TAKES TOO LONG TO PARSE
+                    'updated_at' => $now,
+                    'added_by' => null,
                 ];
             }
             Substance::insert($p);
             unset($p);
             unset($batch);
             $time_end_for = microtime(true);
-            $execution_time = $time_end_for- $time_start_for;
-            echo " | time taken: ".$execution_time.' sec | ID range: ['.($i * $batchSize).', '.($i + 1) * $batchSize.']'.PHP_EOL;
+            $execution_time = $time_end_for - $time_start_for;
+            echo ' | time taken: '.$execution_time.' sec | ID range: ['.($i * $batchSize).', '.($i + 1) * $batchSize.']'.PHP_EOL;
         }
         $time_end = microtime(true);
         $execution_time = $time_end - $time_start;
@@ -148,15 +147,15 @@ $new_susdat_ids = DB::connection('norman-mariadb')
             return $now;
         } elseif (Carbon::parse($t)->isValid()) {
             return $now;
-        } else{
+        } else {
             return Carbon::parse($t)->toDateTimeString();
         }
-        
+
     }
 }
 
-// php artisan make:seeder Migrators/susdat 
-// php artisan make:model MariaDB/Susdat 
+// php artisan make:seeder Migrators/susdat
+// php artisan make:model MariaDB/Susdat
 // php artisan db:seed --class=Database/Seeders/migrators/SusdatSusdatMigrator
 
 // sus_id

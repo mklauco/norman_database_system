@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Backend\Template;
 use App\Models\DatabaseEntity;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +22,7 @@ class TemplateController extends Controller
         $templates = Template::with(['databaseEntity', 'creator', 'updater'])
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return view('backend.templates.index', compact('templates'));
     }
 
@@ -34,20 +33,19 @@ class TemplateController extends Controller
      */
     public function create()
     {
-        $template = new Template();
+        $template = new Template;
         $databaseEntities = DatabaseEntity::whereNull('parent_id')
             ->whereNotLike('dashboard_route_name', '%https://%')
             ->orderBy('name')
             ->get();
         $isCreate = true;
-        
+
         return view('backend.templates.upsert', compact('template', 'databaseEntities', 'isCreate'));
     }
 
     /**
      * Store a newly created template in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
@@ -82,7 +80,7 @@ class TemplateController extends Controller
         // Handle file upload if provided
         if ($request->hasFile('template_file')) {
             $file = $request->file('template_file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileName = time().'_'.$file->getClientOriginalName();
             $filePath = $file->storeAs('templates', $fileName, 'public');
             $template->file_path = $filePath;
             $template->filesize = $file->getSize();
@@ -97,20 +95,18 @@ class TemplateController extends Controller
     /**
      * Display the specified template.
      *
-     * @param  \App\Models\Backend\Template  $template
      * @return \Illuminate\View\View
      */
     public function show(Template $template)
     {
         $template->load(['databaseEntity', 'creator', 'updater', 'files']);
-        
+
         return view('backend.templates.show', compact('template'));
     }
 
     /**
      * Show the form for editing the specified template.
      *
-     * @param  \App\Models\Backend\Template  $template
      * @return \Illuminate\View\View
      */
     public function edit(Template $template)
@@ -120,15 +116,13 @@ class TemplateController extends Controller
             ->orderBy('name')
             ->get();
         $isCreate = false;
-        
+
         return view('backend.templates.upsert', compact('template', 'databaseEntities', 'isCreate'));
     }
 
     /**
      * Update the specified template in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Backend\Template  $template
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Template $template)
@@ -163,9 +157,9 @@ class TemplateController extends Controller
             if ($template->file_path && Storage::disk('public')->exists($template->file_path)) {
                 Storage::disk('public')->delete($template->file_path);
             }
-            
+
             $file = $request->file('template_file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileName = time().'_'.$file->getClientOriginalName();
             $filePath = $file->storeAs('templates', $fileName, 'public');
             $template->file_path = $filePath;
             $template->filesize = $file->getSize();
@@ -180,7 +174,6 @@ class TemplateController extends Controller
     /**
      * Remove the specified template from storage.
      *
-     * @param  \App\Models\Backend\Template  $template
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Template $template)
@@ -205,19 +198,18 @@ class TemplateController extends Controller
     /**
      * Download the template file.
      *
-     * @param  \App\Models\Backend\Template  $template
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
      */
     public function download(Template $template)
     {
-        if (!$template->file_path || !Storage::disk('public')->exists($template->file_path)) {
+        if (! $template->file_path || ! Storage::disk('public')->exists($template->file_path)) {
             return redirect()->back()
                 ->with('error', 'Template file not found');
         }
 
         return Storage::disk('public')->download(
-            $template->file_path, 
-            $template->name . '_v' . $template->version . '.' . pathinfo($template->file_path, PATHINFO_EXTENSION)
+            $template->file_path,
+            $template->name.'_v'.$template->version.'.'.pathinfo($template->file_path, PATHINFO_EXTENSION)
         );
     }
 
@@ -231,7 +223,7 @@ class TemplateController extends Controller
     {
         // Find the database entity by code
         $databaseEntity = DatabaseEntity::where('code', $code)->firstOrFail();
-        
+
         // Get active templates for this database entity
         $templates = Template::with(['databaseEntity', 'creator'])
             ->where('database_entity_id', $databaseEntity->id)
@@ -239,7 +231,7 @@ class TemplateController extends Controller
             ->orderBy('valid_from', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return view('backend.templates.specific_index', compact('templates', 'databaseEntity'));
     }
 }

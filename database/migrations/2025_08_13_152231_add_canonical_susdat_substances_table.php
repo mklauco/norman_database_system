@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -15,27 +15,27 @@ return new class extends Migration
         Schema::table('susdat_substances', function (Blueprint $table) {
             // Add canonical reference system columns
             $table->foreignId('canonical_id')
-                  ->nullable()
-                  ->references('id')
-                  ->on('susdat_substances')
-                  ->onUpdate('cascade')
-                  ->onDelete('restrict');
-            
+                ->nullable()
+                ->references('id')
+                ->on('susdat_substances')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
+
             // Status tracking
             $table->enum('status', ['active', 'deprecated', 'merged'])
-                  ->default('active');
-            
+                ->default('active');
+
             // Merge tracking fields
             $table->timestamp('merged_at')->nullable();
             $table->foreignId('merged_by')
-                  ->nullable()
-                  ->references('id')
-                  ->on('users')
-                  ->onUpdate('cascade')
-                  ->onDelete('set null');
-            
+                ->nullable()
+                ->references('id')
+                ->on('users')
+                ->onUpdate('cascade')
+                ->onDelete('set null');
+
             $table->text('merge_reason')->nullable();
-            
+
             // Add indexes for performance
             $table->index('canonical_id', 'idx_susdat_substances_canonical_id');
             $table->index('status', 'idx_susdat_substances_status');
@@ -44,11 +44,11 @@ return new class extends Migration
 
         // Add database constraints for data integrity
         $this->addDatabaseConstraints();
-        
+
         // Set all existing records as active (they are canonical by default)
         DB::table('susdat_substances')
-          ->whereNull('deleted_at')
-          ->update(['status' => 'active']);
+            ->whereNull('deleted_at')
+            ->update(['status' => 'active']);
     }
 
     /**
@@ -60,19 +60,19 @@ return new class extends Migration
             // Drop foreign key constraints first
             $table->dropForeign(['canonical_id']);
             $table->dropForeign(['merged_by']);
-            
+
             // Drop indexes
             $table->dropIndex('idx_susdat_substances_canonical_id');
             $table->dropIndex('idx_susdat_substances_status');
             $table->dropIndex('idx_susdat_substances_status_canonical');
-            
+
             // Drop columns
             $table->dropColumn([
                 'canonical_id',
                 'status',
                 'merged_at',
                 'merged_by',
-                'merge_reason'
+                'merge_reason',
             ]);
         });
 
@@ -110,7 +110,7 @@ return new class extends Migration
         // NOTE: Unique constraint for active codes will be added later
         // after duplicate resolution is complete via separate migration
         // This allows existing duplicates to remain during transition period
-        
+
         // NOTE: Validation that canonical_id references active substances
         // will be handled at application level in the Substance model
     }

@@ -2,20 +2,19 @@
 
 namespace App\Models\Ecotox;
 
-use App\Models\DatabaseEntity;
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Susdat\Substance;
 
 class EcotoxDerivation extends Model
 {
     use SoftDeletes;
-    
+
     protected $table = 'ecotox_derivation';
-    
+
     protected $primaryKey = 'id';
-    
+
     protected $fillable = [
         'vote_matrix',
         'acute_or_chronic',
@@ -75,7 +74,7 @@ class EcotoxDerivation extends Model
         'color_tx',
         'substance_id',
     ];
-    
+
     protected $casts = [
         'der_color' => 'boolean',
         'der_active' => 'boolean',
@@ -89,7 +88,7 @@ class EcotoxDerivation extends Model
         'color_tx' => 'boolean',
         'substance_id' => 'integer',
     ];
-    
+
     /**
      * Get the substance that owns this derivation
      */
@@ -97,7 +96,7 @@ class EcotoxDerivation extends Model
     {
         return $this->belongsTo(Substance::class, 'substance_id');
     }
-    
+
     /**
      * Get the legacy substance reference
      */
@@ -105,7 +104,7 @@ class EcotoxDerivation extends Model
     {
         return $this->belongsTo(Substance::class, 'sus_id', 'sus_id');
     }
-    
+
     /**
      * Get the ecotox test that owns this derivation
      */
@@ -113,7 +112,7 @@ class EcotoxDerivation extends Model
     {
         return $this->belongsTo(EcotoxFinal::class, 'ecotox_id', 'ecotox_id');
     }
-    
+
     /**
      * Get formatted sampling date
      */
@@ -121,7 +120,7 @@ class EcotoxDerivation extends Model
     {
         return $value ? \Carbon\Carbon::parse($value)->format('d.m.Y') : null;
     }
-    
+
     /**
      * Get formatted concentration value
      */
@@ -129,7 +128,7 @@ class EcotoxDerivation extends Model
     {
         return $value ?: 'N/A';
     }
-    
+
     /**
      * Get formatted concentration qualifier
      */

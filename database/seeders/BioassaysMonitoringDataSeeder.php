@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Carbon\Carbon;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -13,16 +12,15 @@ class BioassaysMonitoringDataSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-
     public function run(): void
     {
         $target_table_name = 'bioassay_monitor_sample_data';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/bioassay_tables/bioassay_monitor_sample_data.csv';
+        $path = base_path().'/database/seeders/seeds/bioassay_tables/bioassay_monitor_sample_data.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
 
-        foreach($rows as $r) {
+        foreach ($rows as $r) {
             $p[] = [
                 'id' => $r['m_sd_id'],
                 'm_ds_id' => $r['m_ds_id'] ?? 0,
@@ -76,13 +74,11 @@ class BioassaysMonitoringDataSeeder extends Seeder
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;
-        foreach($chunks as $c){
-            echo ($k++)."/".$count."; \n";
+        foreach ($chunks as $c) {
+            echo ($k++).'/'.$count."; \n";
             DB::table($target_table_name)->insert($c);
         }
     }
-
 }
-
 
 // php artisan db:seed --class="BioassaysMonitoringDataSeeder"

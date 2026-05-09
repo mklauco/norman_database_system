@@ -2,11 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\DatabaseEntity;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-use App\Models\DatabaseEntity;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckModuleAccess
 {
@@ -18,11 +18,8 @@ class CheckModuleAccess
      * 2. If database_entities.is_public == false, only allow users with the specific module role
      * 3. If database_entities.is_public == true, allow all users (including not logged in users)
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @param  string  $moduleCode  The database_entities.code value (e.g., 'empodat_suspect', 'literature')
      * @param  string  $roleName  The role name required for access (e.g., 'empodat_suspect', 'literature')
-     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function handle(Request $request, Closure $next, string $moduleCode, string $roleName): Response
     {
@@ -30,7 +27,7 @@ class CheckModuleAccess
         $databaseEntity = DatabaseEntity::where('code', $moduleCode)->first();
 
         // If database entity not found, deny access for safety
-        if (!$databaseEntity) {
+        if (! $databaseEntity) {
             abort(403, 'Module not found.');
         }
 
@@ -41,7 +38,7 @@ class CheckModuleAccess
 
         // Module is private (is_public == false)
         // Check if user is logged in
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'You must be logged in to access this module. Please contact an administrator if you believe you should have access.');
         }
 

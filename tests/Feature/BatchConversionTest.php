@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Susdat\Substance;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class BatchConversionTest extends TestCase
 {
@@ -24,13 +24,13 @@ class BatchConversionTest extends TestCase
             'code' => '12345',
             'name' => 'Test Substance',
             'cas_number' => '67-56-1',
-            'stdinchikey' => 'TEST123'
+            'stdinchikey' => 'TEST123',
         ]);
 
         $response = $this->post('/susdat/batch/convert', [
             'identifiers' => "NS12345\n67890",
             'input_type' => 'susdat_id',
-            'exact_match' => true
+            'exact_match' => true,
         ]);
 
         $response->assertStatus(200);
@@ -44,13 +44,13 @@ class BatchConversionTest extends TestCase
             'code' => '12345',
             'name' => 'Test Substance',
             'cas_number' => '67-56-1',
-            'stdinchikey' => 'TEST123'
+            'stdinchikey' => 'TEST123',
         ]);
 
         $response = $this->post('/susdat/batch/convert', [
             'identifiers' => '67-56-1',
             'input_type' => 'cas_no',
-            'exact_match' => true
+            'exact_match' => true,
         ]);
 
         $response->assertStatus(200);
@@ -64,13 +64,13 @@ class BatchConversionTest extends TestCase
             'code' => '12345',
             'name' => 'Test Substance',
             'cas_number' => '67-56-1',
-            'stdinchikey' => 'TEST123'
+            'stdinchikey' => 'TEST123',
         ]);
 
         $response = $this->post('/susdat/batch/convert', [
             'identifiers' => 'Test',
             'input_type' => 'substance_name',
-            'exact_match' => false
+            'exact_match' => false,
         ]);
 
         $response->assertStatus(200);

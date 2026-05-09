@@ -4,12 +4,11 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Models\Empodat\EmpodatMain;
 
 class AnalyzeEmpodatPerformance extends Command
 {
     protected $signature = 'empodat:analyze-performance {--slow-queries} {--indexes} {--table-stats}';
-    
+
     protected $description = 'Analyze EMPODAT database performance and provide optimization recommendations';
 
     public function handle()
@@ -17,15 +16,15 @@ class AnalyzeEmpodatPerformance extends Command
         $this->info('🔍 EMPODAT Performance Analysis Report');
         $this->info('=====================================');
 
-        if ($this->option('table-stats') || !$this->hasOptions()) {
+        if ($this->option('table-stats') || ! $this->hasOptions()) {
             $this->analyzeTableStatistics();
         }
 
-        if ($this->option('indexes') || !$this->hasOptions()) {
+        if ($this->option('indexes') || ! $this->hasOptions()) {
             $this->analyzeIndexUsage();
         }
 
-        if ($this->option('slow-queries') || !$this->hasOptions()) {
+        if ($this->option('slow-queries') || ! $this->hasOptions()) {
             $this->analyzeSlowQueries();
         }
 
@@ -57,14 +56,14 @@ class AnalyzeEmpodatPerformance extends Command
                 ORDER BY tablename, attname
             ");
 
-            $this->table(['Schema', 'Table', 'Column', 'Distinct Values', 'Correlation'], 
-                collect($tableStats)->map(function($stat) {
+            $this->table(['Schema', 'Table', 'Column', 'Distinct Values', 'Correlation'],
+                collect($tableStats)->map(function ($stat) {
                     return [
                         $stat->schemaname,
                         $stat->tablename,
                         $stat->attname,
                         $stat->n_distinct ?? 'N/A',
-                        number_format($stat->correlation ?? 0, 4)
+                        number_format($stat->correlation ?? 0, 4),
                     ];
                 })->toArray()
             );
@@ -83,14 +82,14 @@ class AnalyzeEmpodatPerformance extends Command
 
             $this->newLine();
             $this->info('💾 Table Sizes:');
-            $this->table(['Table', 'Size'], 
-                collect($tableSizes)->map(function($size) {
+            $this->table(['Table', 'Size'],
+                collect($tableSizes)->map(function ($size) {
                     return [$size->table_name, $size->size];
                 })->toArray()
             );
 
         } catch (\Exception $e) {
-            $this->error('Could not analyze table statistics: ' . $e->getMessage());
+            $this->error('Could not analyze table statistics: '.$e->getMessage());
         }
     }
 
@@ -114,21 +113,21 @@ class AnalyzeEmpodatPerformance extends Command
                 ORDER BY idx_scan DESC
             ");
 
-            $this->table(['Schema', 'Table', 'Index', 'Tuples Read', 'Tuples Fetched', 'Scans'], 
-                collect($indexStats)->map(function($index) {
+            $this->table(['Schema', 'Table', 'Index', 'Tuples Read', 'Tuples Fetched', 'Scans'],
+                collect($indexStats)->map(function ($index) {
                     return [
                         $index->schemaname,
                         $index->tablename,
                         $index->indexname,
                         number_format($index->idx_tup_read ?? 0),
                         number_format($index->idx_tup_fetch ?? 0),
-                        number_format($index->idx_scan ?? 0)
+                        number_format($index->idx_scan ?? 0),
                     ];
                 })->toArray()
             );
 
             // Unused indexes
-            $unusedIndexes = collect($indexStats)->filter(function($index) {
+            $unusedIndexes = collect($indexStats)->filter(function ($index) {
                 return ($index->idx_scan ?? 0) < 10;
             });
 
@@ -141,7 +140,7 @@ class AnalyzeEmpodatPerformance extends Command
             }
 
         } catch (\Exception $e) {
-            $this->error('Could not analyze index usage: ' . $e->getMessage());
+            $this->error('Could not analyze index usage: '.$e->getMessage());
         }
     }
 
@@ -160,6 +159,7 @@ class AnalyzeEmpodatPerformance extends Command
             if (empty($extensionExists)) {
                 $this->warn('pg_stat_statements extension not installed. Cannot analyze slow queries.');
                 $this->info('To enable: CREATE EXTENSION pg_stat_statements;');
+
                 return;
             }
 
@@ -178,20 +178,21 @@ class AnalyzeEmpodatPerformance extends Command
 
             if (empty($slowQueries)) {
                 $this->info('No slow queries found containing "empodat".');
+
                 return;
             }
 
             foreach ($slowQueries as $query) {
-                $this->info("Query: " . substr($query->query, 0, 100) . '...');
-                $this->line("  Calls: " . number_format($query->calls));
-                $this->line("  Avg Time: " . number_format($query->mean_time, 2) . 'ms');
-                $this->line("  Total Time: " . number_format($query->total_time, 2) . 'ms');
-                $this->line("  Avg Rows: " . number_format($query->rows / $query->calls));
+                $this->info('Query: '.substr($query->query, 0, 100).'...');
+                $this->line('  Calls: '.number_format($query->calls));
+                $this->line('  Avg Time: '.number_format($query->mean_time, 2).'ms');
+                $this->line('  Total Time: '.number_format($query->total_time, 2).'ms');
+                $this->line('  Avg Rows: '.number_format($query->rows / $query->calls));
                 $this->newLine();
             }
 
         } catch (\Exception $e) {
-            $this->error('Could not analyze slow queries: ' . $e->getMessage());
+            $this->error('Could not analyze slow queries: '.$e->getMessage());
         }
     }
 
@@ -222,7 +223,7 @@ class AnalyzeEmpodatPerformance extends Command
             '  - Implement Redis caching for search results',
             '  - Use database views for complex relationships',
             '  - Consider background job processing for large exports',
-            '  - Implement cursor-based pagination for large datasets'
+            '  - Implement cursor-based pagination for large datasets',
         ];
 
         foreach ($recommendations as $rec) {

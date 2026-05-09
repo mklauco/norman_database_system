@@ -2,9 +2,9 @@
 
 namespace App\Models\Factsheet;
 
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Susdat\Substance;
 
 class FactsheetStatistic extends Model
 {

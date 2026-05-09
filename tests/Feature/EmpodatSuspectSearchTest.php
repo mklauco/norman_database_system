@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\DatabaseEntity;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -19,7 +19,7 @@ class EmpodatSuspectSearchTest extends TestCase
     {
         // Ensure the empodat_suspect module exists
         $module = DatabaseEntity::where('code', 'empodat_suspect')->first();
-        if (!$module) {
+        if (! $module) {
             $this->markTestSkipped('Empodat Suspect module not found in database.');
         }
 
@@ -32,7 +32,7 @@ class EmpodatSuspectSearchTest extends TestCase
             ->where('country_id', $countryId)
             ->exists();
 
-        if (!$hasData) {
+        if (! $hasData) {
             $this->markTestSkipped('Test country does not have empodat_suspect data.');
         }
 
@@ -44,7 +44,7 @@ class EmpodatSuspectSearchTest extends TestCase
         $user->assignRole($role);
 
         // Perform a search with country filter (as array format)
-        $url = route('empodat_suspect.search.search') . '?displayOption=1&countrySearch%5B%5D=' . $countryId;
+        $url = route('empodat_suspect.search.search').'?displayOption=1&countrySearch%5B%5D='.$countryId;
         $searchResponse = $this->actingAs($user)->get($url);
 
         $searchResponse->assertStatus(200);

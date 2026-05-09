@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Ecotox;
 
-use App\Models\Ecotox\PNEC3;
-use App\Models\Ecotox\LowestPNECMain;
-use Illuminate\Http\Request;
-use App\Models\Backend\QueryLog;
-use App\Models\Susdat\Substance;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Backend\QueryLog;
 use App\Models\DatabaseEntity;
+use App\Models\Ecotox\LowestPNECMain;
+use App\Models\Ecotox\PNEC3;
+use App\Models\Susdat\Substance;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EcotoxQualityController extends Controller
 {
@@ -40,7 +40,7 @@ class EcotoxQualityController extends Controller
             'request' => $request,
         ]);
     }
-    
+
     /**
      * Process the search and display results.
      */
@@ -48,19 +48,19 @@ class EcotoxQualityController extends Controller
     {
         // Initialize search parameters array to track what filters were applied
         $searchParameters = [];
-        
+
         // Start with a base query
         $resultsObjects = PNEC3::orderBy('norman_pnec_id', 'asc');
-        
+
         // Apply substance filter (this is the primary filter)
-        if (!empty($request->input('substances'))) {
+        if (! empty($request->input('substances'))) {
             $substances = $request->input('substances');
             // Handle case when substances is a string (JSON)
             if (is_string($substances)) {
                 $substances = json_decode($substances, true);
             }
             // Ensure substances is always an array
-            if (!is_array($substances)) {
+            if (! is_array($substances)) {
                 $substances = [$substances];
             }
             $resultsObjects = $resultsObjects->whereIn('substance_id', $substances);
@@ -70,16 +70,17 @@ class EcotoxQualityController extends Controller
             $request->merge(['substances' => []]);
             // Return early as we require at least one substance
             session()->flash('info', 'Please select at least one substance to search.');
+
             return redirect()->route('ecotox.quality.search.filter');
         }
-        
+
         // Get the full request data for logging
         $main_request = $request->all();
-        
+
         // Get total count from database entity
         $database_key = 'ecotox.ecotox_pnec3';
         $resultsObjectsCount = DatabaseEntity::where('code', $database_key)->first()->number_of_records ?? 0;
-        
+
         // Get matrix_habitat counts for the specific substance
         $substanceId = is_array($substances) ? $substances[0] : $substances;
         $matrixHabitatCounts = PNEC3::where('substance_id', $substanceId)
@@ -87,39 +88,39 @@ class EcotoxQualityController extends Controller
             ->groupBy('matrix_habitat')
             ->orderBy('matrix_habitat')
             ->get();
-        
+
         // Log the query if this is the first page request
-        if(!$request->has('page')) {
+        if (! $request->has('page')) {
             $now = now();
             $bindings = $resultsObjects->getBindings();
             $sql = vsprintf(str_replace('?', "'%s'", $resultsObjects->toSql()), $bindings);
-            
+
             // Try to find the same SQL query in the QueryLog table
             $actual_count = QueryLog::where('query_hash', hash('sha256', $sql))
-            ->where('total_count', $resultsObjectsCount)
-            ->value('actual_count');
-            
+                ->where('total_count', $resultsObjectsCount)
+                ->value('actual_count');
+
             try {
                 QueryLog::insert([
-                    'content'      => json_encode(['request' => $main_request, 'bindings' => $bindings]),
-                    'query'        => $sql,
-                    'user_id'      => auth()->check() ? auth()->id() : null,
-                    'total_count'  => $resultsObjectsCount,
+                    'content' => json_encode(['request' => $main_request, 'bindings' => $bindings]),
+                    'query' => $sql,
+                    'user_id' => auth()->check() ? auth()->id() : null,
+                    'total_count' => $resultsObjectsCount,
                     'actual_count' => is_null($actual_count) ? $resultsObjects->count() : $actual_count,
                     'database_key' => $database_key,
-                    'query_hash'   => hash('sha256', $sql),
-                    'created_at'   => $now,
-                    'updated_at'   => $now,
+                    'query_hash' => hash('sha256', $sql),
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]);
             } catch (\Exception $e) {
                 if (Auth::check() && Auth::user()->hasRole('super_admin')) {
-                    session()->flash('failure', 'Query logging error: ' . $e->getMessage());
+                    session()->flash('failure', 'Query logging error: '.$e->getMessage());
                 } else {
                     session()->flash('error', 'An error occurred while processing your request.');
                 }
             }
         }
-        
+
         // Apply pagination based on display option
         if ($request->input('displayOption') == 1) {
             // Use simple pagination
@@ -136,29 +137,29 @@ class EcotoxQualityController extends Controller
                 ->paginate(200)
                 ->withQueryString();
         }
-        
+
         // Get derivation data for the same substances
         $derivationObjects = \App\Models\Ecotox\EcotoxDerivation::whereIn('substance_id', $substances)
             ->orderBy('der_order', 'asc')
             ->orderBy('der_date', 'desc')
             ->get();
-        
+
         // Get LowestPNECMain data for the same substances (using sus_id which maps to Substance->code)
         $substanceCodes = Substance::whereIn('id', $substances)->pluck('code');
         $lowestPnecObjects = LowestPNECMain::with(['substance', 'originSubstance', 'editor'])
             ->whereIn('sus_id', $substanceCodes)
             ->orderBy('lowest_id', 'asc')
             ->get();
-        
+
         // Get CRED evaluation data for both PNEC and Derivation records
         $pnecEcotoxIds = $resultsObjects->pluck('ecotox_id')->filter()->unique();
         $derivationEcotoxIds = $derivationObjects->pluck('ecotox_id')->filter()->unique();
         $allEcotoxIds = $pnecEcotoxIds->merge($derivationEcotoxIds)->unique();
-        
+
         $credEvaluations = \App\Models\Ecotox\EcotoxCredEvaluationFinal::whereIn('ecotox_id', $allEcotoxIds)
             ->get()
             ->keyBy('ecotox_id');
-        
+
         // Add CRED screening scores to PNEC records
         $resultsObjects->getCollection()->transform(function ($pnec) use ($credEvaluations) {
             $pnec->cred_screening_score = 0;
@@ -168,9 +169,10 @@ class EcotoxQualityController extends Controller
                     $pnec->cred_screening_score = round(($evaluation->cred_final_score / $evaluation->cred_final_score_total) * 100, 2);
                 }
             }
+
             return $pnec;
         });
-        
+
         // Add CRED screening scores to Derivation records
         $derivationObjects->transform(function ($derivation) use ($credEvaluations) {
             $derivation->cred_screening_score = 0;
@@ -180,19 +182,20 @@ class EcotoxQualityController extends Controller
                     $derivation->cred_screening_score = round(($evaluation->cred_final_score / $evaluation->cred_final_score_total) * 100, 2);
                 }
             }
+
             return $derivation;
         });
-        
+
         // Return the view with results and metadata
         return view('ecotox.quality.index', [
-            'resultsObjects'      => $resultsObjects,
-            'derivationObjects'   => $derivationObjects,
-            'lowestPnecObjects'   => $lowestPnecObjects,
+            'resultsObjects' => $resultsObjects,
+            'derivationObjects' => $derivationObjects,
+            'lowestPnecObjects' => $lowestPnecObjects,
             'matrixHabitatCounts' => $matrixHabitatCounts,
             'resultsObjectsCount' => $resultsObjectsCount,
-            'query_log_id'        => QueryLog::orderBy('id', 'desc')->first()->id ?? 0,
-            'request'             => $request,
-            'searchParameters'    => $searchParameters,
+            'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id ?? 0,
+            'request' => $request,
+            'searchParameters' => $searchParameters,
         ], $main_request);
     }
 
@@ -202,7 +205,7 @@ class EcotoxQualityController extends Controller
     public function showForm(string $id, Request $request)
     {
         // Check role-based access
-        if (!Auth::check() || !(Auth::user()->hasRole('super_admin') || Auth::user()->hasRole('admin') || Auth::user()->hasRole('ecotox'))) {
+        if (! Auth::check() || ! (Auth::user()->hasRole('super_admin') || Auth::user()->hasRole('admin') || Auth::user()->hasRole('ecotox'))) {
             abort(403, 'Access denied. Only super_admin, admin, and ecotox roles can access this page.');
         }
 
@@ -210,20 +213,20 @@ class EcotoxQualityController extends Controller
         $pnec2 = \App\Models\Ecotox\PNEC2::with(['substance'])
             ->where('norman_pnec_id', $id)
             ->first();
-            
+
         $pnec3 = \App\Models\Ecotox\PNEC3::with(['substance'])
             ->where('norman_pnec_id', $id)
             ->first();
 
-        if (!$pnec2 && !$pnec3) {
+        if (! $pnec2 && ! $pnec3) {
             abort(404, 'PNEC record not found');
         }
 
         // Helper function to get value from models
-        $getValue = function($field) use ($pnec2, $pnec3) {
+        $getValue = function ($field) use ($pnec2, $pnec3) {
             return [
                 'pnec2' => $pnec2?->$field ?? 'N/A',
-                'pnec3' => $pnec3?->$field ?? 'N/A'
+                'pnec3' => $pnec3?->$field ?? 'N/A',
             ];
         };
 
@@ -234,45 +237,45 @@ class EcotoxQualityController extends Controller
                 'authors' => 'Authors',
                 'year' => 'Year',
                 'bibliographic_source' => 'Bibliographic Source',
-                'dossier_available' => 'Dossier Available'
+                'dossier_available' => 'Dossier Available',
             ],
             'Substance' => [
                 'substance_name' => 'Substance Name',
                 'cas' => 'CAS Number',
                 'purity' => 'Purity',
-                'supplier' => 'Supplier'
+                'supplier' => 'Supplier',
             ],
             'Test Information' => [
                 'test_type' => 'Test Type',
                 'acute_or_chronic' => 'Acute or Chronic',
                 'matrix_habitat' => 'Matrix Habitat',
                 'taxonomic_group' => 'Taxonomic Group',
-                'scientific_name' => 'Scientific Name'
+                'scientific_name' => 'Scientific Name',
             ],
             'Test Conditions' => [
                 'duration' => 'Duration',
                 'exposure_regime' => 'Exposure Regime',
                 'measured_or_nominal' => 'Measured or Nominal',
-                'test_item' => 'Test Item'
+                'test_item' => 'Test Item',
             ],
             'Results' => [
                 'endpoint' => 'Endpoint',
                 'effect_measurement' => 'Effect Measurement',
                 'value' => 'Value',
-                'concentration_specification' => 'Concentration Specification'
+                'concentration_specification' => 'Concentration Specification',
             ],
             'Quality' => [
                 'reliability_study' => 'Reliability Study',
                 'reliability_score' => 'Reliability Score',
                 'institution_study' => 'Institution Study',
-                'vote' => 'Vote'
+                'vote' => 'Vote',
             ],
             'Regulatory' => [
                 'legal_status' => 'Legal Status',
                 'protected_asset' => 'Protected Asset',
                 'pnec_type' => 'PNEC Type',
-                'regulatory_context' => 'Regulatory Context'
-            ]
+                'regulatory_context' => 'Regulatory Context',
+            ],
         ];
 
         // Build table rows for the view
@@ -282,18 +285,18 @@ class EcotoxQualityController extends Controller
         foreach ($tableFields as $sectionName => $fields) {
             // Add section header
             $tableRows[] = [
-                'id' => 'header-' . $rowId++,
+                'id' => 'header-'.$rowId++,
                 'type' => 'header',
-                'title' => $sectionName . ' Information'
+                'title' => $sectionName.' Information',
             ];
-            
+
             // Add data rows
             $index = 0;
             foreach ($fields as $fieldName => $displayName) {
                 $values = $getValue($fieldName);
-                
+
                 $tableRows[] = [
-                    'id' => 'data-' . $rowId++,
+                    'id' => 'data-'.$rowId++,
                     'type' => 'data',
                     'key' => $displayName,
                     'sectionName' => $sectionName,
@@ -304,7 +307,7 @@ class EcotoxQualityController extends Controller
                     'inputType' => 'text',
                     'dropdownOptions' => ['Yes', 'No', 'Unknown', 'Not applicable'],
                     'isOdd' => $index % 2 !== 0,
-                    'hasChanges' => false // Set to true if there are changes to track
+                    'hasChanges' => false, // Set to true if there are changes to track
                 ];
                 $index++;
             }
@@ -312,12 +315,12 @@ class EcotoxQualityController extends Controller
 
         // Determine which record to use for primary information
         $primaryRecord = $pnec3 ?? $pnec2;
-        
+
         $record = [
             'norman_pnec_id' => $id,
             'substance' => $primaryRecord->substance,
             'matrix_habitat' => $primaryRecord->matrix_habitat ?? 'N/A',
-            'pnec_type' => $primaryRecord->pnec_type ?? 'N/A'
+            'pnec_type' => $primaryRecord->pnec_type ?? 'N/A',
         ];
 
         return view('ecotox.quality.pnec-form', [
@@ -326,7 +329,7 @@ class EcotoxQualityController extends Controller
             'tableRows' => $tableRows,
             'isSuperAdmin' => Auth::check() && Auth::user()->hasRole('super_admin'),
             'searchParameters' => $request->all(),
-            'returnUrl' => $request->get('returnUrl')
+            'returnUrl' => $request->get('returnUrl'),
         ]);
     }
 
@@ -336,7 +339,7 @@ class EcotoxQualityController extends Controller
     public function getChanges(string $pnecId, string $columnName)
     {
         // Check role-based access
-        if (!Auth::check() || !(Auth::user()->hasRole('super_admin') || Auth::user()->hasRole('admin') || Auth::user()->hasRole('ecotox'))) {
+        if (! Auth::check() || ! (Auth::user()->hasRole('super_admin') || Auth::user()->hasRole('admin') || Auth::user()->hasRole('ecotox'))) {
             abort(403, 'Access denied');
         }
 

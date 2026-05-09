@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EcotoxCredEvaluationFinal extends Model
 {
     protected $table = 'ecotox_cred_evaluation_final';
-    
+
     protected $fillable = [
         'ecotox_id',
         'user_id',
@@ -20,7 +20,7 @@ class EcotoxCredEvaluationFinal extends Model
         'cred_final_comment',
         'cred_final_date',
     ];
-    
+
     protected $casts = [
         'cred_final_score' => 'decimal:4',
         'cred_final_score_total' => 'decimal:4',
@@ -28,7 +28,7 @@ class EcotoxCredEvaluationFinal extends Model
         'cred_final_evaluation' => 'integer',
         'cred_final_date' => 'datetime',
     ];
-    
+
     /**
      * Get the user who made this evaluation
      */
@@ -36,7 +36,7 @@ class EcotoxCredEvaluationFinal extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
+
     /**
      * Get the ecotox record this evaluation belongs to
      */
@@ -44,7 +44,7 @@ class EcotoxCredEvaluationFinal extends Model
     {
         return $this->belongsTo(EcotoxFinal::class, 'ecotox_id', 'ecotox_id');
     }
-    
+
     /**
      * Get formatted score percentage
      */
@@ -53,9 +53,10 @@ class EcotoxCredEvaluationFinal extends Model
         if ($this->cred_final_score_total && $this->cred_final_score_total > 0) {
             return round(($this->cred_final_score / $this->cred_final_score_total) * 100, 2);
         }
+
         return 0;
     }
-    
+
     /**
      * Get formatted evaluation date
      */

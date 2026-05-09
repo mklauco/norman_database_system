@@ -3,8 +3,8 @@
 namespace App\Models\Passive;
 
 use App\Models\Susdat\Substance;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class PassiveSamplingMain extends Model
 {
@@ -142,7 +142,6 @@ class PassiveSamplingMain extends Model
     {
         return $this->belongsTo(Substance::class, 'substance_id', 'id');
     }
-
 
     /**
      * Get the country record associated with the passive sampling record.
@@ -286,23 +285,23 @@ class PassiveSamplingMain extends Model
 
     /**
      * Get a formatted sampling date
-     * 
+     *
      * @return string|null
      */
     public function getSamplingStartDateAttribute()
     {
-        if (!$this->date_sampling_start_year || !$this->date_sampling_start_month || !$this->date_sampling_start_day) {
+        if (! $this->date_sampling_start_year || ! $this->date_sampling_start_month || ! $this->date_sampling_start_day) {
             return null;
         }
-        
-        return $this->date_sampling_start_year . '-' . 
-               str_pad($this->date_sampling_start_month, 2, '0', STR_PAD_LEFT) . '-' . 
+
+        return $this->date_sampling_start_year.'-'.
+               str_pad($this->date_sampling_start_month, 2, '0', STR_PAD_LEFT).'-'.
                str_pad($this->date_sampling_start_day, 2, '0', STR_PAD_LEFT);
     }
 
     /**
      * Get formatted coordinates
-     * 
+     *
      * @return string|null
      */
     public function getFormattedCoordinatesAttribute()
@@ -310,33 +309,33 @@ class PassiveSamplingMain extends Model
         if (empty($this->latitude_decimal) || empty($this->longitude_decimal)) {
             return null;
         }
-        
-        return $this->latitude_decimal . ', ' . $this->longitude_decimal;
+
+        return $this->latitude_decimal.', '.$this->longitude_decimal;
     }
 
     /**
      * Get dynamic sampling formatted coordinates
-     * 
+     *
      * @return string|null
      */
     public function getDsFormattedCoordinatesAttribute()
     {
-        $startCoords = (!empty($this->ds_latitude_start_point_decimal) && !empty($this->ds_longitude_start_point_decimal))
-            ? $this->ds_latitude_start_point_decimal . ', ' . $this->ds_longitude_start_point_decimal
+        $startCoords = (! empty($this->ds_latitude_start_point_decimal) && ! empty($this->ds_longitude_start_point_decimal))
+            ? $this->ds_latitude_start_point_decimal.', '.$this->ds_longitude_start_point_decimal
             : null;
-            
-        $endCoords = (!empty($this->ds_latitude_end_point_decimal) && !empty($this->ds_longitude_end_point_decimal))
-            ? $this->ds_latitude_end_point_decimal . ', ' . $this->ds_longitude_end_point_decimal
+
+        $endCoords = (! empty($this->ds_latitude_end_point_decimal) && ! empty($this->ds_longitude_end_point_decimal))
+            ? $this->ds_latitude_end_point_decimal.', '.$this->ds_longitude_end_point_decimal
             : null;
-            
-        if (!$startCoords && !$endCoords) {
+
+        if (! $startCoords && ! $endCoords) {
             return null;
         }
-        
+
         if ($startCoords && $endCoords) {
-            return 'Start: ' . $startCoords . ' | End: ' . $endCoords;
+            return 'Start: '.$startCoords.' | End: '.$endCoords;
         }
-        
+
         return $startCoords ?: $endCoords;
     }
 }

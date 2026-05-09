@@ -2,9 +2,8 @@
 
 namespace App\Models\Ecotox;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
+use Illuminate\Database\Eloquent\Model;
 
 class EcotoxCredQuestionParameter extends Model
 {

@@ -33,6 +33,7 @@ class EmpodatSuspectDataSourceSeeder extends Seeder
 
         if ($fileIds->isEmpty()) {
             $this->command->info('No files found with database_entity_id = 18. Skipping seeder.');
+
             return;
         }
 
@@ -54,7 +55,7 @@ class EmpodatSuspectDataSourceSeeder extends Seeder
 
         foreach ($chunks as $index => $chunk) {
             DB::table('empodat_suspect_data_source')->insert($chunk);
-            $this->command->info('Inserted chunk ' . ($index + 1) . '/' . $totalChunks);
+            $this->command->info('Inserted chunk '.($index + 1).'/'.$totalChunks);
         }
 
         $this->command->info("Successfully seeded {$fileIds->count()} records into empodat_suspect_data_source.");

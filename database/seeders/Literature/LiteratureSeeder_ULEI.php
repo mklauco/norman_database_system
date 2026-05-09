@@ -13,20 +13,32 @@ class LiteratureSeeder_ULEI extends Seeder
 
     // Lookup caches
     protected array $speciesCache = [];
+
     protected array $countriesCache = [];
+
     protected array $tissuesCache = [];
+
     protected array $sexCache = [];
+
     protected array $lifeStagesCache = [];
+
     protected array $habitatTypesCache = [];
+
     protected array $habitatFuzzyCache = []; // Pre-computed fuzzy matching cache
+
     protected array $concentrationUnitsCache = [];
+
     protected array $commonNamesCache = [];
+
     protected array $useCategoriesCache = [];
+
     protected array $substanceCache = [];
+
     protected array $typeOfNumericQuantitiesCache = [];
 
     // Test mode - set to null for full processing
     protected ?int $limitRows = null;
+
     protected ?int $fileId = 9000;
 
     /**
@@ -61,10 +73,11 @@ class LiteratureSeeder_ULEI extends Seeder
         DB::statement('SET session_replication_role = replica;');
 
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/literature/2025-6-20_ULEI_Wildlife_Exposure_data.csv';
+        $path = base_path().'/database/seeders/seeds/literature/2025-6-20_ULEI_Wildlife_Exposure_data.csv';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
+
             return;
         }
 
@@ -75,29 +88,32 @@ class LiteratureSeeder_ULEI extends Seeder
         $this->command->info('Reading CSV file...');
 
         $handle = fopen($path, 'r');
-        if (!$handle) {
-            $this->command->error("Failed to open CSV file");
+        if (! $handle) {
+            $this->command->error('Failed to open CSV file');
+
             return;
         }
 
         // Read header
         $header = fgetcsv($handle);
-        if (!$header) {
-            $this->command->error("Failed to read CSV header");
+        if (! $header) {
+            $this->command->error('Failed to read CSV header');
             fclose($handle);
+
             return;
         }
 
         // Clean header - remove BOM, trim spaces
-        $header = array_map(function($h) {
+        $header = array_map(function ($h) {
             // Remove UTF-8 BOM if present
             $h = str_replace("\xEF\xBB\xBF", '', $h);
+
             return trim($h);
         }, $header);
 
         // Debug: Show first few header columns
-        $this->command->info("CSV Header (first 10 columns): " . implode(', ', array_slice($header, 0, 10)));
-        $this->command->info("Total columns in header: " . count($header));
+        $this->command->info('CSV Header (first 10 columns): '.implode(', ', array_slice($header, 0, 10)));
+        $this->command->info('Total columns in header: '.count($header));
 
         $batch = [];
         $batchSize = 500;
@@ -120,18 +136,20 @@ class LiteratureSeeder_ULEI extends Seeder
                 // Combine header with row
                 if (count($row) !== count($header)) {
                     if ($skippedRows < 10) {
-                        $this->command->warn("Row " . ($rowCount + $skippedRows + 1) . " column count mismatch: expected " . count($header) . ", got " . count($row));
+                        $this->command->warn('Row '.($rowCount + $skippedRows + 1).' column count mismatch: expected '.count($header).', got '.count($row));
                     }
                     $skippedRows++;
+
                     continue;
                 }
 
                 $data = array_combine($header, $row);
                 if ($data === false) {
                     if ($skippedRows < 10) {
-                        $this->command->error("Failed to combine header and row at line " . ($rowCount + $skippedRows + 1));
+                        $this->command->error('Failed to combine header and row at line '.($rowCount + $skippedRows + 1));
                     }
                     $skippedRows++;
+
                     continue;
                 }
 
@@ -144,9 +162,10 @@ class LiteratureSeeder_ULEI extends Seeder
                 } catch (\Exception $e) {
                     // Only show first 10 errors to avoid spam
                     if ($skippedRows < 10) {
-                        $this->command->error("Error processing row " . ($rowCount + $skippedRows + 1) . ": " . $e->getMessage());
+                        $this->command->error('Error processing row '.($rowCount + $skippedRows + 1).': '.$e->getMessage());
                     }
                     $skippedRows++;
+
                     continue;
                 }
 
@@ -171,7 +190,7 @@ class LiteratureSeeder_ULEI extends Seeder
             }
 
             // Insert remaining records
-            if (!empty($batch)) {
+            if (! empty($batch)) {
                 DB::table($target_table_name)->insert($batch);
                 unset($batch);
                 $batch = [];
@@ -228,7 +247,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($species as $s) {
             $this->speciesCache[strtolower($s->name_latin)] = $s->id;
         }
-        $this->command->info("Loaded " . count($this->speciesCache) . " species");
+        $this->command->info('Loaded '.count($this->speciesCache).' species');
 
         // Load countries by name with lowercase keys
         $countries = DB::table('list_countries')
@@ -237,7 +256,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($countries as $c) {
             $this->countriesCache[strtolower($c->name)] = $c->id;
         }
-        $this->command->info("Loaded " . count($this->countriesCache) . " countries");
+        $this->command->info('Loaded '.count($this->countriesCache).' countries');
 
         // Load tissues by name with lowercase keys
         $tissues = DB::table('list_tissues')
@@ -246,7 +265,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($tissues as $t) {
             $this->tissuesCache[strtolower($t->name)] = $t->id;
         }
-        $this->command->info("Loaded " . count($this->tissuesCache) . " tissues");
+        $this->command->info('Loaded '.count($this->tissuesCache).' tissues');
 
         // Load sex by name with lowercase keys
         $sexes = DB::table('list_biota_sexs')
@@ -255,7 +274,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($sexes as $s) {
             $this->sexCache[strtolower($s->name)] = $s->id;
         }
-        $this->command->info("Loaded " . count($this->sexCache) . " sex types");
+        $this->command->info('Loaded '.count($this->sexCache).' sex types');
 
         // Load life stages by name with lowercase keys
         $lifeStages = DB::table('list_life_stages')
@@ -264,7 +283,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($lifeStages as $ls) {
             $this->lifeStagesCache[strtolower($ls->name)] = $ls->id;
         }
-        $this->command->info("Loaded " . count($this->lifeStagesCache) . " life stages");
+        $this->command->info('Loaded '.count($this->lifeStagesCache).' life stages');
 
         // Load habitat types by name with lowercase keys
         $habitatTypes = DB::table('list_habitat_types')
@@ -273,7 +292,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($habitatTypes as $ht) {
             $this->habitatTypesCache[strtolower($ht->name)] = $ht->id;
         }
-        $this->command->info("Loaded " . count($this->habitatTypesCache) . " habitat types");
+        $this->command->info('Loaded '.count($this->habitatTypesCache).' habitat types');
 
         // Load concentration units by name with lowercase keys
         $concentrationUnits = DB::table('list_concentration_units')
@@ -282,7 +301,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($concentrationUnits as $cu) {
             $this->concentrationUnitsCache[strtolower($cu->name)] = $cu->id;
         }
-        $this->command->info("Loaded " . count($this->concentrationUnitsCache) . " concentration units");
+        $this->command->info('Loaded '.count($this->concentrationUnitsCache).' concentration units');
 
         // Load common names by name with lowercase keys
         $commonNames = DB::table('list_common_names')
@@ -291,7 +310,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($commonNames as $cn) {
             $this->commonNamesCache[strtolower($cn->name)] = $cn->id;
         }
-        $this->command->info("Loaded " . count($this->commonNamesCache) . " common names");
+        $this->command->info('Loaded '.count($this->commonNamesCache).' common names');
 
         // Load use categories by name with lowercase keys
         $useCategories = DB::table('list_use_categories')
@@ -300,7 +319,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($useCategories as $uc) {
             $this->useCategoriesCache[strtolower($uc->name)] = $uc->id;
         }
-        $this->command->info("Loaded " . count($this->useCategoriesCache) . " use categories");
+        $this->command->info('Loaded '.count($this->useCategoriesCache).' use categories');
 
         // Load type of numeric quantities by name with lowercase keys
         $typeOfNumericQuantities = DB::table('list_type_of_numeric_quantities')
@@ -309,7 +328,7 @@ class LiteratureSeeder_ULEI extends Seeder
         foreach ($typeOfNumericQuantities as $tonq) {
             $this->typeOfNumericQuantitiesCache[strtolower($tonq->name)] = $tonq->id;
         }
-        $this->command->info("Loaded " . count($this->typeOfNumericQuantitiesCache) . " type of numeric quantities");
+        $this->command->info('Loaded '.count($this->typeOfNumericQuantitiesCache).' type of numeric quantities');
 
         // Load substance mapping from chemical_name to substance_id
         $this->loadSubstanceMapping();
@@ -348,7 +367,7 @@ class LiteratureSeeder_ULEI extends Seeder
             }
         }
 
-        $this->command->info("Pre-computed " . count($this->habitatFuzzyCache) . " fuzzy habitat mappings");
+        $this->command->info('Pre-computed '.count($this->habitatFuzzyCache).' fuzzy habitat mappings');
     }
 
     /**
@@ -356,11 +375,12 @@ class LiteratureSeeder_ULEI extends Seeder
      */
     protected function loadSubstanceMapping(): void
     {
-        $mappingPath = base_path() . '/database/seeders/seeds/literature/ulei_susdat_compounds.csv';
+        $mappingPath = base_path().'/database/seeders/seeds/literature/ulei_susdat_compounds.csv';
 
-        if (!file_exists($mappingPath)) {
+        if (! file_exists($mappingPath)) {
             $this->command->warn("Substance mapping file not found: {$mappingPath}");
-            $this->command->warn("Substance IDs will not be populated.");
+            $this->command->warn('Substance IDs will not be populated.');
+
             return;
         }
 
@@ -370,12 +390,13 @@ class LiteratureSeeder_ULEI extends Seeder
             ->pluck('id', 'code')
             ->toArray();
 
-        $this->command->info("Loaded " . count($susdatByCode) . " SUSDAT substances");
+        $this->command->info('Loaded '.count($susdatByCode).' SUSDAT substances');
 
         // Now read the mapping CSV and create chemical_name -> substance_id mapping
         $handle = fopen($mappingPath, 'r');
-        if (!$handle) {
-            $this->command->error("Failed to open substance mapping file");
+        if (! $handle) {
+            $this->command->error('Failed to open substance mapping file');
+
             return;
         }
 
@@ -409,7 +430,7 @@ class LiteratureSeeder_ULEI extends Seeder
         }
 
         fclose($handle);
-        $this->command->info("Loaded " . $mappingCount . " chemical name to substance ID mappings");
+        $this->command->info('Loaded '.$mappingCount.' chemical name to substance ID mappings');
     }
 
     /**
@@ -426,8 +447,8 @@ class LiteratureSeeder_ULEI extends Seeder
     protected function processRow(array $data, Carbon $now): ?array
     {
         // Validate that we have the data array correctly
-        if (!isset($data['rowid'])) {
-            throw new \Exception("Missing 'rowid' key. Available keys: " . implode(', ', array_slice(array_keys($data), 0, 10)));
+        if (! isset($data['rowid'])) {
+            throw new \Exception("Missing 'rowid' key. Available keys: ".implode(', ', array_slice(array_keys($data), 0, 10)));
         }
 
         return [
@@ -588,21 +609,29 @@ class LiteratureSeeder_ULEI extends Seeder
     // Lookup methods - optimized for O(1) performance with lowercase keys
     protected function lookupSpecies(?string $latinName): ?int
     {
-        if (empty($latinName)) return null;
+        if (empty($latinName)) {
+            return null;
+        }
         $cleaned = strtolower(trim($latinName));
+
         return $this->speciesCache[$cleaned] ?? null;
     }
 
     protected function lookupCountry(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
+
         return $this->countriesCache[$cleaned] ?? null;
     }
 
     protected function lookupTissue(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
 
         // Map CSV values to standardized lookup values
@@ -620,12 +649,15 @@ class LiteratureSeeder_ULEI extends Seeder
         ];
 
         $standardized = $mapping[$cleaned] ?? 'other';
+
         return $this->tissuesCache[$standardized] ?? null;
     }
 
     protected function lookupSex(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
 
         // Map CSV values to standardized lookup values
@@ -638,19 +670,25 @@ class LiteratureSeeder_ULEI extends Seeder
         ];
 
         $standardized = $mapping[$cleaned] ?? $cleaned;
+
         return $this->sexCache[$standardized] ?? null;
     }
 
     protected function lookupLifeStage(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
+
         return $this->lifeStagesCache[$cleaned] ?? null;
     }
 
     protected function lookupHabitatType(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
 
         // Skip invalid values
@@ -676,21 +714,29 @@ class LiteratureSeeder_ULEI extends Seeder
 
     protected function lookupConcentrationUnit(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
+
         return $this->concentrationUnitsCache[$cleaned] ?? null;
     }
 
     protected function lookupCommonName(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
+
         return $this->commonNamesCache[$cleaned] ?? null;
     }
 
     protected function lookupUseCategory(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
 
         // Map CSV values to standardized lookup values
@@ -725,7 +771,9 @@ class LiteratureSeeder_ULEI extends Seeder
 
     protected function lookupSubstance(?string $chemicalName): ?int
     {
-        if (empty($chemicalName)) return null;
+        if (empty($chemicalName)) {
+            return null;
+        }
         $cleaned = strtolower(trim($chemicalName));
 
         // Direct lookup from the mapping cache
@@ -734,7 +782,9 @@ class LiteratureSeeder_ULEI extends Seeder
 
     protected function lookupTypeOfNumericQuantity(?string $name): ?int
     {
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
         $cleaned = strtolower(trim($name));
 
         // Map CSV values to standardized lookup values
@@ -752,6 +802,7 @@ class LiteratureSeeder_ULEI extends Seeder
         ];
 
         $standardized = $mapping[$cleaned] ?? 'other';
+
         return $this->typeOfNumericQuantitiesCache[$standardized] ?? null;
     }
 
@@ -762,6 +813,7 @@ class LiteratureSeeder_ULEI extends Seeder
             return null;
         }
         $cleaned = trim($value);
+
         return $cleaned === '' || $cleaned === 'NA' ? null : $cleaned;
     }
 
@@ -774,6 +826,7 @@ class LiteratureSeeder_ULEI extends Seeder
         if ($cleaned === '' || $cleaned === 'NA') {
             return null;
         }
+
         return is_numeric($cleaned) ? (int) $cleaned : null;
     }
 
@@ -786,6 +839,7 @@ class LiteratureSeeder_ULEI extends Seeder
         if ($cleaned === '' || $cleaned === 'NA') {
             return null;
         }
+
         return is_numeric($cleaned) ? (float) $cleaned : null;
     }
 }

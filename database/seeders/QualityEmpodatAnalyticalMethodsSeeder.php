@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class QualityEmpodatAnalyticalMethodsSeeder extends Seeder
 {
@@ -53,19 +52,19 @@ class QualityEmpodatAnalyticalMethodsSeeder extends Seeder
             'updated_at' => $now,
         ];
 
-
         $chunkSize = 1000;
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;
-        foreach($chunks as $c){
-            echo ($k++)."/".$count."; \n";
+        foreach ($chunks as $c) {
+            echo ($k++).'/'.$count."; \n";
             DB::table($target_table_name)->insert($c);
         }
-        $this->command->info("  DatabaseEntitySeeder completed. ");
+        $this->command->info('  DatabaseEntitySeeder completed. ');
     }
 
-    protected function isEmptyThenNull($value) {
+    protected function isEmptyThenNull($value)
+    {
         return empty($value) ? null : $value;
     }
 }

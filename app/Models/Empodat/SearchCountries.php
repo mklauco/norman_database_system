@@ -3,8 +3,8 @@
 namespace App\Models\Empodat;
 
 use App\Models\List\Country;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class SearchCountries extends Model
 {
@@ -17,7 +17,8 @@ class SearchCountries extends Model
         'country_other',
     ];
 
-    public function country(){
-      return $this->hasOne(Country::class, 'id', 'country_id');
+    public function country()
+    {
+        return $this->hasOne(Country::class, 'id', 'country_id');
     }
 }

@@ -18,21 +18,21 @@ return new class extends Migration
             'empodat_matrix_sewage_sludge',
             'empodat_matrix_soil',
             'empodat_matrix_suspended_matter',
-            'empodat_matrix_water'
+            'empodat_matrix_water',
         ];
 
         foreach ($tables as $table) {
-            if (!Schema::hasTable($table)) {
+            if (! Schema::hasTable($table)) {
                 Schema::create($table, function (Blueprint $table) {
-                $table->id();
-                $table->bigInteger('dct_analysis_id')->nullable(false);
-                $table->string('code', 255)->nullable(false);
-                $table->json('meta_data')->nullable(false);
-                $table->timestamps();
+                    $table->id();
+                    $table->bigInteger('dct_analysis_id')->nullable(false);
+                    $table->string('code', 255)->nullable(false);
+                    $table->json('meta_data')->nullable(false);
+                    $table->timestamps();
 
-                // Add index on dct_analysis_id
-                $table->index('dct_analysis_id');
-            });
+                    // Add index on dct_analysis_id
+                    $table->index('dct_analysis_id');
+                });
             }
         }
     }
@@ -49,7 +49,7 @@ return new class extends Migration
             'empodat_matrix_sewage_sludge',
             'empodat_matrix_soil',
             'empodat_matrix_suspended_matter',
-            'empodat_matrix_water'
+            'empodat_matrix_water',
         ];
 
         foreach ($tables as $table) {

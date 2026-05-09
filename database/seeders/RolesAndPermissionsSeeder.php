@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -17,7 +16,7 @@ class RolesAndPermissionsSeeder extends Seeder
         DB::table('model_has_roles')->delete();
         DB::table('model_has_permissions')->delete();
         DB::table('permissions')->delete();
-        
+
         // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
@@ -34,21 +33,21 @@ class RolesAndPermissionsSeeder extends Seeder
             'sle',
             'arbg',
             'indoor',
-            'passive'
+            'passive',
         ];
-        foreach($roleNames as $role){
+        foreach ($roleNames as $role) {
             $roles[$role] = Role::firstOrCreate(['name' => $role]);
         }
 
         $users = \App\Models\User::whereIn('email', ['martin@klauco.com', 'lubos.cirka@stuba.sk'])->get();
-        foreach ($users as $user){
-            foreach($roleNames as $role){
+        foreach ($users as $user) {
+            foreach ($roleNames as $role) {
                 $user->assignRole($roles[$role]);
             }
         }
 
         $users = \App\Models\User::whereNotIn('email', ['martin@klauco.com', 'lubos.cirka@stuba.sk'])->get();
-        foreach ($users as $user){
+        foreach ($users as $user) {
             $user->assignRole($roles['user']);
         }
     }

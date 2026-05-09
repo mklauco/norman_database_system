@@ -59,7 +59,7 @@ return new class extends Migration
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_prioritisation CASCADE');
 
         // Create the comprehensive materialized view
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_prioritisation AS
             WITH limited_suspect AS (
                 -- Limit to first 1,000,000 records for testing
@@ -167,7 +167,7 @@ return new class extends Migration
             WHERE esm.station_id IS NOT NULL
                 AND es.id IS NOT NULL
                 AND em.id IS NOT NULL
-        ");
+        ');
 
         // Create indexes for query performance
         $this->createIndexes();

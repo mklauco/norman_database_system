@@ -6,29 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\Backend\UserLoginRetention;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 
 class UserLoginRetentionController extends Controller
 {
     public function filter(Request $request)
     {
         $users = User::orderBy('last_name')->orderBy('first_name')->get();
-        
+
         // Debug: Log the users data
         Log::info('UserLoginRetention filter users:', [
             'users_count' => $users->count(),
-            'users_data' => $users->map(function($user) {
+            'users_data' => $users->map(function ($user) {
                 return [
                     'id' => $user->id,
-                    'name' => $user->last_name . ', ' . $user->first_name,
+                    'name' => $user->last_name.', '.$user->first_name,
                     'first_name' => $user->first_name,
                     'last_name' => $user->last_name,
                 ];
-            })->toArray()
+            })->toArray(),
         ]);
-        
+
         return view('backend.user-login-retention.filter', compact('users'));
     }
 
@@ -52,7 +50,7 @@ class UserLoginRetentionController extends Controller
         // Filter by date range - set defaults if not provided
         $dateFrom = $request->filled('date_from') ? $request->date_from : now()->subMonth()->format('Y-m-d');
         $dateTo = $request->filled('date_to') ? $request->date_to : now()->format('Y-m-d');
-        
+
         $query->whereDate('login_datetime', '>=', $dateFrom);
         $query->whereDate('login_datetime', '<=', $dateTo);
 
@@ -63,7 +61,7 @@ class UserLoginRetentionController extends Controller
         Log::info('UserLoginRetention search query:', [
             'sql' => $query->toSql(),
             'bindings' => $query->getBindings(),
-            'filters' => $request->all()
+            'filters' => $request->all(),
         ]);
 
         $results = $query->cursorPaginate(100);

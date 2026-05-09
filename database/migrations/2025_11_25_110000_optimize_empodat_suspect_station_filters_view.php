@@ -24,7 +24,7 @@ return new class extends Migration
         DB::statement('DROP TABLE IF EXISTS empodat_suspect_stations_helper CASCADE');
 
         // Step 1: Create a permanent helper table with suspect station data
-        DB::statement("
+        DB::statement('
             CREATE TABLE empodat_suspect_stations_helper AS
             SELECT DISTINCT
                 esm.station_id,
@@ -35,11 +35,11 @@ return new class extends Migration
             INNER JOIN empodat_stations es ON esm.station_id = es.id
             WHERE esm.station_id IS NOT NULL
             GROUP BY esm.station_id, es.country_id
-        ");
+        ');
         DB::statement('CREATE INDEX idx_essh_station_id ON empodat_suspect_stations_helper(station_id)');
 
         // Step 2: Create the materialized view by joining with empodat_main
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_station_filters AS
             SELECT DISTINCT
                 ss.station_id,
@@ -52,7 +52,7 @@ return new class extends Migration
             FROM empodat_suspect_stations_helper ss
             INNER JOIN empodat_main em ON em.station_id = ss.station_id
             WHERE em.matrix_id IS NOT NULL
-        ");
+        ');
 
         // Create indexes
         DB::statement('CREATE INDEX idx_essf_station_id ON empodat_suspect_station_filters(station_id)');

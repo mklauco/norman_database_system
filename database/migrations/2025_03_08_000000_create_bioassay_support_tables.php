@@ -46,7 +46,7 @@ return new class extends Migration
             'monitor_x_type_sampling',
             'monitor_x_yes_no',
             'monitor_x_yes_no_na_nr',
-            'monitor_x_yes_no_na_nr_other'
+            'monitor_x_yes_no_na_nr_other',
         ];
 
         // Create each lookup table
@@ -58,7 +58,7 @@ return new class extends Migration
     /**
      * Create a standard lookup table
      *
-     * @param string $tableName
+     * @param  string  $tableName
      * @return void
      */
     private function createLookupTable($tableName)
@@ -113,7 +113,7 @@ return new class extends Migration
             'monitor_x_type_sampling',
             'monitor_x_yes_no',
             'monitor_x_yes_no_na_nr',
-            'monitor_x_yes_no_na_nr_other'
+            'monitor_x_yes_no_na_nr_other',
         ];
 
         // Drop each lookup table

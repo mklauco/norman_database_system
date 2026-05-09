@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\SimpleExcel\SimpleExcelReader;
@@ -19,11 +18,12 @@ class PassiveDataSourceSeeder extends Seeder
         $this->command->info('Starting passive_data_source seeding...');
 
         $tableName = 'passive_data_source';
-        $path = base_path() . '/database/seeders/seeds/passive_tables/data_tables/dct_data_source.csv';
+        $path = base_path().'/database/seeders/seeds/passive_tables/data_tables/dct_data_source.csv';
 
         // Check if file exists
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->command->error("File not found: $path");
+
             return;
         }
 
@@ -64,17 +64,17 @@ class PassiveDataSourceSeeder extends Seeder
                         ];
                     }
 
-                    if (!empty($records)) {
+                    if (! empty($records)) {
                         try {
                             DB::table($tableName)->insert($records);
-                            $this->command->info("Processed chunk " . ($key + 1) . " with " . count($records) . " records for table: $tableName");
+                            $this->command->info('Processed chunk '.($key + 1).' with '.count($records)." records for table: $tableName");
                         } catch (\Exception $e) {
-                            $this->command->error("Error inserting into $tableName: " . $e->getMessage());
+                            $this->command->error("Error inserting into $tableName: ".$e->getMessage());
                         }
                     }
                 });
         } catch (\Exception $e) {
-            $this->command->error("Error processing file $path: " . $e->getMessage());
+            $this->command->error("Error processing file $path: ".$e->getMessage());
         } finally {
             Schema::enableForeignKeyConstraints();
         }
@@ -90,6 +90,7 @@ class PassiveDataSourceSeeder extends Seeder
         if ($value === null || $value === '' || strtoupper($value) === 'NULL') {
             return null;
         }
+
         return $value;
     }
 }

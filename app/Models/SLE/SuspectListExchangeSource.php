@@ -26,10 +26,10 @@ class SuspectListExchangeSource extends Model
      */
     public function getSanitizedNameAttribute()
     {
-        if (!$this->name) {
+        if (! $this->name) {
             return '';
         }
-        
+
         return preg_replace('/[\r\n\t\'"`<>]/', '', trim($this->name));
     }
 }

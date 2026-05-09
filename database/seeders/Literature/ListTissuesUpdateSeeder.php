@@ -45,10 +45,11 @@ class ListTissuesUpdateSeeder extends Seeder
         $this->command->info('Updating list_tissues table (insert only new entries)...');
 
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/literature/list_tissues_2.csv';
+        $path = base_path().'/database/seeders/seeds/literature/list_tissues_2.csv';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
+
             return;
         }
 
@@ -101,10 +102,11 @@ class ListTissuesUpdateSeeder extends Seeder
     {
         $this->command->info('Seeding list_tissues_subcategory table...');
 
-        $path = base_path() . '/database/seeders/seeds/literature/list_tissues_subcategories.csv';
+        $path = base_path().'/database/seeders/seeds/literature/list_tissues_subcategories.csv';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
+
             return;
         }
 
@@ -152,7 +154,7 @@ class ListTissuesUpdateSeeder extends Seeder
         while (($row = fgetcsv($file)) !== false) {
             foreach ($row as $columnIndex => $subcategoryName) {
                 // Skip if no tissue mapping for this column
-                if (!isset($tissueMap[$columnIndex])) {
+                if (! isset($tissueMap[$columnIndex])) {
                     continue;
                 }
 
@@ -180,13 +182,13 @@ class ListTissuesUpdateSeeder extends Seeder
         fclose($file);
 
         // Insert subcategories in chunks
-        if (!empty($subcategories)) {
+        if (! empty($subcategories)) {
             $chunkSize = 500;
             $chunks = array_chunk($subcategories, $chunkSize);
             $chunkCount = count($chunks);
 
             foreach ($chunks as $index => $chunk) {
-                $this->command->info("Inserting subcategories chunk " . ($index + 1) . "/{$chunkCount}");
+                $this->command->info('Inserting subcategories chunk '.($index + 1)."/{$chunkCount}");
                 DB::table('list_tissues_subcategory')->insert($chunk);
             }
 
@@ -199,7 +201,7 @@ class ListTissuesUpdateSeeder extends Seeder
     /**
      * Clean and trim the value, return null if empty
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return string|null
      */
     protected function cleanValue($value)

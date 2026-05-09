@@ -3,9 +3,9 @@
 namespace App\Models\Backend;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Carbon\Carbon;
 
 class Notification extends Model
 {
@@ -42,19 +42,21 @@ class Notification extends Model
     public function scopeActive($query)
     {
         $now = Carbon::now();
+
         return $query->where('is_active', true)
-                    ->where('start_datetime', '<=', $now)
-                    ->where('end_datetime', '>=', $now)
-                    ->whereNull('turned_off_datetime');
+            ->where('start_datetime', '<=', $now)
+            ->where('end_datetime', '>=', $now)
+            ->whereNull('turned_off_datetime');
     }
 
     public function isCurrentlyActive(): bool
     {
-        if (!$this->is_active || $this->turned_off_datetime) {
+        if (! $this->is_active || $this->turned_off_datetime) {
             return false;
         }
 
         $now = Carbon::now();
+
         return $this->start_datetime <= $now && $this->end_datetime >= $now;
     }
 
@@ -103,7 +105,7 @@ class Notification extends Model
      */
     public function getTurnedOffDatetimeFormattedAttribute(): ?string
     {
-        return $this->turned_off_datetime 
+        return $this->turned_off_datetime
             ? $this->turned_off_datetime->setTimezone('Europe/Prague')->format('Y-m-d H:i')
             : null;
     }

@@ -22,9 +22,9 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Add new foreign key constraint referencing list_data_source_organisations
             $table->foreign('organisation_id')
-                  ->references('id')
-                  ->on('list_data_source_organisations')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('list_data_source_organisations')
+                ->onDelete('set null');
         });
     }
 

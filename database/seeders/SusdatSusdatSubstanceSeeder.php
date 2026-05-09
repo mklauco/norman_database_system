@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Susdat\Substance;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
 class SusdatSusdatSubstanceSeeder extends Seeder
 {
@@ -21,7 +20,7 @@ class SusdatSusdatSubstanceSeeder extends Seeder
         // $command = 'PGPASSWORD=root psql -h 127.0.0.1 -U postgres -d norman -f _dbdata/susdat_substance-2024_06_04_21_29_53-dump.sql';
 
         // if ($isWindows) {
-            $command = "psql -q -h localhost -U postgres -d norman -f _dbdata/susdat_substance-2024_06_04_21_29_53-dump.sql";
+        $command = 'psql -q -h localhost -U postgres -d norman -f _dbdata/susdat_substance-2024_06_04_21_29_53-dump.sql';
         // } else {
         //     $command = "PGPASSWORD=root psql -h 127.0.0.1 -U postgres -d norman -f _dbdata/susdat_substance-2024_06_04_21_29_53-dump.sql";
         // }
@@ -31,13 +30,13 @@ class SusdatSusdatSubstanceSeeder extends Seeder
         $return_var = null;
         exec($command, $output, $return_var);
 
-       // Output the result
-       echo implode("\n", $output);
+        // Output the result
+        echo implode("\n", $output);
 
-       // Check if the command was successful
-       if ($return_var !== 0) {
-           throw new \Exception("Failed to execute psql command: " . implode("\n", $output));
-       }
+        // Check if the command was successful
+        if ($return_var !== 0) {
+            throw new \Exception('Failed to execute psql command: '.implode("\n", $output));
+        }
 
     }
 }

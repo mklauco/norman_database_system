@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SarsMain extends Model
 {
     protected $table = 'sars_cov_main';
-    
+
     protected $fillable = [
         'type_of_data',
         'data_provider',

@@ -3,8 +3,8 @@
 namespace App\Models\EmpodatSuspect;
 
 use App\Models\Empodat\EmpodatStation;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class EmpodatSuspectXlsxStationsMapping extends Model
 {

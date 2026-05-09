@@ -100,7 +100,7 @@ return new class extends Migration
             $table->mediumText('p_a_sampler_sheets_disks_nr');
             $table->mediumText('p_a_sample_code');
             $table->timestamps();
-            
+
             // Create indexes
             $table->index('sus_id');
             $table->index('country_id');

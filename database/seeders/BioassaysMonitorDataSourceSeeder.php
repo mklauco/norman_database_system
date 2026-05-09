@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use Carbon\Carbon;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -14,15 +13,15 @@ class BioassaysMonitorDataSourceSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-
     public function run(): void
     {
         $target_table_name = 'bioassay_monitor_data_source';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/bioassay_tables/monitor_data_source.csv';
+        $path = base_path().'/database/seeders/seeds/bioassay_tables/monitor_data_source.csv';
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->command->error("File not found: $path");
+
             return;
         }
 
@@ -57,22 +56,20 @@ class BioassaysMonitorDataSourceSeeder extends Seeder
             $count = ceil(count($records) / $chunkSize);
 
             foreach ($chunks as $chunk) {
-                $this->command->info("Processing chunk " . ($k + 1) . "/" . $count);
+                $this->command->info('Processing chunk '.($k + 1).'/'.$count);
                 DB::table($target_table_name)->insert($chunk);
                 $k++;
             }
 
-            $this->command->info("Successfully seeded $target_table_name with " . count($records) . " records");
+            $this->command->info("Successfully seeded $target_table_name with ".count($records).' records');
 
         } catch (\Exception $e) {
-            $this->command->error("Error seeding $target_table_name: " . $e->getMessage());
+            $this->command->error("Error seeding $target_table_name: ".$e->getMessage());
         } finally {
             // Re-enable foreign key checks
             Schema::enableForeignKeyConstraints();
         }
     }
-
 }
-
 
 // php artisan db:seed --class="BioassaysMonitorDataSourceSeeder"

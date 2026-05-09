@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Literature;
 
 use App\Http\Controllers\Controller;
-use App\Models\Literature\Tissue;
 use App\Models\DatabaseEntity;
+use App\Models\Literature\Tissue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,17 +18,26 @@ class TissueController extends Controller
     private function checkModuleAccess(): void
     {
         $databaseEntity = DatabaseEntity::where('code', 'literature')->first();
-        if (!$databaseEntity) abort(403, 'Module not found.');
-        if ($databaseEntity->is_public === true) return;
-        if (!Auth::check()) abort(403, 'You must be logged in to access this module.');
+        if (! $databaseEntity) {
+            abort(403, 'Module not found.');
+        }
+        if ($databaseEntity->is_public === true) {
+            return;
+        }
+        if (! Auth::check()) {
+            abort(403, 'You must be logged in to access this module.');
+        }
         $user = Auth::user();
-        if ($user->hasRole('admin') || $user->hasRole('super_admin') || $user->hasRole('literature')) return;
+        if ($user->hasRole('admin') || $user->hasRole('super_admin') || $user->hasRole('literature')) {
+            return;
+        }
         abort(403, 'You do not have permission to access this module.');
     }
 
     public function index()
     {
         $tissues = Tissue::with('subcategories')->orderBy('id')->paginate(25);
+
         return view('literature.tissues.index', compact('tissues'));
     }
 
@@ -36,13 +45,13 @@ class TissueController extends Controller
     {
         $tissues = Tissue::orderBy('id')->get();
 
-        $filename = 'tissue_categories_' . date('Y-m-d_His') . '.csv';
+        $filename = 'tissue_categories_'.date('Y-m-d_His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($tissues) {
+        $callback = function () use ($tissues) {
             $file = fopen('php://output', 'w');
 
             // Add CSV headers
@@ -66,13 +75,13 @@ class TissueController extends Controller
     {
         $tissues = Tissue::with('subcategories')->orderBy('id')->get();
 
-        $filename = 'tissue_subcategories_' . date('Y-m-d_His') . '.csv';
+        $filename = 'tissue_subcategories_'.date('Y-m-d_His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($tissues) {
+        $callback = function () use ($tissues) {
             $file = fopen('php://output', 'w');
 
             // Add CSV headers
@@ -94,10 +103,11 @@ class TissueController extends Controller
             }
 
             // Sort by category_id first, then by subcategory_name alphabetically
-            usort($rows, function($a, $b) {
+            usort($rows, function ($a, $b) {
                 if ($a['category_id'] === $b['category_id']) {
                     return strcasecmp($a['subcategory_name'], $b['subcategory_name']);
                 }
+
                 return $a['category_id'] - $b['category_id'];
             });
 
@@ -119,8 +129,9 @@ class TissueController extends Controller
 
     public function create()
     {
-        $tissue = new Tissue();
+        $tissue = new Tissue;
         $isCreate = true;
+
         return view('literature.tissues.upsert', compact('tissue', 'isCreate'));
     }
 
@@ -139,13 +150,14 @@ class TissueController extends Controller
     public function edit(Tissue $tissue)
     {
         $isCreate = false;
+
         return view('literature.tissues.upsert', compact('tissue', 'isCreate'));
     }
 
     public function update(Request $request, Tissue $tissue)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:list_tissues,name,' . $tissue->id,
+            'name' => 'required|string|max:255|unique:list_tissues,name,'.$tissue->id,
         ]);
 
         $tissue->update($validated);
@@ -153,5 +165,4 @@ class TissueController extends Controller
         return redirect()->route('literature.tissues.index')
             ->with('success', 'Tissue updated successfully.');
     }
-
 }
