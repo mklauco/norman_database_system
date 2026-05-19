@@ -25,6 +25,10 @@ yarn-error.log
 # macOS Finder metadata — never commit
 .DS_Store
 **/.DS_Store
+
+# Internal working notes (not for PR / not for shared history)
+LEGACY_MIGRATION_PLAN.md
+EMPODAT_SUSPECT_NEW_DATA_NOTES.md
 database/seeders/seeds/*.log
 _dbdata/
 _postgres_data/
