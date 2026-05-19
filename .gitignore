@@ -21,6 +21,10 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# macOS Finder metadata — never commit
+.DS_Store
+**/.DS_Store
 database/seeders/seeds/*.log
 _dbdata/
 _postgres_data/
