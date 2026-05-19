@@ -17,6 +17,7 @@ use Database\Seeders\EmpodatLegacy\Steps\ScrubOrphansStep;
 use Database\Seeders\EmpodatLegacy\Steps\Step;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Orchestrates a delta import from the legacy MariaDB `empodat` database
@@ -24,14 +25,19 @@ use Illuminate\Support\Facades\DB;
  * the seeder reads it from PG (`max(empodat_main.id)`) by default so the
  * next delta picks up exactly where the previous one left off.
  *
- * Requires a configured database connection named `legacy_empodat` in
- * `config/database.php` pointing at the staging MariaDB (see
- * LEGACY_MIGRATION_PLAN.md for the credentials).
+ * Run lifecycle is recorded in `empodat_legacy_import_runs` (one row per run)
+ * and each step writes to `empodat_legacy_import_log`. A failed run can be
+ * rolled back row-for-row with:
+ *
+ *   php artisan empodat-legacy:rollback {run_id}
+ *
+ * Requires the `legacy_empodat` connection in config/database.php pointing at
+ * the staging MariaDB — see LEGACY_MIGRATION_PLAN.md.
  *
  * Run:
  *   php artisan db:seed --class=Database\\Seeders\\EmpodatLegacy\\EmpodatLegacySeeder
  *
- * To override the cutoff explicitly (e.g. for dry-run or backfill):
+ * Override cutoff (for testing / backfill):
  *   LEGACY_MIGRATION_SINCE_ID=100028680 php artisan db:seed --class=...
  */
 class EmpodatLegacySeeder extends Seeder
@@ -39,37 +45,52 @@ class EmpodatLegacySeeder extends Seeder
     public function run(): void
     {
         $sinceId = $this->resolveSinceId();
-        $this->command?->info("Legacy delta cutoff: id > {$sinceId}");
+        $runId = $this->startRun($sinceId);
 
-        /** @var list<Step> $steps */
-        $steps = [
+        $this->command?->info("Legacy delta cutoff: id > {$sinceId}  (run #{$runId})");
+
+        try {
+            foreach ($this->buildSteps($sinceId, $runId) as $step) {
+                $this->command?->info("→ {$step->name()}");
+                $step->run();
+            }
+
+            $this->markRunCompleted($runId);
+            $this->command?->info("Legacy delta import complete (run #{$runId}).");
+        } catch (Throwable $e) {
+            $this->markRunFailed($runId, $e);
+            $this->command?->error("Run #{$runId} failed: {$e->getMessage()}");
+            $this->command?->warn("Roll back with: php artisan empodat-legacy:rollback {$runId}");
+            throw $e;
+        }
+    }
+
+    /**
+     * @return list<Step>
+     */
+    private function buildSteps(int $sinceId, int $runId): array
+    {
+        return [
             // Phase 1 — precursor lookups (independent)
-            new ImportFilesStep($sinceId, $this->command),
-            new ImportDataSourcesStep($sinceId, $this->command),
-            new ImportAnalyticalMethodsStep($sinceId, $this->command),
-            new EnsureListMatricesStep($sinceId, $this->command),
+            new ImportFilesStep($sinceId, $runId, $this->command),
+            new ImportDataSourcesStep($sinceId, $runId, $this->command),
+            new ImportAnalyticalMethodsStep($sinceId, $runId, $this->command),
+            new EnsureListMatricesStep($sinceId, $runId, $this->command),
 
             // Phase 2 — stations
-            new ImportStationsStep($sinceId, $this->command),
+            new ImportStationsStep($sinceId, $runId, $this->command),
 
             // Phase 3 — main delta
-            new ImportEmpodatMainStep($sinceId, $this->command),
-            new PopulateFileIdStep($sinceId, $this->command),
+            new ImportEmpodatMainStep($sinceId, $runId, $this->command),
+            new PopulateFileIdStep($sinceId, $runId, $this->command),
 
             // Phase 4 — dependent 1:1 tables
-            new ImportEmpodatMinorStep($sinceId, $this->command),
-            new ImportMatrixBiotaStep($sinceId, $this->command),
+            new ImportEmpodatMinorStep($sinceId, $runId, $this->command),
+            new ImportMatrixBiotaStep($sinceId, $runId, $this->command),
 
             // Phase 5 — post-load cleanup
-            new ScrubOrphansStep($sinceId, $this->command),
+            new ScrubOrphansStep($sinceId, $runId, $this->command),
         ];
-
-        foreach ($steps as $step) {
-            $this->command?->info("→ {$step->name()}");
-            $step->run();
-        }
-
-        $this->command?->info('Legacy delta import complete.');
     }
 
     private function resolveSinceId(): int
@@ -80,5 +101,31 @@ class EmpodatLegacySeeder extends Seeder
         }
 
         return (int) (DB::table('empodat_main')->max('id') ?? 0);
+    }
+
+    private function startRun(int $sinceId): int
+    {
+        return (int) DB::table('empodat_legacy_import_runs')->insertGetId([
+            'since_id' => $sinceId,
+            'status' => 'running',
+            'started_at' => now(),
+        ]);
+    }
+
+    private function markRunCompleted(int $runId): void
+    {
+        DB::table('empodat_legacy_import_runs')->where('id', $runId)->update([
+            'status' => 'completed',
+            'finished_at' => now(),
+        ]);
+    }
+
+    private function markRunFailed(int $runId, Throwable $error): void
+    {
+        DB::table('empodat_legacy_import_runs')->where('id', $runId)->update([
+            'status' => 'failed',
+            'finished_at' => now(),
+            'notes' => substr($error->getMessage(), 0, 1000),
+        ]);
     }
 }
