@@ -72,6 +72,9 @@ abstract class Step
      *
      * Never UPDATEs an existing row. Never TRUNCATEs or DELETEs anything.
      *
+     * Auto-chunks to stay under PG's 65 535 bound-parameter cap (floor(65000 / cols)
+     * rows per statement, safety margin 535).
+     *
      * @param  array<int, array<string, mixed>>  $rows
      * @param  string  $conflictColumn  PK or unique column to check for conflict (default: 'id')
      * @return array<int, int> ids that were actually inserted
@@ -86,6 +89,28 @@ abstract class Step
         }
 
         $columns = array_keys($rows[0]);
+        $columnCount = count($columns);
+        $chunkSize = max(1, intdiv(65000, $columnCount));
+
+        $allInserted = [];
+
+        foreach (array_chunk($rows, $chunkSize) as $chunk) {
+            $allInserted = array_merge(
+                $allInserted,
+                $this->insertChunk($table, $columns, $chunk, $conflictColumn),
+            );
+        }
+
+        return $allInserted;
+    }
+
+    /**
+     * @param  array<int, string>  $columns
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, int>
+     */
+    private function insertChunk(string $table, array $columns, array $rows, string $conflictColumn): array
+    {
         $columnList = implode(', ', array_map(fn ($c) => '"'.$c.'"', $columns));
         $valuesSql = [];
         $bindings = [];
