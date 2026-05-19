@@ -48,7 +48,7 @@ class EnsureListMatricesStep extends Step
         try {
             $referenced = $this->legacy()
                 ->table('dct_analysis')
-                ->where('id', '>', $this->sinceId)
+                ->where('id', '>=', $this->sinceId)
                 ->distinct()
                 ->pluck('matrix')
                 ->map(fn ($v) => (int) $v)
