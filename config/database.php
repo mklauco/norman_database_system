@@ -79,6 +79,23 @@ return [
             ]) : [],
         ],
 
+        // Ephemeral MariaDB staging for the legacy empodat v1 -> v2 delta migration.
+        // Points at the local Docker container nds-legacy-empodat. Used only by
+        // Database\Seeders\EmpodatLegacy\* steps; never the default connection.
+        'legacy_empodat' => [
+            'driver' => 'mariadb',
+            'host' => env('LEGACY_EMPODAT_HOST', '127.0.0.1'),
+            'port' => env('LEGACY_EMPODAT_PORT', '33099'),
+            'database' => env('LEGACY_EMPODAT_DATABASE', 'empodat'),
+            'username' => env('LEGACY_EMPODAT_USERNAME', 'root'),
+            'password' => env('LEGACY_EMPODAT_PASSWORD', 'legacy'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => false,
+        ],
+
         'norman_application' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
