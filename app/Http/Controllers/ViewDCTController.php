@@ -14,8 +14,9 @@ class ViewDCTController extends Controller
     {
         //
         $data = DctAnalysis::paginate(200);
+
         return view('view-dct.index', ['data' => $data]);
-        
+
     }
 
     /**

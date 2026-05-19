@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('sars_cov_main', function (Blueprint $table) {
             $table->id();
-            $table->text('type_of_data')->nullable()->default(null); // Type of data 
-            $table->text('data_provider')->nullable()->default(null); // Data provider 
-            $table->text('contact_person')->nullable()->default(null); // Contact person 
-            $table->text('address_of_contact')->nullable()->default(null); // Address of contact 
-            $table->text('email')->nullable()->default(null); // E-mail 
-            $table->text('laboratory')->nullable()->default(null); // Laboratory: 
+            $table->text('type_of_data')->nullable()->default(null); // Type of data
+            $table->text('data_provider')->nullable()->default(null); // Data provider
+            $table->text('contact_person')->nullable()->default(null); // Contact person
+            $table->text('address_of_contact')->nullable()->default(null); // Address of contact
+            $table->text('email')->nullable()->default(null); // E-mail
+            $table->text('laboratory')->nullable()->default(null); // Laboratory:
 
-            $table->text('name_of_country')->nullable()->default(null); // Name of country 
-            $table->text('name_of_city')->nullable()->default(null); // Name of the City / Municipality 
+            $table->text('name_of_country')->nullable()->default(null); // Name of country
+            $table->text('name_of_city')->nullable()->default(null); // Name of the City / Municipality
             $table->text('station_name')->nullable()->default(null); // Station name and codes: Name
             $table->text('national_code')->nullable()->default(null); // - National code
             $table->text('relevant_ec_code_wise')->nullable()->default(null); // - Relevant EC code – WISE

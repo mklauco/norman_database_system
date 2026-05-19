@@ -2,9 +2,9 @@
 
 namespace App\Models\Ecotox;
 
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Susdat\Substance;
 
 class LowestPNECMain extends Model
 {
@@ -83,7 +83,7 @@ class LowestPNECMain extends Model
 
     /**
      * Get the PNEC3 record associated with this record.
-     * 
+     *
      * RelationInfo: ecotox_lowestpnec_main.lowest_base_id = ecotox_pnec3.norman_pnec_id
      */
     public function pnec3()
@@ -93,7 +93,7 @@ class LowestPNECMain extends Model
 
     /**
      * Get the editor (user) associated with this record.
-     * 
+     *
      * RelationInfo: ecotox_lowestpnec_main.lowest_editor = users.id
      */
     public function editor()
@@ -103,8 +103,6 @@ class LowestPNECMain extends Model
 
     /**
      * Get the matrix type mapping.
-     * 
-     * @return array
      */
     public static function getMatrixTypes(): array
     {
@@ -118,20 +116,19 @@ class LowestPNECMain extends Model
 
     /**
      * Get the matrix type name for the current record.
-     * 
-     * @return string|null
      */
-    public function getMatrixTypeAttribute(): string|null
+    public function getMatrixTypeAttribute(): ?string
     {
         $matrixTypes = self::getMatrixTypes();
+
         return $matrixTypes[$this->lowest_matrix] ?? "Unknown ({$this->lowest_matrix})";
     }
 
     /**
      * Scope a query to filter by matrix type.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string|int $matrixType Matrix type name or ID
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string|int  $matrixType  Matrix type name or ID
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeByMatrixType($query, string|int $matrixType)
@@ -140,45 +137,41 @@ class LowestPNECMain extends Model
             // Convert string to ID (only for known mappings)
             $matrixTypes = array_flip(self::getMatrixTypes());
             $matrixId = $matrixTypes[strtolower($matrixType)] ?? null;
-            
+
             if ($matrixId === null) {
                 // Return empty result if invalid matrix type name
                 return $query->whereRaw('1 = 0');
             }
-            
+
             return $query->where('lowest_matrix', $matrixId);
         }
-        
+
         // For integer values, allow any value (including those > 4)
         return $query->where('lowest_matrix', $matrixType);
     }
 
     /**
      * Get formatted date attribute.
-     * 
-     * @return string|null
      */
-    public function getFormattedDateAttribute(): string|null
+    public function getFormattedDateAttribute(): ?string
     {
         return $this->lowest_year ? $this->lowest_year->format('Y-m-d') : null;
     }
 
     /**
      * Get endpoint, duration, and effect formatted as a single field.
-     * 
-     * @return string
      */
     public function getEndpointDurationEffectAttribute(): string
     {
         $parts = [];
-        
+
         if ($this->lowest_test_endpoint) {
             $parts[] = "Endpoint: {$this->lowest_test_endpoint}";
         }
-        
+
         // Note: Duration and Effect fields may need to be added if they exist in the database
         // For now, only using endpoint which is available
-        
+
         return implode(' | ', $parts) ?: 'N/A';
     }
 }

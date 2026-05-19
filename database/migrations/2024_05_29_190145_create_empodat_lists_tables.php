@@ -6,11 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-  /**
-  * Run the migrations.
-  */
-  public function up(): void
-  {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
 
         Schema::create('list_countries', function (Blueprint $table) {
             $table->id();
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
-        
+
         Schema::create('list_matrices', function (Blueprint $table) {
             $table->id();
             $table->string('title')->nullable()->default(null);
@@ -38,15 +38,15 @@ return new class extends Migration
             $table->string('type')->nullable()->default(null);
             $table->string('name')->nullable()->default(null);
             $table->string('dct_name')->nullable()->default(null);
-            $table->string('unit')->nullable()->default(null);;
+            $table->string('unit')->nullable()->default(null);
             $table->timestamps();
         });
-        
+
         Schema::create('list_concentration_indicators', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->timestamps();
-        }); 
+        });
 
         Schema::create('list_sampling_techniques', function (Blueprint $table) {
             $table->id();
@@ -122,7 +122,7 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
-       
+
         // Type of monitoring - data_type_monitoring - dtm_ + other
         Schema::create('list_type_monitorings', function (Blueprint $table) {
             $table->id();
@@ -140,24 +140,24 @@ return new class extends Migration
         Schema::create('list_data_source_organisations', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable()->default(null); // English name
-            //$table->string('local_name')->nullable()->default(null); // Local name - deprecated
+            // $table->string('local_name')->nullable()->default(null); // Local name - deprecated
             $table->string('acronym')->nullable()->default(null); // Acronym
-            //$table->string('department'); // Department - deprecated
-            //$table->string('street')->nullable()->default(null); // Address - Street - deprecated
-            //$table->string('pobox'); // POBox - deprecated
+            // $table->string('department'); // Department - deprecated
+            // $table->string('street')->nullable()->default(null); // Address - Street - deprecated
+            // $table->string('pobox'); // POBox - deprecated
             $table->string('city')->nullable()->default(null); // Address - City
-            //$table->string('zip')->nullable()->default(null); // Zip - deprecated       
+            // $table->string('zip')->nullable()->default(null); // Zip - deprecated
             $table->foreignId('country_id')->nullable()->default(null)->references('id')->on('list_countries'); // Country
             $table->timestamps();
-        });   
+        });
 
         Schema::create('list_data_source_laboratories', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable()->default(null); // Laboratory - Name
-            $table->string('city')->nullable()->default(null); // Laboratory - City      
+            $table->string('city')->nullable()->default(null); // Laboratory - City
             $table->foreignId('country_id')->nullable()->default(null)->references('id')->on('list_countries'); // Laboratory - Country
             $table->timestamps();
-        });  
+        });
 
         Schema::create('list_treatment_less', function (Blueprint $table) {
             $table->id();
@@ -174,7 +174,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
         });
-   
+
         // ****************************************************************
         // dct_analysis_xyz >> dct_analysis_all
         // ****************************************************************
@@ -339,15 +339,13 @@ return new class extends Migration
             $table->timestamps();
         });
 
+    }
 
-  }
-  
-  /**
-  * Reverse the migrations.
-  */
-  public function down(): void
-  {
-    Schema::dropIfExists('');
-  }
-
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('');
+    }
 };

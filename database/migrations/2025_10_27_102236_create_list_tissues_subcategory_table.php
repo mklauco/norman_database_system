@@ -22,9 +22,9 @@ return new class extends Migration
 
             // Foreign key constraint to maintain referential integrity
             $table->foreign('tissue_id')
-                  ->references('id')
-                  ->on('list_tissues')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('list_tissues')
+                ->onDelete('cascade');
 
             // Index for faster lookups
             $table->index('tissue_id');

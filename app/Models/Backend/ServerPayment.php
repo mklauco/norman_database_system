@@ -3,7 +3,6 @@
 namespace App\Models\Backend;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ServerPayment extends Model
 {
@@ -27,6 +26,7 @@ class ServerPayment extends Model
     {
         $start = $this->period_start_date?->format('Y-m-d');
         $end = $this->period_end_date?->format('Y-m-d');
-        return trim(($start ?? '') . ' → ' . ($end ?? ''));
+
+        return trim(($start ?? '').' → '.($end ?? ''));
     }
 }

@@ -14,7 +14,6 @@ class SLE extends Model
     protected $table = 'sle';
 }
 
-
 // id
 // sle
 // susdat_id

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Empodat;
 
-use Illuminate\Http\Request;
-use App\Models\DatabaseEntity;
-use App\Models\Backend\Template;
 use App\Http\Controllers\Controller;
+use App\Models\Backend\Template;
+use App\Models\DatabaseEntity;
+use Illuminate\Http\Request;
 
 class EmpodatHomeController extends Controller
 {
@@ -70,7 +70,7 @@ class EmpodatHomeController extends Controller
     {
         // Find the database entity by code
         $databaseEntity = DatabaseEntity::where('code', $code)->firstOrFail();
-        
+
         // Get active templates for this database entity
         $templates = Template::with(['databaseEntity', 'creator'])
             ->where('database_entity_id', $databaseEntity->id)
@@ -78,7 +78,7 @@ class EmpodatHomeController extends Controller
             ->orderBy('valid_from', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return view('backend.templates.specific_index', compact('templates', 'databaseEntity'));
     }
 }

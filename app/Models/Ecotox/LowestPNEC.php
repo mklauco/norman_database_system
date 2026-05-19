@@ -2,9 +2,9 @@
 
 namespace App\Models\Ecotox;
 
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Susdat\Substance;
 
 class LowestPNEC extends Model
 {
@@ -62,7 +62,7 @@ class LowestPNEC extends Model
     {
         return $this->belongsTo(Substance::class, 'sus_id', 'id');
     }
-    
+
     /**
      * Get the substance that owns the lowest PNEC through substance_id.
      */
@@ -73,7 +73,7 @@ class LowestPNEC extends Model
 
     /**
      * Get the PNEC3 record associated with this record.
-     * 
+     *
      * RelationInfo: ecotox_lowestpnec_main.lowest_base_id = ecotox_pnec3.norman_pnec_id
      */
     public function pnec3()
@@ -83,7 +83,7 @@ class LowestPNEC extends Model
 
     /**
      * Get the editor (user) associated with this record.
-     * 
+     *
      * RelationInfo: ecotox_lowestpnec_main.lowest_editor = users.id
      */
     public function editor()

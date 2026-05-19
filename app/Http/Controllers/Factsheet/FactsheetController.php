@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Factsheet;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Susdat\Substance;
-use App\Models\Factsheet\FactsheetEntity;
-use App\Models\Factsheet\FactsheetStatistic;
 use App\Models\Ecotox\LowestPNEC;
 use App\Models\Ecotox\LowestPNECMain;
+use App\Models\Factsheet\FactsheetEntity;
+use App\Models\Factsheet\FactsheetStatistic;
 use App\Models\Hazards\SubstanceClassification;
-use Illuminate\Support\Facades\DB;
+use App\Models\Susdat\Substance;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class FactsheetController extends Controller
@@ -26,17 +25,17 @@ class FactsheetController extends Controller
         $search = $request->get('search', '');
         $searchType = $request->get('searchType', 'name');
         $substances = $request->get('substances', []);
-        
+
         // Convert to array if it's a single value, but ensure only one substance
-        if (!is_array($substances)) {
+        if (! is_array($substances)) {
             $substances = $substances ? [$substances] : [];
         }
-        
+
         // If multiple substances are selected, take only the first one
         if (count($substances) > 1) {
             $substances = [reset($substances)];
         }
-        
+
         return view('factsheet.filter', compact('request', 'search', 'searchType', 'substances'));
     }
 
@@ -44,29 +43,29 @@ class FactsheetController extends Controller
     {
         // Get selected substance from the request - only allow single substance
         $substanceId = $request->get('substances');
-        
+
         // If substances is an array, take only the first one
         if (is_array($substanceId)) {
-            $substanceId = !empty($substanceId) ? $substanceId[0] : null;
+            $substanceId = ! empty($substanceId) ? $substanceId[0] : null;
         }
-        
+
         // If no substance selected, redirect back to filter
         if (empty($substanceId)) {
             return redirect()->route('factsheets.search.filter')
                 ->with('error', 'Please select exactly one substance to view its factsheet.');
         }
-        
+
         // Fetch the single substance
         $substance = Substance::find($substanceId);
-        
-        if (!$substance) {
+
+        if (! $substance) {
             return redirect()->route('factsheets.search.filter')
                 ->with('error', 'Selected substance not found.');
         }
-        
+
         // Get factsheet entities for display and process their data
         $factsheetEntities = FactsheetEntity::ordered()->get();
-        
+
         // Process each entity to prepare presentation data
         foreach ($factsheetEntities as $entity) {
             if ($entity->name === 'PBT/vPvB & PMT/vPvM (NORMAN)') {
@@ -90,22 +89,21 @@ class FactsheetController extends Controller
                 }
             }
         }
-        
+
         // Check if statistics record exists for this substance (even if meta_data is null)
         $statisticsRecord = FactsheetStatistic::where('substance_id', $substance->id)->first();
         $hasStatistics = $statisticsRecord !== null;
         $statisticsData = $statisticsRecord ? $statisticsRecord->meta_data : null;
-        
+
         // dd($factsheetEntities);
         return view('factsheet.index', compact('substance', 'factsheetEntities', 'hasStatistics', 'statisticsData'));
     }
 
     /**
      * Process database table data for CASE 1: method_of_presentation = database_table
-     * 
-     * @param FactsheetEntity $entity
-     * @param Substance $substance
-     * @return array
+     *
+     * @param  FactsheetEntity  $entity
+     * @param  Substance  $substance
      */
     private function processDatabaseTableData($entity, $substance): array
     {
@@ -113,14 +111,14 @@ class FactsheetController extends Controller
             'type' => 'database_table',
             'model' => $entity->data['model'] ?? null,
             'fields' => $entity->data['fields'] ?? [],
-            'key_value_data' => []
+            'key_value_data' => [],
         ];
 
         // Get the model class from the entity data
         $modelClass = $entity->data['model'] ?? null;
         $fields = $entity->data['fields'] ?? [];
 
-        if ($modelClass && class_exists($modelClass) && !empty($fields)) {
+        if ($modelClass && class_exists($modelClass) && ! empty($fields)) {
             try {
                 // For substance-related models, we'll query by substance_id or direct access
                 if ($modelClass === 'App\Models\Susdat\Substance') {
@@ -131,17 +129,17 @@ class FactsheetController extends Controller
                     }
                 } else {
                     // For other models, try to find related records
-                    $model = new $modelClass();
-                    
+                    $model = new $modelClass;
+
                     // Check if the model has a substance_id or similar field
-                    if (in_array('substance_id', $model->getFillable()) || 
+                    if (in_array('substance_id', $model->getFillable()) ||
                         method_exists($model, 'substance')) {
                         $records = $model::where('substance_id', $substance->id)->get();
-                        
+
                         if ($records->isNotEmpty()) {
                             foreach ($fields as $field) {
                                 $values = $records->pluck($field)->filter()->unique();
-                                $processedData['key_value_data'][$field] = $values->isNotEmpty() ? 
+                                $processedData['key_value_data'][$field] = $values->isNotEmpty() ?
                                     $values->toArray() : ['N/A'];
                             }
                         } else {
@@ -158,7 +156,7 @@ class FactsheetController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                Log::error('Error processing database table data: ' . $e->getMessage());
+                Log::error('Error processing database table data: '.$e->getMessage());
                 foreach ($fields as $field) {
                     $processedData['key_value_data'][$field] = ['Error loading data'];
                 }
@@ -170,45 +168,42 @@ class FactsheetController extends Controller
 
     /**
      * Process text data for CASE 2: method_of_presentation = text
-     * 
-     * @param FactsheetEntity $entity
-     * @return array
+     *
+     * @param  FactsheetEntity  $entity
      */
     private function processTextData($entity): array
     {
         return [
             'type' => 'text',
-            'content' => $entity->data['text'] ?? 'No text content available'
+            'content' => $entity->data['text'] ?? 'No text content available',
         ];
     }
 
     /**
      * Process banner data for CASE 3: method_of_presentation = banner
-     * 
-     * @param FactsheetEntity $entity
-     * @return array
+     *
+     * @param  FactsheetEntity  $entity
      */
     private function processBannerData($entity): array
     {
         return [
             'type' => 'banner',
             'color' => $entity->data['color'] ?? 'green',
-            'text' => $entity->data['text'] ?? 'No banner text available'
+            'text' => $entity->data['text'] ?? 'No banner text available',
         ];
     }
 
     /**
      * Process controller method data for CASE 4: method_of_presentation = controller_method
-     * 
-     * @param FactsheetEntity $entity
-     * @param Substance $substance
-     * @return array
+     *
+     * @param  FactsheetEntity  $entity
+     * @param  Substance  $substance
      */
     private function processControllerMethodData($entity, $substance): array
     {
         $processedData = [
             'type' => 'database_table',
-            'key_value_data' => []
+            'key_value_data' => [],
         ];
 
         $method = $entity->data['method'] ?? null;
@@ -216,7 +211,7 @@ class FactsheetController extends Controller
         if ($method && method_exists($this, $method)) {
             try {
                 $methodData = $this->$method($substance);
-                
+
                 // Check if the method returned a special type (like banner or table)
                 if (is_array($methodData) && isset($methodData['type'])) {
                     if ($methodData['type'] === 'banner') {
@@ -224,7 +219,7 @@ class FactsheetController extends Controller
                         return [
                             'type' => 'banner',
                             'color' => $methodData['color'] ?? 'light-green',
-                            'text' => $methodData['text'] ?? 'No data available'
+                            'text' => $methodData['text'] ?? 'No data available',
                         ];
                     } elseif ($methodData['type'] === 'table') {
                         // Return table data directly
@@ -232,14 +227,14 @@ class FactsheetController extends Controller
                             'type' => 'table',
                             'table_data' => $methodData['table_data'] ?? [],
                             'years' => $methodData['years'] ?? [],
-                            'summary' => $methodData['summary'] ?? []
+                            'summary' => $methodData['summary'] ?? [],
                         ];
                     } elseif ($methodData['type'] === 'matrix_table') {
                         // Return matrix table data directly
                         return [
                             'type' => 'matrix_table',
                             'matrix_data' => $methodData['matrix_data'] ?? [],
-                            'summary' => $methodData['summary'] ?? []
+                            'summary' => $methodData['summary'] ?? [],
                         ];
                     } elseif ($methodData['type'] === 'hazards_pbt_table') {
                         return [
@@ -251,11 +246,11 @@ class FactsheetController extends Controller
                         ];
                     }
                 }
-                
+
                 // Regular key-value data
                 $processedData['key_value_data'] = $methodData;
             } catch (\Exception $e) {
-                Log::error("Error calling controller method {$method}: " . $e->getMessage());
+                Log::error("Error calling controller method {$method}: ".$e->getMessage());
                 $processedData['key_value_data'] = ['error' => 'Error loading data'];
             }
         } else {
@@ -268,9 +263,8 @@ class FactsheetController extends Controller
     /**
      * Get ecotoxicity data for the given substance
      * Matches legacy system format from ecotox.lowestpnec table
-     * 
-     * @param Substance $substance
-     * @return array
+     *
+     * @param  Substance  $substance
      */
     private function getEcotoxicityData($substance): array
     {
@@ -279,7 +273,7 @@ class FactsheetController extends Controller
         try {
             // Convert substance code to numeric sus_id (legacy system uses numeric part of code)
             $susId = intval($substance->code);
-            
+
             // Get freshwater PNEC record (matrix = 1, active = 1) - matches legacy SQL
             $freshwaterPnec = LowestPNECMain::where('sus_id', $susId)
                 ->where('lowest_matrix', 1)
@@ -287,14 +281,14 @@ class FactsheetController extends Controller
                 ->first();
 
             if ($freshwaterPnec) {
-                // Parse test endpoint for species and endpoint 
+                // Parse test endpoint for species and endpoint
                 // Format can be: species\nendpoint|other OR <i>species</i><br>|endpoint|other
                 $species = 'n.r.';
                 $endpoint = '';
-                
+
                 if ($freshwaterPnec->lowest_test_endpoint) {
                     $testEndpoint = $freshwaterPnec->lowest_test_endpoint;
-                    
+
                     // Handle HTML format: <i>species</i><br>|endpoint|other
                     if (strpos($testEndpoint, '<br>') !== false) {
                         $array1 = explode('<br>', $testEndpoint);
@@ -330,7 +324,7 @@ class FactsheetController extends Controller
                 $data['af'] = $freshwaterPnec->lowest_AF ?: '0';
                 $data['endpoint'] = $endpoint ?: '';
                 $data['reference'] = $freshwaterPnec->lowest_base_id ?: '';
-                
+
                 // Other matrix types
                 $data['lowest_pnec_marine_water'] = $lowestPnecValues[2] ? number_format($lowestPnecValues[2], 3) : 'n.r.';
                 $data['lowest_pnec_sediment'] = $lowestPnecValues[3] ? number_format($lowestPnecValues[3], 1) : 'n.r.';
@@ -340,7 +334,7 @@ class FactsheetController extends Controller
                 $data['message'] = 'No ecotoxicity data available for this substance';
             }
         } catch (\Exception $e) {
-            Log::error('Error retrieving ecotoxicity data: ' . $e->getMessage());
+            Log::error('Error retrieving ecotoxicity data: '.$e->getMessage());
             $data['error'] = 'Error loading ecotoxicity data';
         }
 
@@ -350,26 +344,26 @@ class FactsheetController extends Controller
     /**
      * Get lowest PNEC values by matrix type (equivalent to legacy getLowestPNEC function)
      * This uses the aggregated LowestPNEC table, not the individual LowestPNECMain records
-     * 
-     * @param int $susId
+     *
+     * @param  int  $susId
      * @return array Matrix type => PNEC value
      */
     private function getLowestPNECByMatrix($susId): array
     {
         $pnecValues = [
             1 => null, // freshwater
-            2 => null, // marine water  
+            2 => null, // marine water
             3 => null, // sediments
             4 => null, // biota
         ];
 
         // Get aggregated PNEC values from LowestPNEC table (matches legacy getLowestPNEC function)
         $pnecRecord = LowestPNEC::where('sus_id', $susId)->first();
-        
+
         if ($pnecRecord) {
             $pnecValues[1] = $pnecRecord->lowest_pnec_value_1; // freshwater
             $pnecValues[2] = $pnecRecord->lowest_pnec_value_2; // marine water
-            $pnecValues[3] = $pnecRecord->lowest_pnec_value_3; // sediments  
+            $pnecValues[3] = $pnecRecord->lowest_pnec_value_3; // sediments
             $pnecValues[4] = $pnecRecord->lowest_pnec_value_4; // biota
         }
 
@@ -594,32 +588,31 @@ class FactsheetController extends Controller
     /**
      * Get environmental occurrence data detailed for the given substance
      * This method is called from factsheet entities with method_of_presentation = controller_method
-     * 
-     * @param Substance $substance
-     * @return array
+     *
+     * @param  Substance  $substance
      */
     private function getEnvironmentalOccurrenceDataDetailed($substance): array
     {
         try {
             // Check if statistics exist for this substance
             $statisticsRecord = FactsheetStatistic::where('substance_id', $substance->id)->first();
-            
-            if (!$statisticsRecord || !$statisticsRecord->meta_data) {
+
+            if (! $statisticsRecord || ! $statisticsRecord->meta_data) {
                 // No statistics available - return banner message
                 return [
                     'type' => 'banner',
                     'color' => 'light-green',
-                    'text' => "No records for {$substance->name} found in Chemical Occurrence Database"
+                    'text' => "No records for {$substance->name} found in Chemical Occurrence Database",
                 ];
             }
 
             $statisticsData = $statisticsRecord->meta_data;
-            
+
             // Check if country_year data exists
             if (isset($statisticsData['country_year']) && isset($statisticsData['country_year']['data'])) {
                 $countryYearData = $statisticsData['country_year']['data'];
                 $yearRange = $statisticsData['country_year']['year_range'] ?? [];
-                
+
                 // Get all unique years from the data and sort them
                 $allYears = [];
                 foreach ($countryYearData as $country => $yearData) {
@@ -627,31 +620,31 @@ class FactsheetController extends Controller
                 }
                 $allYears = array_unique($allYears);
                 sort($allYears);
-                
+
                 // Calculate country totals and sort by total records (descending)
                 $countryTotals = [];
                 foreach ($countryYearData as $country => $yearData) {
                     $countryTotals[$country] = array_sum($yearData);
                 }
                 arsort($countryTotals);
-                
+
                 // Prepare table data
                 $tableData = [];
                 foreach ($countryTotals as $country => $totalRecords) {
                     $row = [
                         'country' => $country,
                         'total_records' => $totalRecords,
-                        'years' => []
+                        'years' => [],
                     ];
-                    
+
                     // Add data for each year
                     foreach ($allYears as $year) {
                         $row['years'][$year] = $countryYearData[$country][$year] ?? 0;
                     }
-                    
+
                     $tableData[] = $row;
                 }
-                
+
                 return [
                     'type' => 'table',
                     'table_data' => $tableData,
@@ -659,23 +652,24 @@ class FactsheetController extends Controller
                     'summary' => [
                         'total_countries' => count($countryYearData),
                         'total_records' => $statisticsData['total_records'] ?? 0,
-                        'year_range' => ($yearRange['min_year'] ?? 'N/A') . ' - ' . ($yearRange['max_year'] ?? 'N/A'),
-                        'generated_at' => isset($statisticsData['generated_at']) ? 
-                            \Carbon\Carbon::parse($statisticsData['generated_at'])->format('M d, Y H:i') : 'N/A'
-                    ]
+                        'year_range' => ($yearRange['min_year'] ?? 'N/A').' - '.($yearRange['max_year'] ?? 'N/A'),
+                        'generated_at' => isset($statisticsData['generated_at']) ?
+                            \Carbon\Carbon::parse($statisticsData['generated_at'])->format('M d, Y H:i') : 'N/A',
+                    ],
                 ];
             } else {
                 return [
                     'type' => 'banner',
-                    'color' => 'light-green', 
-                    'text' => "No country-year data available for {$substance->name} in Chemical Occurrence Database"
+                    'color' => 'light-green',
+                    'text' => "No country-year data available for {$substance->name} in Chemical Occurrence Database",
                 ];
             }
-            
+
         } catch (\Exception $e) {
-            Log::error('Error retrieving environmental occurrence data: ' . $e->getMessage());
+            Log::error('Error retrieving environmental occurrence data: '.$e->getMessage());
+
             return [
-                'error' => 'Error loading environmental occurrence data'
+                'error' => 'Error loading environmental occurrence data',
             ];
         }
     }
@@ -683,62 +677,61 @@ class FactsheetController extends Controller
     /**
      * Get environmental occurrence matrix data for the given substance
      * This method is called from factsheet entities with method_of_presentation = controller_method
-     * 
-     * @param Substance $substance
-     * @return array
+     *
+     * @param  Substance  $substance
      */
     private function getEnvironmentalOccurrenceMatrixData($substance): array
     {
         try {
             // Check if statistics exist for this substance
             $statisticsRecord = FactsheetStatistic::where('substance_id', $substance->id)->first();
-            
-            if (!$statisticsRecord || !$statisticsRecord->meta_data) {
+
+            if (! $statisticsRecord || ! $statisticsRecord->meta_data) {
                 // No statistics available - return banner message
                 return [
                     'type' => 'banner',
                     'color' => 'light-green',
-                    'text' => "No matrix data for {$substance->name} found in Chemical Occurrence Database"
+                    'text' => "No matrix data for {$substance->name} found in Chemical Occurrence Database",
                 ];
             }
 
             $statisticsData = $statisticsRecord->meta_data;
-            
+
             // Check if matrix data exists
             if (isset($statisticsData['matrix']) && isset($statisticsData['matrix']['data'])) {
                 $matrixData = $statisticsData['matrix']['data'];
-                
+
                 // Sort by record count (descending) to show most common matrices first
                 usort($matrixData, function ($a, $b) {
                     return $b['record_count'] - $a['record_count'];
                 });
-                
+
                 return [
                     'type' => 'matrix_table',
                     'matrix_data' => $matrixData,
                     'summary' => [
                         'total_matrices' => count($matrixData),
                         'total_records' => $statisticsData['total_records'] ?? 0,
-                        'generated_at' => isset($statisticsData['generated_at']) ? 
-                            \Carbon\Carbon::parse($statisticsData['generated_at'])->format('M d, Y H:i') : 'N/A'
-                    ]
+                        'generated_at' => isset($statisticsData['generated_at']) ?
+                            \Carbon\Carbon::parse($statisticsData['generated_at'])->format('M d, Y H:i') : 'N/A',
+                    ],
                 ];
             } else {
                 return [
                     'type' => 'banner',
-                    'color' => 'light-green', 
-                    'text' => "No matrix data available for {$substance->name} in Chemical Occurrence Database"
+                    'color' => 'light-green',
+                    'text' => "No matrix data available for {$substance->name} in Chemical Occurrence Database",
                 ];
             }
-            
+
         } catch (\Exception $e) {
-            Log::error('Error retrieving environmental occurrence matrix data: ' . $e->getMessage());
+            Log::error('Error retrieving environmental occurrence matrix data: '.$e->getMessage());
+
             return [
-                'error' => 'Error loading environmental occurrence matrix data'
+                'error' => 'Error loading environmental occurrence matrix data',
             ];
         }
     }
-
 }
 
 

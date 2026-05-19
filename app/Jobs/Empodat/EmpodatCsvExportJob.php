@@ -435,41 +435,51 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
     }
 
     /**
-     * Build the SQL query for PostgreSQL COPY export
-     * Combines the filter conditions with full data JOINs
+     * Build the SQL query for PostgreSQL COPY export.
+     *
+     * Wraps the already-filtered SELECT stored on the QueryLog as a subquery
+     * and joins the lookup tables on top. This preserves every JOIN and
+     * predicate from the original query (including those injected by scopes
+     * such as byUserPermissions, byCategories, byCountries, ...) without the
+     * export job needing to know about them — fixes the "missing FROM-clause
+     * entry for table" failures and keeps the COPY path correct as new
+     * scopes are added.
+     *
+     * The stored SQL is logged before pagination, so it has no LIMIT and no
+     * ORDER BY — safe to use as a subquery. The outer ORDER BY filtered.id
+     * is required for stable streaming through the server-side cursor.
      */
     protected function buildCopyQuery(QueryLog $queryLog, string $exportDate): string
     {
-        // Get the stored raw query to extract WHERE conditions
-        $storedQuery = $queryLog->query;
+        $storedSql = $queryLog->query;
 
-        // Extract WHERE clause from stored query
-        $whereClause = '';
-        if (preg_match('/WHERE\s+(.+?)(?:ORDER BY|GROUP BY|LIMIT|$)/is', $storedQuery, $matches)) {
-            $whereClause = 'WHERE '.trim($matches[1]);
+        if (empty($storedSql)) {
+            throw new \RuntimeException(
+                "Cannot build COPY query: query log {$queryLog->id} has no stored SQL"
+            );
         }
 
-        // Build the full SELECT with all JOINs for CSV export
-        // Using exact column order matching getHeaders()
+        $exportDateLiteral = str_replace("'", "''", $exportDate);
+
         $selectColumns = "
-            empodat_main.id,
-            empodat_main.station_id,
+            filtered.id,
+            filtered.station_id,
             empodat_stations.name as station_name,
-            empodat_main.country_id,
+            filtered.country_id,
             list_countries.name as country_name,
             list_countries.code as country_code,
-            empodat_main.file_id,
-            empodat_main.matrix_id,
+            filtered.file_id,
+            filtered.matrix_id,
             list_matrices.name as matrix_name,
             list_matrices.unit as concentration_unit,
-            empodat_main.substance_id,
+            filtered.substance_id,
             susdat_substances.name as substance_name,
             susdat_substances.cas_number,
-            empodat_main.sampling_date_year,
-            empodat_main.concentration_indicator_id,
-            empodat_main.concentration_value,
-            empodat_main.method_id,
-            empodat_main.data_source_id,
+            filtered.sampling_date_year,
+            filtered.concentration_indicator_id,
+            filtered.concentration_value,
+            filtered.method_id,
+            filtered.data_source_id,
             empodat_stations.latitude,
             empodat_stations.longitude,
             empodat_minor.dpc_id,
@@ -512,22 +522,19 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             empodat_minor.dplu_id,
             empodat_minor.noexport,
             empodat_minor.list_id,
-            '{$exportDate}'::text as export_date
+            '{$exportDateLiteral}'::text as export_date
         ";
 
-        $joins = '
-            FROM empodat_main
-            LEFT JOIN empodat_minor ON empodat_main.id = empodat_minor.id
-            LEFT JOIN empodat_stations ON empodat_main.station_id = empodat_stations.id
-            LEFT JOIN list_countries ON empodat_main.country_id = list_countries.id
-            LEFT JOIN list_matrices ON empodat_main.matrix_id = list_matrices.id
-            LEFT JOIN susdat_substances ON empodat_main.substance_id = susdat_substances.id
-        ';
+        $joins = "
+            FROM ({$storedSql}) AS filtered
+            LEFT JOIN empodat_minor    ON filtered.id           = empodat_minor.id
+            LEFT JOIN empodat_stations ON filtered.station_id   = empodat_stations.id
+            LEFT JOIN list_countries   ON filtered.country_id   = list_countries.id
+            LEFT JOIN list_matrices    ON filtered.matrix_id    = list_matrices.id
+            LEFT JOIN susdat_substances ON filtered.substance_id = susdat_substances.id
+        ";
 
-        // Build the complete query
-        $query = "SELECT {$selectColumns} {$joins} {$whereClause} ORDER BY empodat_main.id";
-
-        return $query;
+        return "SELECT {$selectColumns} {$joins} ORDER BY filtered.id";
     }
 
     /**
@@ -629,14 +636,18 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
     }
 
     /**
-     * Check if this export should use PostgreSQL COPY
+     * Check if this export should use PostgreSQL COPY.
+     *
+     * The COPY path wraps QueryLog::query as a subquery, so it requires that
+     * stored SQL to exist. If it doesn't, fall back to the parent per-ID path
+     * (extractIds → getRecordsBatch), which can rebuild the filter from the
+     * logged request payload.
      */
     public function shouldUseCopyExport(QueryLog $queryLog): bool
     {
-        // Use COPY for large datasets
         $rowCount = $queryLog->actual_count ?? 0;
 
-        return $rowCount >= $this->copyThreshold;
+        return $rowCount >= $this->copyThreshold && ! empty($queryLog->query);
     }
 
     /**

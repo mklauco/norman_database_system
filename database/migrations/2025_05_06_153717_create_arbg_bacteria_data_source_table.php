@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('arbg_bacteria_data_source', function (Blueprint $table) {
             $table->id();
-            
+
             $table->tinyInteger('type_of_data_source_id')->default(0)->comment('Type of data source');
             $table->unsignedTinyInteger('type_of_monitoring_id')->default(0)->comment('Type of monitoring');
             $table->string('type_of_monitoring_other')->nullable()->comment('Type of monitoring - other');
@@ -25,9 +25,9 @@ return new class extends Migration
             $table->text('references_literature_1')->nullable()->comment('References / literature 1');
             $table->text('references_literature_2')->nullable()->comment('References / literature 2');
             $table->string('author')->nullable()->comment('Author');
-            
+
             $table->timestamps();
-            
+
             // Indexes
             $table->index('type_of_data_source_id');
             $table->index('type_of_monitoring_id');

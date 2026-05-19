@@ -2,12 +2,12 @@
 
 namespace App\Models\Backend;
 
+use App\Models\DatabaseEntity;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\DatabaseEntity;
-use App\Models\User;
 
 class Template extends Model
 {
@@ -89,18 +89,18 @@ class Template extends Model
      */
     public function getFormattedFilesizeAttribute(): string
     {
-        if (!$this->filesize) {
+        if (! $this->filesize) {
             return 'N/A';
         }
 
         $bytes = $this->filesize;
-        
+
         if ($bytes >= 1048576) { // 1MB = 1024 * 1024
-            return number_format($bytes / 1048576, 2) . ' MB';
+            return number_format($bytes / 1048576, 2).' MB';
         } elseif ($bytes >= 1024) { // 1KB = 1024
-            return number_format($bytes / 1024, 2) . ' kB';
+            return number_format($bytes / 1024, 2).' kB';
         } else {
-            return $bytes . ' B';
+            return $bytes.' B';
         }
     }
 }

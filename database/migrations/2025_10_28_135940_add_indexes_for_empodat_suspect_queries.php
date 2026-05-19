@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -30,7 +30,7 @@ return new class extends Migration
         // Index 1: empodat_stations.country_id
         // Purpose: Speed up country-based filtering (one of the most common filter criteria)
         // Note: Foreign keys in PostgreSQL don't automatically create indexes on the referencing column
-        if (!$this->indexExists('empodat_stations', 'empodat_stations_country_id_index')) {
+        if (! $this->indexExists('empodat_stations', 'empodat_stations_country_id_index')) {
             Schema::table('empodat_stations', function (Blueprint $table) {
                 $table->index('country_id', 'empodat_stations_country_id_index');
             });
@@ -42,7 +42,7 @@ return new class extends Migration
         // - Station filtering happens first (narrowing ~1k stations)
         // - Then substance filtering within those stations
         // - PostgreSQL can use this for index-only scans in many cases
-        if (!$this->indexExists('empodat_suspect_main', 'empodat_suspect_main_station_substance_index')) {
+        if (! $this->indexExists('empodat_suspect_main', 'empodat_suspect_main_station_substance_index')) {
             Schema::table('empodat_suspect_main', function (Blueprint $table) {
                 $table->index(['station_id', 'substance_id'], 'empodat_suspect_main_station_substance_index');
             });
@@ -69,8 +69,8 @@ return new class extends Migration
     /**
      * Check if an index exists on a table
      *
-     * @param string $table The table name
-     * @param string $index The index name
+     * @param  string  $table  The table name
+     * @param  string  $index  The index name
      * @return bool True if index exists, false otherwise
      */
     private function indexExists(string $table, string $index): bool
@@ -79,13 +79,13 @@ return new class extends Migration
         $schemaName = $connection->getConfig('schema') ?: 'public';
 
         $result = DB::select(
-            "SELECT EXISTS (
+            'SELECT EXISTS (
                 SELECT 1
                 FROM pg_indexes
                 WHERE schemaname = ?
                 AND tablename = ?
                 AND indexname = ?
-            ) as exists",
+            ) as exists',
             [$schemaName, $table, $index]
         );
 

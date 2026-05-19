@@ -11,11 +11,9 @@ use Spatie\SimpleExcel\SimpleExcelReader;
 class PassiveMainSeeder extends Seeder
 {
     protected $table_prefix = 'passive_';
-    
+
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -23,16 +21,16 @@ class PassiveMainSeeder extends Seeder
         $target_table_name = $this->table_prefix.'sampling_main';
         $now = Carbon::now();
         $startTime = microtime(true);
-        $path = base_path() . '/database/seeders/seeds/'.$this->table_prefix.'tables/dct_analysis.csv';
-        
+        $path = base_path().'/database/seeders/seeds/'.$this->table_prefix.'tables/dct_analysis.csv';
+
         // Temporarily disable foreign key checks
         Schema::disableForeignKeyConstraints();
-        
+
         // Use lower memory usage options for SimpleExcelReader
         $reader = SimpleExcelReader::create($path)
             ->useDelimiter(',')
             ->headersToSnakeCase(false);
-        
+
         // Use lazy collection to process the CSV file in chunks without loading it all
         $chunkSize = 100; // Process in small chunks to conserve memory
         $reader->getRows()
@@ -42,39 +40,43 @@ class PassiveMainSeeder extends Seeder
                 $records = [];
                 foreach ($rows as $r) {
                     // Helper function to safely convert empty strings to null for integer fields
-                    $safeInt = function($value, $default = null) {
+                    $safeInt = function ($value, $default = null) {
                         if ($value === '' || $value === null) {
                             return $default;
                         }
+
                         return (int) $value;
                     };
-                    
+
                     // Helper function for foreign keys - converts 0 to null to avoid FK constraint issues
-                    $safeForeignKey = function($value) {
+                    $safeForeignKey = function ($value) {
                         if ($value === '' || $value === null || $value === '0' || $value === 0) {
                             return null;
                         }
+
                         return (int) $value;
                     };
-                    
+
                     // Helper function to safely convert empty strings to null for float fields
-                    $safeFloat = function($value, $default = null) {
+                    $safeFloat = function ($value, $default = null) {
                         if ($value === '' || $value === null) {
                             return $default;
                         }
+
                         return (float) $value;
                     };
-                    
+
                     // Helper function to safely convert empty strings to default string
-                    $safeString = function($value, $default = '') {
+                    $safeString = function ($value, $default = '') {
                         if ($value === null) {
                             return $default;
                         }
+
                         return (string) $value;
                     };
 
                     // Helper function to safely convert date values
-                    $safeDate = function($value, $default = null) {
+                    $safeDate = function ($value, $default = null) {
                         if (empty($value) || $value === '0000-00-00') {
                             return $default;
                         }
@@ -84,7 +86,7 @@ class PassiveMainSeeder extends Seeder
                             return $default;
                         }
                     };
-                    
+
                     $records[] = [
                         'sus_id' => $safeInt($r['sus_id'], 0),
                         'country_id' => $safeString($r['country_id']),
@@ -174,28 +176,28 @@ class PassiveMainSeeder extends Seeder
                         'updated_at' => $now,
                     ];
                 }
-                
+
                 // Use insert instead of creating a separate array and then chunking it
-                if (!empty($records)) {
+                if (! empty($records)) {
                     try {
                         DB::table($target_table_name)->insert($records);
-                        
+
                         $chunkEndTime = microtime(true);
                         $chunkElapsedTime = round($chunkEndTime - $chunkStartTime, 2);
                         $totalElapsedTime = round($chunkEndTime - $startTime, 2);
-                        
-                        $this->command->info("Processed chunk " . ($key + 1) . " with " . count($records) . " records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
+
+                        $this->command->info('Processed chunk '.($key + 1).' with '.count($records)." records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
                     } catch (\Exception $e) {
-                        $this->command->error("Error in chunk " . ($key + 1) . ": " . $e->getMessage());
+                        $this->command->error('Error in chunk '.($key + 1).': '.$e->getMessage());
                         // Optionally log the problematic records for debugging
                         // You may want to add more detailed error handling here
                     }
                 }
             });
-        
+
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
-        
+
         $this->command->info('Passive sampling main data seeding completed!');
     }
 }

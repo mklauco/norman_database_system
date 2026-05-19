@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Passive;
 
-use Illuminate\Http\Request;
-use App\Models\DatabaseEntity;
 use App\Http\Controllers\Controller;
+use App\Models\DatabaseEntity;
 use App\Models\Passive\PassiveSamplingMain;
+use Illuminate\Http\Request;
 
 class PassiveHomeController extends Controller
 {
@@ -70,9 +70,10 @@ class PassiveHomeController extends Controller
     {
         DatabaseEntity::where('code', 'passive')->update([
             'last_update' => PassiveSamplingMain::max('updated_at'),
-            'number_of_records' => PassiveSamplingMain::count()
+            'number_of_records' => PassiveSamplingMain::count(),
         ]);
         session()->flash('success', 'Database counts updated successfully');
+
         return redirect()->back();
     }
 }

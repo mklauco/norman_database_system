@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers\Dashboard;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\DatabaseEntity;
-use App\Models\Backend\Template;
 use App\Models\Backend\File;
 use App\Models\Backend\Project;
 use App\Models\Backend\ServerPayment;
+use App\Models\Backend\Template;
+use App\Models\DatabaseEntity;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DashboardMainController extends Controller
 {
@@ -32,13 +31,13 @@ class DashboardMainController extends Controller
         $entitiesWithTemplateCounts = DatabaseEntity::where('has_templates', true)
             ->where('show_in_dashboard', true)
             ->withCount([
-                'templates as active_templates_count' => function($query) {
+                'templates as active_templates_count' => function ($query) {
                     $query->where('is_active', true);
                 },
-                'templates as inactive_templates_count' => function($query) {
+                'templates as inactive_templates_count' => function ($query) {
                     $query->where('is_active', false);
                 },
-                'templates as total_templates_count'
+                'templates as total_templates_count',
             ])
             ->orderBy('name')
             ->get();
@@ -205,16 +204,16 @@ class DashboardMainController extends Controller
         $serverPayment = null;
         $daysRemaining = null;
         $progressPercentage = 0;
-        
+
         if ($user->hasAnyRole(['super_admin', 'server_payment_admin', 'server_payment_viewer'])) {
             $serverPayment = ServerPayment::where('status', 'paid')
                 ->orderBy('period_end_date', 'desc')
                 ->first();
-                
+
             if ($serverPayment) {
                 $today = Carbon::today();
                 $endDate = Carbon::parse($serverPayment->period_end_date);
-                
+
                 if ($endDate->isFuture()) {
                     $daysRemaining = $today->diffInDays($endDate, false);
                     $totalDays = Carbon::parse($serverPayment->period_start_date)->diffInDays($endDate);

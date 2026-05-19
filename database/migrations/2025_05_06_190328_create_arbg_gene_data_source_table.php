@@ -24,9 +24,9 @@ return new class extends Migration
             $table->longtext('references_literature_1')->nullable()->comment('References / literature 1');
             $table->longtext('references_literature_2')->nullable()->comment('References / literature 2');
             $table->longtext('author')->nullable()->comment('Author');
-            
+
             $table->timestamps();
-            
+
             // Indexes
             $table->index('type_of_data_source_id');
             $table->index('type_of_monitoring_id');

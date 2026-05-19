@@ -18,12 +18,19 @@ class LiteratureSeeder_TerraChem extends Seeder
 
     // Lookup caches (lowercase key => id)
     protected array $speciesCache = [];
+
     protected array $tissuesCache = [];
+
     protected array $sexCache = [];
+
     protected array $lifeStagesCache = [];
+
     protected array $concentrationUnitsCache = [];
+
     protected array $commonNamesCache = [];
+
     protected array $matricesCache = [];
+
     protected array $substanceCache = []; // norman_code (without NS) => substance_id
 
     // Chemical columns mapping: column_index => norman_id (e.g., 58 => 'NS00009638')
@@ -31,18 +38,25 @@ class LiteratureSeeder_TerraChem extends Seeder
 
     // Test mode - set to null for full processing
     protected ?int $limitRows = null;
+
     protected int $fileId = 9001;
 
     // Excel structure constants
     protected int $headerRow = 5;
+
     protected int $chemicalNormanIdRow = 6;
+
     protected int $dataStartRow = 7;
+
     protected int $lastMetadataColumn = 36; // Column AJ
+
     protected int $firstChemicalColumn = 58; // Column BF
+
     protected int $lastChemicalColumn = 289; // Column KC
 
     // Skipped rows log
     protected array $skippedRows = [];
+
     protected string $skippedRowsLogPath;
 
     /**
@@ -103,7 +117,7 @@ class LiteratureSeeder_TerraChem extends Seeder
         $this->command->info("Sheet has {$highestRow} rows");
         $this->command->info("Metadata columns: A-AJ (1-{$this->lastMetadataColumn})");
         $this->command->info("Chemical columns: BF-KC ({$this->firstChemicalColumn}-{$this->lastChemicalColumn})");
-        $this->command->info("Chemical columns with valid Norman IDs: ".count($this->chemicalColumnsMap));
+        $this->command->info('Chemical columns with valid Norman IDs: '.count($this->chemicalColumnsMap));
 
         $batch = [];
         $batchSize = 500;

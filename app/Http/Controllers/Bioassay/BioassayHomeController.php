@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Bioassay;
 
-use Illuminate\Http\Request;
-use App\Models\DatabaseEntity;
-use App\Models\Bioassay\FieldStudy;
 use App\Http\Controllers\Controller;
+use App\Models\Bioassay\FieldStudy;
+use App\Models\DatabaseEntity;
+use Illuminate\Http\Request;
 
 class BioassayHomeController extends Controller
 {
@@ -71,9 +71,10 @@ class BioassayHomeController extends Controller
     {
         DatabaseEntity::where('code', 'bioassay')->update([
             'last_update' => FieldStudy::max('updated_at'),
-            'number_of_records' => FieldStudy::count()
+            'number_of_records' => FieldStudy::count(),
         ]);
         session()->flash('success', 'Database counts updated successfully');
+
         return redirect()->back();
     }
 }

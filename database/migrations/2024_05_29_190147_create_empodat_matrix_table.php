@@ -18,26 +18,26 @@ return new class extends Migration
             'Sewage sludge',
             'Soil',
             'Suspended matter',
-            'Water'
+            'Water',
         ];
 
         // Create a table for each matrix
         foreach ($matrices as $matrix) {
-            $tableName = 'empodat_matrix_' . strtolower(str_replace(' ', '_', $matrix));
-            
+            $tableName = 'empodat_matrix_'.strtolower(str_replace(' ', '_', $matrix));
+
             Schema::create($tableName, function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('dct_analysis_id');
                 $table->string('code');
                 $table->json('meta_data');
                 $table->timestamps();
-                
+
                 $table->index('dct_analysis_id');
                 $table->index('code');
             });
         }
     }
-    
+
     /**
      * Reverse the migrations.
      */
@@ -50,12 +50,12 @@ return new class extends Migration
             'Sewage sludge',
             'Soil',
             'Suspended matter',
-            'Water'
+            'Water',
         ];
 
         // Drop each matrix table
         foreach ($matrices as $matrix) {
-            $tableName = 'empodat_matrix_' . strtolower(str_replace(' ', '_', $matrix));
+            $tableName = 'empodat_matrix_'.strtolower(str_replace(' ', '_', $matrix));
             Schema::dropIfExists($tableName);
         }
     }

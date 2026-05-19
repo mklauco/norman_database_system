@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Backend\ServerPayment;
-use Illuminate\Validation\Rule;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ServerPaymentController extends Controller
 {
     public function index()
     {
         $payments = ServerPayment::orderByDesc('period_end_date')->get();
+
         return view('backend.server-payments.index', compact('payments'));
     }
 
@@ -23,6 +24,7 @@ class ServerPaymentController extends Controller
         $defaultEndDate = $defaultStartDate
             ? Carbon::parse($defaultStartDate)->addMonth()->subDay()->format('Y-m-d')
             : null;
+
         return view('backend.server-payments.create', compact('defaultStartDate', 'defaultEndDate'));
     }
 
@@ -64,6 +66,7 @@ class ServerPaymentController extends Controller
     public function destroy(ServerPayment $serverPayment)
     {
         $serverPayment->delete();
+
         return redirect()->route('backend.server-payments.index')->with('status', 'Payment deleted');
     }
 }

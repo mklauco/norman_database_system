@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Prioritisation;
 
+use App\Http\Controllers\Controller;
+use App\Models\Backend\ExportDownload;
+use App\Models\Prioritisation\ModellingScarce;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Models\Prioritisation\ModellingScarce;
-use App\Models\Backend\ExportDownload;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ModellingScarceController extends Controller
 {
@@ -84,13 +84,14 @@ class ModellingScarceController extends Controller
      */
     public function downloadCsv()
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             session()->flash('error', 'You must be logged in to download the CSV file.');
+
             return back();
         }
 
         try {
-            $filename = 'prioritisation_modelling_scarce_uid_' . Auth::id() . '_' . now()->format('YmdHis') . '.csv';
+            $filename = 'prioritisation_modelling_scarce_uid_'.Auth::id().'_'.now()->format('YmdHis').'.csv';
             $directory = 'exports/prioritisation';
 
             $exportDownload = ExportDownload::create([
@@ -110,7 +111,7 @@ class ModellingScarceController extends Controller
             $path = Storage::path("{$directory}/{$filename}");
             $handle = fopen($path, 'w');
 
-            if (!$handle) {
+            if (! $handle) {
                 throw new \Exception("Unable to open file for writing: {$path}");
             }
 
@@ -180,7 +181,7 @@ class ModellingScarceController extends Controller
             return response()->download($path, $filename, ['Content-Type' => 'text/csv']);
 
         } catch (\Exception $e) {
-            Log::error("Prioritisation Modelling Scarce export failed: " . $e->getMessage());
+            Log::error('Prioritisation Modelling Scarce export failed: '.$e->getMessage());
 
             if (isset($exportDownload)) {
                 $exportDownload->update([
@@ -190,7 +191,8 @@ class ModellingScarceController extends Controller
                 ]);
             }
 
-            session()->flash('error', 'Export failed: ' . $e->getMessage());
+            session()->flash('error', 'Export failed: '.$e->getMessage());
+
             return back();
         }
     }
@@ -203,6 +205,6 @@ class ModellingScarceController extends Controller
         $pow = min($pow, count($units) - 1);
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders\Susdat;
 
-use App\Models\Susdat\Usepa;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -17,27 +16,28 @@ class UsepaSeeder extends Seeder
     public function run(): void
     {
         $csvFile = database_path('seeders/seeds/susdat/susdat_usepa.csv');
-        
-        if (!file_exists($csvFile)) {
+
+        if (! file_exists($csvFile)) {
             $this->command->error("CSV file not found: {$csvFile}");
+
             return;
         }
 
         $this->command->info('Seeding susdat_usepa table...');
-        
+
         // Clear existing data before seeding
         DB::table('susdat_usepa')->delete();
-        
+
         $handle = fopen($csvFile, 'r');
         $header = fgetcsv($handle); // Skip header row
-        
+
         $batch = [];
         $batchSize = 1000;
         $rowCount = 0;
-        
+
         while (($row = fgetcsv($handle)) !== false) {
             $data = array_combine($header, $row);
-            
+
             // Convert empty strings to null and handle numeric fields
             $processedData = [
                 'sus_id' => (int) $data['sus_id'],
@@ -59,24 +59,24 @@ class UsepaSeeder extends Seeder
                 'usepa_BCF_experimental' => $data['usepa_BCF_experimental'] !== '' ? (float) $data['usepa_BCF_experimental'] : null,
                 'usepa_BCF_predicted' => $data['usepa_BCF_predicted'] !== '' ? (float) $data['usepa_BCF_predicted'] : null,
             ];
-            
+
             $batch[] = $processedData;
             $rowCount++;
-            
+
             if (count($batch) >= $batchSize) {
                 DB::table('susdat_usepa')->insert($batch);
                 $this->command->info("Processed {$rowCount} rows...");
                 $batch = [];
             }
         }
-        
+
         // Insert remaining records
-        if (!empty($batch)) {
+        if (! empty($batch)) {
             DB::table('susdat_usepa')->insert($batch);
         }
-        
+
         fclose($handle);
-        
+
         $this->command->info("Successfully seeded {$rowCount} records into susdat_usepa table.");
     }
 }

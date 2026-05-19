@@ -17,9 +17,9 @@ return new class extends Migration
 
             // Add foreign key constraint
             $table->foreign('file_id')
-                  ->references('id')
-                  ->on('files')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('files')
+                ->onDelete('set null');
 
             // Add index for faster queries
             $table->index('file_id');

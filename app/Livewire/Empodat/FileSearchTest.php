@@ -2,20 +2,24 @@
 
 namespace App\Livewire\Empodat;
 
-use Livewire\Component;
 use App\Models\Backend\File;
+use Livewire\Component;
 
 class FileSearchTest extends Component
 {
     public $search = '';
+
     public $selectedFileIds = [];       // Track selected file IDs
+
     public $selectedFiles = [];         // Store selected file data
+
     public $existingFiles = [];         // For initialization
+
     public $currentResults = [];        // Store current search results
 
     public function mount($existingFiles = [])
     {
-        if (!empty($existingFiles)) {
+        if (! empty($existingFiles)) {
             $this->selectedFileIds = is_array($existingFiles) ? $existingFiles : [$existingFiles];
             $this->applyFileFilter();
         }
@@ -32,9 +36,9 @@ class FileSearchTest extends Component
         if (strlen($searchTerm) > 2) {
             $results = File::orderBy('original_name', 'asc')
                 ->where('database_entity_id', 2) // Only empodat files
-                ->where(function($query) use ($searchTerm) {
-                    $query->where('name', 'ilike', '%' . $searchTerm . '%')
-                          ->orWhere('original_name', 'ilike', '%' . $searchTerm . '%');
+                ->where(function ($query) use ($searchTerm) {
+                    $query->where('name', 'ilike', '%'.$searchTerm.'%')
+                        ->orWhere('original_name', 'ilike', '%'.$searchTerm.'%');
                 })
                 ->get();
 
@@ -107,12 +111,14 @@ class FileSearchTest extends Component
 
     private function formatFileSize($bytes)
     {
-        if ($bytes <= 0) return '0 B';
+        if ($bytes <= 0) {
+            return '0 B';
+        }
 
         $units = ['B', 'KB', 'MB', 'GB'];
         $power = floor(log($bytes, 1024));
         $power = min($power, count($units) - 1);
 
-        return number_format($bytes / pow(1024, $power), 1) . ' ' . $units[$power];
+        return number_format($bytes / pow(1024, $power), 1).' '.$units[$power];
     }
 }

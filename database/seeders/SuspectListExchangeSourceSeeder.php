@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class SuspectListExchangeSourceSeeder extends Seeder
 {
@@ -17,19 +16,19 @@ class SuspectListExchangeSourceSeeder extends Seeder
     {
         $target_table_name = 'suspect_list_exchange_sources';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/susdat_source.csv';
+        $path = base_path().'/database/seeders/seeds/susdat_source.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
-        foreach($rows as $r) {
-            $p[] = [  
-                'code'          => $r['ss_id'],
-                'name'          => $r['ss_abbreviation'],
-                'description'   => $r['ss_description'],
-                'order'         => $r['ss_order'],
-                'show'          => $r['ss_show'],
-                'added_by'      => null,
-                'created_at'    => $now,
-                'updated_at'    => $now,
+        foreach ($rows as $r) {
+            $p[] = [
+                'code' => $r['ss_id'],
+                'name' => $r['ss_abbreviation'],
+                'description' => $r['ss_description'],
+                'order' => $r['ss_order'],
+                'show' => $r['ss_show'],
+                'added_by' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
         }
 
@@ -37,13 +36,14 @@ class SuspectListExchangeSourceSeeder extends Seeder
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;
-        foreach($chunks as $c){
-            echo ($k++)."/".$count."; \n";
+        foreach ($chunks as $c) {
+            echo ($k++).'/'.$count."; \n";
             DB::table($target_table_name)->insert($c);
         }
     }
 
-    protected function isEmptyThenNull($value) {
+    protected function isEmptyThenNull($value)
+    {
         return empty($value) ? null : $value;
     }
 }

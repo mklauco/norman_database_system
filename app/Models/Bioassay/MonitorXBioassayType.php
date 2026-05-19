@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class MonitorXBioassayType extends Model
 {
     //
-    protected  $table = 'monitor_x_bioassay_type';
+    protected $table = 'monitor_x_bioassay_type';
 }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // List of life stages (e.g., adult, juvenile, hatchling, imago, larvae)
-        if (!Schema::hasTable('list_life_stages')) {
+        if (! Schema::hasTable('list_life_stages')) {
             Schema::create('list_life_stages', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -21,7 +21,7 @@ return new class extends Migration
         }
 
         // List of habitat types (EUNIS Habitat type)
-        if (!Schema::hasTable('list_habitat_types')) {
+        if (! Schema::hasTable('list_habitat_types')) {
             Schema::create('list_habitat_types', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -30,7 +30,7 @@ return new class extends Migration
         }
 
         // List of concentration units
-        if (!Schema::hasTable('list_concentration_units')) {
+        if (! Schema::hasTable('list_concentration_units')) {
             Schema::create('list_concentration_units', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -39,7 +39,7 @@ return new class extends Migration
         }
 
         // List of biota sexes (e.g., male, female, unknown)
-        if (!Schema::hasTable('list_biota_sexs')) {
+        if (! Schema::hasTable('list_biota_sexs')) {
             Schema::create('list_biota_sexs', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -48,7 +48,7 @@ return new class extends Migration
         }
 
         // List of tissues (e.g., liver, muscle, blood, brain)
-        if (!Schema::hasTable('list_tissues')) {
+        if (! Schema::hasTable('list_tissues')) {
             Schema::create('list_tissues', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -57,7 +57,7 @@ return new class extends Migration
         }
 
         // List of use categories (chemical use categories)
-        if (!Schema::hasTable('list_use_categories')) {
+        if (! Schema::hasTable('list_use_categories')) {
             Schema::create('list_use_categories', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -66,7 +66,7 @@ return new class extends Migration
         }
 
         // List of species with phylogenetic information
-        if (!Schema::hasTable('list_species')) {
+        if (! Schema::hasTable('list_species')) {
             Schema::create('list_species', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->nullable()->default(null);
@@ -81,7 +81,7 @@ return new class extends Migration
         }
 
         // List of common names for species
-        if (!Schema::hasTable('list_common_names')) {
+        if (! Schema::hasTable('list_common_names')) {
             Schema::create('list_common_names', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -90,7 +90,7 @@ return new class extends Migration
         }
 
         // List of type of numeric quantities (e.g., Arithmetic mean, Average, Mean, Median, etc.)
-        if (!Schema::hasTable('list_type_of_numeric_quantities')) {
+        if (! Schema::hasTable('list_type_of_numeric_quantities')) {
             Schema::create('list_type_of_numeric_quantities', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');

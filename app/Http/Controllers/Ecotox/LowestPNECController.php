@@ -3,41 +3,38 @@
 namespace App\Http\Controllers\Ecotox;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Backend\ExportDownload;
+use App\Models\DatabaseEntity;
 use App\Models\Ecotox\LowestPNEC;
 use App\Models\Ecotox\LowestPNECMain;
 use App\Models\Ecotox\PNEC3;
 use App\Models\Susdat\Substance;
-use App\Models\DatabaseEntity;
-use App\Models\Backend\QueryLog;
-use App\Models\Backend\ExportDownload;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class LowestPNECController extends Controller
 {
     /**
-    * Display a listing of the LowestPNEC resources.
-    */
+     * Display a listing of the LowestPNEC resources.
+     */
     public function index()
     {
         $lowestPnecs = LowestPNEC::with('substance')
-        ->orderBy('id')
-        ->paginate(50);
-        
+            ->orderBy('id')
+            ->paginate(50);
+
         return view('ecotox.lowestpnec.index', [
             'lowestPnecs' => $lowestPnecs,
             'displayOption' => 0,
         ]);
     }
-    
 
-    
     /**
-    * Search for LowestPNEC records based on exp_pred filter.
-    */
+     * Search for LowestPNEC records based on exp_pred filter.
+     */
     /**
      * AJAX endpoint for LowestPNEC data with search and filtering
      */
@@ -48,22 +45,22 @@ class LowestPNECController extends Controller
         $sortDirection = $request->get('direction', 'asc');
         $search = $request->get('search', '');
         $expPred = $request->get('exp_pred', '');
-        
+
         $query = LowestPNEC::with('substance');
-        
+
         // Apply substance name search (only within substances that exist in LowestPNEC table)
-        if (!empty(trim($search))) {
-            $query->whereHas('substance', function($subQuery) use ($search) {
-                $subQuery->where('name', 'ILIKE', '%' . trim($search) . '%');
+        if (! empty(trim($search))) {
+            $query->whereHas('substance', function ($subQuery) use ($search) {
+                $subQuery->where('name', 'ILIKE', '%'.trim($search).'%');
             });
         }
-        
+
         // Apply exp_pred filter (experimental vs predicted)
         // Database values: 1 = Experimental, 2 = Predicted
-        if (!empty($expPred)) {
+        if (! empty($expPred)) {
             $query->where('lowest_exp_pred', (int) $expPred);
         }
-        
+
         // Apply sorting
         $allowedSortColumns = ['id', 'sus_id', 'substance_id', 'lowest_exp_pred'];
         if (in_array($sortColumn, $allowedSortColumns)) {
@@ -71,9 +68,9 @@ class LowestPNECController extends Controller
         } else {
             $query->orderBy('id', 'asc');
         }
-        
+
         $results = $query->paginate($perPage);
-        
+
         return response()->json($results);
     }
 
@@ -81,16 +78,16 @@ class LowestPNECController extends Controller
     {
         $searchParameters = [];
         $resultsObjects = LowestPNEC::with('substance');
-        
+
         // Apply substance name filter
         if ($request->has('substance_name') && trim($request->substance_name) !== '') {
             $substanceName = trim($request->substance_name);
-            $resultsObjects = $resultsObjects->whereHas('substance', function($query) use ($substanceName) {
-                $query->where('name', 'ILIKE', '%' . $substanceName . '%');
+            $resultsObjects = $resultsObjects->whereHas('substance', function ($query) use ($substanceName) {
+                $query->where('name', 'ILIKE', '%'.$substanceName.'%');
             });
             $searchParameters['Substance Name'] = $substanceName;
         }
-        
+
         // Apply exp_pred filter (experimental vs predicted)
         // Database values: 1 = Experimental, 2 = Predicted
         if ($request->has('exp_pred') && $request->exp_pred !== '') {
@@ -98,12 +95,12 @@ class LowestPNECController extends Controller
             $resultsObjects = $resultsObjects->where('lowest_exp_pred', $expPredValue);
             $searchParameters['Data Type'] = $expPredValue == 1 ? 'Experimental' : 'Predicted';
         }
-        
+
         // Order and paginate results
         $resultsObjects = $resultsObjects->orderBy('id', 'asc')
             ->paginate(50)
             ->withQueryString();
-        
+
         return view('ecotox.lowestpnec.index', [
             'lowestPnecs' => $resultsObjects,
             'searchParameters' => $searchParameters,
@@ -111,62 +108,63 @@ class LowestPNECController extends Controller
             'displayOption' => 0,
         ]);
     }
-    
+
     /**
-    * Display the specified resource.
-    */
+     * Display the specified resource.
+     */
     public function show($sus_id)
     {
         // Find the LowestPNEC record by sus_id
         $lowestPnec = LowestPNEC::where('sus_id', $sus_id)->firstOrFail();
-        
+
         // Get the substance - try substance_id first, then sus_id (both correspond to substance ID)
         $substance = null;
         if ($lowestPnec->substance_id) {
             $substance = Substance::find($lowestPnec->substance_id);
         }
-        if (!$substance) {
+        if (! $substance) {
             $substance = Substance::find($sus_id);
         }
-        
+
         // Find the related LowestPNECMain record if exists
         $lowestPnecMain = LowestPNECMain::with(['substance', 'editor'])
             ->where('sus_id', $sus_id)
             ->orderby('lowest_active', 'desc')
             ->first();
-        
+
         // Look up PNEC3 record if we have the base_id
         $pnec3 = null;
         if ($lowestPnecMain && $lowestPnecMain->lowest_base_id) {
             $pnec3 = PNEC3::where('norman_pnec_id', $lowestPnecMain->lowest_base_id)->first();
         }
-        
+
         return view('ecotox.lowestpnec.show', [
             'lowestPnec' => $lowestPnec,
             'lowestPnecMain' => $lowestPnecMain,
             'pnec3' => $pnec3,
-            'substance' => $substance
+            'substance' => $substance,
         ]);
     }
-    
+
     /**
      * Start direct CSV download for LowestPNEC data (no queue needed due to manageable dataset)
      */
     public function startDownloadJob(Request $request)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             session()->flash('error', 'You must be logged in to download the CSV file.');
+
             return back();
         }
 
         try {
             // Generate filename
-            $filename = 'lowestpnec_export_uid_' . Auth::id() . '_' . now()->format('YmdHis') . '.csv';
-            
+            $filename = 'lowestpnec_export_uid_'.Auth::id().'_'.now()->format('YmdHis').'.csv';
+
             // Get request information for logging
             $ip = request()->ip();
             $userAgent = request()->userAgent();
-            
+
             // Create an export download record for tracking
             $exportDownload = ExportDownload::create([
                 'user_id' => Auth::id(),
@@ -176,23 +174,23 @@ class LowestPNECController extends Controller
                 'user_agent' => $userAgent,
                 'database_key' => 'ecotox.pnec',
                 'status' => 'processing',
-                'started_at' => Carbon::now()
+                'started_at' => Carbon::now(),
             ]);
 
             // Process the export directly (no queue needed for manageable dataset)
             $startTime = microtime(true);
             $directory = 'exports/lowestpnec';
-            
+
             // Make sure the directory exists
             Storage::makeDirectory($directory);
-            
+
             $path = Storage::path("{$directory}/{$filename}");
             $handle = fopen($path, 'w');
-            
-            if (!$handle) {
+
+            if (! $handle) {
                 throw new \Exception("Unable to open file for writing: {$path}");
             }
-            
+
             // Write CSV headers
             $headers = [
                 'ID',
@@ -207,31 +205,31 @@ class LowestPNECController extends Controller
                 'Marine biota (mollusc) PNEC [µg/kg ww]',
                 'Biota (WFD) PNEC [µg/kg ww]',
                 'Data Type',
-                'Export Date'
+                'Export Date',
             ];
             fputcsv($handle, $headers);
-            
+
             // Build the query with same filters as getData method
             $baseQuery = LowestPNEC::with('substance');
-            
+
             // Apply search filters from request
             $search = $request->get('search', '');
             $expPred = $request->get('exp_pred', '');
-            
-            if (!empty(trim($search))) {
-                $baseQuery->whereHas('substance', function($subQuery) use ($search) {
-                    $subQuery->where('name', 'ILIKE', '%' . trim($search) . '%');
+
+            if (! empty(trim($search))) {
+                $baseQuery->whereHas('substance', function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'ILIKE', '%'.trim($search).'%');
                 });
             }
-            
-            if (!empty($expPred)) {
+
+            if (! empty($expPred)) {
                 $baseQuery->where('lowest_exp_pred', (int) $expPred);
             }
-            
+
             // Process records in chunks to manage memory
             $totalExported = 0;
             $exportDate = Carbon::now()->format('Y-m-d H:i:s');
-            
+
             $baseQuery->orderBy('id', 'asc')->chunk(500, function ($records) use ($handle, $exportDate, &$totalExported) {
                 foreach ($records as $record) {
                     $row = [
@@ -247,20 +245,20 @@ class LowestPNECController extends Controller
                         $record->lowest_pnec_value_7,
                         $record->lowest_pnec_value_8,
                         $record->lowest_exp_pred == 1 ? 'Experimental' : 'Predicted',
-                        $exportDate
+                        $exportDate,
                     ];
                     fputcsv($handle, $row);
                     $totalExported++;
                 }
             });
-            
+
             fclose($handle);
-            
+
             // Get file size and processing time
             $fileSize = Storage::size("{$directory}/{$filename}");
             $formattedFileSize = $this->formatBytes($fileSize);
             $processingTime = round(microtime(true) - $startTime, 2);
-            
+
             // Update the export download record with completion metrics
             $exportDownload->update([
                 'status' => 'completed',
@@ -268,27 +266,28 @@ class LowestPNECController extends Controller
                 'file_size_bytes' => $fileSize,
                 'file_size_formatted' => $formattedFileSize,
                 'processing_time_seconds' => $processingTime,
-                'completed_at' => Carbon::now()
+                'completed_at' => Carbon::now(),
             ]);
-            
+
             Log::info("LowestPNEC export complete: {$totalExported} records exported in {$processingTime} seconds. File size: {$formattedFileSize}");
-            
+
             // Redirect directly to download since processing is complete
             return redirect()->route('ecotox.lowestpnec.csv.download', ['filename' => $filename]);
-            
+
         } catch (\Exception $e) {
-            Log::error("LowestPNEC export failed: " . $e->getMessage());
-            
+            Log::error('LowestPNEC export failed: '.$e->getMessage());
+
             // Update export download record if it exists
             if (isset($exportDownload)) {
                 $exportDownload->update([
                     'status' => 'failed',
                     'message' => $e->getMessage(),
-                    'completed_at' => Carbon::now()
+                    'completed_at' => Carbon::now(),
                 ]);
             }
-            
-            session()->flash('error', 'Export failed: ' . $e->getMessage());
+
+            session()->flash('error', 'Export failed: '.$e->getMessage());
+
             return back();
         }
     }
@@ -300,38 +299,39 @@ class LowestPNECController extends Controller
     {
         $directory = 'exports/lowestpnec';
         $path = Storage::path("{$directory}/{$filename}");
-        
+
         // Debug logging for file availability
         Log::info("Download request for: {$filename}", [
             'path' => $path,
             'exists' => file_exists($path),
-            'directory_contents' => Storage::files($directory)
+            'directory_contents' => Storage::files($directory),
         ]);
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             // Try to find similar files for debugging
             $similarFiles = collect(Storage::files($directory))
-                ->filter(function($file) use ($filename) {
+                ->filter(function ($file) use ($filename) {
                     $fileBasename = basename($file);
                     $requestBasename = basename($filename);
+
                     // Check if the filename pattern matches (same user and similar timestamp)
                     return str_contains($fileBasename, explode('_', $requestBasename)[3] ?? '') ||
                            str_contains($fileBasename, explode('_', $requestBasename)[2] ?? '');
                 })
                 ->values();
-            
+
             Log::warning("File not found: {$filename}", [
                 'path' => $path,
                 'similar_files' => $similarFiles->toArray(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
-            
+
             return response()->json([
                 'error' => 'File not found',
                 'message' => 'The requested CSV file does not exist. It may have expired or failed to generate.',
-                'similar_files' => $similarFiles->map(function($file) {
+                'similar_files' => $similarFiles->map(function ($file) {
                     return basename($file);
-                })
+                }),
             ], 404);
         }
 
@@ -346,24 +346,24 @@ class LowestPNECController extends Controller
     protected function formatBytes($bytes, $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
-        
+
         $bytes /= (1 << (10 * $pow));
-        
-        return round($bytes, $precision) . ' ' . $units[$pow];
+
+        return round($bytes, $precision).' '.$units[$pow];
     }
-    
-    public function countAll(){
+
+    public function countAll()
+    {
         DatabaseEntity::where('code', 'ecotox.pnec')->update([
             'last_update' => LowestPNEC::max('updated_at'),
-            'number_of_records' => LowestPNEC::count()
+            'number_of_records' => LowestPNEC::count(),
         ]);
         session()->flash('success', 'Database counts updated successfully');
+
         return redirect()->back();
     }
-    
-    
 }

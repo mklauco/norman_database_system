@@ -2,9 +2,9 @@
 
 namespace App\Models\Ecotox;
 
+use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Susdat\Substance;
 
 class EcotoxSubstanceDistinct extends Model
 {
@@ -67,7 +67,7 @@ class EcotoxSubstanceDistinct extends Model
             ->whereNotNull('substance_id')
             ->groupBy('substance_id')
             ->pluck('count', 'substance_id');
-        
+
         // Update each record
         foreach ($counts as $substanceId => $count) {
             static::where('substance_id', $substanceId)
@@ -89,19 +89,19 @@ class EcotoxSubstanceDistinct extends Model
                 COUNT(*) as record_count
             ')
             ->whereNotNull('substance_id')
-            ->whereNotIn('substance_id', function($query) {
+            ->whereNotIn('substance_id', function ($query) {
                 $query->select('substance_id')
                     ->from('ecotox_main_3_substance_distinct');
             })
             ->groupBy(['substance_id', 'sus_id'])
             ->get();
-        
+
         // Add any new substances
         foreach ($substanceIds as $substance) {
             static::create([
                 'substance_id' => $substance->substance_id,
                 'sus_id' => $substance->sus_id,
-                'record_count' => $substance->record_count
+                'record_count' => $substance->record_count,
             ]);
         }
 

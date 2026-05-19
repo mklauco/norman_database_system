@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Literature;
 
 use App\Http\Controllers\Controller;
-use App\Models\Literature\UseCategory;
 use App\Models\DatabaseEntity;
+use App\Models\Literature\UseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,17 +18,26 @@ class UseCategoryController extends Controller
     private function checkModuleAccess(): void
     {
         $databaseEntity = DatabaseEntity::where('code', 'literature')->first();
-        if (!$databaseEntity) abort(403, 'Module not found.');
-        if ($databaseEntity->is_public === true) return;
-        if (!Auth::check()) abort(403, 'You must be logged in to access this module.');
+        if (! $databaseEntity) {
+            abort(403, 'Module not found.');
+        }
+        if ($databaseEntity->is_public === true) {
+            return;
+        }
+        if (! Auth::check()) {
+            abort(403, 'You must be logged in to access this module.');
+        }
         $user = Auth::user();
-        if ($user->hasRole('admin') || $user->hasRole('super_admin') || $user->hasRole('literature')) return;
+        if ($user->hasRole('admin') || $user->hasRole('super_admin') || $user->hasRole('literature')) {
+            return;
+        }
         abort(403, 'You do not have permission to access this module.');
     }
 
     public function index()
     {
         $useCategories = UseCategory::orderBy('id')->paginate(25);
+
         return view('literature.use_categories.index', compact('useCategories'));
     }
 
@@ -36,13 +45,13 @@ class UseCategoryController extends Controller
     {
         $useCategories = UseCategory::orderBy('id')->get();
 
-        $filename = 'use_categories_' . date('Y-m-d_His') . '.csv';
+        $filename = 'use_categories_'.date('Y-m-d_His').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($useCategories) {
+        $callback = function () use ($useCategories) {
             $file = fopen('php://output', 'w');
 
             // Add CSV headers
@@ -64,8 +73,9 @@ class UseCategoryController extends Controller
 
     public function create()
     {
-        $useCategory = new UseCategory();
+        $useCategory = new UseCategory;
         $isCreate = true;
+
         return view('literature.use_categories.upsert', compact('useCategory', 'isCreate'));
     }
 
@@ -84,13 +94,14 @@ class UseCategoryController extends Controller
     public function edit(UseCategory $useCategory)
     {
         $isCreate = false;
+
         return view('literature.use_categories.upsert', compact('useCategory', 'isCreate'));
     }
 
     public function update(Request $request, UseCategory $useCategory)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:list_use_categories,name,' . $useCategory->id,
+            'name' => 'required|string|max:255|unique:list_use_categories,name,'.$useCategory->id,
         ]);
 
         $useCategory->update($validated);
@@ -98,5 +109,4 @@ class UseCategoryController extends Controller
         return redirect()->route('literature.use_categories.index')
             ->with('success', 'Use category updated successfully.');
     }
-
 }

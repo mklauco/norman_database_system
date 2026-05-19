@@ -72,7 +72,7 @@ return new class extends Migration
         DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_station_filters CASCADE');
 
         // Create the materialized view
-        DB::statement("
+        DB::statement('
             CREATE MATERIALIZED VIEW empodat_suspect_station_filters AS
             SELECT DISTINCT
                 -- Primary key: station_id is the core linking field
@@ -122,7 +122,7 @@ return new class extends Migration
                 em.data_source_id,
                 em.method_id,
                 em.dct_analysis_id
-        ");
+        ');
 
         // Create indexes on filter fields for fast lookups
         // These indexes make the MV queries blazing fast

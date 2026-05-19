@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Backend\ServerPayment;
+use Illuminate\Database\Seeder;
 
 class ServerPaymentsInitialSeeder extends Seeder
 {

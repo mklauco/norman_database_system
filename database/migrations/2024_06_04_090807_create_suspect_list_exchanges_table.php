@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('stdinchikey')->nullable()->default(null);
             $table->text('pubchem_cid')->nullable()->default(null);
             $table->text('chemspider_id')->nullable()->default(null);
-            $table->text('dtxid')->nullable()->default(null);        
+            $table->text('dtxid')->nullable()->default(null);
             $table->text('molecular_formula')->nullable()->default(null);
             $table->float('mass_iso')->nullable()->default(null);
             $table->float('molecular_weight')->nullable()->default(null);

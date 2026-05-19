@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
@@ -59,7 +58,7 @@ class LiteratureUsersSeeder extends Seeder
 
         if ($user) {
             // User exists - add literature role if they don't have it
-            if (!$user->hasRole('literature')) {
+            if (! $user->hasRole('literature')) {
                 $user->assignRole('literature');
                 $this->command->info("✓ Added 'literature' role to existing user: {$email}");
             } else {
@@ -145,7 +144,7 @@ class LiteratureUsersSeeder extends Seeder
             \DB::statement("SELECT setval('users_id_seq', (SELECT COALESCE(MAX(id), 1) FROM users))");
             $this->command->info('✓ PostgreSQL sequence synchronized');
         } catch (\Exception $e) {
-            $this->command->warn('Could not synchronize PostgreSQL sequence: ' . $e->getMessage());
+            $this->command->warn('Could not synchronize PostgreSQL sequence: '.$e->getMessage());
         }
     }
 }

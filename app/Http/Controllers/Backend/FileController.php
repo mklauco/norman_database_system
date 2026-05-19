@@ -10,8 +10,10 @@ use App\Models\DatabaseEntity;
 use App\Services\FileRescanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileController extends Controller
 {
@@ -435,6 +437,153 @@ class FileController extends Controller
             $file->file_path,
             $file->original_name
         );
+    }
+
+    /**
+     * Build the filtered query used for exports (mirrors index filters).
+     */
+    private function buildExportQuery(Request $request)
+    {
+        $search = $request->input('search', '');
+        $databaseEntityId = $request->input('database_entity_id', '');
+        $sort = $request->input('sort', 'id');
+        $direction = $request->input('direction', 'desc');
+
+        $query = File::with(['databaseEntity', 'uploader', 'project']);
+
+        if (! empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'ilike', "%{$search}%")
+                    ->orWhere('original_name', 'ilike', "%{$search}%")
+                    ->orWhere('description', 'ilike', "%{$search}%");
+            });
+        }
+
+        if (! empty($databaseEntityId)) {
+            $query->where('database_entity_id', $databaseEntityId);
+        }
+
+        $allowedSortColumns = ['id', 'name', 'original_name', 'file_size', 'uploaded_at', 'created_at', 'updated_at'];
+        if (in_array($sort, $allowedSortColumns)) {
+            $query->orderBy($sort, $direction);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        return $query;
+    }
+
+    /**
+     * Export the filtered files list as CSV.
+     */
+    public function exportCsv(Request $request): StreamedResponse
+    {
+        if (app()->bound('debugbar')) {
+            app('debugbar')->disable();
+        }
+        DB::disableQueryLog();
+
+        $query = $this->buildExportQuery($request);
+        $filename = 'files_'.now()->format('Ymd_His').'.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ];
+
+        return response()->stream(function () use ($query) {
+            $out = fopen('php://output', 'w');
+            // UTF-8 BOM for Excel
+            fwrite($out, "\xEF\xBB\xBF");
+
+            fputcsv($out, [
+                'ID', 'File Name', 'Project', 'Database', 'ID From', 'ID To',
+                'Records', 'Protected', 'Deleted', 'Uploaded By', 'Date',
+            ]);
+
+            $query->chunk(500, function ($files) use ($out) {
+                foreach ($files as $file) {
+                    fputcsv($out, [
+                        $file->id,
+                        $file->original_name ?? $file->name ?? '',
+                        $file->project->name ?? '',
+                        $file->databaseEntity->name ?? '',
+                        $file->main_id_from,
+                        $file->main_id_to,
+                        $file->number_of_records ?? 0,
+                        $file->is_protected ? 'Yes' : 'No',
+                        $file->is_deleted ? 'Yes' : 'No',
+                        $file->uploader ? trim($file->uploader->first_name.' '.$file->uploader->last_name) : '',
+                        $file->uploaded_at ? $file->uploaded_at->format('Y-m-d') : '',
+                    ]);
+                }
+            });
+
+            fclose($out);
+        }, 200, $headers);
+    }
+
+    /**
+     * Export the filtered files list as Markdown table (download as .md).
+     */
+    public function exportMarkdown(Request $request): StreamedResponse
+    {
+        if (app()->bound('debugbar')) {
+            app('debugbar')->disable();
+        }
+        DB::disableQueryLog();
+
+        $query = $this->buildExportQuery($request);
+        $filename = 'files_'.now()->format('Ymd_His').'.md';
+
+        $headers = [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ];
+
+        $escape = function ($value): string {
+            $value = (string) ($value ?? '');
+            $value = str_replace(['|', "\r\n", "\n", "\r"], ['\\|', ' ', ' ', ' '], $value);
+
+            return trim($value);
+        };
+
+        $formatNum = function ($value): string {
+            if ($value === null || $value === '') {
+                return '-';
+            }
+
+            return number_format((float) $value, 0, '.', ' ');
+        };
+
+        return response()->stream(function () use ($query, $escape, $formatNum) {
+            $out = fopen('php://output', 'w');
+
+            $columns = ['ID', 'File Name', 'Project', 'Database', 'ID From', 'ID To', 'Records', 'Protected', 'Deleted', 'Uploaded By', 'Date'];
+            fwrite($out, '| '.implode(' | ', $columns)." |\n");
+            fwrite($out, '|'.str_repeat(' --- |', count($columns))."\n");
+
+            $query->chunk(500, function ($files) use ($out, $escape, $formatNum) {
+                foreach ($files as $file) {
+                    $row = [
+                        $file->id,
+                        $escape($file->original_name ?? $file->name ?? '-'),
+                        $escape($file->project->name ?? '-'),
+                        $escape($file->databaseEntity->name ?? '-'),
+                        $formatNum($file->main_id_from),
+                        $formatNum($file->main_id_to),
+                        $formatNum($file->number_of_records ?? 0),
+                        $file->is_protected ? 'Yes' : 'No',
+                        $file->is_deleted ? 'Yes' : 'No',
+                        $escape($file->uploader ? trim($file->uploader->first_name.' '.$file->uploader->last_name) : '-'),
+                        $file->uploaded_at ? $file->uploaded_at->format('Y-m-d') : '-',
+                    ];
+                    fwrite($out, '| '.implode(' | ', $row)." |\n");
+                }
+            });
+
+            fclose($out);
+        }, 200, $headers);
     }
 
     /**

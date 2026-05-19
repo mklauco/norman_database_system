@@ -19,11 +19,11 @@ return new class extends Migration
             $table->boolean('is_required')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            
+
             // Foreign keys
             $table->foreign('question_id')->references('id')->on('ecotox_cred_questions')->onDelete('cascade');
             $table->foreign('ecotox_config_id')->references('id')->on('ecotox_comparative_table_configs')->onDelete('cascade');
-            
+
             // Indexes for better performance
             $table->index('question_id');
             $table->index('ecotox_config_id');

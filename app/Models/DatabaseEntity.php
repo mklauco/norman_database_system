@@ -55,8 +55,6 @@ class DatabaseEntity extends Model
 
     /**
      * Get the templates associated with this database entity.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function templates(): HasMany
     {
@@ -65,8 +63,6 @@ class DatabaseEntity extends Model
 
     /**
      * Get the files associated with this database entity.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function files(): HasMany
     {
@@ -104,7 +100,7 @@ class DatabaseEntity extends Model
      */
     public function getDashboardRouteAttribute()
     {
-        if (!$this->dashboard_route_name) {
+        if (! $this->dashboard_route_name) {
             return null;
         }
 

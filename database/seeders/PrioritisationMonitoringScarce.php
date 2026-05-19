@@ -12,8 +12,6 @@ class PrioritisationMonitoringScarce extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
     public function run(): void
     {
@@ -21,16 +19,16 @@ class PrioritisationMonitoringScarce extends Seeder
         $target_table_name = 'prioritisation_monitoring_scarce';
         $now = Carbon::now();
         $startTime = microtime(true);
-        $path = base_path() . '/database/seeders/seeds/prioritisation_tables/monitoring_scarce_export.csv';
-        
+        $path = base_path().'/database/seeders/seeds/prioritisation_tables/monitoring_scarce_export.csv';
+
         // Temporarily disable foreign key checks
         Schema::disableForeignKeyConstraints();
-        
+
         // Use lower memory usage options for SimpleExcelReader
         $reader = SimpleExcelReader::create($path)
             ->useDelimiter(',')
             ->headersToSnakeCase(false);
-        
+
         // Use lazy collection to process the CSV file in chunks without loading it all
         $chunkSize = 1000; // Process in small chunks to conserve memory
         $reader->getRows()
@@ -66,20 +64,20 @@ class PrioritisationMonitoringScarce extends Seeder
                         'updated_at' => $now,
                     ];
                 }
-                
+
                 // Use insert instead of creating a separate array and then chunking it
                 DB::table($target_table_name)->insert($records);
-                
+
                 $chunkEndTime = microtime(true);
                 $chunkElapsedTime = round($chunkEndTime - $chunkStartTime, 2);
                 $totalElapsedTime = round($chunkEndTime - $startTime, 2);
-                
-                $this->command->info("Processed chunk " . ($key + 1) . " with " . count($records) . " records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
+
+                $this->command->info('Processed chunk '.($key + 1).' with '.count($records)." records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
             });
-        
+
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
-        
+
         $this->command->info('Modelling Danube data seeding completed!');
     }
 }

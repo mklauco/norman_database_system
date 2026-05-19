@@ -2,22 +2,26 @@
 
 namespace App\Livewire\EmpodatSuspect;
 
-use Livewire\Component;
 use App\Models\Susdat\Substance;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Livewire\Component;
 
 class SubstanceSearch extends Component
 {
     public $search = '';
+
     public $searchType = 'name';
+
     public $selectedSubstanceIds = [];
+
     public $selectedSubstances = [];
+
     public $existingSubstances = [];
 
     public function mount($existingSubstances = [])
     {
-        if(!empty($existingSubstances)) {
+        if (! empty($existingSubstances)) {
             $this->selectedSubstanceIds = is_array($existingSubstances) ?
                 array_values($existingSubstances) : [$existingSubstances];
 
@@ -30,28 +34,28 @@ class SubstanceSearch extends Component
         $results = [];
         $resultsAvailable = false;
 
-        if(strlen($this->search) > 2) {
+        if (strlen($this->search) > 2) {
             // Start query to get all substances (no filtering restrictions)
             $query = Substance::query();
 
             // Apply search filters
-            if($this->searchType == 'cas_number') {
+            if ($this->searchType == 'cas_number') {
                 $searchTerm = str_replace('-', '', $this->search);
-                $query = $query->where(function($q) use ($searchTerm) {
-                    $q->where('cas_number', 'ilike', '%' . $this->search . '%')
-                      ->orWhere(DB::raw("REPLACE(cas_number, '-', '')"), 'ilike', '%' . $searchTerm . '%');
+                $query = $query->where(function ($q) use ($searchTerm) {
+                    $q->where('cas_number', 'ilike', '%'.$this->search.'%')
+                        ->orWhere(DB::raw("REPLACE(cas_number, '-', '')"), 'ilike', '%'.$searchTerm.'%');
                 });
-            } elseif($this->searchType == 'name') {
-                $query = $query->where('name', 'ilike', '%' . $this->search . '%');
-            } elseif($this->searchType == 'stdinchikey') {
-                $query = $query->where('stdinchikey', 'ilike', $this->search . '%');
-            } elseif($this->searchType == 'code') {
+            } elseif ($this->searchType == 'name') {
+                $query = $query->where('name', 'ilike', '%'.$this->search.'%');
+            } elseif ($this->searchType == 'stdinchikey') {
+                $query = $query->where('stdinchikey', 'ilike', $this->search.'%');
+            } elseif ($this->searchType == 'code') {
                 // Strip "NS" prefix if present and search by code
                 $searchCode = $this->search;
-                if(strtoupper(substr($searchCode, 0, 2)) === 'NS') {
+                if (strtoupper(substr($searchCode, 0, 2)) === 'NS') {
                     $searchCode = substr($searchCode, 2);
                 }
-                $query = $query->where('code', 'ilike', '%' . $searchCode . '%');
+                $query = $query->where('code', 'ilike', '%'.$searchCode.'%');
             }
 
             // Order by name and limit results
@@ -61,7 +65,7 @@ class SubstanceSearch extends Component
                 ->get();
 
             if (config('app.debug')) {
-                Log::info('SubstanceSearch query returned ' . $results->count() . ' results for search: "' . $this->search . '"');
+                Log::info('SubstanceSearch query returned '.$results->count().' results for search: "'.$this->search.'"');
             }
 
             $resultsAvailable = $results->count() > 0;
@@ -77,14 +81,14 @@ class SubstanceSearch extends Component
 
     public function applySubstanceFilter()
     {
-        if (!is_array($this->selectedSubstanceIds)) {
+        if (! is_array($this->selectedSubstanceIds)) {
             $this->selectedSubstanceIds = [$this->selectedSubstanceIds];
         }
 
         if (count($this->selectedSubstanceIds) > 0) {
             // Fetch the selected substances (multiple allowed for EmpodatSuspect)
             $substances = Substance::whereIn('id', $this->selectedSubstanceIds)->get();
-            $this->selectedSubstances = $substances->map(function($substance) {
+            $this->selectedSubstances = $substances->map(function ($substance) {
                 return [
                     'id' => $substance->id,
                     'name' => $substance->name,
@@ -104,12 +108,12 @@ class SubstanceSearch extends Component
     public function removeSubstance($substanceId)
     {
         // Remove from selected IDs
-        $this->selectedSubstanceIds = array_values(array_filter($this->selectedSubstanceIds, function($id) use ($substanceId) {
+        $this->selectedSubstanceIds = array_values(array_filter($this->selectedSubstanceIds, function ($id) use ($substanceId) {
             return (string) $id !== (string) $substanceId;
         }));
 
         // Remove from selected substances
-        $this->selectedSubstances = array_values(array_filter($this->selectedSubstances, function($substance) use ($substanceId) {
+        $this->selectedSubstances = array_values(array_filter($this->selectedSubstances, function ($substance) use ($substanceId) {
             return (string) $substance['id'] !== (string) $substanceId;
         }));
 

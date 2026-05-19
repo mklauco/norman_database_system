@@ -20,18 +20,14 @@ return new class extends Migration
             $table->text('change_old')->nullable();
             $table->text('change_new')->nullable();
             $table->unsignedTinyInteger('change_type')->nullable();
-            
-            
-            
+
             $table->index('ecotox_id');
             $table->index('user_id');
-            
 
-                  
             $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('users')
+                ->onDelete('set null');
 
             $table->timestamps();
         });

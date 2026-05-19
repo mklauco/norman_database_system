@@ -1,8 +1,8 @@
 <?php
 
 namespace App\Models\Ecotox;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class EcotoxCredQuestion extends Model
@@ -92,8 +92,9 @@ class EcotoxCredQuestion extends Model
     public function getFormattedNumberAttribute()
     {
         if ($this->question_letter) {
-            return $this->question_number . $this->question_letter;
+            return $this->question_number.$this->question_letter;
         }
+
         return (string) $this->question_number;
     }
 
@@ -104,7 +105,7 @@ class EcotoxCredQuestion extends Model
      */
     public function getFullLabelAttribute()
     {
-        return $this->formatted_number . '. ' . $this->question_text;
+        return $this->formatted_number.'. '.$this->question_text;
     }
 
     /**
@@ -124,7 +125,7 @@ class EcotoxCredQuestion extends Model
      */
     public function getIsSubQuestionAttribute()
     {
-        return !is_null($this->parent_id);
+        return ! is_null($this->parent_id);
     }
 
     /**

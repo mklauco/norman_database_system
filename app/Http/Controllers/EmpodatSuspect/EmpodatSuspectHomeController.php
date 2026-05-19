@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\EmpodatSuspect\EmpodatSuspectMain;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EmpodatSuspectHomeController extends Controller
 {
@@ -26,7 +26,7 @@ class EmpodatSuspectHomeController extends Controller
     {
         $databaseEntity = DatabaseEntity::where('code', 'empodat_suspect')->first();
 
-        if (!$databaseEntity) {
+        if (! $databaseEntity) {
             abort(403, 'Module not found.');
         }
 
@@ -36,7 +36,7 @@ class EmpodatSuspectHomeController extends Controller
         }
 
         // Module is private - check if user is logged in
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             abort(403, 'You must be logged in to access this module.');
         }
 
@@ -93,7 +93,7 @@ class EmpodatSuspectHomeController extends Controller
             // Update the database_entities table
             DatabaseEntity::where('code', 'empodat_suspect')->update([
                 'last_update' => now(),
-                'number_of_records' => $virtualTotal
+                'number_of_records' => $virtualTotal,
             ]);
 
             session()->flash('success', sprintf(
@@ -106,7 +106,8 @@ class EmpodatSuspectHomeController extends Controller
             return redirect()->back();
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Failed to update database counts: ' . $e->getMessage());
+            session()->flash('error', 'Failed to update database counts: '.$e->getMessage());
+
             return redirect()->back();
         }
     }

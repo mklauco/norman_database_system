@@ -18,6 +18,6 @@ class Category extends Model
 
     public function getNameAbbreviationAttribute()
     {
-        return rtrim($this->name, " ") . ' (' . $this->abbreviation . ')';
+        return rtrim($this->name, ' ').' ('.$this->abbreviation.')';
     }
 }

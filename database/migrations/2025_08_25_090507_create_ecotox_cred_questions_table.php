@@ -21,15 +21,15 @@ return new class extends Migration
             $table->decimal('screening_score', 8, 2)->nullable();
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            
+
             // Foreign key to self for parent-child relationship
             $table->foreign('parent_id')->references('id')->on('ecotox_cred_questions')->onDelete('cascade');
-            
+
             // Indexes for better performance
             $table->index('parent_id');
             $table->index('question_number');
             $table->index('sort_order');
-            
+
             // Unique constraint for question number + letter combination
             $table->unique(['question_number', 'question_letter', 'parent_id']);
         });

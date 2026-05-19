@@ -2,12 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class ARBGDataSeeder extends Seeder
@@ -15,13 +13,12 @@ class ARBGDataSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-
     protected $table_prefix = 'arbg_';
 
-    function getCsvFiles($directory)
+    public function getCsvFiles($directory)
     {
         // Check if directory exists
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             return [];
         }
 
@@ -29,12 +26,13 @@ class ARBGDataSeeder extends Seeder
         $allFiles = scandir($directory);
 
         // Filter to only include CSV files
-        $csvFiles = array_filter($allFiles, function($file) use ($directory) {
-            $fullPath = rtrim($directory, '/') . '/' . $file;
+        $csvFiles = array_filter($allFiles, function ($file) use ($directory) {
+            $fullPath = rtrim($directory, '/').'/'.$file;
             // Skip . and .. directories
             if ($file === '.' || $file === '..') {
                 return false;
             }
+
             // Check if it's a file and has .csv extension
             return is_file($fullPath) && pathinfo($file, PATHINFO_EXTENSION) === 'csv';
         });
@@ -44,13 +42,14 @@ class ARBGDataSeeder extends Seeder
         ];
 
         // Filter out the files to skip
-        $csvFiles = array_filter($csvFiles, function($file) use ($skip_files) {
+        $csvFiles = array_filter($csvFiles, function ($file) use ($skip_files) {
             $filename = pathinfo($file, PATHINFO_FILENAME);
-            return !in_array($filename, $skip_files);
+
+            return ! in_array($filename, $skip_files);
         });
 
         // Return filenames without the .csv extension
-        return array_map(function($file) {
+        return array_map(function ($file) {
             return pathinfo($file, PATHINFO_FILENAME);
         }, array_values($csvFiles));
     }
@@ -58,7 +57,7 @@ class ARBGDataSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Starting '.$this->table_prefix.' Data seeding...');
-        $folder = base_path() . '/database/seeders/seeds/'.$this->table_prefix.'tables/data_tables';
+        $folder = base_path().'/database/seeders/seeds/'.$this->table_prefix.'tables/data_tables';
         $tables = $this->getCsvFiles($folder);
         $files_with_text_ids = [
             'data_country',
@@ -69,11 +68,12 @@ class ARBGDataSeeder extends Seeder
             DB::table($this->table_prefix.$target_table_name)->delete();
             $now = Carbon::now();
 
-            $path = $folder . '/' . $target_table_name . '.csv';
+            $path = $folder.'/'.$target_table_name.'.csv';
 
             // Check if file exists
-            if (!file_exists($path)) {
+            if (! file_exists($path)) {
                 $this->command->error("File not found: $path");
+
                 continue;
             }
 
@@ -94,25 +94,25 @@ class ARBGDataSeeder extends Seeder
                     ->each(function ($rows, $key) use (&$k, $target_table_name, $now, $files_with_text_ids) {
                         $records = [];
                         if (in_array($target_table_name, $files_with_text_ids)) {
-                            
+
                             foreach ($rows as $r) {
-                                $ordering = isset($r['ordering']) && $r['ordering'] !== '' ? (int)$r['ordering'] : null;
+                                $ordering = isset($r['ordering']) && $r['ordering'] !== '' ? (int) $r['ordering'] : null;
                                 $records[] = [
                                     'id' => $k++,
                                     'abbreviation' => $r['id'] ?? '',
                                     'name' => $r['name'] ?? '',
-                                    'ordering' => $ordering ,
+                                    'ordering' => $ordering,
                                     'created_at' => $now,
                                     'updated_at' => $now,
                                 ];
                             }
                         } else {
                             foreach ($rows as $r) {
-                                $ordering = isset($r['ordering']) && $r['ordering'] !== '' ? (int)$r['ordering'] : null;
+                                $ordering = isset($r['ordering']) && $r['ordering'] !== '' ? (int) $r['ordering'] : null;
                                 $records[] = [
                                     'id' => $r['id'] ?? null,
                                     'name' => $r['name'] ?? '',
-                                    'ordering' => $ordering ,
+                                    'ordering' => $ordering,
                                     'created_at' => $now,
                                     'updated_at' => $now,
                                 ];
@@ -120,28 +120,25 @@ class ARBGDataSeeder extends Seeder
                         }
 
                         // Only attempt to insert if there are records
-                        if (!empty($records)) {
+                        if (! empty($records)) {
                             try {
                                 DB::table($this->table_prefix.$target_table_name)->insert($records);
-                                $this->command->info("Processed chunk " . ($key + 1) . " with " . count($records) . " records for table: $target_table_name");
+                                $this->command->info('Processed chunk '.($key + 1).' with '.count($records)." records for table: $target_table_name");
                             } catch (\Exception $e) {
-                                $this->command->error("Error inserting into $target_table_name: " . $e->getMessage());
+                                $this->command->error("Error inserting into $target_table_name: ".$e->getMessage());
                             }
                         }
                     });
             } catch (\Exception $e) {
-                $this->command->error("Error processing file $path: " . $e->getMessage());
+                $this->command->error("Error processing file $path: ".$e->getMessage());
             } finally {
                 // Re-enable foreign key checks
                 Schema::enableForeignKeyConstraints();
             }
         }
 
-
-
         $this->command->info($this->table_prefix.' Data seeding completed!');
     }
-
 }
 
 // php artisan db:seed --class="ARBGDataSeeder"

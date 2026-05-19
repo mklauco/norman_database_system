@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # Copy composer.lock and composer.json
 COPY composer.json /var/www/

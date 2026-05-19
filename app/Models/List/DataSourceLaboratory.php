@@ -41,19 +41,19 @@ class DataSourceLaboratory extends Model
     public function getFullNameAttribute()
     {
         $parts = [];
-        
+
         if ($this->name) {
             $parts[] = $this->name;
         }
-        
+
         if ($this->city) {
             $parts[] = $this->city;
         }
-        
+
         if ($this->country) {
             $parts[] = $this->country->name;
         }
-        
+
         return implode(', ', $parts);
     }
 

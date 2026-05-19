@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Usepa extends Model
 {
     protected $table = 'susdat_usepa';
-    
+
     protected $fillable = [
         'sus_id',
         'substance_id',
@@ -28,7 +28,7 @@ class Usepa extends Model
         'usepa_BCF_experimental',
         'usepa_BCF_predicted',
     ];
-    
+
     protected $casts = [
         'usepa_Log_Kow_experimental' => 'float',
         'usepa_Log_Kow_predicted' => 'float',
@@ -43,6 +43,6 @@ class Usepa extends Model
         'usepa_BCF_experimental' => 'float',
         'usepa_BCF_predicted' => 'float',
     ];
-    
+
     public $timestamps = false;
 }

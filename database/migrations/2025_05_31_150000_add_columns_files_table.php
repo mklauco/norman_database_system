@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('files', function (Blueprint $table) {
-        });
+        Schema::table('files', function (Blueprint $table) {});
     }
-
-    
 
     /**
      * Reverse the migrations.

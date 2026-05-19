@@ -2,9 +2,8 @@
 
 namespace App\Models\Empodat;
 
-use App\Models\Empodat\DCTFile;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class DataCollectionTemplateFile extends Model
 {
@@ -17,6 +16,4 @@ class DataCollectionTemplateFile extends Model
         'path',
         'filename',
     ];
-
-
 }

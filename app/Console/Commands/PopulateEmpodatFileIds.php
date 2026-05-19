@@ -100,7 +100,7 @@ class PopulateEmpodatFileIds extends Command
             $elapsed = round(microtime(true) - $startTime, 1);
             $rate = $totalUpdated > 0 ? round($totalUpdated / $elapsed) : 0;
 
-            $this->line("Batch {$batchNumber}: Updated {$updated} records (Total: ".number_format($totalUpdated).", Remaining: ~".number_format(max(0, $remaining)).", Rate: {$rate}/s)");
+            $this->line("Batch {$batchNumber}: Updated {$updated} records (Total: ".number_format($totalUpdated).', Remaining: ~'.number_format(max(0, $remaining)).", Rate: {$rate}/s)");
 
             // Sleep between batches to reduce database load
             if ($sleepSeconds > 0) {

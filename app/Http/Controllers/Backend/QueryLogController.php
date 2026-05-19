@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers\Backend;
 
-use App\Models\List\Matrix;
-use App\Models\List\Country;
-use Illuminate\Http\Request;
-use App\Models\Susdat\Category;
-use App\Models\Backend\QueryLog;
-use App\Models\List\TypeDataSource;
-use App\Models\DatabaseEntity;
 use App\Http\Controllers\Controller;
+use App\Models\Backend\QueryLog;
+use App\Models\DatabaseEntity;
 use App\Models\List\AnalyticalMethod;
-use App\Models\List\DataSourceLaboratory;
 use App\Models\List\ConcentrationIndicator;
+use App\Models\List\Country;
+use App\Models\List\DataSourceLaboratory;
 use App\Models\List\DataSourceOrganisation;
-use App\Models\SLE\SuspectListExchangeSource;
+use App\Models\List\Matrix;
 use App\Models\List\QualityEmpodatAnalyticalMethods;
+use App\Models\List\TypeDataSource;
+use App\Models\SLE\SuspectListExchangeSource;
+use App\Models\Susdat\Category;
+use Illuminate\Http\Request;
 
 class QueryLogController extends Controller
 {
@@ -32,18 +32,18 @@ class QueryLogController extends Controller
         $matrices = Matrix::all()->pluck('name', 'id');
         $sources = SuspectListExchangeSource::select('id', 'code', 'name')->get()->keyBy('id');
         $sourceList = [];
-        foreach($sources as $s){
-          $sourceList[$s->id] = $s->code. ' - ' . $s->name;
+        foreach ($sources as $s) {
+            $sourceList[$s->id] = $s->code.' - '.$s->name;
         }
         $sources = $sourceList;
 
-        $categories                 = Category::all()->pluck('name', 'id');
-        $typeDataSources            = TypeDataSource::all()->pluck('name', 'id');
-        $concentrationIndicators    = ConcentrationIndicator::all()->pluck('name', 'id');
-        $dataSourceOrganisations    = DataSourceOrganisation::all()->pluck('name', 'id');
-        $dataSourceLaboratories     = DataSourceLaboratory::all()->pluck('name', 'id');
-        $analyticalMethods          = AnalyticalMethod::all()->pluck('name', 'id');
-        $qualityAnalyticalMethods   = QualityEmpodatAnalyticalMethods::all()->pluck('name', 'id');
+        $categories = Category::all()->pluck('name', 'id');
+        $typeDataSources = TypeDataSource::all()->pluck('name', 'id');
+        $concentrationIndicators = ConcentrationIndicator::all()->pluck('name', 'id');
+        $dataSourceOrganisations = DataSourceOrganisation::all()->pluck('name', 'id');
+        $dataSourceLaboratories = DataSourceLaboratory::all()->pluck('name', 'id');
+        $analyticalMethods = AnalyticalMethod::all()->pluck('name', 'id');
+        $qualityAnalyticalMethods = QualityEmpodatAnalyticalMethods::all()->pluck('name', 'id');
 
         // Get all database entities for module filtering
         $databaseEntities = DatabaseEntity::where('show_in_dashboard', true)
@@ -65,15 +65,16 @@ class QueryLogController extends Controller
         $query = QueryLog::with('users')
             ->where('id', '>=', max($maxId - 100, 0));
 
-        if (!empty($activeModule)) {
+        if (! empty($activeModule)) {
             if ($activeModule === 'arbg') {
                 $query->where('database_key', 'like', 'arbg.%');
             } else {
-                $query->where('database_key', 'like', $activeModule . '%');
+                $query->where('database_key', 'like', $activeModule.'%');
             }
         }
 
         $queries = $query->orderBy('id', 'desc')->paginate(20);
+
         // dd($queries);
         return view('backend.querylog.index', [
             'queries' => $queries,

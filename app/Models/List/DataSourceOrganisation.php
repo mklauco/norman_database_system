@@ -42,23 +42,23 @@ class DataSourceOrganisation extends Model
     public function getFullNameAttribute()
     {
         $parts = [];
-        
+
         if ($this->name) {
             $parts[] = $this->name;
         }
-        
+
         if ($this->acronym) {
             $parts[] = "({$this->acronym})";
         }
-        
+
         if ($this->city) {
             $parts[] = $this->city;
         }
-        
+
         if ($this->country) {
             $parts[] = $this->country->name;
         }
-        
+
         return implode(', ', $parts);
     }
 

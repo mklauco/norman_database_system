@@ -2,9 +2,8 @@
 
 namespace Database\Seeders\migrators;
 
-use Illuminate\Database\Seeder;
 use App\Models\MariaDB\DCTAnalysis as MariaDB_DCTAnalysis;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
 class EmpodatDCTAnalysisMigrator extends Seeder
 {

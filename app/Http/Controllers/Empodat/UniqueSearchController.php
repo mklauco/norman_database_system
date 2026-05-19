@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Empodat;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\Empodat\EmpodatMain;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
+use App\Models\Empodat\EmpodatMain;
 use App\Models\Susdat\Substance;
+use Illuminate\Support\Facades\DB;
 
 class UniqueSearchController extends Controller
 {
@@ -44,13 +43,14 @@ class UniqueSearchController extends Controller
         $p = [];
         foreach ($distinctCountryIds as $countryId) {
             $p[] = ([
-                'country_id' => $countryId->id
+                'country_id' => $countryId->id,
             ]);
         }
         DB::table('empodat_search_countries')->truncate();
         DB::table('empodat_search_countries')->insert($p);
 
         session()->flash('success', 'Countries updated successfully');
+
         return redirect()->back();
     }
 
@@ -74,7 +74,7 @@ class UniqueSearchController extends Controller
         DB::transaction(function () use ($insertData) {
             DB::table('empodat_search_matrices')->truncate();
 
-            if (!empty($insertData)) {
+            if (! empty($insertData)) {
                 // Insert in chunks to avoid memory issues with very large datasets
                 collect($insertData)->chunk(1000)->each(function ($chunk) {
                     DB::table('empodat_search_matrices')->insert($chunk->toArray());
@@ -97,13 +97,14 @@ class UniqueSearchController extends Controller
     {
         DatabaseEntity::where('code', 'empodat')->update([
             // 'last_update' => EmpodatMain::max('updated_at'),
-            'number_of_records' => EmpodatMain::leftjoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')->where('susdat_substances.relevant_to_norman', 1)->count()
+            'number_of_records' => EmpodatMain::leftjoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')->where('susdat_substances.relevant_to_norman', 1)->count(),
         ]);
         DatabaseEntity::where('code', 'susdat')->update([
             'last_update' => Substance::max('updated_at'),
-            'number_of_records' => Substance::count()
+            'number_of_records' => Substance::count(),
         ]);
         session()->flash('success', 'Database counts updated successfully');
+
         return redirect()->back();
     }
 
@@ -133,6 +134,7 @@ class UniqueSearchController extends Controller
         }
 
         session()->flash('success', "Last update timestamps refreshed for {$updatedCount} database entities.");
+
         return redirect()->back();
     }
 }

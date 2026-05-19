@@ -2,16 +2,13 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 class ListValidatedMethodSeeder extends Seeder
 {
-    
     /**
      * Run the database seeds.
      */
@@ -19,15 +16,15 @@ class ListValidatedMethodSeeder extends Seeder
     {
         $target_table_name = 'list_validated_methods';
         $now = Carbon::now();
-        $path = base_path() . '/database/seeders/seeds/data_protocols.csv';
+        $path = base_path().'/database/seeders/seeds/data_protocols.csv';
         $rows = SimpleExcelReader::create($path)->getRows();
         $p = [];
-        foreach($rows as $r) {
+        foreach ($rows as $r) {
             $p[] = [
-                'id'                  => $r['dp_id'],
-                'name'                => $r['dp_name'],
-                'created_at'          => $now,
-                'updated_at'          => $now,
+                'id' => $r['dp_id'],
+                'name' => $r['dp_name'],
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
         }
 
@@ -35,8 +32,8 @@ class ListValidatedMethodSeeder extends Seeder
         $chunks = array_chunk($p, $chunkSize);
         $k = 0;
         $count = ceil(count($p) / $chunkSize) - 1;
-        foreach($chunks as $c){
-            echo ($k++)."/".$count."; \n";
+        foreach ($chunks as $c) {
+            echo ($k++).'/'.$count."; \n";
             DB::table($target_table_name)->insert($c);
         }
 

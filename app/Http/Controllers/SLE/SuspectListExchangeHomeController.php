@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\SLE;
 
-use Illuminate\Http\Request;
-use App\Models\DatabaseEntity;
 use App\Http\Controllers\Controller;
+use App\Models\DatabaseEntity;
 use App\Models\SLE\SuspectListExchangeSource;
+use Illuminate\Http\Request;
 
 class SuspectListExchangeHomeController extends Controller
 {
@@ -71,9 +71,10 @@ class SuspectListExchangeHomeController extends Controller
     {
         DatabaseEntity::where('code', 'sle')->update([
             'last_update' => SuspectListExchangeSource::max('updated_at'),
-            'number_of_records' => SuspectListExchangeSource::count()
+            'number_of_records' => SuspectListExchangeSource::count(),
         ]);
         session()->flash('success', 'Database counts updated successfully');
+
         return redirect()->back();
     }
 }

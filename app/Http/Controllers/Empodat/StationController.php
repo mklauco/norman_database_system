@@ -7,7 +7,6 @@ use App\Models\Empodat\EmpodatStation;
 use App\Models\List\Country;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Support\Facades\Auth;
 
 class StationController extends Controller implements HasMiddleware
 {
@@ -46,7 +45,7 @@ class StationController extends Controller implements HasMiddleware
     public function create()
     {
         $countries = Country::orderBy('name')->get();
-        
+
         return view('empodat.stations.upsert', [
             'station' => null,
             'countries' => $countries,
@@ -88,7 +87,7 @@ class StationController extends Controller implements HasMiddleware
     public function show(EmpodatStation $station)
     {
         $station->load('countryRelation');
-        
+
         return view('empodat.stations.show', [
             'station' => $station,
         ]);
@@ -100,7 +99,7 @@ class StationController extends Controller implements HasMiddleware
     public function edit(EmpodatStation $station)
     {
         $countries = Country::orderBy('name')->get();
-        
+
         return view('empodat.stations.upsert', [
             'station' => $station,
             'countries' => $countries,
