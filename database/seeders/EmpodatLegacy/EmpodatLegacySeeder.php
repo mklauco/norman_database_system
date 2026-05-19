@@ -44,6 +44,13 @@ class EmpodatLegacySeeder extends Seeder
 {
     public function run(): void
     {
+        ini_set('memory_limit', '8G');
+        if (app()->bound('debugbar')) {
+            app('debugbar')->disable();
+        }
+        DB::disableQueryLog();
+        DB::connection('legacy_empodat')->disableQueryLog();
+
         $sinceId = $this->resolveSinceId();
         $runId = $this->startRun($sinceId);
 
