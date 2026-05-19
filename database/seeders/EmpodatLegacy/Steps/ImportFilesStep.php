@@ -31,12 +31,13 @@ use Throwable;
  *   list_deleted (tinyint)             -> is_deleted (bool)
  *   list_protected (varchar tag/NULL)  -> is_protected (bool: tag-set => true)
  *   matrice_dct          -> matrice_dct
+ *   (resolved at runtime) -> database_entity_id = id of database_entities WHERE code='empodat'
  *
  * Dropped (no PG home): list_name, list_common, list_hash, list_organisation,
  * list_email, list_author, list_data_accessibility, list_private_note, list_date.
- * PG-only cols (file_path, file_size, mime_type, template_id, database_entity_id,
- * processing_notes, uploaded_by, uploaded_at, number_of_records) left NULL —
- * expert users populate them via the frontend later.
+ * PG-only cols (file_path, file_size, mime_type, template_id, processing_notes,
+ * uploaded_by, uploaded_at, number_of_records) left NULL — expert users
+ * populate them via the frontend later.
  *
  * Idempotent — uses INSERT ... ON CONFLICT (id) DO NOTHING.
  */
@@ -54,6 +55,17 @@ class ImportFilesStep extends Step
         $start = microtime(true);
 
         try {
+            $databaseEntityId = $this->pg()
+                ->table('database_entities')
+                ->where('code', 'empodat')
+                ->value('id');
+
+            if ($databaseEntityId === null) {
+                throw new \RuntimeException(
+                    "Cannot resolve database_entities.id WHERE code='empodat' — empodat module not registered in PG."
+                );
+            }
+
             $rows = $this->legacy()
                 ->table('dct_list')
                 ->whereNotNull('list_analysis_from')
@@ -71,6 +83,7 @@ class ImportFilesStep extends Step
 
             $insertable = $rows->map(fn ($r) => [
                 'id' => (int) $r->list_id,
+                'database_entity_id' => (int) $databaseEntityId,
                 'name' => $r->list_title,
                 'original_name' => $r->list_file,
                 'description' => $r->list_description !== '' ? $r->list_description : null,
