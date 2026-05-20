@@ -11,6 +11,8 @@ use Database\Seeders\EmpodatLegacy\Steps\ImportEmpodatMainStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportEmpodatMinorStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportFilesStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportMatrixBiotaStep;
+use Database\Seeders\EmpodatLegacy\Steps\ImportMatrixSedimentsStep;
+use Database\Seeders\EmpodatLegacy\Steps\ImportMatrixSoilStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportStationsStep;
 use Database\Seeders\EmpodatLegacy\Steps\PopulateFileIdStep;
 use Database\Seeders\EmpodatLegacy\Steps\ScrubOrphansStep;
@@ -95,6 +97,8 @@ class EmpodatLegacySeeder extends Seeder
             // Phase 4 — dependent 1:1 tables
             new ImportEmpodatMinorStep($sinceId, $runId, $this->command),
             new ImportMatrixBiotaStep($sinceId, $runId, $this->command),
+            new ImportMatrixSedimentsStep($sinceId, $runId, $this->command),
+            new ImportMatrixSoilStep($sinceId, $runId, $this->command),
 
             // Phase 5 — post-load cleanup
             new ScrubOrphansStep($sinceId, $runId, $this->command),
