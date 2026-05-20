@@ -420,63 +420,71 @@ class EmpodatMain extends Model
      */
     public function scopeByUserPermissions($query, $user = null)
     {
-        // If no user provided, use the currently authenticated user
         if (is_null($user)) {
             $user = auth()->user();
         }
 
-        // Check if user is super_admin (can see everything, including deleted and orphaned records)
+        // Super_admin sees everything (including rows with NULL file_id).
+        // No filter, no JOIN — leave the query untouched so the planner can
+        // pick the best index for whatever other filters are applied.
         if ($user && $user->hasRole('super_admin')) {
-            // Use LEFT JOIN so super_admin can see records with NULL file_id
-            return $query->leftJoin('files', 'empodat_main.file_id', '=', 'files.id')
-                ->select('empodat_main.*')
-                ->distinct();
+            return $query;
         }
 
-        // For all other users, use INNER JOIN (requires valid file)
-        $query = $query->join('files', 'empodat_main.file_id', '=', 'files.id')
-            ->select('empodat_main.*')
-            ->distinct();
+        // For every other role, resolve the set of permitted file ids in a
+        // small sub-query against `files` (≈ hundreds of rows) and constrain
+        // `empodat_main.file_id` to that set. This avoids joining 100M+ rows
+        // of `empodat_main` to `files` just to apply permission filters.
+        //
+        // Side effect: rows with `file_id IS NULL` are excluded, matching the
+        // original INNER JOIN behaviour for non-super_admin users.
+        return $query->whereIn(
+            'empodat_main.file_id',
+            $this->permittedFileIdsSubquery($user),
+        );
+    }
 
-        // If user is not authenticated, show only unprotected AND non-deleted files
+    /**
+     * Returns a sub-query Builder yielding the `files.id` values the given
+     * user is allowed to see. Used by scopeByUserPermissions.
+     */
+    private function permittedFileIdsSubquery($user)
+    {
+        $sub = \Illuminate\Support\Facades\DB::table('files')->select('id');
+
+        // Anonymous: only unprotected, non-deleted files.
         if (is_null($user)) {
-            return $query->where('files.is_protected', false)
+            return $sub
+                ->where('is_protected', false)
                 ->where(function ($q) {
-                    $q->where('files.is_deleted', false)
-                        ->orWhereNull('files.is_deleted');
+                    $q->where('is_deleted', false)->orWhereNull('is_deleted');
                 });
         }
 
-        // Check if user has admin-level permissions (admin, empodat roles)
-        $hasAdminAccess = $user->hasRole('admin') || $user->hasRole('empodat');
-
-        // Admins can see all non-deleted files (both protected and unprotected)
-        if ($hasAdminAccess) {
-            return $query->where(function ($q) {
-                $q->where('files.is_deleted', false)
-                    ->orWhereNull('files.is_deleted');
+        // Admin / empodat role: every non-deleted file (protected or not).
+        if ($user->hasRole('admin') || $user->hasRole('empodat')) {
+            return $sub->where(function ($q) {
+                $q->where('is_deleted', false)->orWhereNull('is_deleted');
             });
         }
 
-        // For regular authenticated users:
-        // - Can see unprotected, non-deleted files
-        // - Can see protected, non-deleted files if they are assigned to the file's project
+        // Regular authenticated user: non-deleted files that are either
+        // unprotected OR assigned to a project the user belongs to.
         $userId = $user->id;
 
-        return $query->where(function ($q) {
-            $q->where('files.is_deleted', false)
-                ->orWhereNull('files.is_deleted');
-        })->where(function ($q) use ($userId) {
-            // Either the file is not protected
-            $q->where('files.is_protected', false)
-                // OR the user is assigned to the file's project
-                ->orWhereExists(function ($subQuery) use ($userId) {
-                    $subQuery->select(\Illuminate\Support\Facades\DB::raw(1))
-                        ->from('project_user')
-                        ->whereColumn('project_user.project_id', 'files.project_id')
-                        ->where('project_user.user_id', $userId);
-                });
-        });
+        return $sub
+            ->where(function ($q) {
+                $q->where('is_deleted', false)->orWhereNull('is_deleted');
+            })
+            ->where(function ($q) use ($userId) {
+                $q->where('is_protected', false)
+                    ->orWhereExists(function ($exists) use ($userId) {
+                        $exists->select(\Illuminate\Support\Facades\DB::raw(1))
+                            ->from('project_user')
+                            ->whereColumn('project_user.project_id', 'files.project_id')
+                            ->where('project_user.user_id', $userId);
+                    });
+            });
     }
 
     /**
@@ -524,21 +532,40 @@ class EmpodatMain extends Model
     /**
      * Get the formatted sampling date.
      *
+     * The legacy v1 dataset stores '0000-00-00 00:00:00' as a "no real date"
+     * sentinel in `empodat_minor.sampling_date`. The model casts that column
+     * to `datetime`, which makes Carbon emit '-000001-11-30...' for the
+     * sentinel — visible to users as a junk date. Year 0 / sentinel values
+     * are treated as "no date" here, falling back to the year-only field.
+     *
      * @return string
      */
     public function getFormattedSamplingDateAttribute()
     {
-        // First try to get the full date from minor relationship
-        if ($this->minor && $this->minor->sampling_date) {
-            return Carbon::parse($this->minor->sampling_date)->format('Y-m-d');
+        $raw = $this->minor?->sampling_date;
+        if ($raw !== null && ! $this->isZeroSamplingDate($raw)) {
+            return Carbon::parse($raw)->format('Y-m-d');
         }
 
-        // Fallback to the year if no minor date available
-        if ($this->sampling_date_year) {
+        if ($this->sampling_date_year && (int) $this->sampling_date_year > 0) {
             return (string) $this->sampling_date_year;
         }
 
-        // Final fallback
         return 'N/A';
+    }
+
+    /**
+     * True when the given sampling_date value represents the legacy
+     * "no real date" sentinel — either '0000-00-00 00:00:00' (raw varchar)
+     * or a Carbon instance whose year is <= 0.
+     */
+    private function isZeroSamplingDate(mixed $value): bool
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return (int) $value->format('Y') <= 0;
+        }
+        $str = trim((string) $value);
+
+        return $str === '' || str_starts_with($str, '0000-00-00');
     }
 }

@@ -222,16 +222,35 @@ export default function empodatModal() {
         },
 
         buildMinorArray() {
-            if (this.record?.minor) {
+            // Server returns `additional_details`: a flat (label => value)
+            // map already resolved against PG list_* tables (so "Dpc Id: 2"
+            // arrives here as "Precision of coordinates: Average (range
+            // 10-100 m)"). Fall back to raw `minor` if the server didn't
+            // populate the enriched payload yet (older controller / tests).
+            const source = this.record?.additional_details ?? this.record?.minor;
+            if (source) {
                 const excludedKeys = ['id', 'created_at', 'updated_at', 'empodat_main_id'];
+                // Legacy v1 stores '0000-00-00 00:00:00' / '00:00:00' / '0000' as
+                // "no real value" sentinels. Some empodat_minor columns are also
+                // cast to `datetime` server-side, which makes Carbon emit
+                // '-000001-11-30T00:00:00.000000Z' for the zero-datetime — that
+                // surfaces here as a junk date. Filter both forms.
+                const zeroStringSentinels = new Set([
+                    '0', '00', '000', '0000',
+                    '0000-00-00', '0000-00-00 00:00:00',
+                    '00:00:00', '00:00',
+                ]);
+                const isZeroValue = (val) => {
+                    if (val === null || val === '' || val === 0) return true;
+                    if (typeof val !== 'string') return false;
+                    const trimmed = val.trim();
+                    if (zeroStringSentinels.has(trimmed)) return true;
+                    // Carbon-serialised zero-datetime: '-000001-11-30T...' or '-0001-11-30...'
+                    return /^-0+1-11-30T/.test(trimmed);
+                };
 
-                this.minorArray = Object.entries(this.record.minor)
-                    .filter(([key, val]) =>
-                        !excludedKeys.includes(key) &&
-                        val !== null &&
-                        val !== '' &&
-                        val !== 0
-                    )
+                this.minorArray = Object.entries(source)
+                    .filter(([key, val]) => !excludedKeys.includes(key) && !isZeroValue(val))
                     .map(([key, val]) => [
                         this.formatFieldName(key),
                         val
