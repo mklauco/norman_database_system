@@ -15,6 +15,7 @@ use Database\Seeders\EmpodatLegacy\Steps\ImportStationsStep;
 use Database\Seeders\EmpodatLegacy\Steps\PopulateFileIdStep;
 use Database\Seeders\EmpodatLegacy\Steps\ScrubOrphansStep;
 use Database\Seeders\EmpodatLegacy\Steps\Step;
+use Database\Seeders\EmpodatLegacy\Steps\VacuumAnalyzeStep;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -97,6 +98,7 @@ class EmpodatLegacySeeder extends Seeder
 
             // Phase 5 — post-load cleanup
             new ScrubOrphansStep($sinceId, $runId, $this->command),
+            new VacuumAnalyzeStep($sinceId, $runId, $this->command),
         ];
     }
 
