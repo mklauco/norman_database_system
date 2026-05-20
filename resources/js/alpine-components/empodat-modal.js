@@ -222,7 +222,13 @@ export default function empodatModal() {
         },
 
         buildMinorArray() {
-            if (this.record?.minor) {
+            // Server returns `additional_details`: a flat (label => value)
+            // map already resolved against PG list_* tables (so "Dpc Id: 2"
+            // arrives here as "Precision of coordinates: Average (range
+            // 10-100 m)"). Fall back to raw `minor` if the server didn't
+            // populate the enriched payload yet (older controller / tests).
+            const source = this.record?.additional_details ?? this.record?.minor;
+            if (source) {
                 const excludedKeys = ['id', 'created_at', 'updated_at', 'empodat_main_id'];
                 // Legacy v1 stores '0000-00-00 00:00:00' / '00:00:00' / '0000' as
                 // "no real value" sentinels. Some empodat_minor columns are also
@@ -243,7 +249,7 @@ export default function empodatModal() {
                     return /^-0+1-11-30T/.test(trimmed);
                 };
 
-                this.minorArray = Object.entries(this.record.minor)
+                this.minorArray = Object.entries(source)
                     .filter(([key, val]) => !excludedKeys.includes(key) && !isZeroValue(val))
                     .map(([key, val]) => [
                         this.formatFieldName(key),
