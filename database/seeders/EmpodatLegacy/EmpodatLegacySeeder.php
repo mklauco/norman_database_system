@@ -13,6 +13,7 @@ use Database\Seeders\EmpodatLegacy\Steps\ImportFilesStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportMatrixBiotaStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportMatrixSedimentsStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportMatrixSoilStep;
+use Database\Seeders\EmpodatLegacy\Steps\ImportSimpleLookupsStep;
 use Database\Seeders\EmpodatLegacy\Steps\ImportStationsStep;
 use Database\Seeders\EmpodatLegacy\Steps\PopulateFileIdStep;
 use Database\Seeders\EmpodatLegacy\Steps\ScrubOrphansStep;
@@ -102,6 +103,11 @@ class EmpodatLegacySeeder extends Seeder
 
             // Phase 5 — post-load cleanup
             new ScrubOrphansStep($sinceId, $runId, $this->command),
+
+            // Phase 6 — lookup tables (data_* -> list_*)
+            new ImportSimpleLookupsStep($sinceId, $runId, $this->command),
+
+            // VACUUM at the very end so it picks up Phase 6 inserts too
             new VacuumAnalyzeStep($sinceId, $runId, $this->command),
         ];
     }
