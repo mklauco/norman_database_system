@@ -96,9 +96,15 @@ class EmpodatController extends Controller
           // Execute
             ->first();  // or ->get(), depending on whether you expect one record or multiple
 
+        // No record visible to this user (or doesn't exist) — short-circuit
+        // so the downstream `$empodat->...` assignments don't NPE.
+        if ($empodat === null) {
+            return response()->json(null, 404);
+        }
+
         // Load the appropriate matrix metadata based on list_matrices.empodat_matrix_link
         $matrixMetadata = null;
-        if ($empodat && $empodat->matrix && $empodat->matrix->empodat_matrix_link) {
+        if ($empodat->matrix && $empodat->matrix->empodat_matrix_link) {
             $matrixLink = $empodat->matrix->empodat_matrix_link;
             $matrixMetadata = $this->loadMatrixMetadataByLink($empodat, $matrixLink);
         }
@@ -107,9 +113,7 @@ class EmpodatController extends Controller
         // REMAP ANALYTICAL METHOD & DATA SOURCE FIELDS (batch optimized)
         // ==============================
 
-        if ($empodat) {
-            $this->remapFieldsOptimized($empodat);
-        }
+        $this->remapFieldsOptimized($empodat);
 
         // ==============================
         // END REMAP FIELDS
@@ -119,14 +123,201 @@ class EmpodatController extends Controller
         // CONSOLIDATE MATRIX DATA
         // ==============================
 
+        // Resolve raw FK integer ids in matrix metadata against PG list_* tables
+        // (data_kingdom -> list_kingdoms, data_phylum -> list_phyla, etc.).
+        // Legacy renders these as human-readable names ("Kingdom: Animalia");
+        // this enriches the response so the modal does the same. Imported via
+        // Phase 6 of the legacy migration; see LEGACY_MIGRATION_PLAN.md.
+        if ($matrixMetadata !== null) {
+            $matrixMetadata['meta_data'] = $this->enrichLookupIds(
+                $matrixMetadata['meta_data'] ?? [],
+                $this->lookupConfigForMatrix($matrixMetadata['type'] ?? ''),
+            );
+        }
+
         // Set matrix_data from the loaded matrix metadata
         $empodat->matrix_data = $matrixMetadata;
+
+        // Same enrichment for empodat_minor: replace cryptic dpc_id/dcod_id/
+        // etc. integer ids with the corresponding labelled name. Exposed as
+        // `additional_details` so the public API resource (EmpodatResource)
+        // and CSV export (EmpodatCsvExportJob) — which both read `minor`
+        // directly — see unchanged raw rows.
+        $empodat->additional_details = $empodat->minor
+            ? $this->enrichLookupIds(
+                $this->stripMinorEnvelopeAttributes($empodat->minor->getAttributes()),
+                $this->lookupConfigForMinor(),
+            )
+            : [];
 
         // ==============================
         // END CONSOLIDATE MATRIX DATA
         // ==============================
 
         return response()->json($empodat);
+    }
+
+    /**
+     * Drop the columns from `empodat_minor->getAttributes()` that the modal
+     * shouldn't render in "Additional Record Details" (the PK / timestamps
+     * the modal would otherwise list as cryptic rows).
+     *
+     * @param  array<string, mixed>  $attrs
+     * @return array<string, mixed>
+     */
+    private function stripMinorEnvelopeAttributes(array $attrs): array
+    {
+        unset($attrs['id'], $attrs['created_at'], $attrs['updated_at'], $attrs['empodat_main_id']);
+
+        return $attrs;
+    }
+
+    /**
+     * Walk a flat (column => value) array. For each key configured as a
+     * lookup FK id:
+     *   - if value is zero/null/empty: drop the field
+     *   - if the configured list_* table is null (e.g. data_order has no
+     *     PG counterpart): drop the field
+     *   - else look up the name in the configured table and emit a row keyed
+     *     by the friendly label (e.g. "Kingdom: Animalia")
+     * Keys not in the config pass through verbatim (text fields, dates,
+     * numeric measurements like biota_weight). Lookup queries are batched —
+     * one SELECT WHERE id IN (...) per distinct list_* table involved.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, array{label:string,table:?string}>  $config
+     * @return array<string, mixed>
+     */
+    private function enrichLookupIds(array $data, array $config): array
+    {
+        // Pass 1 — collect (table, id) pairs we'll need.
+        $pendingByTable = [];
+        foreach ($data as $key => $value) {
+            if (! isset($config[$key]) || $config[$key]['table'] === null) {
+                continue;
+            }
+            if ($value === null || $value === '' || $value === 0 || $value === '0') {
+                continue;
+            }
+            $pendingByTable[$config[$key]['table']][] = (int) $value;
+        }
+
+        // Pass 2 — bulk-load names (id => name) per table.
+        // Wrap each table in its own try/catch so a missing list_* table on a
+        // partially-migrated environment (e.g. a deploy where the Phase 6c
+        // schema migration hasn't run yet) degrades to "no enrichment for
+        // this field" instead of a 500. Other tables in the same request still
+        // resolve normally.
+        $nameCache = [];
+        foreach ($pendingByTable as $table => $ids) {
+            try {
+                $nameCache[$table] = DB::table($table)
+                    ->whereIn('id', array_values(array_unique($ids)))
+                    ->pluck('name', 'id')
+                    ->all();
+            } catch (\Throwable $e) {
+                Log::warning('enrichLookupIds: lookup table query failed', [
+                    'table' => $table,
+                    'error' => $e->getMessage(),
+                ]);
+                // Leave $nameCache[$table] unset so the pass-3 branch treats
+                // each id as "no matching row" and hides the field.
+            }
+        }
+
+        // Pass 3 — emit the resolved structure, preserving order.
+        $result = [];
+        foreach ($data as $key => $value) {
+            if (isset($config[$key])) {
+                $cfg = $config[$key];
+                if ($cfg['table'] === null) {
+                    continue; // No PG lookup; hide the cryptic id.
+                }
+                if ($value === null || $value === '' || $value === 0 || $value === '0') {
+                    continue;
+                }
+                $name = $nameCache[$cfg['table']][(int) $value] ?? null;
+                if ($name !== null) {
+                    $result[$cfg['label']] = $name;
+                }
+
+                // No row found in lookup → hide field (consistent with legacy).
+                continue;
+            }
+            // Pass-through (text fields, dates, numeric measurements).
+            $result[$key] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Per-matrix-type lookup configuration: maps each legacy FK id column on
+     * an `empodat_matrix_*` table to its PG `list_*` table and the
+     * user-facing label. `table => null` means the column has no PG
+     * counterpart (legacy `data_order` / `data_family` / `data_habitat_type`
+     * dumps are not available); those rows get hidden in the modal output.
+     *
+     * @return array<string, array{label:string,table:?string}>
+     */
+    private function lookupConfigForMatrix(string $matrixType): array
+    {
+        return match (strtolower($matrixType)) {
+            'biota' => [
+                'dki_id' => ['label' => 'Kingdom', 'table' => 'list_kingdoms'],
+                'dph_id' => ['label' => 'Phylum', 'table' => 'list_phyla'],
+                'dcla_id' => ['label' => 'Class', 'table' => 'list_classes'],
+                'dord_id' => ['label' => 'Order', 'table' => null],
+                'dfam_id' => ['label' => 'Family', 'table' => null],
+                'dspc_id' => ['label' => 'Species', 'table' => 'list_biota_species'],
+                'diop_id' => ['label' => 'Individual or pooled', 'table' => 'list_individual_or_pooled'],
+                'dcat_id' => ['label' => 'Category', 'table' => 'list_categories'],
+                'dht_id' => ['label' => 'Habitat type', 'table' => null],
+                'dmeas_id' => ['label' => 'Basis of measurement', 'table' => 'list_measurements'],
+                'dtiel_id' => ['label' => 'Tissue element', 'table' => 'list_tissues'],
+                'dpr_id' => ['label' => 'Proxy pressures', 'table' => 'list_proxy_pressures'],
+                'dsgr_id' => ['label' => 'Species group', 'table' => 'list_species_groups'],
+            ],
+            'soil' => [
+                'de_id' => ['label' => 'Depth sampling type', 'table' => 'list_depths'],
+                'dps_id' => ['label' => 'Particle size', 'table' => 'list_particle_sizes'],
+                'dgra_id' => ['label' => 'Grain size distribution', 'table' => 'list_grain_size_distributions'],
+                'dsot_id' => ['label' => 'Soil texture', 'table' => 'list_soil_textures'],
+                'dcnps_id' => ['label' => 'Conc. normalised (particle size)', 'table' => 'list_conc_normal_particle_sizes'],
+                'dcat_id' => ['label' => 'Category', 'table' => 'list_categories'],
+                'dtbu_id' => ['label' => 'Treatment before use', 'table' => null],
+                'dpr_id' => ['label' => 'Proxy pressures', 'table' => 'list_proxy_pressures'],
+            ],
+            'sediments' => [
+                'dpr_id' => ['label' => 'Proxy pressures', 'table' => 'list_proxy_pressures'],
+                'de_id' => ['label' => 'Depth sampling type', 'table' => 'list_depths'],
+                'df_id' => ['label' => 'Fraction', 'table' => 'list_fractions'],
+                'dcat_id' => ['label' => 'Category', 'table' => 'list_categories'],
+                'dtbu_id' => ['label' => 'Treatment before use', 'table' => null],
+            ],
+            default => [],
+        };
+    }
+
+    /**
+     * Lookup configuration for the `empodat_minor` FK id columns the modal
+     * exposes via "Additional Record Details". Same conventions as
+     * lookupConfigForMatrix.
+     *
+     * @return array<string, array{label:string,table:?string}>
+     */
+    private function lookupConfigForMinor(): array
+    {
+        return [
+            'dpc_id' => ['label' => 'Precision of coordinates', 'table' => 'list_coordinate_precisions'],
+            'dcod_id' => ['label' => 'Concentration data', 'table' => 'list_concentration_data'],
+            'dst_id' => ['label' => 'Sampling technique', 'table' => 'list_sampling_techniques'],
+            'dplu_id' => ['label' => 'Prevalent land use', 'table' => 'list_prevalent_land_uses'],
+            'dtl_id' => ['label' => 'Treatment less', 'table' => 'list_treatment_less'],
+            'dtod_id' => ['label' => 'Type of data', 'table' => null],   // no PG counterpart
+            'dtos_id' => ['label' => 'Type of sampling', 'table' => null], // no PG counterpart
+            'dmm_id' => ['label' => 'Aggregation type', 'table' => null],  // no PG counterpart
+        ];
     }
 
     /**
