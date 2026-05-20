@@ -67,6 +67,25 @@ abstract class Step
     }
 
     /**
+     * True if this step's table_name was previously inserted into for the same
+     * since_id by a run that has not been rolled back. Use this in non-idempotent
+     * steps (e.g. ImportStationsStep, which uses auto-id and would duplicate) to
+     * skip on re-run.
+     */
+    protected function previouslyCompleted(string $tableName): bool
+    {
+        return $this->pg()
+            ->table('empodat_legacy_import_log')
+            ->join('empodat_legacy_import_runs', 'empodat_legacy_import_runs.id', '=', 'empodat_legacy_import_log.run_id')
+            ->where('empodat_legacy_import_log.table_name', $tableName)
+            ->where('empodat_legacy_import_log.status', 'completed')
+            ->where('empodat_legacy_import_runs.since_id', $this->sinceId)
+            ->where('empodat_legacy_import_runs.status', '<>', 'rolled_back')
+            ->where('empodat_legacy_import_log.inserted_count', '>', 0)
+            ->exists();
+    }
+
+    /**
      * Idempotent insert: INSERT ... ON CONFLICT (col) DO NOTHING RETURNING <col>.
      * Returns the values that were actually inserted (skipped duplicates excluded).
      *

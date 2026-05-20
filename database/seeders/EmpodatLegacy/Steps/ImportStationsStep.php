@@ -40,6 +40,13 @@ class ImportStationsStep extends Step
     {
         $start = microtime(true);
 
+        if ($this->previouslyCompleted(self::TABLE)) {
+            $this->note('Already completed for this since_id; skipping (run rollback to re-run).');
+            $this->logBulkStep(self::TABLE, 0, null, null, (int) ((microtime(true) - $start) * 1000));
+
+            return;
+        }
+
         try {
             $distinctSigs = $this->legacy()
                 ->table('dct_analysis')
