@@ -532,21 +532,40 @@ class EmpodatMain extends Model
     /**
      * Get the formatted sampling date.
      *
+     * The legacy v1 dataset stores '0000-00-00 00:00:00' as a "no real date"
+     * sentinel in `empodat_minor.sampling_date`. The model casts that column
+     * to `datetime`, which makes Carbon emit '-000001-11-30...' for the
+     * sentinel — visible to users as a junk date. Year 0 / sentinel values
+     * are treated as "no date" here, falling back to the year-only field.
+     *
      * @return string
      */
     public function getFormattedSamplingDateAttribute()
     {
-        // First try to get the full date from minor relationship
-        if ($this->minor && $this->minor->sampling_date) {
-            return Carbon::parse($this->minor->sampling_date)->format('Y-m-d');
+        $raw = $this->minor?->sampling_date;
+        if ($raw !== null && ! $this->isZeroSamplingDate($raw)) {
+            return Carbon::parse($raw)->format('Y-m-d');
         }
 
-        // Fallback to the year if no minor date available
-        if ($this->sampling_date_year) {
+        if ($this->sampling_date_year && (int) $this->sampling_date_year > 0) {
             return (string) $this->sampling_date_year;
         }
 
-        // Final fallback
         return 'N/A';
+    }
+
+    /**
+     * True when the given sampling_date value represents the legacy
+     * "no real date" sentinel — either '0000-00-00 00:00:00' (raw varchar)
+     * or a Carbon instance whose year is <= 0.
+     */
+    private function isZeroSamplingDate(mixed $value): bool
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return (int) $value->format('Y') <= 0;
+        }
+        $str = trim((string) $value);
+
+        return $str === '' || str_starts_with($str, '0000-00-00');
     }
 }
