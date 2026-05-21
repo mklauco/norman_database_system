@@ -14,12 +14,15 @@ class EmpodatSuspectFileSeeder extends Seeder
     /**
      * Run the database seeds.
      *
-     * This seeder creates/updates all File records for Empodat Suspect data sources.
-     * Must be run before any of the main data seeders.
+     * Creates/updates File records for the 8 legacy Empodat Suspect data sources.
+     * BlackSea (10009–10011), TerraChem (10012–10015), and any new sources have
+     * their own dedicated per-source FileSeeders — e.g.
+     * EmpodatSuspectBlackSeaSedimentFileSeeder. Each pipeline orchestrator calls
+     * only the FileSeeder relevant to its source.
      */
     public function run(): void
     {
-        $this->command->info('Creating/updating File records for Empodat Suspect data sources...');
+        $this->command->info('Creating/updating File records for Empodat Suspect legacy sources...');
 
         $files = [
             [
