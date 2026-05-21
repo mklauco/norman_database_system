@@ -24,6 +24,7 @@ class HazardsPikmeSeeder extends Seeder
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
+
             return;
         }
 
@@ -32,7 +33,7 @@ class HazardsPikmeSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
 
         try {
-            DB::table($targetTable)->delete();
+            DB::table($targetTable)->truncate();
 
             $reader = SimpleExcelReader::create($path)
                 ->useDelimiter(',')
@@ -89,7 +90,7 @@ class HazardsPikmeSeeder extends Seeder
                     $chunkElapsedTime = round($chunkEndTime - $chunkStartTime, 2);
                     $totalElapsedTime = round($chunkEndTime - $startTime, 2);
 
-                    $this->command->info("Processed chunk ".($key + 1)." with ".count($records)." PIKME records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
+                    $this->command->info('Processed chunk '.($key + 1).' with '.count($records)." PIKME records. Chunk time: {$chunkElapsedTime}s, Total elapsed: {$totalElapsedTime}s");
                 });
         } finally {
             Schema::enableForeignKeyConstraints();
