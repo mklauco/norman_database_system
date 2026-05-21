@@ -10,16 +10,16 @@ use Illuminate\Database\Seeder;
 /**
  * BlackSea BIOTA pipeline — full end-to-end import in one command.
  *
- * Phases:
- *   1. FileSeeder              — register file rows (10001–10011) in `files`
+ * Phases (4-step, optimised single xlsx read, scoped to file_id=10009 only):
+ *   1. BiotaFileSeeder         — register THIS file row in `files` (id=10009 only)
  *   2. XlsxStationsMapping     — insert 11 station-column rows for file_id=10009
  *   3. XlsxStationsMappingFill — resolve station_id via equality on short_sample_code
  *   4. Main+Metadata           — stream xlsx → empodat_suspect_main + empodat_suspect_metadata
- *                                AND populate empodat_suspect_substances in the same single pass
- *                                (avoids reading the 19MB xlsx twice; saves ~130s vs. running
- *                                EmpodatSuspectBlackSeaBiotaSubstancesSeeder separately)
+ *                                + empodat_suspect_substances (all in one pass — avoids
+ *                                reading the 19MB xlsx twice)
  *
- * All phases are idempotent — safe to re-run.
+ * All phases are idempotent — safe to re-run. The pipeline only touches rows
+ * relevant to this source; other empodat_suspect file rows are untouched.
  *
  * php artisan db:seed --class=Database\\Seeders\\EmpodatSuspect\\EmpodatSuspectBlackSeaBiotaSeeder
  */
@@ -32,7 +32,7 @@ class EmpodatSuspectBlackSeaBiotaSeeder extends Seeder
         $this->command->info('=== BlackSea BIOTA pipeline (file_id=10009) ===');
 
         $this->call([
-            EmpodatSuspectFileSeeder::class,
+            EmpodatSuspectBlackSeaBiotaFileSeeder::class,
             EmpodatSuspectBlackSeaBiotaXlsxStationsMappingSeeder::class,
             EmpodatSuspectBlackSeaBiotaXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectBlackSeaBiotaMainSeeder::class,
