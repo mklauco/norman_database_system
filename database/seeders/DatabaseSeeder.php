@@ -16,8 +16,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-        // php artisan db:seed --class=Database\Seeders\Hazards\HazardsJanusSeeder
-        // php artisan db:seed --class=Database\Seeders\Hazards\HazardsPikmeSeeder
 
         // User::factory()->create([
         //     'name' => 'Test User',
