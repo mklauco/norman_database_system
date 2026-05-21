@@ -113,8 +113,16 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         DB::connection()->disableQueryLog();
         DB::statement('SET session_replication_role = replica;');
 
-        $this->command->info('Streaming BlackSea BIOTA → empodat_suspect_main + empodat_suspect_metadata (file_id='
+        $this->command->info('Streaming BlackSea BIOTA → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
             .self::FILE_ID.')...');
+
+        // Pre-load already-registered substances for this file so we don't re-insert duplicates.
+        $existingSubstances = DB::table('empodat_suspect_substances')
+            ->where('file_id', self::FILE_ID)
+            ->pluck('norman_id')
+            ->map(fn (?string $v): string => (string) $v)
+            ->flip()
+            ->all();
 
         $reader = SimpleExcelReader::create($path);
 
@@ -122,6 +130,7 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         $stationCols = [];
         $mainBatch = [];
         $metadataBatch = [];
+        $substancesByKey = []; // collected during the single xlsx pass, inserted at the end
         $rowCount = 0;
         $insertedMain = 0;
         $skippedSourceRows = 0;
@@ -139,7 +148,7 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
                 $rowCount++;
 
                 try {
-                    [$mainRows, $metadataPayload] = $this->buildRows($sourceRow, $stationCols);
+                    [$mainRows, $metadataPayload] = $this->buildRows($sourceRow, $stationCols, $substancesByKey, $existingSubstances);
                 } catch (\Throwable $e) {
                     $skippedSourceRows++;
                     if ($skippedSourceRows <= 10) {
@@ -175,6 +184,9 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
                 $this->flushBatch($mainBatch, $metadataBatch);
                 $insertedMain += count($mainBatch);
             }
+
+            // Bulk insert collected substances (single pass — replaces the standalone SubstancesSeeder).
+            $insertedSubstances = $this->insertSubstances($substancesByKey);
         } finally {
             DB::statement('SET session_replication_role = default;');
             DB::connection()->enableQueryLog();
@@ -184,7 +196,7 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         }
 
         $totalTime = round(microtime(true) - $startTime, 2);
-        $this->command->info("Done in {$totalTime}s — processed {$rowCount} source rows, inserted {$insertedMain} main+metadata rows.");
+        $this->command->info("Done in {$totalTime}s — processed {$rowCount} source rows, inserted {$insertedMain} main+metadata rows, {$insertedSubstances} substances.");
         if ($skippedSourceRows > 0) {
             $this->command->warn("Skipped {$skippedSourceRows} source rows due to errors.");
         }
@@ -193,7 +205,8 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
     }
 
     /**
-     * Build the main + metadata rows for a single source row.
+     * Build the main + metadata rows for a single source row, and accumulate
+     * the per-file substance record (norman_id, name) for end-of-run bulk insert.
      *
      * Returns: [array<int, array> $mainRows, array $metadataPayloadCommonFields].
      * Each main row's `is_numeric_concentration` is then attached to the corresponding
@@ -201,13 +214,26 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
      *
      * @param  array<string, mixed>  $sourceRow
      * @param  array<int, string>  $stationCols
+     * @param  array<string, array<string, mixed>>  $substancesByKey  accumulator, keyed by 'normanId|name'
+     * @param  array<string, int>  $existingSubstances  norman_id => 1 lookup for already-registered substances
      * @return array{0: array<int, array<string, mixed>>, 1: array<string, mixed>}
      */
-    protected function buildRows(array $sourceRow, array $stationCols): array
+    protected function buildRows(array $sourceRow, array $stationCols, array &$substancesByKey, array $existingSubstances): array
     {
         $normanId = $this->cleanString($sourceRow['NORMAN_ID'] ?? null);
         if ($normanId === null) {
             return [[], []];
+        }
+
+        // Collect substance record for this file (deduped, inserted in bulk at end of run).
+        $name = $this->cleanString($sourceRow['Name'] ?? null);
+        if ($name !== null && ! isset($existingSubstances[$normanId])) {
+            $key = $normanId.'|'.$name;
+            $substancesByKey[$key] ??= [
+                'norman_id' => $normanId,
+                'name' => $name,
+                'file_id' => self::FILE_ID,
+            ];
         }
 
         // Strip NS prefix, normalize, resolve to susdat_substances.id
@@ -312,6 +338,29 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
             }
             DB::table('empodat_suspect_metadata')->insert($metadataInsert);
         });
+    }
+
+    /**
+     * Bulk-insert the per-file substance records collected during the streaming pass.
+     * Already-existing (norman_id, file_id) rows were filtered out during collection,
+     * so this is a straight chunked INSERT.
+     *
+     * @param  array<string, array<string, mixed>>  $substancesByKey
+     */
+    protected function insertSubstances(array $substancesByKey): int
+    {
+        if (empty($substancesByKey)) {
+            return 0;
+        }
+
+        $rows = array_values($substancesByKey);
+        $inserted = 0;
+        foreach (array_chunk($rows, 500) as $chunk) {
+            DB::table('empodat_suspect_substances')->insert($chunk);
+            $inserted += count($chunk);
+        }
+
+        return $inserted;
     }
 
     /**
