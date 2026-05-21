@@ -1,4 +1,4 @@
-id,name,description,image_path,code,dashboard_route_name,last_update,number_of_records,created_at,updated_at,parent_id,show_in_dashboard,has_templates,is_public
+﻿id,name,description,image_path,code,dashboard_route_name,last_update,number_of_records,created_at,updated_at,parent_id,show_in_dashboard,has_templates,is_public
 5,Antibiotic Resistant Bacteria/Genes,A database of ARBs/ARGs in environmental matrices,fas fa-bacterium,arbg,arbghome.index,,3741,2024-12-01 17:41:28,2025-05-06 18:45:05,,true,true,true
 8,Indoor Environment,A database of data in indoor environment matrices,fa fa-home,indoor,indoorhome.index,,177600,2024-12-01 17:41:28,2025-04-26 10:59:26,,true,true,true
 9,Passive Sampling,A database of data obtained with passive samplers,fa fa-cogs,passive,passivehome.index,,4213,2024-12-01 17:41:28,2025-04-26 14:17:55,,true,true,true
@@ -17,3 +17,5 @@ id,name,description,image_path,code,dashboard_route_name,last_update,number_of_r
 11,Prioritisation,Results of prioritisation of NORMAN substances using the NORMAN Prioritisation Framework,fa-regular fa-chart-bar,prioritisation,prioritisationhome.index,,3920,2024-12-01 17:41:28,2025-04-30 18:08:02,,true,false,true
 2,Chemical Occurrence Data,A database of geo-referenced monitoring data on emerging substances,fa fa-share-alt,empodat,codhome.index,,97240351,2024-12-01 17:41:28,2025-09-30 11:08:03,,true,true,true
 18,Empodat Suspect,Empodat Suspect screening results module,fas fa-vial,empodat_suspect,empodat_suspect.home.index,,0,2025-10-22 16:53:50,2025-10-22 16:53:50,,true,false,false
+19,Hazards and Properties,CompTox hazards and properties placeholder entity,fas fa-triangle-exclamation,hazards,hazardshome.index,,0,2026-03-02 09:00:00,2026-03-02 09:00:00,,true,false,true
+

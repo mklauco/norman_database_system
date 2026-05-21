@@ -449,6 +449,222 @@
                             </div>
                           @endif
                         </div>
+                      @elseif($entity->processed_data['type'] === 'hazards_pbt_table')
+                        {{-- CASE 6: Hazards PBT/PMT table presentation --}}
+                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                          <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                              <thead class="bg-gray-50">
+                                <tr>
+                                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Criterion
+                                  </th>
+                                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Classification
+                                  </th>
+                                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    P, B, M, T score(i)
+                                  </th>
+                                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Reference
+                                  </th>
+                                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Consensus
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($entity->processed_data['rows'] as $row)
+                                  <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                      {{ $row['criterion'] }}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
+                                      {{ $row['classification'] }}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
+                                      {{ $row['score'] }}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-700">
+                                      {{ $row['reference'] }}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
+                                      {{ $row['consensus'] }}
+                                    </td>
+                                  </tr>
+                                @endforeach
+                              </tbody>
+                            </table>
+                          </div>
+
+                          @if(!empty($entity->processed_data['legend']))
+                            <div class="mt-4 border-t border-gray-200 pt-4">
+                              <div class="text-sm font-semibold text-gray-900 mb-2">
+                                P, B, M, T score(i):
+                              </div>
+                              <div class="overflow-x-auto">
+                                <div class="space-y-2 text-gray-700 min-w-max" style="font-size: 12px; line-height: 1.1;">
+                                <div class="whitespace-nowrap">
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 9px;">vP</span><span style="padding-right: 6px;">=</span><span>1</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 9px;">P</span><span style="padding-right: 6px;">=</span><span>0.75</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 12px;">sP (suspectP)</span><span style="padding-right: 6px;">=</span><span>0.5</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 10px;">not P</span><span style="padding-right: 6px;">=</span><span>0</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 9px;">probably-nP</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                  <span class="inline-block whitespace-nowrap"><span style="padding-right: 6px;">no data</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                </div>
+                                <div class="whitespace-nowrap">
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 9px;">vB</span><span style="padding-right: 6px;">=</span><span>1</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 8px;">B</span><span style="padding-right: 6px;">=</span><span>0.75</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 12px;">sB (suspectB)</span><span style="padding-right: 6px;">=</span><span>0.5</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 9px;">not B</span><span style="padding-right: 6px;">=</span><span>0</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 9px;">probably-nB</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                  <span class="inline-block whitespace-nowrap"><span style="padding-right: 6px;">no data</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                </div>
+                                <div class="whitespace-nowrap">
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 6px;">vM</span><span style="padding-right: 6px;">=</span><span>1</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 6px;">M</span><span style="padding-right: 6px;">=</span><span>0.75</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 6px;">sM (suspectM)</span><span style="padding-right: 6px;">=</span><span>0.5</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 6px;">not M</span><span style="padding-right: 6px;">=</span><span>0</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 6px;">probably-nM</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                  <span class="inline-block whitespace-nowrap"><span style="padding-right: 6px;">no data</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                </div>
+                                <div class="whitespace-nowrap">
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 8px;">T+</span><span style="padding-right: 6px;">=</span><span>1</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 10px;">T</span><span style="padding-right: 6px;">=</span><span>0.75</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 13px;">sT (suspectT)</span><span style="padding-right: 6px;">=</span><span>0.5</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 10px;">not T</span><span style="padding-right: 6px;">=</span><span>0</span></span>
+                                  <span class="inline-block whitespace-nowrap" style="margin-right: 28px;"><span style="padding-right: 9px;">probably-nT</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                  <span class="inline-block whitespace-nowrap"><span style="padding-right: 6px;">no data</span><span style="padding-right: 6px;">=</span><span>0.1</span></span>
+                                </div>
+                                </div>
+                              </div>
+                            </div>
+                          @endif
+
+                          @if(!empty($entity->processed_data['classification_rows']))
+                            <div class="mt-6 border-t border-gray-200 pt-4">
+                              <div class="text-sm font-semibold text-gray-900 mb-3">
+                                PBT/vPvB and PMT/vPvM classification
+                              </div>
+                              <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                  <thead class="bg-gray-50">
+                                    <tr>
+                                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                      </th>
+                                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Classification
+                                      </th>
+                                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        PBT/vPvB &amp; PMT/vPvM score(ii)
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($entity->processed_data['classification_rows'] as $row)
+                                      <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                          {{ $row['classification'] }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
+                                          {{ $row['result'] }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
+                                          {{ $row['score'] }}
+                                        </td>
+                                      </tr>
+                                    @endforeach
+                                  </tbody>
+                                </table>
+                              </div>
+
+                              @if(!empty($entity->processed_data['classification_legend']))
+                                <div class="mt-4 border-t border-gray-200 pt-4">
+                                  <div class="text-sm font-semibold text-gray-900 mb-2">
+                                    PBT/vPvB &amp; PMT/vPvM score(ii):
+                                  </div>
+                                  <div class="grid grid-cols-4 gap-x-4 gap-y-2 text-gray-700" style="font-size: 12px; line-height: 1.1;">
+                                    <div>
+                                      <div>if ((P or vP) and (B or vB) and (T or T+)):</div>
+                                      <div class="pl-4">Classification: PBT</div>
+                                      <div class="pl-4">PBT score = 1</div>
+                                      <div>else:</div>
+                                      <div class="pl-4">Classification: not PBT</div>
+                                      <div class="pl-4">PBT score = 0</div>
+                                    </div>
+                                    <div>
+                                      <div>if (vP and vB):</div>
+                                      <div class="pl-4">Classification: vPvB</div>
+                                      <div class="pl-4">vPvB score = 1</div>
+                                      <div>else:</div>
+                                      <div class="pl-4">Classification: not vPvB</div>
+                                      <div class="pl-4">vPvB score = 0</div>
+                                    </div>
+                                    <div>
+                                      <div>if ((P or vP) and (M or vM) and (T or T+)):</div>
+                                      <div class="pl-4">Classification: PMT</div>
+                                      <div class="pl-4">PMT score = 1</div>
+                                      <div>else:</div>
+                                      <div class="pl-4">Classification: not PMT</div>
+                                      <div class="pl-4">PMT score = 0</div>
+                                    </div>
+                                    <div>
+                                      <div>if (vP and vM):</div>
+                                      <div class="pl-4">Classification: vPvM</div>
+                                      <div class="pl-4">vPvM score = 1</div>
+                                      <div>else:</div>
+                                      <div class="pl-4">Classification: not vPvM</div>
+                                      <div class="pl-4">vPvM score = 0</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              @endif
+                            </div>
+                          @endif
+
+                          @if(isset($entity->processed_data['pbmt_score']))
+                            <div class="mt-6 border-t border-gray-200 pt-4">
+                              <div class="text-sm font-semibold text-gray-900 mb-3">
+                                Conclusion PBMT
+                              </div>
+                              <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                  <thead class="bg-gray-50">
+                                    <tr>
+                                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Conclusion
+                                      </th>
+                                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        PBMT score for prioritization(iii)
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                      <td class="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                        PBMT
+                                      </td>
+                                      <td class="px-4 py-3 text-sm text-gray-700 font-mono whitespace-nowrap">
+                                        {{ $entity->processed_data['pbmt_score'] }}
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+
+                              @if(!empty($entity->processed_data['pbmt_legend']))
+                                <div class="mt-4 border-t border-gray-200 pt-4">
+                                  <div class="text-sm font-semibold text-gray-900 mb-2">
+                                    PBMT score for prioritization(iii):
+                                  </div>
+                                  <div class="text-gray-700" style="font-size: 12px; line-height: 1.1;">
+                                    {{ $entity->processed_data['pbmt_legend'] }}
+                                  </div>
+                                </div>
+                              @endif
+                            </div>
+                          @endif
+                        </div>
                       @endif
                     @elseif(isset($entity->data['method_of_presentation']))
                       {{-- Fallback for unprocessed data --}}
