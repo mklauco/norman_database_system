@@ -26,10 +26,11 @@ yarn-error.log
 .DS_Store
 **/.DS_Store
 
-# Internal working notes (not for PR / not for shared history)
-LEGACY_MIGRATION_PLAN.md
-EMPODAT_SUSPECT_NEW_DATA_NOTES.md
-PROD_MIGRATION_RUNBOOK.md
+# Internal working notes — moved to the private internal-documentation repo.
+# Live home: docs/migration_from_v1_v2/legacy_delta_migration/ in norman_database_system_internal_documentation.
+# Anything that would describe the legacy system, prod credentials, or internal-only operational
+# detail belongs there, never in this repo.
+
 database/seeders/seeds/*.log
 _dbdata/
 _postgres_data/
