@@ -177,18 +177,24 @@ deploy.yml: job "Deploy to production" runs on ubuntu-latest
        │   – ln -sfn releases/<NAME> current
        │   – Reads previous target for the log
        │
+       ├── Recreate containers against the new release
+       │   – docker compose up -d --force-recreate
+       │       app task-app-schedule
+       │       task-app-queue-{default,medium,exports} webserver
+       │   – Required: Docker resolves the ./current bind-mount source
+       │     at container-create time and binds by inode, so a running
+       │     container does NOT see a symlink swap. `restart` and `up -d`
+       │     alone are no-ops; only `--force-recreate` rebinds. See §6.2.
+       │   – Folds the previous "restart queue workers" step in (they're
+       │     recreated here too).
+       │
        ├── Rebuild Laravel caches against new code
+       │   – docker exec nds-app php artisan view:clear
+       │       (compiled Blade views live in shared/storage/framework/views/
+       │        and persist across deploys; stale .php files can reference
+       │        classes removed in a package bump and cause 500s)
        │   – docker exec nds-app php artisan optimize:clear
        │   – docker exec nds-app php artisan optimize
-       │
-       ├── Graceful PHP-FPM reload
-       │   – docker exec nds-app sh -c 'kill -USR2 1'
-       │   – PHP-FPM master (PID 1) reloads workers gracefully
-       │
-       ├── Restart queue workers and scheduler
-       │   – docker compose restart task-app-schedule task-app-queue-default
-       │     task-app-queue-medium task-app-queue-exports
-       │   – Forces them to load new code (they hold it in memory otherwise)
        │
        ├── Maintenance mode OFF
        │   – docker exec nds-app php artisan up
@@ -199,9 +205,9 @@ deploy.yml: job "Deploy to production" runs on ubuntu-latest
            – Never deletes the active release (compares canonical paths via readlink -f)
 ```
 
-**User-visible impact:** ~5–15 seconds of HTTP 503 between maintenance-on and maintenance-off.
+**User-visible impact:** ~10–25 seconds of HTTP 503 between maintenance-on and maintenance-off (the recreate step adds a few seconds vs. the older flow).
 
-**Failure handling:** the workflow uses `set -euo pipefail` — any failed step aborts the deploy. If failure happens *before* the symlink swap, production is untouched (still serving from the previous release). If failure happens *after* the swap but before queue restart, the site is on new code but workers are stale — fix forward by re-running the workflow or rolling back per [DEPLOY.md](DEPLOY.md#rollback).
+**Failure handling:** the workflow uses `set -euo pipefail` — any failed step aborts the deploy. If failure happens *before* the symlink swap, production is untouched (still serving from the previous release). If failure happens *after* the swap but before maintenance-off, the site stays in maintenance mode — fix forward by re-running the workflow or rolling back per [DEPLOY.md](DEPLOY.md#rollback).
 
 ---
 
@@ -243,13 +249,23 @@ Every release has `.env` and `storage/` as symlinks pointing at absolute paths u
 
 This was the root cause of an initial deploy failure during go-live. Fixed in commit `01d1b86`.
 
-### 6.2 PHP-FPM reload via SIGUSR2
+### 6.2 Atomic swap + container recreate
 
-`docker exec nds-app sh -c 'kill -USR2 1'` works only because PHP-FPM is PID 1 in the `nds-app` container (Dockerfile's `CMD ["php-fpm"]`). If the entrypoint ever changes, replace this with the appropriate reload command. The fallback if SIGUSR2 fails: PHP-FPM's OPcache will revalidate file timestamps within a few seconds anyway, so worst case the new code becomes visible after a brief delay.
+`ln -sfn` replaces a symlink atomically (single rename(2) syscall under the hood). **However**, that swap is invisible to a running container: Docker resolves a bind-mount source path at container-create time and binds the underlying directory by inode. The kernel's path-traversal-per-access only applies to symlinks inside the bind mount, not to the symlink that IS the bind mount.
 
-### 6.3 Atomic swap mechanism
+Concretely: if the container was started when `current → releases/A`, the mount becomes `/var/www → /opt/.../releases/A` for the lifetime of the container. After `ln -sfn releases/B current` swaps the symlink on the host, the container still reads from `/opt/.../releases/A`. `docker compose up -d` is a no-op (compose config unchanged) and `docker restart` reuses the same resolved mount. The only operation that re-resolves the symlink is `docker compose up -d --force-recreate`, which destroys the container and starts a new one.
 
-`ln -sfn` replaces a symlink atomically (single rename(2) syscall under the hood). Containers' bind mounts of `./current` resolve the symlink at every file access (kernel-level path traversal), not once at container start. Therefore, the moment the symlink target changes, every subsequent file lookup inside the container sees the new release.
+This was a pre-existing latent bug masked by OPcache revalidation: each deploy invalidated PHP's bytecode cache after a few seconds, so most deploys *eventually* served new code from the old release dir (until the next time the container was started for an unrelated reason, at which point the symlink finally got re-resolved). The 2026-05 production migration made the bug visible because new migration files were genuinely invisible to `php artisan migrate` — they don't exist on the old release dir at all.
+
+The fix (committed in the same change as this doc update): step 6 of the deploy workflow runs `docker compose up -d --force-recreate` for all app/queue/web containers immediately after the symlink swap and before any `artisan` calls that depend on new code being visible. Maintenance mode (step 4) masks the few-second recreate window.
+
+This also makes the previous "graceful PHP-FPM reload via `kill -USR2 1`" and "restart queue workers" steps redundant — a freshly-created container has fresh PHP processes and fresh worker processes by definition. Both steps were removed.
+
+### 6.3 Why view:clear runs after recreate
+
+Compiled Blade views live at `shared/storage/framework/views/`. The `shared/` directory is bind-mounted into every container, so compiled `.php` files persist across deploys regardless of which release they were generated from. If a deploy bumps a third-party package (Livewire is the canonical example) and removes a class that an older compiled view references, the next request that hits that template throws `Class "…" not found` → 500.
+
+`php artisan view:clear` deletes everything under `shared/storage/framework/views/` so the next request recompiles against the new code. Cheap (a few ms), idempotent, safe to run on every deploy.
 
 ### 6.4 Prune safety
 
@@ -300,10 +316,8 @@ These are explicit non-goals of the current implementation. Track separately if 
 8. **Three queue worker containers report `(unhealthy)`** as a pre-existing condition. The healthcheck (`pgrep -f 'queue:work'`) intermittently fails to detect the worker process. Cosmetic on the surface; not blocking deploys, but should be diagnosed (real failure vs. flaky check).
 9. **Build artifacts** (`vendor/`, `public/build/`) are produced on the production host during deploy. Long-term, building in CI and shipping artifacts is faster and isolates the production host from build-time resource spikes.
 10. **PHP version pin in CI:** `ci.yml` uses PHP 8.4. `composer.json` allows `^8.2`. New devs running the site on 8.2 may install dependencies that won't run on 8.4 without warning. Pin once you decide on a single supported version.
-11. **The deploy workflow swaps the `current` symlink but does NOT recreate the containers.** Docker resolves bind-mount sources at container-create time and binds the underlying directory by inode — so after a deploy, the running containers are still bound to the OLD release directory and serving stale code (including stale migration files; `php artisan migrate --pretend` will report "Nothing to migrate" until containers are recreated). `docker compose up -d` alone is a no-op because compose config hasn't changed; `restart` is also insufficient. The fix is `docker compose up -d --force-recreate` (a few seconds of downtime). Until added to the workflow, every deploy that ships code changes effectively reaches production only after a manual recreate.
-12. **The deploy workflow does not clear the compiled Blade view cache.** Compiled views live in `shared/storage/framework/views/` and persist across releases. A deploy that bumps a third-party package version (e.g. Livewire) can leave cached `.php` files referencing classes that no longer exist, producing a 500 on the first page that hits a stale template. Workaround: `docker exec nds-app php artisan view:clear` post-deploy.
-13. **The `nds-app` image only ships `pdo_pgsql`, not the procedural `pgsql` extension.** Any code that needs PostgreSQL's COPY protocol (bulk-load seeders, custom dump pipelines) hits `Call to undefined function pg_connect()`. Workaround: install at runtime with `apt-get install -y libpq-dev && docker-php-ext-install pgsql && docker-php-ext-enable pgsql` — ephemeral, wiped by `--force-recreate`. Should be added to the Dockerfile.
-14. **`/dev/shm` on the `nds-postgres` container is the Docker default of 64 MB.** Operations that ask PostgreSQL to allocate large shared-memory segments (e.g. parallel `VACUUM ANALYZE` on a large table — wants ~1 GB) fail with a misleading "Disk full" error. Either bump `shm_size` on the postgres service in `docker-compose.production.yml` or have heavy callers explicitly disable parallel workers (`VACUUM (ANALYZE, PARALLEL 0)`).
+11. **The `nds-app` image only ships `pdo_pgsql`, not the procedural `pgsql` extension.** Any code that needs PostgreSQL's COPY protocol (bulk-load seeders, custom dump pipelines) hits `Call to undefined function pg_connect()`. Workaround: install at runtime with `apt-get install -y libpq-dev && docker-php-ext-install pgsql && docker-php-ext-enable pgsql` — ephemeral, wiped by the next container recreate. Should be added to the Dockerfile.
+12. **`/dev/shm` on the `nds-postgres` container is the Docker default of 64 MB.** Operations that ask PostgreSQL to allocate large shared-memory segments (e.g. parallel `VACUUM ANALYZE` on a large table — wants ~1 GB) fail with a misleading "Disk full" error. Either bump `shm_size` on the postgres service in `docker-compose.production.yml` or have heavy callers explicitly disable parallel workers (`VACUUM (ANALYZE, PARALLEL 0)`).
 
 ---
 

@@ -136,34 +136,43 @@ jobs:
           echo "current -> $RELEASE_PATH (previous: $PREVIOUS_RELEASE)"
           echo "::endgroup::"
 
-          # ---- 6. rebuild Laravel caches against new code --------------------
-          echo "::group::artisan optimize"
+          # ---- 6. RECREATE CONTAINERS so they bind the new release -----------
+          # Docker resolves bind-mount sources at container-create time and
+          # binds by inode, so the symlink swap in step 5 is invisible to the
+          # already-running containers — they continue to serve the previous
+          # release. `restart` does NOT help (same container, same resolved
+          # mount); `up -d` alone is a no-op (compose config unchanged); only
+          # `--force-recreate` rebinds. This rolls all app/worker/web containers
+          # to the new release. Brief downtime is masked by maintenance mode
+          # (step 4) — users see the 503 page, not connection refused.
+          echo "::group::Recreate containers against new release"
+          docker compose up -d --force-recreate \
+            app \
+            task-app-schedule \
+            task-app-queue-default \
+            task-app-queue-medium \
+            task-app-queue-exports \
+            webserver
+          echo "::endgroup::"
+
+          # ---- 7. rebuild Laravel caches against new code --------------------
+          # view:clear must run first: compiled Blade views live in
+          # shared/storage/framework/views/, which persists across deploys.
+          # Stale .php files can reference classes that no longer exist after
+          # a package bump (e.g. Livewire upgrade) → 500 on the first request
+          # that hits an affected template.
+          echo "::group::artisan view:clear + optimize"
+          docker exec nds-app php artisan view:clear
           docker exec nds-app php artisan optimize:clear
           docker exec nds-app php artisan optimize
           echo "::endgroup::"
 
-          # ---- 7. graceful PHP-FPM reload (picks up new code immediately) ----
-          # PID 1 in nds-app is the php-fpm master. SIGUSR2 = graceful reload.
-          echo "::group::Reload php-fpm"
-          docker exec nds-app sh -c 'kill -USR2 1' || echo "WARN: php-fpm reload signal failed — OPcache will revalidate within seconds anyway."
-          echo "::endgroup::"
-
-          # ---- 8. restart queue workers & scheduler --------------------------
-          # Long-running workers hold old code in memory; must be cycled.
-          echo "::group::Restart queue workers and scheduler"
-          docker compose restart \
-            task-app-schedule \
-            task-app-queue-default \
-            task-app-queue-medium \
-            task-app-queue-exports
-          echo "::endgroup::"
-
-          # ---- 9. maintenance mode OFF ---------------------------------------
+          # ---- 8. maintenance mode OFF ---------------------------------------
           echo "::group::php artisan up"
           docker exec nds-app php artisan up
           echo "::endgroup::"
 
-          # ---- 10. prune old releases ----------------------------------------
+          # ---- 9. prune old releases -----------------------------------------
           echo "::group::Prune old releases (keeping last $KEEP_RELEASES)"
           active_canonical="$(readlink -f "$PROJECT_ROOT/current")"
           cd "$PROJECT_ROOT/releases"
