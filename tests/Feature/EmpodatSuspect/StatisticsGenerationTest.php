@@ -19,7 +19,9 @@ class StatisticsGenerationTest extends TestCase
             ['code' => 'empodat_suspect'],
             [
                 'name' => 'Empodat Suspect (test)',
-                'is_public' => true,
+                // Match production: empodat_suspect is private. The super_admin
+                // user created below satisfies the controller's module-access check.
+                'is_public' => false,
                 // Keep the stub off the landing page — it has no dashboard_route_name
                 // and would otherwise crash route() in the @php block of landing/index.blade.php.
                 'show_in_dashboard' => false,
@@ -47,7 +49,9 @@ class StatisticsGenerationTest extends TestCase
             ['code' => 'empodat_suspect'],
             [
                 'name' => 'Empodat Suspect (test)',
-                'is_public' => true,
+                // Match production: empodat_suspect is private. The super_admin
+                // user created below satisfies the controller's module-access check.
+                'is_public' => false,
                 // Keep the stub off the landing page — it has no dashboard_route_name
                 // and would otherwise crash route() in the @php block of landing/index.blade.php.
                 'show_in_dashboard' => false,
