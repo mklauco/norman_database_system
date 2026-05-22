@@ -40,7 +40,7 @@
                     </form>
                   </div>
                   <div class="mt-3 text-sm text-amber-700">
-                    <strong>Note:</strong> This will generate statistics for substances, sample codes, and countries.
+                    <strong>Note:</strong> Click queues a background job and returns immediately. Generation against the full dataset (~40M rows) typically takes <strong>up to 5 minutes</strong> — refresh this page to see updated "Updated:" timestamps on each card. Concurrent runs are deduplicated automatically.
                   </div>
                 </div>
               </div>
