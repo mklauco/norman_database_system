@@ -17,7 +17,13 @@ class StatisticsGenerationTest extends TestCase
     {
         DatabaseEntity::firstOrCreate(
             ['code' => 'empodat_suspect'],
-            ['name' => 'Empodat Suspect (test)', 'is_public' => true]
+            [
+                'name' => 'Empodat Suspect (test)',
+                'is_public' => true,
+                // Keep the stub off the landing page — it has no dashboard_route_name
+                // and would otherwise crash route() in the @php block of landing/index.blade.php.
+                'show_in_dashboard' => false,
+            ]
         );
 
         Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
@@ -39,7 +45,13 @@ class StatisticsGenerationTest extends TestCase
     {
         DatabaseEntity::firstOrCreate(
             ['code' => 'empodat_suspect'],
-            ['name' => 'Empodat Suspect (test)', 'is_public' => true]
+            [
+                'name' => 'Empodat Suspect (test)',
+                'is_public' => true,
+                // Keep the stub off the landing page — it has no dashboard_route_name
+                // and would otherwise crash route() in the @php block of landing/index.blade.php.
+                'show_in_dashboard' => false,
+            ]
         );
 
         Bus::fake([GenerateEmpodatSuspectStatisticsJob::class]);
