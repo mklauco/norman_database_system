@@ -21,11 +21,11 @@
         <div class="text-slate-200">Total Records</div>
         @if(isset($allStats['empodat_suspect.records_by_concentration_type']['generated_at']))
           <div class="text-xs text-slate-300 mt-1">
-            Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.records_by_concentration_type']['generated_at'])->format('Y-m-d') }}
+            Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.records_by_concentration_type']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
           </div>
         @elseif($empodatSuspectEntity && $empodatSuspectEntity->last_update)
           <div class="text-xs text-slate-300 mt-1">
-            Updated: {{ \Carbon\Carbon::parse($empodatSuspectEntity->last_update)->format('Y-m-d') }}
+            Updated: {{ \Carbon\Carbon::parse($empodatSuspectEntity->last_update)->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
           </div>
         @endif
       </div>
@@ -55,6 +55,11 @@
               <span class="text-sm font-medium text-slate-700">Total:</span>
               <span class="font-bold text-slate-900">{{ number_format($allStats['empodat_suspect.records_by_concentration_type']['total_count'], 0, '.', ' ') }}</span>
             </div>
+            @if(!empty($allStats['empodat_suspect.records_by_concentration_type']['generated_at']))
+              <div class="text-xs text-slate-500 mt-2">
+                Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.records_by_concentration_type']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
+              </div>
+            @endif
           </div>
         </div>
       @endif
@@ -83,6 +88,11 @@
             <div class="text-xs text-slate-500 mt-2">
               Unique chemical substances detected
             </div>
+            @if(!empty($allStats['empodat_suspect.total_substances']['generated_at']))
+              <div class="text-xs text-slate-500 mt-2">
+                Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.total_substances']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
+              </div>
+            @endif
           </div>
         </div>
       @endif
@@ -115,6 +125,11 @@
             @if($topSampleCode)
               <div class="text-xs text-slate-500 mt-2">
                 Top: {{ Str::limit($topSampleCodeKey, 20) }}<br>{{ number_format($topCount, 0, '.', ' ') }} substances
+              </div>
+            @endif
+            @if(!empty($allStats['empodat_suspect.substances_by_sample_code']['generated_at']))
+              <div class="text-xs text-slate-500 mt-2">
+                Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.substances_by_sample_code']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
               </div>
             @endif
           </div>
@@ -151,6 +166,11 @@
                 Top: {{ Str::limit($topRecordsSampleCodeKey, 20) }}<br>{{ number_format($topRecordsCount, 0, '.', ' ') }} records
               </div>
             @endif
+            @if(!empty($allStats['empodat_suspect.records_by_sample_code']['generated_at']))
+              <div class="text-xs text-slate-500 mt-2">
+                Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.records_by_sample_code']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
+              </div>
+            @endif
           </div>
         </div>
       @endif
@@ -184,6 +204,11 @@
                 Top: {{ $topCountrySubstancesKey }}<br>{{ number_format($topCountrySubstances['count'], 0, '.', ' ') }} substances
               </div>
             @endif
+            @if(!empty($allStats['empodat_suspect.substances_by_country']['generated_at']))
+              <div class="text-xs text-slate-500 mt-2">
+                Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.substances_by_country']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
+              </div>
+            @endif
           </div>
         </div>
       @endif
@@ -215,6 +240,11 @@
             @if($topCountryRecords)
               <div class="text-xs text-slate-500 mt-2">
                 Top: {{ $topCountryRecordsKey }}<br>{{ number_format($topCountryRecords['count'], 0, '.', ' ') }} records
+              </div>
+            @endif
+            @if(!empty($allStats['empodat_suspect.records_by_country']['generated_at']))
+              <div class="text-xs text-slate-500 mt-2">
+                Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.records_by_country']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
               </div>
             @endif
           </div>
@@ -254,6 +284,11 @@
             @if($topConfidenceLevel)
               <div class="text-xs text-slate-500 mt-2">
                 Most common: {{ Str::limit($topConfidenceLevelKey, 25) }}<br>{{ number_format($topConfidenceLevel['count'], 0, '.', ' ') }} records
+              </div>
+            @endif
+            @if(!empty($allStats['empodat_suspect.records_by_confidence_interval']['generated_at']))
+              <div class="text-xs text-slate-500 mt-2">
+                Updated: {{ \Carbon\Carbon::parse($allStats['empodat_suspect.records_by_confidence_interval']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
               </div>
             @endif
           </div>

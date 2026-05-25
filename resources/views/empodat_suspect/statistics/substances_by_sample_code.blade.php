@@ -6,7 +6,7 @@
 @section('main-content')
   @if(isset($generatedAt))
     <div class="mb-4 text-sm text-gray-600">
-      Data generated: {{ \Carbon\Carbon::parse($generatedAt)->format('Y-m-d H:i:s') }}
+      Data generated: {{ \Carbon\Carbon::parse($generatedAt)->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
     </div>
   @endif
 

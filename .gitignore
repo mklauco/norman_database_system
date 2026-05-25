@@ -26,10 +26,11 @@ yarn-error.log
 .DS_Store
 **/.DS_Store
 
-# Internal working notes (not for PR / not for shared history)
-LEGACY_MIGRATION_PLAN.md
-EMPODAT_SUSPECT_NEW_DATA_NOTES.md
-PROD_MIGRATION_RUNBOOK.md
+# Internal working notes — moved to the private internal-documentation repo.
+# Live home: docs/migration_from_v1_v2/legacy_delta_migration/ in norman_database_system_internal_documentation.
+# Anything that would describe the legacy system, prod credentials, or internal-only operational
+# detail belongs there, never in this repo.
+
 database/seeders/seeds/*.log
 _dbdata/
 _postgres_data/
@@ -50,4 +51,4 @@ database/seeders/seeds/ecotox_tables/ecotox3.csv
 database/seeders/seeds/literature/2025-6-20_ULEI_Wildlife_Exposure_data.csv
 database/seeders/seeds/literature/DCT_BIOTA_LITERATURE_TerraChem_NILU Heimstad_2013_2023_11122025_v3.xlsx
 database/seeders/seeds/literature/DCT_BIOTA_TerraChem_LiteratureData_ POPs_19102025_v1.xlsx
-database/seeders/seeds/hazards/hazards_pikme.csv
+/database/seeders/seeds/hazards/hazards_pikme.csv
