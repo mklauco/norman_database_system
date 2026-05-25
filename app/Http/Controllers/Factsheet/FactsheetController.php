@@ -68,11 +68,6 @@ class FactsheetController extends Controller
 
         // Process each entity to prepare presentation data
         foreach ($factsheetEntities as $entity) {
-            if ($entity->name === 'PBT/vPvB & PMT/vPvM (NORMAN)') {
-                $entity->processed_data = $this->getHazardsPbtPmtData($substance);
-                continue;
-            }
-
             if (isset($entity->data['method_of_presentation'])) {
                 if ($entity->data['method_of_presentation'] === 'database_table') {
                     // CASE 1: Database table presentation
@@ -237,13 +232,7 @@ class FactsheetController extends Controller
                             'summary' => $methodData['summary'] ?? [],
                         ];
                     } elseif ($methodData['type'] === 'hazards_pbt_table') {
-                        return [
-                            'type' => 'hazards_pbt_table',
-                            'rows' => $methodData['rows'] ?? [],
-                            'source_label' => $methodData['source_label'] ?? null,
-                            'updated_at' => $methodData['updated_at'] ?? null,
-                            'legend' => $methodData['legend'] ?? [],
-                        ];
+                        return $methodData;
                     }
                 }
 
@@ -733,6 +722,5 @@ class FactsheetController extends Controller
         }
     }
 }
-
 
 
