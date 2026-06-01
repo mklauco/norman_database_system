@@ -32,13 +32,18 @@
           <div class="text-sm text-gray-600">Total Sample Codes</div>
           <div class="text-2xl font-bold text-gray-900">{{ number_format($totalSampleCodes, 0, '.', ' ') }}</div>
         </div>
+        @php
+          // Data shape per sample_code is ['total' => int, 'numeric' => int, 'non_numeric' => int].
+          // Sum the 'total' (or the bare int for legacy stats predating the partitioning split).
+          $totalRecords = collect($data)->sum(fn ($v) => is_array($v) ? ($v['total'] ?? 0) : $v);
+        @endphp
         <div>
           <div class="text-sm text-gray-600">Total Records (sum)</div>
-          <div class="text-2xl font-bold text-gray-900">{{ number_format(array_sum($data), 0, '.', ' ') }}</div>
+          <div class="text-2xl font-bold text-gray-900">{{ number_format($totalRecords, 0, '.', ' ') }}</div>
         </div>
         <div>
           <div class="text-sm text-gray-600">Average Records per Code</div>
-          <div class="text-2xl font-bold text-gray-900">{{ number_format(array_sum($data) / max($totalSampleCodes, 1), 1, '.', ' ') }}</div>
+          <div class="text-2xl font-bold text-gray-900">{{ number_format($totalRecords / max($totalSampleCodes, 1), 1, '.', ' ') }}</div>
         </div>
       </div>
     </div>
@@ -58,13 +63,23 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            @foreach(collect($data)->sortByDesc(function($count) { return $count; }) as $sampleCode => $count)
+            @foreach(collect($data)->sortByDesc(fn ($v) => is_array($v) ? ($v['total'] ?? 0) : $v) as $sampleCode => $info)
+              @php
+                $total       = is_array($info) ? ($info['total'] ?? 0)       : $info;
+                $numeric     = is_array($info) ? ($info['numeric'] ?? 0)     : 0;
+                $nonNumeric  = is_array($info) ? ($info['non_numeric'] ?? 0) : 0;
+              @endphp
               <tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {{ $sampleCode }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ number_format($count, 0, '.', ' ') }}
+                  {{ number_format($total, 0, '.', ' ') }}
+                  @if(is_array($info))
+                    <span class="text-xs text-gray-400 ml-2">
+                      ({{ number_format($numeric, 0, '.', ' ') }} numeric / {{ number_format($nonNumeric, 0, '.', ' ') }} N/A)
+                    </span>
+                  @endif
                 </td>
               </tr>
             @endforeach
