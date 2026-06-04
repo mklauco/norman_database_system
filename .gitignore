@@ -22,6 +22,9 @@ yarn-error.log
 /.idea
 /.vscode
 
+# Temporary one-off scripts (DB checks, scratch) — never commit
+/_tmp
+
 # macOS Finder metadata — never commit
 .DS_Store
 **/.DS_Store
