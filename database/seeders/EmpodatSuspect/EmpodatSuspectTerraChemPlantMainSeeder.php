@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelReader;
 
 /**
- * Stream TerraChem INVERTEBRATE xlsx → populate `empodat_suspect_main`,
+ * Stream TerraChem PLANT xlsx → populate `empodat_suspect_main`,
  * `empodat_suspect_metadata`, and `empodat_suspect_substances` in a single pass.
  *
  * Per source row:
@@ -30,16 +30,22 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *   - HRMS column is spelled `numberoffragments score` (with "ber"), not
  *     `numoffragments score` — reflected in METADATA_COLUMN_MAP below.
  *
+ * PLANT-only deviations:
+ *   - The "based on HRMS library" column is spelled `Basedon HRMSLibrary` (with a
+ *     space) in this file, not `BasedonHRMSLibrary` — read accordingly in buildRows().
+ *   - A stray `Unit` column sits inside Block C; it is not in METADATA_COLUMN_MAP
+ *     and is therefore ignored. `Identification_Proofs` is absent (stored as null).
+ *
  * See: Empodat-Suspect-new-source-onboarding.md §8 (TerraChem)
  */
-class EmpodatSuspectTerraChemInvertebrateMainSeeder extends Seeder
+class EmpodatSuspectTerraChemPlantMainSeeder extends Seeder
 {
     use LoadsSubstanceCaches;
     use WithoutModelEvents;
 
-    protected const FILE_ID = 10012;
+    protected const FILE_ID = 10013;
 
-    protected const FILE_NAME = 'TerraChem invertebrate samples 2026-06-03 upload ready.xlsx';
+    protected const FILE_NAME = 'TerraChem plant samples 2026-06-03 upload ready.xlsx';
 
     protected const STATION_BLOCK_START_AFTER = 'Units';
 
@@ -97,7 +103,7 @@ class EmpodatSuspectTerraChemInvertebrateMainSeeder extends Seeder
         DB::connection()->disableQueryLog();
         DB::statement('SET session_replication_role = replica;');
 
-        $this->command->info('Streaming TerraChem INVERTEBRATE → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
+        $this->command->info('Streaming TerraChem PLANT → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
             .self::FILE_ID.')...');
 
         $existingSubstances = DB::table('empodat_suspect_substances')
@@ -212,7 +218,8 @@ class EmpodatSuspectTerraChemInvertebrateMainSeeder extends Seeder
 
         $ip = $this->cleanString($sourceRow['IP'] ?? null);
         $ipMax = $this->cleanDouble($sourceRow['IP_max'] ?? null);
-        $basedOnHrms = $this->cleanBoolean($sourceRow['BasedonHRMSLibrary'] ?? null);
+        // PLANT file spells this column with a space: `Basedon HRMSLibrary`.
+        $basedOnHrms = $this->cleanBoolean($sourceRow['Basedon HRMSLibrary'] ?? null);
         $units = $this->cleanString($sourceRow['Units'] ?? null);
         $method = $this->cleanString($sourceRow['Method'] ?? null);
 
@@ -405,4 +412,4 @@ class EmpodatSuspectTerraChemInvertebrateMainSeeder extends Seeder
         return null;
     }
 }
-// php artisan db:seed --class=Database\\Seeders\\EmpodatSuspect\\EmpodatSuspectTerraChemInvertebrateMainSeeder
+// php artisan db:seed --class=Database\\Seeders\\EmpodatSuspect\\EmpodatSuspectTerraChemPlantMainSeeder

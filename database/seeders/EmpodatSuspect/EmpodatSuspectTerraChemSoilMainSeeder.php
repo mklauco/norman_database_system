@@ -69,11 +69,16 @@ class EmpodatSuspectTerraChemSoilMainSeeder extends Seeder
         'num_fragments',
     ];
 
-    protected const BATCH_SIZE = 500;
+    /**
+     * Rows per multi-row INSERT. Capped by Postgres' 65535 bind-parameter limit:
+     * empodat_suspect_metadata is the widest write at 16 columns → 16 × 4000 =
+     * 64000 < 65535. Larger batches = far fewer round-trips = faster import.
+     */
+    protected const BATCH_SIZE = 4000;
 
     public function run(): void
     {
-        ini_set('memory_limit', '4G');
+        ini_set('memory_limit', '16G');
         ini_set('max_execution_time', '7200');
 
         $path = storage_path('app/public/empodat_suspect/'.self::FILE_NAME);
