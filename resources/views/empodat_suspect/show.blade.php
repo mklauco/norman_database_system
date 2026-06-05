@@ -298,40 +298,28 @@
                 @endif
               @endif
 
-              {{-- Add matrix metadata --}}
+              {{-- Matrix metadata: legacy *_id columns are resolved to labels
+                   via the list_* lookups in MatrixMetadataLabeller --}}
               @if (!empty($matrixMetadata))
                 @foreach ($matrixMetadata as $matrixType => $matrixData)
-                  <tr class="bg-teal-600 text-white">
-                    <td colspan="2" class="p-2 font-bold text-center">
-                      Matrix: {{ ucwords(str_replace('_', ' ', $matrixType)) }}
-                      <span class="text-xs font-normal">(first matching record for this station)</span>
-                    </td>
-                  </tr>
-                  @php
-                    $matrixArray = (array) $matrixData;
-                    $rowIndex = 0;
-                  @endphp
-                  @foreach ($matrixArray as $key => $value)
-                    {{-- Skip internal IDs --}}
-                    @if (in_array($key, ['id', 'station_id', 'empodat_main_id']))
-                      @continue
-                    @endif
-
-                    {{-- Skip null or empty values --}}
-                    @if (is_null($value) || (is_string($value) && trim($value) === ''))
-                      @continue
-                    @endif
-
-                    <tr class="@if ($rowIndex % 2 === 0) bg-teal-50 @else bg-teal-100 @endif">
-                      <td class="p-1 font-bold text-teal-900" style="width: 20%; min-width: 120px; word-wrap: break-word; overflow-wrap: break-word;">
-                        {{ $key }}
-                      </td>
-                      <td class="p-1 text-teal-800" style="width: 80%; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; max-width: 0;">
-                        {{ $value }}
+                  @if (!empty($matrixData))
+                    <tr class="bg-teal-600 text-white">
+                      <td colspan="2" class="p-2 font-bold text-center">
+                        Matrix: {{ ucwords(str_replace('_', ' ', $matrixType)) }}
+                        <span class="text-xs font-normal">(first matching record for this station)</span>
                       </td>
                     </tr>
-                    @php $rowIndex++; @endphp
-                  @endforeach
+                    @foreach ($matrixData as $rowIndex => $field)
+                      <tr class="@if ($rowIndex % 2 === 0) bg-teal-50 @else bg-teal-100 @endif">
+                        <td class="p-1 font-bold text-teal-900" style="width: 20%; min-width: 120px; word-wrap: break-word; overflow-wrap: break-word;">
+                          {{ $field['label'] }}
+                        </td>
+                        <td class="p-1 text-teal-800" style="width: 80%; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; max-width: 0;">
+                          {{ $field['value'] }}
+                        </td>
+                      </tr>
+                    @endforeach
+                  @endif
                 @endforeach
               @endif
             </table>
