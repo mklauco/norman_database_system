@@ -166,8 +166,13 @@ class GenerateStatisticsAction
             'key' => 'empodat_suspect.total_substances',
             'meta_data' => [
                 'count' => $globalDistinct,
+                // Substances that have at least one numeric concentration record.
                 'numeric_count' => $totals['numeric']['substances'],
-                'non_numeric_count' => $totals['non_numeric']['substances'],
+                // Substances that NEVER have a numeric value (N/A only). Derived as
+                // total - numeric so the two sub-counts form a clean, non-overlapping
+                // partition of `count` (the previous per-partition count overlapped,
+                // since a substance can appear in both partitions).
+                'non_numeric_count' => max(0, $globalDistinct - $totals['numeric']['substances']),
                 'generated_at' => $generatedAt->toISOString(),
             ],
         ]);
