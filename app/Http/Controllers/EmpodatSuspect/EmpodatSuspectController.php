@@ -22,6 +22,7 @@ use App\Models\List\TypeDataSource;
 use App\Models\SLE\SuspectListExchangeSource;
 use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
+use App\Services\EmpodatSuspect\MatrixMetadataLabeller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -684,6 +685,7 @@ class EmpodatSuspectController extends Controller
         // because one station can have many empodat_main records
         $matrixMetadata = [];
         $stationId = $record->station_id;
+        $labeller = new MatrixMetadataLabeller;
 
         if ($stationId) {
             // Check each matrix MV for data
@@ -706,7 +708,7 @@ class EmpodatSuspectController extends Controller
                         ->first();
 
                     if ($data) {
-                        $matrixMetadata[$type] = $data;
+                        $matrixMetadata[$type] = $labeller->label($type, $data);
                     }
                 } catch (\Exception $e) {
                     // MV might not exist yet, skip silently

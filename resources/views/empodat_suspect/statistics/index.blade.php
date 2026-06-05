@@ -76,13 +76,20 @@
               <span class="font-medium text-slate-900">{{ number_format($allStats['empodat_suspect.total_substances']['count'], 0, '.', ' ') }}</span>
             </div>
             @if(isset($allStats['empodat_suspect.total_substances']['numeric_count']))
+              @php
+                $tsTotal = (int) $allStats['empodat_suspect.total_substances']['count'];
+                $tsNumeric = (int) $allStats['empodat_suspect.total_substances']['numeric_count'];
+                // N/A-only = substances that NEVER have a numeric value. This makes the
+                // two sub-lines a clean, non-overlapping partition that sums to the total.
+                $tsNaOnly = max(0, $tsTotal - $tsNumeric);
+              @endphp
               <div class="flex justify-between">
-                <span class="text-sm text-slate-600">In records with concentration:</span>
-                <span class="font-medium text-emerald-700">{{ number_format($allStats['empodat_suspect.total_substances']['numeric_count'], 0, '.', ' ') }}</span>
+                <span class="text-sm text-slate-600">With a numeric concentration:</span>
+                <span class="font-medium text-emerald-700">{{ number_format($tsNumeric, 0, '.', ' ') }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-sm text-slate-600">In records with N/A:</span>
-                <span class="font-medium text-amber-700">{{ number_format($allStats['empodat_suspect.total_substances']['non_numeric_count'], 0, '.', ' ') }}</span>
+                <span class="text-sm text-slate-600">N/A only (never numeric):</span>
+                <span class="font-medium text-amber-700">{{ number_format($tsNaOnly, 0, '.', ' ') }}</span>
               </div>
             @endif
             <div class="text-xs text-slate-500 mt-2">
