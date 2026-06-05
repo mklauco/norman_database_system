@@ -37,6 +37,7 @@ class MatrixMetadataLabellerTest extends TestCase
             'dspc_id' => 0,
             'dord_id' => 99,
             'biota_weight' => '69.77',
+            'storage_temperature' => '-20',
             'water_content' => '',
             'species_name' => 'Quercus suber',
         ], $overrides);
@@ -62,6 +63,7 @@ class MatrixMetadataLabellerTest extends TestCase
         $rows = collect($this->labelBiota());
 
         $this->assertEquals('69.77 g', $rows->firstWhere('label', 'Biota weight')['value'] ?? null);
+        $this->assertEquals('-20 °C', $rows->firstWhere('label', 'Storage temperature')['value'] ?? null);
     }
 
     public function test_zero_ids_and_blank_values_are_hidden(): void

@@ -72,6 +72,7 @@ class MatrixMetadataLabeller
             'tarsus_length' => ['label' => 'Tarsus length', 'unit' => 'mm'],
             'tarsus_width' => ['label' => 'Tarsus width', 'unit' => 'mm'],
             'km' => ['label' => 'River-km', 'unit' => 'km'],
+            'storage_temperature' => ['label' => 'Storage temperature', 'unit' => '°C'],
         ],
     ];
 
