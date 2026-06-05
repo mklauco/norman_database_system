@@ -40,10 +40,10 @@ Set in **Settings → Secrets and variables → Actions**:
 
 | Secret | Value |
 |---|---|
-| `DEPLOY_SSH_HOST` | Server hostname or IP |
+| `DEPLOY_SSH_HOST` | Server **IPv4 address** — currently `145.223.117.219`. Use the IP literal, **not** a hostname. See [Deploy times out at the SSH step (IPv6 pitfall)](#deploy-times-out-at-the-ssh-step-ipv6-pitfall). |
 | `DEPLOY_SSH_USER` | SSH user that owns `/opt/projects/norman_database_system` and is in the `docker` group |
 | `DEPLOY_SSH_KEY` | Private SSH key (full PEM contents). Generate fresh on the server: `ssh-keygen -t ed25519 -f ~/.ssh/nds_deploy -C github-actions-deploy -N ""`. Paste the **private** key here. Append the **public** key (`~/.ssh/nds_deploy.pub`) to the deploy user's `~/.ssh/authorized_keys` on the server. |
-| `DEPLOY_KNOWN_HOSTS` | Output of `ssh-keyscan <host>` from your laptop — pins the server's host key. |
+| `DEPLOY_KNOWN_HOSTS` | Output of `ssh-keyscan -4 <host>` from your laptop — pins the server's host key. Must be keyscanned against the **same IPv4 value** as `DEPLOY_SSH_HOST`, or `StrictHostKeyChecking=yes` will reject the connection. |
 
 Optional:
 
@@ -54,10 +54,10 @@ Optional:
 To populate `DEPLOY_KNOWN_HOSTS`:
 
 ```bash
-ssh-keyscan 145.223.117.219 2>/dev/null
+ssh-keyscan -4 145.223.117.219 2>/dev/null
 ```
 
-Paste the entire output into the secret.
+Paste the three key lines (`ssh-ed25519`, `ssh-rsa`, `ecdsa-…`) into the secret; the `#`-comment lines are ignored. The `-4` flag matters — see the [IPv6 pitfall](#deploy-times-out-at-the-ssh-step-ipv6-pitfall) below.
 
 Notification emails on workflow failure are handled by GitHub itself — repo watchers receive them automatically based on their account notification settings. To customise, see your GitHub account → Settings → Notifications.
 
@@ -221,7 +221,50 @@ If image rebuilds are needed (Dockerfile changed): `docker compose build && dock
 | Queue jobs running old code | Workers weren't restarted | `docker compose restart task-app-queue-default task-app-queue-medium task-app-queue-exports` |
 | `php artisan` complains about cached config after edit | Stale cache | `docker exec nds-app php artisan optimize:clear && docker exec nds-app php artisan optimize` |
 | GitHub Actions can't SSH | Wrong key, wrong host, or `authorized_keys` missing the public key | Test from a workstation: `ssh -i ~/.ssh/nds_deploy <user>@<host> echo OK` |
+| Deploy fails at **Run remote deploy** with `ssh: connect to host *** port 22: Connection timed out` | The runner is reaching the server over **IPv6**, which the server doesn't serve. See [IPv6 pitfall](#deploy-times-out-at-the-ssh-step-ipv6-pitfall). | Set `DEPLOY_SSH_HOST` to the **IPv4 literal** and regenerate `DEPLOY_KNOWN_HOSTS` with `ssh-keyscan -4`. |
+| Deploy connects but fails with `Host key verification failed` | `DEPLOY_KNOWN_HOSTS` doesn't match the value in `DEPLOY_SSH_HOST` (e.g. you changed the host but not the known-hosts) | Regenerate: `ssh-keyscan -4 <DEPLOY_SSH_HOST>` and paste into `DEPLOY_KNOWN_HOSTS`. |
 | `docker exec nds-app` says container not found | Container died | `docker compose ps` to inspect, `docker compose up -d` to revive |
+
+### Deploy times out at the SSH step (IPv6 pitfall)
+
+**Symptom.** Deploys that worked for weeks suddenly fail — every run dies at the **Run remote deploy** step, before any remote command executes:
+
+```
+ssh: connect to host *** port 22: Connection timed out
+##[error]Process completed with exit code 255.
+```
+
+CI is green, the server is up, you can SSH in from your laptop, and nothing on the server changed. Only the GitHub Actions deploy can't connect.
+
+**Root cause (2026-06-04 incident).** The deploy host became **dual-stack in DNS** — it resolved to both an IPv4 (`A`) and an IPv6 (`AAAA`, `2a02:4780:41:b417::1`) address. GitHub's hosted runners are dual-stack and **prefer IPv6** when an `AAAA` record exists. They tried to reach the server over IPv6, but the server's IPv6 is misconfigured and **not reachable from the outside** (it had a bogus `/48` host netmask and a dead v6 gateway), so the SYN was black-holed and the connection timed out. IPv4 to the server worked the whole time — which is why every other client (laptops, the office) was unaffected.
+
+The host firewall (UFW), `fail2ban`, and `sshd` were all fine and **not** the cause. `sshd` was listening, UFW allowed port 22 and logged no drops for it, and `fail2ban` never banned a GitHub IP. The packets simply never arrived over the broken IPv6 path.
+
+**Why the first "force IPv4" attempt didn't fix it.** Adding `ssh -4` to `deploy.yml` was the right instinct, but it didn't help on its own: `ssh -4` asks DNS only for the `A` record, yet `DEPLOY_SSH_HOST` itself was pointing at an IPv6-resolving value, so there was no IPv4 address for `-4` to use. Forcing IPv4 only works if the **host value you hand SSH can actually resolve to IPv4.**
+
+**The fix that worked.**
+
+1. 🌐 GitHub → **Settings → Secrets and variables → Actions** → set `DEPLOY_SSH_HOST` to the **IPv4 literal** (`145.223.117.219`). This sidesteps DNS and dual-stack entirely.
+2. 🖥️ On your laptop: `ssh-keyscan -4 145.223.117.219` → paste the three key lines into `DEPLOY_KNOWN_HOSTS` (it must match the new host value, or `StrictHostKeyChecking=yes` rejects the connection — see the `Host key verification failed` troubleshooting row).
+3. 🌐 GitHub → **Actions → Deploy →** open the failed run → **Re-run jobs → Re-run failed jobs** (secrets are re-read at run time, so no new commit is needed). It connects in well under a second.
+
+**How to confirm this is the failure you're hitting** (read-only, from any machine that can reach the server):
+
+```bash
+# Does the deploy hostname hand out an AAAA record? (an AAAA = runners may try IPv6)
+dig +short AAAA norman-databases.org
+
+# Is IPv4 :22 reachable but IPv6 :22 not?
+nc -4 -z -w 8 145.223.117.219 22      # expect: succeeded
+nc -6 -z -w 8 2a02:4780:41:b417::1 22 # expect: timeout (if you have v6 egress)
+```
+
+**Permanent prevention (do one of these).** Pinning `DEPLOY_SSH_HOST` to the IP fixes deploys, but the server still advertises an `AAAA` it can't serve, which will keep tripping any IPv6-capable client:
+
+- **DNS:** remove the `AAAA` record for `norman-databases.org` (and `www`) if you don't actually offer IPv6, **or**
+- **Server:** fix the host's IPv6 — correct the netmask (`/48` → `/64`) and the v6 default gateway so the advertised address is genuinely reachable.
+
+Keep `DEPLOY_SSH_HOST` as the IPv4 literal regardless: the deploy path should never depend on the public web hostname's DNS.
 
 ## What this system does NOT do (by design)
 
