@@ -368,6 +368,11 @@ class EmpodatSuspectController extends Controller
             // Log query if not paginated request
             $queryLogId = $this->logQuery($empodatSuspects, $mainRequest, $request);
 
+            // Apply user-selected sorting (after logging so the query hash stays
+            // stable across sort changes). Relationship-backed sorts are only
+            // allowed once filters have narrowed the result set.
+            $this->applySorting($empodatSuspects, $request, $hasFilters);
+
             // Apply pagination
             $empodatSuspects = $this->applyPagination($empodatSuspects, $request);
 
@@ -595,17 +600,102 @@ class EmpodatSuspectController extends Controller
     }
 
     /**
-     * Apply pagination based on display option
+     * Apply pagination based on display option.
+     *
+     * Ordering is applied separately by applySorting() before this runs.
      */
     private function applyPagination($query, Request $request)
     {
-        $orderBy = $query->orderBy('empodat_suspect_main.id', 'asc');
-
         if ($request->input('displayOption') == 1) {
-            return $orderBy->simplePaginate(200)->withQueryString();
-        } else {
-            return $orderBy->paginate(200)->withQueryString();
+            return $query->simplePaginate(200)->withQueryString();
         }
+
+        return $query->paginate(200)->withQueryString();
+    }
+
+    /**
+     * Columns that sort against the partitioned empodat_suspect_main table
+     * directly (no join). These are always available, even on unfiltered
+     * searches.
+     *
+     * @var array<string, string>
+     */
+    private const DIRECT_SORT_COLUMNS = [
+        'id' => 'empodat_suspect_main.id',
+        'concentration' => 'empodat_suspect_main.concentration',
+        'units' => 'empodat_suspect_main.units',
+        'ip_max' => 'empodat_suspect_main.ip_max',
+        'hrms' => 'empodat_suspect_main.based_on_hrms_library',
+    ];
+
+    /**
+     * Columns that require a join or a correlated sub-select to sort. Sorting
+     * these over the full (unfiltered) result set scans millions of rows, so
+     * they are only honoured once the user has applied at least one filter.
+     *
+     * @var array<string, string>
+     */
+    private const RELATED_SORT_COLUMNS = [
+        'substance' => 'susdat_substances.name',
+        'country' => 'list_countries.name',
+        'sample_code' => 'empodat_stations.short_sample_code',
+        'station' => 'empodat_stations.name',
+        'year' => 'sampling_year',
+    ];
+
+    /**
+     * Apply a whitelisted ORDER BY to the results query.
+     *
+     * Only columns in the two maps above may be sorted — this prevents SQL
+     * injection and keeps sorts to columns we can serve. Relationship-backed
+     * sorts are gated behind $hasFilters so an unfiltered search can never
+     * trigger a multi-million-row join sort.
+     */
+    private function applySorting($query, Request $request, bool $hasFilters): void
+    {
+        $sort = (string) $request->input('sort', 'id');
+        $direction = strtolower((string) $request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (array_key_exists($sort, self::DIRECT_SORT_COLUMNS)) {
+            $query->orderBy(self::DIRECT_SORT_COLUMNS[$sort], $direction);
+        } elseif ($hasFilters && array_key_exists($sort, self::RELATED_SORT_COLUMNS)) {
+            $this->joinForSort($query, $sort);
+
+            if ($sort === 'year') {
+                // Order by the correlated sub-select alias added in search().
+                $query->orderByRaw('sampling_year '.$direction.' nulls last');
+            } else {
+                $query->orderBy(self::RELATED_SORT_COLUMNS[$sort], $direction);
+            }
+        } else {
+            // Unknown column, or a related column requested without filters:
+            // fall back to the default stable order and stop.
+            $query->orderBy('empodat_suspect_main.id', 'asc');
+
+            return;
+        }
+
+        // Deterministic tiebreaker so pagination is stable for low-cardinality
+        // sorts (units, hrms, year, ...).
+        if ($sort !== 'id') {
+            $query->orderBy('empodat_suspect_main.id', 'asc');
+        }
+    }
+
+    /**
+     * Add the join(s) a relationship-backed sort column needs. `year` needs no
+     * join (it uses the correlated sub-select aliased in search()).
+     */
+    private function joinForSort($query, string $sort): void
+    {
+        match ($sort) {
+            'substance' => $query->leftJoin('susdat_substances', 'susdat_substances.id', '=', 'empodat_suspect_main.substance_id'),
+            'sample_code', 'station' => $query->leftJoin('empodat_stations', 'empodat_stations.id', '=', 'empodat_suspect_main.station_id'),
+            'country' => $query
+                ->leftJoin('empodat_stations', 'empodat_stations.id', '=', 'empodat_suspect_main.station_id')
+                ->leftJoin('list_countries', 'list_countries.id', '=', 'empodat_stations.country_id'),
+            default => null,
+        };
     }
 
     /**

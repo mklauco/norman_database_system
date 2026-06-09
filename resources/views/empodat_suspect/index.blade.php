@@ -208,19 +208,64 @@
             @endif
           </div>
 
+          {{-- Sorting legend --}}
+          <div class="mb-2 text-xs text-gray-600 flex items-start gap-2">
+            <i class="fas fa-info-circle text-gray-400 mt-0.5"></i>
+            <span>
+              <strong>Sorting</strong> reorders <em>all</em> matching records, so it can take a while on broad searches —
+              the more filters you apply, the faster it gets.
+              The columns marked <i class="fas fa-lock text-[10px] opacity-60"></i>
+              (<span class="text-amber-700">Substance, Country, Year, Sample Code, Sampling Station</span>)
+              can only be sorted after you apply a filter, and are the slowest.
+            </span>
+          </div>
+
           <table class="table-standard">
             <thead>
+              @php
+                // Keep these in sync with EmpodatSuspectController DIRECT/RELATED_SORT_COLUMNS.
+                $directSortCols = ['id', 'concentration', 'units', 'ip_max', 'hrms'];
+                $relatedSortCols = ['substance', 'country', 'sample_code', 'station', 'year'];
+                $columnLabels = [
+                    'id' => 'ID',
+                    'substance' => 'Substance',
+                    'concentration' => 'Concentration',
+                    'units' => 'Units',
+                    'ip_max' => 'IP_max',
+                    'hrms' => 'HRMS Library',
+                    'country' => 'Country',
+                    'year' => 'Year',
+                    'sample_code' => 'Sample Code',
+                    'station' => 'Sampling Station',
+                ];
+                $currentSort = request('sort', 'id');
+                $currentDir = strtolower(request('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+              @endphp
               <tr class="bg-gray-600 text-white">
-                <th>ID</th>
-                <th>Substance</th>
-                <th>Concentration</th>
-                <th>Units</th>
-                <th>IP_max</th>
-                <th>HRMS Library</th>
-                <th>Country</th>
-                <th>Year</th>
-                <th>Sample Code</th>
-                <th>Sampling Station</th>
+                @foreach ($columnLabels as $key => $label)
+                  @php
+                    $isSortable = in_array($key, $directSortCols, true)
+                        || ($hasFilters && in_array($key, $relatedSortCols, true));
+                    $isActive = $isSortable && $currentSort === $key;
+                    $nextDir = ($isActive && $currentDir === 'asc') ? 'desc' : 'asc';
+                    $icon = $isActive
+                        ? ($currentDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down')
+                        : ($isSortable ? 'fa-sort' : 'fa-lock');
+                  @endphp
+                  <th class="whitespace-nowrap">
+                    @if ($isSortable)
+                      <a href="{{ request()->fullUrlWithQuery(['sort' => $key, 'direction' => $nextDir, 'page' => 1]) }}"
+                         class="inline-flex items-center gap-1 hover:underline {{ $isActive ? 'font-bold' : '' }}">
+                        {{ $label }}<i class="fas {{ $icon }} text-xs {{ $isActive ? '' : 'opacity-50' }}"></i>
+                      </a>
+                    @else
+                      <span class="inline-flex items-center gap-1 cursor-help"
+                            title="Apply at least one filter to sort by this column">
+                        {{ $label }}<i class="fas {{ $icon }} text-xs opacity-40"></i>
+                      </span>
+                    @endif
+                  </th>
+                @endforeach
               </tr>
             </thead>
             <tbody>
