@@ -7,6 +7,7 @@ namespace App\Jobs\EmpodatSuspect;
 use App\Jobs\AbstractCsvExportJob;
 use App\Mail\EmpodatSuspect\CsvExportReady;
 use App\Models\Backend\QueryLog;
+use App\Models\DatabaseEntity;
 use App\Models\EmpodatSuspect\EmpodatSuspectMain;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -419,6 +420,8 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
     /**
      * Initialize message content for email notification
      * Override to use the correct route for EmpodatSuspect downloads
+     *
+     * @return array<string, mixed>
      */
     protected function initializeMessageContent(string $filename): array
     {
@@ -426,11 +429,27 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
             'user' => $this->user->name ?? $this->user->email,
             'filename' => $filename,
             'download_link' => route('empodat_suspect.csv.download', ['filename' => $filename]),
+            'my_downloads_link' => route('export_downloads.index', ['user_id' => $this->user->id]),
+            'is_public' => $this->moduleIsPublic(),
             'total_records' => 0,
             'processing_time' => 0,
             'file_size' => '0 KB',
             'export_failed' => false,
         ];
+    }
+
+    /**
+     * Whether the EmpoDat Suspect module is currently public.
+     *
+     * While the module is non-public, downloads require an authenticated
+     * session, so the notification email must direct the user to log in and
+     * fetch the prepared file from "My Downloads" rather than offering a raw
+     * download link. This reads the same flag the access controller enforces,
+     * so the email reverts automatically once the module is made public.
+     */
+    protected function moduleIsPublic(): bool
+    {
+        return (bool) DatabaseEntity::where('code', $this->getDatabaseKey())->value('is_public');
     }
 
     /**

@@ -31,6 +31,7 @@
     </p>
 
     @else
+    @php($isPublic = $messageContent['is_public'] ?? true)
     <!-- Success Heading -->
     <h2 style="margin-top: 0; margin-bottom: 16px; font-weight: normal; color: #2A9D8F;">
       Your Empodat Suspect CSV Export Is Ready!
@@ -38,8 +39,13 @@
 
     <!-- Intro Paragraph -->
     <p style="margin-bottom: 16px;">
+      @if($isPublic)
       We're pleased to let you know that your requested Empodat Suspect CSV export is now available.
       Click the button below to download your file:
+      @else
+      We're pleased to let you know that your requested Empodat Suspect CSV export has been prepared
+      and is waiting for you in <strong>My Downloads</strong>.
+      @endif
     </p>
 
     <!-- Export Details -->
@@ -61,6 +67,7 @@
       </p>
     </div>
 
+    @if($isPublic)
     <!-- Download Button -->
     <p style="margin-bottom: 24px;">
       <a href="{{ $messageContent['download_link'] ?? '#' }}"
@@ -73,6 +80,32 @@
     <p style="font-size: 13px; color: #666; margin-bottom: 24px;">
       Note: This download link will be available for the next 24 hours.
     </p>
+    @else
+    <!-- Login-required notice (module is currently non-public) -->
+    <div style="background-color: #fdecea; border: 2px solid #e63946; border-radius: 4px; padding: 16px; margin-bottom: 20px;">
+      <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: bold; color: #b02a37;">
+        🔒 You must be logged in to download this export.
+      </p>
+      <p style="margin: 0; font-size: 14px; color: #721c24;">
+        Empodat Suspect data is not public at this time. Your file has been prepared and saved to
+        your account. Log in first, then open <strong>My Downloads</strong> to retrieve it.
+      </p>
+    </div>
+
+    <!-- My Downloads Button -->
+    <p style="margin-bottom: 12px;">
+      <a href="{{ $messageContent['my_downloads_link'] ?? '#' }}"
+         style="display: inline-block; padding: 12px 24px; background-color: #2A9D8F; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px;">
+        Go to My Downloads
+      </a>
+    </p>
+
+    <!-- Expiration Notice -->
+    <p style="font-size: 13px; color: #666; margin-bottom: 24px;">
+      Note: This export will be available for the next 24 hours. You will be asked to log in if you
+      are not already signed in.
+    </p>
+    @endif
     @endif
 
     <!-- Footer / Signature -->
