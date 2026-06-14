@@ -14,7 +14,7 @@
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
         "owen-it/laravel-auditing": "^14.0",
-        "phpoffice/phpspreadsheet": "^5.4",
+        "phpoffice/phpspreadsheet": "^5.7",
         "sentry/sentry-laravel": "^4.16",
         "spatie/laravel-data": "^4.11",
         "spatie/laravel-permission": "^6.7",
