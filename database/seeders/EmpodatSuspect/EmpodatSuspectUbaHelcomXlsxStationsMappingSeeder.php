@@ -20,7 +20,7 @@ class EmpodatSuspectUbaHelcomXlsxStationsMappingSeeder extends Seeder
         $target_table_name = 'empodat_suspect_xlsx_stations_mapping';
 
         $now = Carbon::now();
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/headers_OK_UBA-HELCOM_suspect screening results_ng g wet weight_1204.csv';
+        $path = storage_path('app/public/empodat_suspect/headers_OK_UBA-HELCOM_suspect screening results_ng g wet weight_1204.csv');
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");

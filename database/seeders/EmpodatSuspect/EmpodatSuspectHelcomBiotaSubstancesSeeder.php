@@ -24,7 +24,7 @@ class EmpodatSuspectHelcomBiotaSubstancesSeeder extends Seeder
         ini_set('memory_limit', '2G');
         ini_set('max_execution_time', '7200');
 
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/OK_HELCOM PreEMPT_suspect screening results_ng g wet weight_1980 - BIOTA.xlsx';
+        $path = storage_path('app/public/empodat_suspect/OK_HELCOM PreEMPT_suspect screening results_ng g wet weight_1980 - BIOTA.xlsx');
 
         if (! file_exists($path)) {
             $this->command->error("Excel file not found: {$path}");

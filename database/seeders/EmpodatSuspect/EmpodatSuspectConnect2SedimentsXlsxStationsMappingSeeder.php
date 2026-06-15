@@ -22,7 +22,7 @@ class EmpodatSuspectConnect2SedimentsXlsxStationsMappingSeeder extends Seeder
         // DB::table($target_table_name)->truncate();
 
         $now = Carbon::now();
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/headers_OK_CONNECT 2_suspect screening results_ng g dry weight_1192 - SEDIMENTS.csv';
+        $path = storage_path('app/public/empodat_suspect/headers_OK_CONNECT 2_suspect screening results_ng g dry weight_1192 - SEDIMENTS.csv');
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");

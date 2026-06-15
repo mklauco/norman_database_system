@@ -22,7 +22,7 @@ class EmpodatSuspectApexXlsxStationsMappingSeeder extends Seeder
         // DB::table($target_table_name)->truncate();
 
         $now = Carbon::now();
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/apex_data_headers.csv';
+        $path = storage_path('app/public/empodat_suspect/apex_data_headers.csv');
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");

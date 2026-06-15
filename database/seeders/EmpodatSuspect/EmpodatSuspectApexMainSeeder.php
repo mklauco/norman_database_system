@@ -42,8 +42,9 @@ class EmpodatSuspectApexMainSeeder extends Seeder
 
         // Disable foreign key checks temporarily for faster inserts (PostgreSQL)
         DB::statement('SET session_replication_role = replica;');
+        DB::statement('SET synchronous_commit = off;');
 
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/OK_LIFE APEX_suspect screening results_ng g wet weight_333.csv';
+        $path = storage_path('app/public/empodat_suspect/OK_LIFE APEX_suspect screening results_ng g wet weight_333.csv');
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
@@ -89,7 +90,8 @@ class EmpodatSuspectApexMainSeeder extends Seeder
         $this->command->info('Identified '.count($stationColumns).' station columns');
 
         $batch = [];
-        $batchSize = 500;
+        $substances = [];
+        $batchSize = 5000;
         $rowCount = 0;
         $recordCount = 0;
         $skippedRows = 0;
@@ -129,6 +131,16 @@ class EmpodatSuspectApexMainSeeder extends Seeder
                     $skippedRows++;
 
                     continue;
+                }
+
+                $substanceNormanId = trim((string) ($data['NORMAN_ID'] ?? ''));
+                $substanceName = trim((string) ($data['Name'] ?? ''));
+                if ($substanceNormanId !== '' && $substanceName !== '') {
+                    $substances[$substanceNormanId.'|'.$substanceName] ??= [
+                        'norman_id' => $substanceNormanId,
+                        'name' => $substanceName,
+                        'file_id' => $this->fileId,
+                    ];
                 }
 
                 try {
@@ -177,6 +189,13 @@ class EmpodatSuspectApexMainSeeder extends Seeder
                 DB::table($target_table_name)->insert($batch);
                 unset($batch);
                 $batch = [];
+            }
+
+            if (! empty($substances)) {
+                foreach (array_chunk(array_values($substances), 5000) as $substanceChunk) {
+                    DB::table('empodat_suspect_substances')->insert($substanceChunk);
+                }
+                $this->command->info('Inserted '.count($substances).' unique substances (collected in main pass)');
             }
 
             DB::commit();

@@ -24,7 +24,7 @@ class EmpodatSuspectConnect2BiotaSubstancesSeeder extends Seeder
         ini_set('memory_limit', '2G');
         ini_set('max_execution_time', '7200');
 
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/OK_CONNECT 2_suspect screening results_ng g wet weight_1192 - BIOTA.xlsx';
+        $path = storage_path('app/public/empodat_suspect/OK_CONNECT 2_suspect screening results_ng g wet weight_1192 - BIOTA.xlsx');
 
         if (! file_exists($path)) {
             $this->command->error("Excel file not found: {$path}");
