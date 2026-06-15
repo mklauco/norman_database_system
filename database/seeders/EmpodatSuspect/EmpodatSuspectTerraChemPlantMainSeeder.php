@@ -102,6 +102,7 @@ class EmpodatSuspectTerraChemPlantMainSeeder extends Seeder
         }
         DB::connection()->disableQueryLog();
         DB::statement('SET session_replication_role = replica;');
+        DB::statement('SET synchronous_commit = off;');
 
         $this->command->info('Streaming TerraChem PLANT → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
             .self::FILE_ID.')...');

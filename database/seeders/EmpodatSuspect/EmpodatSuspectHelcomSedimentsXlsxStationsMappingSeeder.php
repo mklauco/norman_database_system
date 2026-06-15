@@ -22,7 +22,7 @@ class EmpodatSuspectHelcomSedimentsXlsxStationsMappingSeeder extends Seeder
         // DB::table($target_table_name)->truncate();
 
         $now = Carbon::now();
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/headers_OK_HELCOM PreEMPT_suspect screening results_ng g dry weight_1980 - SEDIMENTS.csv';
+        $path = storage_path('app/public/empodat_suspect/headers_OK_HELCOM PreEMPT_suspect screening results_ng g dry weight_1980 - SEDIMENTS.csv');
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
