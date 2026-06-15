@@ -89,7 +89,7 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
     ];
 
     /** Number of main+metadata rows per insert batch. */
-    protected const BATCH_SIZE = 500;
+    protected const BATCH_SIZE = 4000;
 
     public function run(): void
     {
@@ -112,6 +112,7 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         }
         DB::connection()->disableQueryLog();
         DB::statement('SET session_replication_role = replica;');
+        DB::statement('SET synchronous_commit = off;');
 
         $this->command->info('Streaming BlackSea BIOTA → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
             .self::FILE_ID.')...');

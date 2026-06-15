@@ -19,7 +19,7 @@ class EmpodatSuspectApexSubstancesSeeder extends Seeder
     {
         $this->command->info('Processing LIFE APEX substances for empodat_suspect_substances table...');
 
-        $path = base_path().'/database/seeders/seeds/empodat_suspect/OK_LIFE APEX_suspect screening results_ng g wet weight_333.csv';
+        $path = storage_path('app/public/empodat_suspect/OK_LIFE APEX_suspect screening results_ng g wet weight_333.csv');
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");

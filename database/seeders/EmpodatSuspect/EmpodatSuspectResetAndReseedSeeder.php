@@ -127,11 +127,11 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // ---- LEGACY SOURCES (10001–10008) -----------------------------------
         // No per-source orchestrator exists, so each chain is spelled out here:
-        //   Substances -> XlsxStationsMapping -> XlsxStationsMappingFill -> Main
+        //   XlsxStationsMapping -> XlsxStationsMappingFill -> Main
+        // (substances are now collected inside each *MainSeeder's single read pass)
 
         // File ID 10001 — CONNECT 1 SEDIMENT
         $this->call([
-            EmpodatSuspectSedimentSubstancesSeeder::class,
             EmpodatSuspectSedimentXlsxStationsMappingSeeder::class,
             EmpodatSuspectSedimentXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectSedimentMainSeeder::class,
@@ -139,7 +139,6 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // File ID 10002 — CONNECT 1 BIOTA
         $this->call([
-            EmpodatSuspectBiotaSubstancesSeeder::class,
             EmpodatSuspectBiotaXlsxStationsMappingSeeder::class,
             EmpodatSuspectBiotaXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectBiotaMainSeeder::class,
@@ -147,7 +146,6 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // File ID 10003 — CONNECT 2 SEDIMENTS
         $this->call([
-            EmpodatSuspectConnect2SedimentsSubstancesSeeder::class,
             EmpodatSuspectConnect2SedimentsXlsxStationsMappingSeeder::class,
             EmpodatSuspectConnect2SedimentsXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectConnect2SedimentsMainSeeder::class,
@@ -155,7 +153,6 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // File ID 10004 — CONNECT 2 BIOTA
         $this->call([
-            EmpodatSuspectConnect2BiotaSubstancesSeeder::class,
             EmpodatSuspectConnect2BiotaXlsxStationsMappingSeeder::class,
             EmpodatSuspectConnect2BiotaXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectConnect2BiotaMainSeeder::class,
@@ -163,7 +160,6 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // File ID 10005 — HELCOM PreEMPT SEDIMENTS
         $this->call([
-            EmpodatSuspectHelcomSedimentsSubstancesSeeder::class,
             EmpodatSuspectHelcomSedimentsXlsxStationsMappingSeeder::class,
             EmpodatSuspectHelcomSedimentsXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectHelcomSedimentsMainSeeder::class,
@@ -171,7 +167,6 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // File ID 10006 — HELCOM PreEMPT BIOTA
         $this->call([
-            EmpodatSuspectHelcomBiotaSubstancesSeeder::class,
             EmpodatSuspectHelcomBiotaXlsxStationsMappingSeeder::class,
             EmpodatSuspectHelcomBiotaXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectHelcomBiotaMainSeeder::class,
@@ -179,7 +174,6 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // File ID 10007 — LIFE APEX
         $this->call([
-            EmpodatSuspectApexSubstancesSeeder::class,
             EmpodatSuspectApexXlsxStationsMappingSeeder::class,
             EmpodatSuspectApexXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectApexMainSeeder::class,
@@ -187,7 +181,6 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
 
         // File ID 10008 — UBA-HELCOM
         $this->call([
-            EmpodatSuspectUbaHelcomSubstancesSeeder::class,
             EmpodatSuspectUbaHelcomXlsxStationsMappingSeeder::class,
             EmpodatSuspectUbaHelcomXlsxStationsMappingFillSeeder::class,
             EmpodatSuspectUbaHelcomMainSeeder::class,

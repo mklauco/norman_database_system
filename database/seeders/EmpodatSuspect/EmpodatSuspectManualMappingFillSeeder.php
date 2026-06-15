@@ -23,7 +23,7 @@ class EmpodatSuspectManualMappingFillSeeder extends Seeder
     {
         $this->command->info('Filling empodat_suspect_xlsx_stations_mapping from manual CSV mapping...');
 
-        $csvPath = database_path('seeders/seeds/empodat_suspect/EMPODAT_SUSPECT-mapping-JS-20251115.csv');
+        $csvPath = storage_path('app/public/empodat_suspect/EMPODAT_SUSPECT-mapping-JS-20251115.csv');
 
         if (! file_exists($csvPath)) {
             $this->command->error("CSV file not found: {$csvPath}");

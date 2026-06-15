@@ -64,7 +64,7 @@ class EmpodatSuspectBlackSeaSedimentMainSeeder extends Seeder
         'num_fragments',
     ];
 
-    protected const BATCH_SIZE = 500;
+    protected const BATCH_SIZE = 4000;
 
     public function run(): void
     {
@@ -86,6 +86,7 @@ class EmpodatSuspectBlackSeaSedimentMainSeeder extends Seeder
         }
         DB::connection()->disableQueryLog();
         DB::statement('SET session_replication_role = replica;');
+        DB::statement('SET synchronous_commit = off;');
 
         $this->command->info('Streaming BlackSea SEDIMENT → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
             .self::FILE_ID.')...');

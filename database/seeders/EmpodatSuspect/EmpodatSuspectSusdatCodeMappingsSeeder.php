@@ -22,7 +22,7 @@ class EmpodatSuspectSusdatCodeMappingsSeeder extends Seeder
 
         $this->command->info('Seeding code mappings from duplicity_final.csv...');
 
-        $path = base_path('database/seeders/seeds/empodat_suspect/duplicity_final.csv');
+        $path = storage_path('app/public/empodat_suspect/duplicity_final.csv');
 
         if (! file_exists($path)) {
             $this->command->error("CSV file not found: {$path}");
