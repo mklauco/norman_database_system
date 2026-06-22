@@ -37,6 +37,7 @@ class VacuumAnalyzeStep extends Step
         'empodat_main',
         'empodat_minor',
         'empodat_matrix_biota',
+        'empodat_matrix_water_surface',
         'empodat_stations',
         'empodat_analytical_methods',
         'empodat_data_sources',
