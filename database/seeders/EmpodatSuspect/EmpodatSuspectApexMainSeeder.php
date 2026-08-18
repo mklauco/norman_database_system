@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\EmpodatSuspect;
 
+use Database\Seeders\EmpodatSuspect\Traits\CapturesUnresolvedSubstanceRows;
 use Database\Seeders\EmpodatSuspect\Traits\LoadsSubstanceCaches;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class EmpodatSuspectApexMainSeeder extends Seeder
 {
+    use CapturesUnresolvedSubstanceRows;
     use LoadsSubstanceCaches;
     use WithoutModelEvents;
 
@@ -164,7 +166,7 @@ class EmpodatSuspectApexMainSeeder extends Seeder
 
                 // Insert batch when it reaches the batch size
                 if (count($batch) >= $batchSize) {
-                    DB::table($target_table_name)->insert($batch);
+                    $this->insertMainBatch($target_table_name, $batch);
                     unset($batch);
                     $batch = [];
 
@@ -186,7 +188,7 @@ class EmpodatSuspectApexMainSeeder extends Seeder
 
             // Insert remaining records
             if (! empty($batch)) {
-                DB::table($target_table_name)->insert($batch);
+                $this->insertMainBatch($target_table_name, $batch);
                 unset($batch);
                 $batch = [];
             }
@@ -197,6 +199,8 @@ class EmpodatSuspectApexMainSeeder extends Seeder
                 }
                 $this->command->info('Inserted '.count($substances).' unique substances (collected in main pass)');
             }
+
+            $this->persistUnresolvedRowIds($this->fileId);
 
             DB::commit();
 
@@ -320,6 +324,12 @@ class EmpodatSuspectApexMainSeeder extends Seeder
                 'based_on_hrms_library' => $basedOnHRMSLibrary,
                 'units' => $units,
             ];
+        }
+
+        if ($substanceId === null && $records !== []) {
+            foreach ($records as $index => $record) {
+                $records[$index][self::UNRESOLVED_TAG] = $normanId;
+            }
         }
 
         return $records;
