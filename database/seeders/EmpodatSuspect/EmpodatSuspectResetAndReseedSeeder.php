@@ -167,7 +167,15 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
     {
         $this->command->info('Delegating to empodat-suspect:truncate-main-and-metadata...');
 
-        $exitCode = $this->command->callSilent('empodat-suspect:truncate-main-and-metadata', ['--force' => true]);
+        // --force-production is passed unconditionally: it is ignored outside
+        // production, and in production this seeder has already obtained an
+        // explicit destructive confirmation from a human in run(), naming both
+        // tables. Without it the delegated call is refused and the reload dies
+        // here.
+        $exitCode = $this->command->callSilent('empodat-suspect:truncate-main-and-metadata', [
+            '--force' => true,
+            '--force-production' => true,
+        ]);
 
         if ($exitCode !== Command::SUCCESS) {
             throw new RuntimeException(
