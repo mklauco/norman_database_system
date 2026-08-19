@@ -156,6 +156,17 @@ class TruncateEmpodatSuspectMainAndMetadata extends Command
             return false;
         }
 
+        // --force means the caller has already obtained its own destructive
+        // confirmation: either a human answered this command's own prompt, or
+        // EmpodatSuspectResetAndReseedSeeder answered its "this is destructive
+        // and runs for hours" prompt before delegating here. Prompting again
+        // would hang that delegated call, which has no interactive input.
+        if ($this->option('force')) {
+            $this->warn('Proceeding in production: --force-production and --force were both given.');
+
+            return true;
+        }
+
         $typed = (string) $this->ask('Type TRUNCATE PRODUCTION to confirm');
 
         if ($typed !== 'TRUNCATE PRODUCTION') {
