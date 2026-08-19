@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders\EmpodatSuspect;
 
+use App\Services\EmpodatSuspect\SeedRowLimiter;
+use App\Services\EmpodatSuspect\SuspectRowWriter;
 use Database\Seeders\EmpodatSuspect\Traits\LoadsSubstanceCaches;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,11 +21,14 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *   - extract Block E fields (HRMS metadata columns)
  *   - accumulate unique (NORMAN_ID, Name) for end-of-run substances bulk insert
  *   - find station columns (after `Units`, before `mz score`, minus `Blank ...` filler)
- *   - for each non-NA station value: spawn one `empodat_suspect_main` row,
- *     capture the returned id, spawn matching `empodat_suspect_metadata` row
- *     with the same id + is_numeric_concentration.
+ *   - for each non-NA station value: spawn one `empodat_suspect_main` row
+ *     paired with a matching `empodat_suspect_metadata` row; both rows share
+ *     an id allocated up front by {@see SuspectRowWriter} instead of an id
+ *     captured from an INSERT ... RETURNING.
  *
- * Single xlsx read (no separate substances pass) — see plan doc §3a.
+ * Single xlsx read (no separate substances pass) — see plan doc §3a. An
+ * optional per-file row cap ({@see SeedRowLimiter}) can bound a run for
+ * local smoke-testing.
  *
  * TerraChem deviations from BlackSea SEDIMENT:
  *   - `Blank ...` filler columns between `Units` and the samples are skipped.
@@ -71,9 +76,9 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
     ];
 
     /**
-     * Rows per multi-row INSERT. Capped by Postgres' 65535 bind-parameter limit:
-     * empodat_suspect_metadata is the widest write at 16 columns → 16 × 4000 =
-     * 64000 < 65535. Larger batches = far fewer round-trips = faster import.
+     * Number of main+metadata rows accumulated before each write. Unrelated
+     * to PostgreSQL's bind-parameter limit — {@see SuspectRowWriter} chunks
+     * each INSERT internally against that limit regardless of this value.
      */
     protected const BATCH_SIZE = 4000;
 
@@ -89,6 +94,9 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
             return;
         }
 
+        $writer = app(SuspectRowWriter::class);
+        $limiter = app(SeedRowLimiter::class);
+
         $this->command->info('Loading lookup caches...');
         $this->loadLookupCaches();
 
@@ -99,6 +107,7 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
         DB::statement('SET session_replication_role = replica;');
         DB::statement('SET synchronous_commit = off;');
 
+        $this->command->info($limiter->banner());
         $this->command->info('Streaming TerraChem RODENT → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
             .self::FILE_ID.')...');
 
@@ -120,6 +129,7 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
         $insertedMain = 0;
         $insertedSubstances = 0;
         $skippedSourceRows = 0;
+        $capped = false;
         $startTime = microtime(true);
 
         try {
@@ -145,14 +155,21 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
 
                 foreach ($mainRows as $mainRow) {
                     $mainBatch[] = $mainRow;
-                    $metadataBatch[] = $metadataPayload + ['is_numeric_concentration' => $mainRow['is_numeric_concentration']];
+                    $metadataBatch[] = $metadataPayload;
                 }
 
                 if (count($mainBatch) >= self::BATCH_SIZE) {
-                    $this->flushBatch($mainBatch, $metadataBatch);
-                    $insertedMain += count($mainBatch);
+                    $insertedMain += $writer->write($mainBatch, $metadataBatch, self::FILE_ID);
                     $mainBatch = [];
                     $metadataBatch = [];
+                }
+
+                // Source-row boundary: every main row this source row can spawn
+                // has already been appended above, so stopping here never
+                // truncates a row's station list. See SeedRowLimiter's docblock.
+                if ($limiter->reached($insertedMain + count($mainBatch))) {
+                    $capped = true;
+                    break;
                 }
 
                 if ($rowCount % 200 === 0) {
@@ -163,8 +180,7 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
             }
 
             if (! empty($mainBatch)) {
-                $this->flushBatch($mainBatch, $metadataBatch);
-                $insertedMain += count($mainBatch);
+                $insertedMain += $writer->write($mainBatch, $metadataBatch, self::FILE_ID);
             }
 
             $insertedSubstances = $this->insertSubstances($substancesByKey);
@@ -180,6 +196,9 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
         $this->command->info("Done in {$totalTime}s — processed {$rowCount} source rows, inserted {$insertedMain} main+metadata rows, {$insertedSubstances} substances.");
         if ($skippedSourceRows > 0) {
             $this->command->warn("Skipped {$skippedSourceRows} source rows due to errors.");
+        }
+        if ($capped) {
+            $this->command->warn("Row cap reached ({$limiter->limit()} rows/file) — import stopped early and is PARTIAL.");
         }
 
         $this->validateSubstanceIds(self::FILE_ID);
@@ -258,50 +277,6 @@ class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
         }
 
         return [$mainRows, $metadataPayload];
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $mainBatch
-     * @param  array<int, array<string, mixed>>  $metadataBatch
-     */
-    protected function flushBatch(array $mainBatch, array $metadataBatch): void
-    {
-        if (count($mainBatch) !== count($metadataBatch)) {
-            throw new \LogicException('main/metadata batch length mismatch: '
-                .count($mainBatch).' vs '.count($metadataBatch));
-        }
-
-        DB::transaction(function () use ($mainBatch, $metadataBatch): void {
-            $mainCols = array_keys($mainBatch[0]);
-            $placeholders = '('.implode(', ', array_fill(0, count($mainCols), '?')).')';
-            $valuesSql = implode(', ', array_fill(0, count($mainBatch), $placeholders));
-            $colsSql = implode(', ', $mainCols);
-
-            $bindings = [];
-            foreach ($mainBatch as $row) {
-                foreach ($mainCols as $col) {
-                    $bindings[] = $row[$col];
-                }
-            }
-
-            $sql = "INSERT INTO empodat_suspect_main ({$colsSql}) VALUES {$valuesSql} "
-                .'RETURNING id, is_numeric_concentration';
-            $returned = DB::select($sql, $bindings);
-
-            if (count($returned) !== count($mainBatch)) {
-                throw new \RuntimeException('RETURNING count mismatch: '
-                    .count($returned).' vs expected '.count($mainBatch));
-            }
-
-            $metadataInsert = [];
-            foreach ($returned as $i => $r) {
-                $metadataInsert[] = $metadataBatch[$i] + [
-                    'id' => $r->id,
-                    'is_numeric_concentration' => $r->is_numeric_concentration,
-                ];
-            }
-            DB::table('empodat_suspect_metadata')->insert($metadataInsert);
-        });
     }
 
     /**
