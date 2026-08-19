@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\EmpodatSuspect;
 
+use App\Services\EmpodatSuspect\SeedRowLimiter;
 use Database\Seeders\EmpodatSuspect\Traits\CapturesUnresolvedSubstanceRows;
 use Database\Seeders\EmpodatSuspect\Traits\LoadsSubstanceCaches;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -25,6 +26,9 @@ class EmpodatSuspectApexMainSeeder extends Seeder
      */
     public function run(): void
     {
+        $limiter = app(SeedRowLimiter::class);
+        $this->command->info($limiter->banner());
+
         $target_table_name = 'empodat_suspect_main';
 
         $this->command->info('Processing LIFE APEX data for empodat_suspect_main table...');
@@ -97,6 +101,7 @@ class EmpodatSuspectApexMainSeeder extends Seeder
         $rowCount = 0;
         $recordCount = 0;
         $skippedRows = 0;
+        $capped = false;
         $progressInterval = 100;
         $startTime = microtime(true);
         $lastProgressTime = $startTime;
@@ -164,6 +169,16 @@ class EmpodatSuspectApexMainSeeder extends Seeder
                     continue;
                 }
 
+                // Row cap: check only here, at the source-row boundary — never inside the
+                // station-column loop above — so a capped run still samples every station
+                // for the rows it does keep. $recordCount already counts rows flushed so
+                // far plus the pending batch.
+                if ($limiter->reached($recordCount)) {
+                    $capped = true;
+
+                    break;
+                }
+
                 // Insert batch when it reaches the batch size
                 if (count($batch) >= $batchSize) {
                     $this->insertMainBatch($target_table_name, $batch);
@@ -208,11 +223,15 @@ class EmpodatSuspectApexMainSeeder extends Seeder
             gc_collect_cycles();
         } catch (\Exception $e) {
             DB::rollBack();
-            fclose($handle);
             throw $e;
+        } finally {
+            fclose($handle);
+            DB::statement('SET session_replication_role = default;');
+            DB::connection()->enableQueryLog();
+            if (class_exists(\Laravel\Telescope\Telescope::class)) {
+                \Laravel\Telescope\Telescope::startRecording();
+            }
         }
-
-        fclose($handle);
 
         $totalTime = round(microtime(true) - $startTime, 2);
         $avgPerRow = $rowCount > 0 ? round($totalTime / $rowCount * 1000, 2) : 0;
@@ -223,17 +242,8 @@ class EmpodatSuspectApexMainSeeder extends Seeder
         if ($skippedRows > 0) {
             $this->command->warn("Skipped {$skippedRows} rows due to errors.");
         }
-
-        // Re-enable foreign key checks (PostgreSQL)
-        DB::statement('SET session_replication_role = default;');
-
-        // Re-enable query logging
-        DB::connection()->enableQueryLog();
-
-        // Re-enable Telescope
-        if (class_exists(\Laravel\Telescope\Telescope::class)) {
-            \Laravel\Telescope\Telescope::startRecording();
-            $this->command->info('Telescope recording re-enabled');
+        if ($capped) {
+            $this->command->warn("Row cap reached ({$limiter->banner()}) — stopped early after {$recordCount} rows for this file.");
         }
 
         $this->command->info("All records seeded with file_id: {$this->fileId}");

@@ -30,9 +30,16 @@ use RuntimeException;
  * WHAT IT DOES, PER FILE
  * ----------------------
  *   1. Records the before counts.
- *   2. DELETEs that file's rows from `empodat_suspect_substances` + `empodat_suspect_main`.
- *      Legacy Main seeders contain no reference to `empodat_suspect_metadata`,
- *      so legacy files have no metadata rows and none are deleted.
+ *   2. DELETEs that file's rows from `empodat_suspect_substances` +
+ *      `empodat_suspect_metadata` + `empodat_suspect_main`, in that order.
+ *      Metadata must go before main: `fk_esmd_main` (empodat_suspect_metadata
+ *      .(id, is_numeric_concentration) -> empodat_suspect_main.(id,
+ *      is_numeric_concentration), ON DELETE NO ACTION) would otherwise reject
+ *      the main delete while a metadata row still references it. Legacy Main
+ *      seeders (10001–10008) never write `empodat_suspect_metadata`, so this
+ *      metadata delete is a no-op today — it exists so this seeder stays
+ *      correct if ever pointed at a file_id that does have metadata
+ *      (10009–10015).
  *   3. Re-runs ONLY that file's *MainSeeder*. The XlsxStationsMapping / Fill
  *      seeders are deliberately NOT re-run: station mappings are already correct
  *      and their `truncate()` is commented out, so re-running them would duplicate
@@ -276,16 +283,27 @@ class EmpodatSuspectLegacySubstanceIdRepairSeeder extends Seeder
     }
 
     /**
-     * Scoped delete. Substances are removed too because the legacy Main seeders
-     * bulk-insert their collected substances without deduping against existing rows.
+     * Scoped delete, in FK-safe order: substances, then metadata, then main.
+     * Substances are removed because the legacy Main seeders bulk-insert their
+     * collected substances without deduping against existing rows. Metadata is
+     * removed before main because `fk_esmd_main` (empodat_suspect_metadata.(id,
+     * is_numeric_concentration) -> empodat_suspect_main.(id, is_numeric_concentration),
+     * ON DELETE NO ACTION, NOT DEFERRABLE) would otherwise reject the main
+     * delete while a metadata row still references it — that check runs
+     * immediately per-statement, not at COMMIT, so the order matters even
+     * inside this single transaction. Legacy files (10001–10008) have no
+     * metadata rows today, so this delete is a harmless no-op for them now,
+     * and becomes load-bearing the moment this seeder is ever pointed at a
+     * file_id that does have metadata (10009–10015).
      */
     private function deleteFileRows(int $fileId): void
     {
         DB::transaction(function () use ($fileId): void {
             $substances = DB::table('empodat_suspect_substances')->where('file_id', $fileId)->delete();
+            $metadata = DB::table('empodat_suspect_metadata')->where('file_id', $fileId)->delete();
             $main = DB::table('empodat_suspect_main')->where('file_id', $fileId)->delete();
 
-            $this->command->info("  Deleted {$main} main rows, {$substances} substance rows.");
+            $this->command->info("  Deleted {$main} main rows, {$metadata} metadata rows, {$substances} substance rows.");
         });
     }
 
