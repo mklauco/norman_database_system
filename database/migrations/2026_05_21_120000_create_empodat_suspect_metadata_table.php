@@ -20,9 +20,12 @@ return new class extends Migration
      * - Partitioned LIST on `is_numeric_concentration` to match the parent table's
      *   partition layout, so a metadata row always lives in the same partition as
      *   its corresponding main row.
-     * - No DB-level FK to `empodat_suspect_main` by design — referential integrity
-     *   is enforced by the seeder (cross-partition FKs are awkward in PostgreSQL
-     *   and we prefer schema simplicity here).
+     * - A DB-level composite FK to `empodat_suspect_main` (id, is_numeric_concentration)
+     *   was added later by the
+     *   `2026_08_19_115149_add_file_id_and_main_fk_to_empodat_suspect_metadata_table`
+     *   migration. Partitioned-to-partitioned foreign keys are in fact supported
+     *   in PostgreSQL from version 12 onward, so referential integrity is now
+     *   enforced at the DB level in addition to the seeder.
      * - Only sources whose XLSX includes the HRMS metadata block populate this
      *   table (BlackSea: yes; legacy 8: no; TerraChem: TBD).
      */

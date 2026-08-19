@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders\EmpodatSuspect;
 
+use App\Services\EmpodatSuspect\SeedRowLimiter;
+use App\Services\EmpodatSuspect\SuspectRowWriter;
 use Database\Seeders\EmpodatSuspect\Traits\LoadsSubstanceCaches;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,17 +20,20 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *   - extract Block A/B/C fields (substance, IP, Units, …)
  *   - extract Block E fields (13 HRMS metadata columns)
  *   - find station columns (after `Units`, before `mz score`)
- *   - for each non-NA station value: spawn one `empodat_suspect_main` row,
- *     capture the returned id, spawn matching `empodat_suspect_metadata` row
- *     with the same id + is_numeric_concentration (so both rows live in the
- *     same partition).
+ *   - for each non-NA station value: spawn one `empodat_suspect_main` row
+ *     paired with a matching `empodat_suspect_metadata` row; both rows share
+ *     an id allocated up front by {@see SuspectRowWriter} (so both live in
+ *     the same partition) instead of an id captured from an
+ *     INSERT ... RETURNING.
  *
- * Metadata rows are 1:1 with main rows by id (no DB-level FK — enforced here).
- * The same metadata values repeat across the N main rows spawned from one
- * source row — by design (per plan doc §3a).
+ * Metadata rows are 1:1 with main rows by id, enforced by a composite FK on
+ * `(id, is_numeric_concentration)`. The same metadata values repeat across
+ * the N main rows spawned from one source row — by design (per plan doc §3a).
  *
- * Performance: true streaming (no getRows()->toArray()), batched inserts of
- * 500 rows. PostgreSQL RETURNING preserves insert order across partitions.
+ * Performance: true streaming (no getRows()->toArray()), batched writes of
+ * BATCH_SIZE rows via {@see SuspectRowWriter}, which allocates ids up front
+ * rather than relying on PostgreSQL RETURNING order. An optional per-file
+ * row cap ({@see SeedRowLimiter}) can bound a run for local smoke-testing.
  *
  * See: Empodat-Suspect-new-source-onboarding.md §3a (column-by-column log)
  */
@@ -88,7 +93,11 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         'num_fragments',
     ];
 
-    /** Number of main+metadata rows per insert batch. */
+    /**
+     * Number of main+metadata rows accumulated before each write. Unrelated
+     * to PostgreSQL's bind-parameter limit — {@see SuspectRowWriter} chunks
+     * each INSERT internally against that limit regardless of this value.
+     */
     protected const BATCH_SIZE = 4000;
 
     public function run(): void
@@ -103,6 +112,9 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
             return;
         }
 
+        $writer = app(SuspectRowWriter::class);
+        $limiter = app(SeedRowLimiter::class);
+
         $this->command->info('Loading lookup caches...');
         $this->loadLookupCaches();
 
@@ -114,6 +126,7 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         DB::statement('SET session_replication_role = replica;');
         DB::statement('SET synchronous_commit = off;');
 
+        $this->command->info($limiter->banner());
         $this->command->info('Streaming BlackSea BIOTA → empodat_suspect_main + empodat_suspect_metadata + empodat_suspect_substances (file_id='
             .self::FILE_ID.')...');
 
@@ -135,6 +148,7 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         $rowCount = 0;
         $insertedMain = 0;
         $skippedSourceRows = 0;
+        $capped = false;
         $startTime = microtime(true);
         $lastReport = $startTime;
 
@@ -159,16 +173,23 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
                     continue;
                 }
 
-                foreach ($mainRows as $i => $mainRow) {
+                foreach ($mainRows as $mainRow) {
                     $mainBatch[] = $mainRow;
-                    $metadataBatch[] = $metadataPayload + ['is_numeric_concentration' => $mainRow['is_numeric_concentration']];
+                    $metadataBatch[] = $metadataPayload;
                 }
 
                 if (count($mainBatch) >= self::BATCH_SIZE) {
-                    $this->flushBatch($mainBatch, $metadataBatch);
-                    $insertedMain += count($mainBatch);
+                    $insertedMain += $writer->write($mainBatch, $metadataBatch, self::FILE_ID);
                     $mainBatch = [];
                     $metadataBatch = [];
+                }
+
+                // Source-row boundary: every main row this source row can spawn
+                // has already been appended above, so stopping here never
+                // truncates a row's station list. See SeedRowLimiter's docblock.
+                if ($limiter->reached($insertedMain + count($mainBatch))) {
+                    $capped = true;
+                    break;
                 }
 
                 if ($rowCount % 200 === 0) {
@@ -180,10 +201,9 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
                 }
             }
 
-            // Flush remainder
+            // Flush remainder (including a partial batch left by a row-cap break).
             if (! empty($mainBatch)) {
-                $this->flushBatch($mainBatch, $metadataBatch);
-                $insertedMain += count($mainBatch);
+                $insertedMain += $writer->write($mainBatch, $metadataBatch, self::FILE_ID);
             }
 
             // Bulk insert collected substances (single pass — replaces the standalone SubstancesSeeder).
@@ -200,6 +220,9 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         $this->command->info("Done in {$totalTime}s — processed {$rowCount} source rows, inserted {$insertedMain} main+metadata rows, {$insertedSubstances} substances.");
         if ($skippedSourceRows > 0) {
             $this->command->warn("Skipped {$skippedSourceRows} source rows due to errors.");
+        }
+        if ($capped) {
+            $this->command->warn("Row cap reached ({$limiter->limit()} rows/file) — import stopped early and is PARTIAL.");
         }
 
         $this->validateSubstanceIds(self::FILE_ID);
@@ -291,54 +314,6 @@ class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
         }
 
         return [$mainRows, $metadataPayload];
-    }
-
-    /**
-     * INSERT a batch of main rows with RETURNING id, then INSERT matching
-     * metadata rows using the captured ids. Both inserts run in a single
-     * transaction so partial failure leaves no orphan rows.
-     *
-     * @param  array<int, array<string, mixed>>  $mainBatch
-     * @param  array<int, array<string, mixed>>  $metadataBatch
-     */
-    protected function flushBatch(array $mainBatch, array $metadataBatch): void
-    {
-        if (count($mainBatch) !== count($metadataBatch)) {
-            throw new \LogicException('main/metadata batch length mismatch: '
-                .count($mainBatch).' vs '.count($metadataBatch));
-        }
-
-        DB::transaction(function () use ($mainBatch, $metadataBatch): void {
-            $mainCols = array_keys($mainBatch[0]);
-            $placeholders = '('.implode(', ', array_fill(0, count($mainCols), '?')).')';
-            $valuesSql = implode(', ', array_fill(0, count($mainBatch), $placeholders));
-            $colsSql = implode(', ', $mainCols);
-
-            $bindings = [];
-            foreach ($mainBatch as $row) {
-                foreach ($mainCols as $col) {
-                    $bindings[] = $row[$col];
-                }
-            }
-
-            $sql = "INSERT INTO empodat_suspect_main ({$colsSql}) VALUES {$valuesSql} "
-                .'RETURNING id, is_numeric_concentration';
-            $returned = DB::select($sql, $bindings);
-
-            if (count($returned) !== count($mainBatch)) {
-                throw new \RuntimeException('RETURNING count mismatch: '
-                    .count($returned).' vs expected '.count($mainBatch));
-            }
-
-            $metadataInsert = [];
-            foreach ($returned as $i => $r) {
-                $metadataInsert[] = $metadataBatch[$i] + [
-                    'id' => $r->id,
-                    'is_numeric_concentration' => $r->is_numeric_concentration,
-                ];
-            }
-            DB::table('empodat_suspect_metadata')->insert($metadataInsert);
-        });
     }
 
     /**

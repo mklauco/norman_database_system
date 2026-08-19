@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\EmpodatSuspect;
 
+use App\Services\EmpodatSuspect\SeedRowLimiter;
 use Database\Seeders\EmpodatSuspect\Traits\CapturesUnresolvedSubstanceRows;
 use Database\Seeders\EmpodatSuspect\Traits\LoadsSubstanceCaches;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -30,6 +31,9 @@ class EmpodatSuspectConnect2SedimentsMainSeeder extends Seeder
         ini_set('memory_limit', '16G');
         ini_set('max_execution_time', '7200'); // 2 hours
         $this->command->info('Memory limit set to 16GB, execution time to 2 hours');
+
+        $limiter = app(SeedRowLimiter::class);
+        $this->command->info($limiter->banner());
 
         $target_table_name = 'empodat_suspect_main';
 
@@ -103,6 +107,7 @@ class EmpodatSuspectConnect2SedimentsMainSeeder extends Seeder
         $rowCount = 0;
         $recordCount = 0;
         $skippedRows = 0;
+        $capped = false;
         $progressInterval = 10; // Report every 10 rows for better visibility
         $startTime = microtime(true);
         $lastProgressTime = $startTime;
@@ -145,6 +150,16 @@ class EmpodatSuspectConnect2SedimentsMainSeeder extends Seeder
                     $skippedRows++;
 
                     continue;
+                }
+
+                // Row cap: check only here, at the source-row boundary — never inside the
+                // station-column loop above — so a capped run still samples every station
+                // for the rows it does keep. $recordCount already counts rows flushed so
+                // far plus the pending batch.
+                if ($limiter->reached($recordCount)) {
+                    $capped = true;
+
+                    break;
                 }
 
                 // Report progress
@@ -192,6 +207,12 @@ class EmpodatSuspectConnect2SedimentsMainSeeder extends Seeder
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
+        } finally {
+            DB::statement('SET session_replication_role = default;');
+            DB::connection()->enableQueryLog();
+            if (class_exists(\Laravel\Telescope\Telescope::class)) {
+                \Laravel\Telescope\Telescope::startRecording();
+            }
         }
 
         $totalTime = round(microtime(true) - $startTime, 2);
@@ -203,17 +224,8 @@ class EmpodatSuspectConnect2SedimentsMainSeeder extends Seeder
         if ($skippedRows > 0) {
             $this->command->warn("Skipped {$skippedRows} rows due to errors.");
         }
-
-        // Re-enable foreign key checks (PostgreSQL)
-        DB::statement('SET session_replication_role = default;');
-
-        // Re-enable query logging
-        DB::connection()->enableQueryLog();
-
-        // Re-enable Telescope
-        if (class_exists(\Laravel\Telescope\Telescope::class)) {
-            \Laravel\Telescope\Telescope::startRecording();
-            $this->command->info('Telescope recording re-enabled');
+        if ($capped) {
+            $this->command->warn("Row cap reached ({$limiter->banner()}) — stopped early after {$recordCount} rows for this file.");
         }
 
         $this->command->info("All records seeded with file_id: {$this->fileId}");
