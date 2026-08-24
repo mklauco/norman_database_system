@@ -35,6 +35,7 @@ use App\Http\Controllers\Empodat\EmpodatHomeController;
 use App\Http\Controllers\Empodat\StationController;
 use App\Http\Controllers\Empodat\StatisticsController as EmpodatStatisticsController;
 use App\Http\Controllers\Empodat\UniqueSearchController;
+use App\Http\Controllers\EmpodatSuspect\CommandCenterController as EmpodatSuspectCommandCenterController;
 use App\Http\Controllers\EmpodatSuspect\EmpodatSuspectController;
 use App\Http\Controllers\EmpodatSuspect\EmpodatSuspectHomeController;
 use App\Http\Controllers\EmpodatSuspect\StatisticsController as EmpodatSuspectStatisticsController;
@@ -790,6 +791,11 @@ Route::prefix('empodat_suspect')->group(function () {
         Route::get('substances-by-country', [EmpodatSuspectStatisticsController::class, 'substancesByCountry'])->name('empodat_suspect.statistics.substancesByCountry');
         Route::get('records-by-country', [EmpodatSuspectStatisticsController::class, 'recordsByCountry'])->name('empodat_suspect.statistics.recordsByCountry');
         Route::get('records-by-confidence-interval', [EmpodatSuspectStatisticsController::class, 'recordsByConfidenceInterval'])->name('empodat_suspect.statistics.recordsByConfidenceInterval');
+    });
+
+    // Command Center (super-admin only): queues the empodat-suspect:* materialized-view refresh commands
+    Route::prefix('commands')->middleware(['auth', 'permission:empodat-suspect.refresh'])->group(function () {
+        Route::get('/', [EmpodatSuspectCommandCenterController::class, 'index'])->name('empodat_suspect.commands.index');
     });
 
 });

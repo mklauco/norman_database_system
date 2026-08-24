@@ -91,10 +91,9 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
             'Station Longitude',
             'File ID',
 
-            // Prioritisation data (from empodat_main via MV)
+            // Prioritisation data (from empodat_suspect_prioritisation)
             'Matrix ID',
             'Sampling Date Year',
-            'Max IP Max',
 
             // Matrix type indicator
             'Matrix Type',
@@ -347,7 +346,7 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
 
     /**
      * Fetch prioritisation data for a batch of empodat_suspect_main IDs
-     * Returns matrix, sampling_date_year, max_ip_max keyed by suspect record ID
+     * Returns matrix, sampling_date_year keyed by suspect record ID
      */
     protected function fetchPrioritisationDataForIds(array $ids): array
     {
@@ -359,7 +358,7 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
 
         try {
             $data = DB::table('empodat_suspect_prioritisation')
-                ->select('id', 'matrix', 'sampling_date_y', 'max_ip_max', 'station_name')
+                ->select('id', 'matrix', 'sampling_date_y', 'station_name')
                 ->whereIn('id', $ids)
                 ->get();
 
@@ -367,8 +366,8 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
                 $result[$row->id] = $row;
             }
         } catch (\Exception $e) {
-            // MV might not exist, log and continue without prioritisation data
-            Log::warning('Prioritisation MV not available: '.$e->getMessage());
+            // Table might not exist, log and continue without prioritisation data
+            Log::warning('Prioritisation table not available: '.$e->getMessage());
         }
 
         return $result;
@@ -480,11 +479,10 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
             }
         }
 
-        // Get prioritisation data (from empodat_main via MV)
+        // Get prioritisation data (from empodat_suspect_prioritisation)
         $prioritisation = $record->prioritisationData;
         $matrixId = $prioritisation->matrix ?? '';
         $samplingDateYear = $prioritisation->sampling_date_y ?? '';
-        $maxIpMax = $prioritisation->max_ip_max ?? '';
 
         // Determine which matrix type has data
         $matrixType = '';
@@ -541,10 +539,9 @@ class EmpodatSuspectCsvExportJob extends AbstractCsvExportJob
             $stationLongitude,
             $record->file_id ?? '',
 
-            // Prioritisation data (from empodat_main via MV)
+            // Prioritisation data (from empodat_suspect_prioritisation)
             $matrixId,
             $samplingDateYear,
-            $maxIpMax,
 
             // Matrix type
             $matrixType,

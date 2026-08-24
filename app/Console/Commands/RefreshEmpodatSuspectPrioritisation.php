@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class RefreshEmpodatSuspectPrioritisation extends Command
 {
@@ -14,164 +17,257 @@ class RefreshEmpodatSuspectPrioritisation extends Command
      * @var string
      */
     protected $signature = 'empodat-suspect:refresh-prioritisation
-                            {--force : Force non-concurrent refresh (faster but blocks reads)}
-                            {--create : Create the view if it doesn\'t exist}
-                            {--stats : Show statistics after refresh}';
+                            {--file= : Rebuild only the partition for this files.id (e.g. 10009). Omit to rebuild every partition.}
+                            {--stats : Show statistics after the rebuild}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Refresh the Empodat Suspect prioritisation materialized view';
+    protected $description = 'Rebuild one or all partitions of the empodat_suspect_prioritisation table';
+
+    /**
+     * Name of the LIST-partitioned parent table.
+     */
+    private const TABLE = 'empodat_suspect_prioritisation';
+
+    /**
+     * Name of the table tracking one row per partition rebuild.
+     */
+    private const BUILDS_TABLE = 'empodat_suspect_prioritisation_builds';
 
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('╔══════════════════════════════════════════════════════════════════╗');
-        $this->info('║  Empodat Suspect - Refresh Prioritisation Materialized View     ║');
+        $this->info('║  Empodat Suspect - Rebuild Prioritisation Partitions               ║');
         $this->info('╚══════════════════════════════════════════════════════════════════╝');
         $this->newLine();
 
-        try {
-            $startTime = microtime(true);
+        $fileIds = $this->resolveFileIds();
 
-            // Check if the materialized view exists
-            $viewExists = $this->checkViewExists();
-
-            if ($this->option('create')) {
-                $this->warn('⚠ Dropping and recreating materialized view...');
-                $this->createView();
-            } elseif (! $viewExists) {
-                $this->error('✗ Materialized view does not exist!');
-                $this->info('Run with --create option to create it:');
-                $this->info('  php artisan empodat-suspect:refresh-prioritisation --create');
-                $this->newLine();
-                $this->info('Or run the migration:');
-                $this->info('  php artisan migrate');
-
-                return Command::FAILURE;
-            } else {
-                $this->refreshView();
-            }
-
-            $duration = round(microtime(true) - $startTime, 2);
-
-            // Show statistics if requested
-            if ($this->option('stats')) {
-                $this->newLine();
-                $this->showStatistics();
-            }
-
-            $this->newLine();
-            $this->info("✓ Materialized view is ready! (completed in {$duration}s)");
-
-            Log::info('Empodat Suspect prioritisation refreshed successfully', [
-                'duration' => $duration,
-                'method' => $viewExists ? 'refresh' : 'create',
-            ]);
-
-            return Command::SUCCESS;
-
-        } catch (\Exception $e) {
-            $this->newLine();
-            $this->error('✗ Failed to refresh materialized view:');
-            $this->error('  '.$e->getMessage());
-
-            if ($this->getOutput()->isVerbose()) {
-                $this->newLine();
-                $this->error($e->getTraceAsString());
-            }
-
-            Log::error('Empodat Suspect prioritisation refresh failed: '.$e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
+        if ($fileIds === []) {
+            $this->error('✗ No file_id values found to rebuild.');
 
             return Command::FAILURE;
         }
-    }
 
-    /**
-     * Check if the materialized view exists
-     */
-    private function checkViewExists(): bool
-    {
-        $this->info('→ Checking if materialized view exists...');
+        $failures = 0;
 
-        $result = DB::select("
-            SELECT EXISTS (
-                SELECT FROM pg_matviews
-                WHERE schemaname = 'public'
-                AND matviewname = 'empodat_suspect_prioritisation'
-            ) as exists
-        ");
-
-        $exists = $result[0]->exists ?? false;
-
-        if ($exists) {
-            $this->info('  ✓ Materialized view exists');
-        } else {
-            $this->warn('  ✗ Materialized view does not exist');
+        foreach ($fileIds as $fileId) {
+            if (! $this->rebuildPartition($fileId)) {
+                $failures++;
+            }
         }
 
-        return $exists;
+        if ($this->option('stats')) {
+            $this->newLine();
+            $this->showStatistics();
+        }
+
+        $this->newLine();
+
+        if ($failures > 0) {
+            $this->error("✗ {$failures} of ".count($fileIds).' partition(s) failed to rebuild.');
+
+            return Command::FAILURE;
+        }
+
+        $this->info('✓ All partitions rebuilt successfully.');
+
+        return Command::SUCCESS;
     }
 
     /**
-     * Refresh the existing materialized view
+     * Resolve the list of files.id values whose partition should be rebuilt.
+     *
+     * @return list<int>
      */
-    private function refreshView(): void
+    private function resolveFileIds(): array
     {
-        $concurrent = ! $this->option('force');
+        $option = $this->option('file');
 
-        if ($concurrent) {
-            $this->info('→ Refreshing materialized view (CONCURRENT mode - non-blocking)...');
-            $this->line('  This allows reads during refresh but may take longer.');
+        if ($option !== null) {
+            if (! is_numeric($option)) {
+                $this->error("✗ --file must be numeric, got: {$option}");
 
-            $refreshStart = microtime(true);
-            DB::statement('REFRESH MATERIALIZED VIEW CONCURRENTLY empodat_suspect_prioritisation');
-            $refreshDuration = round(microtime(true) - $refreshStart, 2);
-
-            $this->info("  ✓ Concurrent refresh complete in {$refreshDuration}s");
-        } else {
-            $this->warn('→ Refreshing materialized view (FORCE mode - blocking)...');
-            $this->line('  This will block all reads during refresh but is faster.');
-
-            if (! $this->confirm('Continue with blocking refresh?', false)) {
-                $this->info('  Cancelled. Use without --force for non-blocking refresh.');
-                exit(Command::SUCCESS);
+                return [];
             }
 
-            $refreshStart = microtime(true);
-            DB::statement('REFRESH MATERIALIZED VIEW empodat_suspect_prioritisation');
-            $refreshDuration = round(microtime(true) - $refreshStart, 2);
+            return [(int) $option];
+        }
 
-            $this->info("  ✓ Forced refresh complete in {$refreshDuration}s");
+        return DB::table('empodat_suspect_main')
+            ->whereNotNull('file_id')
+            ->distinct()
+            ->orderBy('file_id')
+            ->pluck('file_id')
+            ->map(static fn (int|string $fileId): int => (int) $fileId)
+            ->all();
+    }
+
+    /**
+     * Rebuild a single partition.
+     *
+     * Builds a standalone staging table, populates it, then swaps it in for
+     * the live partition inside a single transaction (DETACH old / ATTACH
+     * new / DROP old) so readers querying the parent table never see a
+     * missing or half-built partition. Never call this concurrently for
+     * different file_ids on the same table from multiple processes.
+     */
+    private function rebuildPartition(int $fileId): bool
+    {
+        $this->info("→ Rebuilding partition for file_id={$fileId}...");
+
+        $buildId = DB::table(self::BUILDS_TABLE)->insertGetId([
+            'file_id' => $fileId,
+            'status' => 'running',
+            'started_at' => now(),
+            'triggered_by' => 'cli',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $start = microtime(true);
+        $partitionTable = self::TABLE."_{$fileId}";
+        $stagingTable = self::TABLE."_{$fileId}_staging";
+
+        try {
+            // Clean up a staging table left behind by a previous failed run
+            DB::statement("DROP TABLE IF EXISTS {$stagingTable} CASCADE");
+
+            $this->createStagingTable($stagingTable);
+
+            $rowCount = $this->populateStagingTable($stagingTable, $fileId);
+
+            // Matching CHECK constraint lets ATTACH PARTITION skip re-scanning
+            // the table to validate the partition bound
+            DB::statement("
+                ALTER TABLE {$stagingTable}
+                ADD CONSTRAINT {$stagingTable}_file_id_check
+                CHECK (file_id = {$fileId})
+            ");
+
+            DB::transaction(function () use ($partitionTable, $stagingTable, $fileId): void {
+                if ($this->partitionExists($partitionTable)) {
+                    DB::statement('ALTER TABLE '.self::TABLE." DETACH PARTITION {$partitionTable}");
+                    DB::statement("DROP TABLE {$partitionTable}");
+                }
+
+                DB::statement('
+                    ALTER TABLE '.self::TABLE.'
+                    ATTACH PARTITION '.$stagingTable.'
+                    FOR VALUES IN ('.$fileId.')
+                ');
+
+                DB::statement("ALTER TABLE {$stagingTable} RENAME TO {$partitionTable}");
+            });
+
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            DB::table(self::BUILDS_TABLE)->where('id', $buildId)->update([
+                'status' => 'success',
+                'finished_at' => now(),
+                'duration_ms' => $durationMs,
+                'row_count' => $rowCount,
+                'updated_at' => now(),
+            ]);
+
+            $this->info("  ✓ file_id={$fileId}: {$rowCount} rows in {$durationMs}ms");
+
+            return true;
+        } catch (Throwable $e) {
+            $durationMs = (int) round((microtime(true) - $start) * 1000);
+
+            // Never leave a staging table lying around after a failure
+            DB::statement("DROP TABLE IF EXISTS {$stagingTable} CASCADE");
+
+            DB::table(self::BUILDS_TABLE)->where('id', $buildId)->update([
+                'status' => 'failed',
+                'finished_at' => now(),
+                'duration_ms' => $durationMs,
+                'error' => $e->getMessage(),
+                'updated_at' => now(),
+            ]);
+
+            $this->error("  ✗ file_id={$fileId} failed: ".$e->getMessage());
+
+            Log::error('Empodat Suspect prioritisation partition rebuild failed', [
+                'file_id' => $fileId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return false;
         }
     }
 
     /**
-     * Create the materialized view from scratch
+     * Whether a table with the given name currently exists (and, by naming
+     * convention, is attached as a partition of the parent table).
      */
-    private function createView(): void
+    private function partitionExists(string $tableName): bool
     {
-        // Drop if exists
-        $this->info('→ Dropping existing view (if any)...');
-        DB::statement('DROP MATERIALIZED VIEW IF EXISTS empodat_suspect_prioritisation CASCADE');
+        $result = DB::selectOne('SELECT to_regclass(?) IS NOT NULL AS exists', [$tableName]);
 
-        // Create the materialized view
-        $this->info('→ Creating materialized view...');
+        return (bool) ($result->exists ?? false);
+    }
 
-        DB::statement('
-            CREATE MATERIALIZED VIEW empodat_suspect_prioritisation AS
+    /**
+     * Create a standalone table with the same column structure as the
+     * empodat_suspect_prioritisation parent, ready to be populated and later
+     * attached as one of its partitions.
+     */
+    private function createStagingTable(string $tableName): void
+    {
+        DB::statement("
+            CREATE TABLE {$tableName} (
+                id BIGINT NOT NULL,
+                file_id BIGINT NOT NULL,
+                matrix BIGINT NULL,
+                concentration_value DOUBLE PRECISION NULL,
+                ip_max DOUBLE PRECISION NULL,
+                country VARCHAR(255) NULL,
+                station_name BIGINT NULL,
+                sampling_date_y SMALLINT NULL,
+                latitude_decimal DOUBLE PRECISION NULL,
+                longitude_decimal DOUBLE PRECISION NULL,
+                sus_id VARCHAR(255) NULL,
+                basin_name VARCHAR(255) NULL,
+                df_id SMALLINT NULL,
+                dsa_id SMALLINT NULL,
+                dsgr_id SMALLINT NULL,
+                dtiel_id SMALLINT NULL,
+                dmeas_id SMALLINT NULL,
+                effluent_influent_id SMALLINT NULL,
+                PRIMARY KEY (id, file_id)
+            )
+        ");
+    }
+
+    /**
+     * Populate the staging table for one file_id and return the number of
+     * rows inserted.
+     */
+    private function populateStagingTable(string $tableName, int $fileId): int
+    {
+        return DB::affectingStatement("
+            INSERT INTO {$tableName} (
+                id, file_id, matrix, concentration_value, ip_max, country, station_name,
+                sampling_date_y, latitude_decimal, longitude_decimal, sus_id, basin_name,
+                df_id, dsa_id, dsgr_id, dtiel_id, dmeas_id, effluent_influent_id
+            )
             WITH limited_suspect AS (
-                SELECT * FROM empodat_suspect_main
+                SELECT * FROM empodat_suspect_main WHERE file_id = {$fileId}
             ),
             most_recent_main AS (
                 -- Get most recent empodat_main record per station
-                -- This prevents Cartesian product and massive memory usage
+                -- This prevents Cartesian product and massive memory usage.
+                -- Joins on station_id ONLY: joining on substance_id too was
+                -- investigated and rejected, it drops 91.5% of rows.
                 SELECT DISTINCT ON (station_id)
                     id,
                     station_id,
@@ -180,27 +276,16 @@ class RefreshEmpodatSuspectPrioritisation extends Command
                 FROM empodat_main
                 WHERE station_id IN (SELECT DISTINCT station_id FROM limited_suspect)
                 ORDER BY station_id, sampling_date_year DESC NULLS LAST
-            ),
-            -- Calculate max_ip_max: maximum ip_max for each matrix + substance combination
-            max_ip_by_matrix_substance AS (
-                SELECT
-                    em.matrix_id,
-                    esm.substance_id,
-                    MAX(esm.ip_max) AS max_ip_max
-                FROM limited_suspect esm
-                INNER JOIN most_recent_main em ON em.station_id = esm.station_id
-                WHERE esm.ip_max IS NOT NULL
-                GROUP BY em.matrix_id, esm.substance_id
             )
             SELECT
                 -- Primary identifiers
                 esm.id,
+                esm.file_id,
 
                 -- Core fields from suspect data
                 em.matrix_id AS matrix,
                 esm.concentration AS concentration_value,
                 esm.ip_max,
-                mims.max_ip_max,
 
                 -- Geographic and temporal information
                 es.country AS country,
@@ -234,7 +319,10 @@ class RefreshEmpodatSuspectPrioritisation extends Command
                 emb.dtiel_id,
 
                 -- dmeas_id (from biota)
-                emb.dmeas_id
+                emb.dmeas_id,
+
+                -- effluent_influent_id (from water_waste)
+                emww.effluent_influent_id
 
             FROM limited_suspect esm
 
@@ -249,11 +337,6 @@ class RefreshEmpodatSuspectPrioritisation extends Command
             -- Join to substances for substance code
             LEFT JOIN susdat_substances ss
                 ON esm.substance_id = ss.id
-
-            -- Join to pre-calculated max_ip_max
-            LEFT JOIN max_ip_by_matrix_substance mims
-                ON em.matrix_id = mims.matrix_id
-                AND esm.substance_id = mims.substance_id
 
             -- Matrix-specific LEFT JOINs based on matrix_id ranges
 
@@ -280,114 +363,43 @@ class RefreshEmpodatSuspectPrioritisation extends Command
             WHERE esm.station_id IS NOT NULL
                 AND es.id IS NOT NULL
                 AND em.id IS NOT NULL
-        ');
-
-        $this->info('  ✓ Materialized view created');
-
-        // Create indexes
-        $this->info('→ Creating indexes...');
-        $this->createIndexes();
-
-        // Add comment
-        DB::statement("
-            COMMENT ON MATERIALIZED VIEW empodat_suspect_prioritisation IS
-            'Comprehensive materialized view for Empodat Suspect prioritisation analysis.
-            Combines suspect screening data with matrix-specific metadata.
-            Includes max_ip_max (max ip_max per matrix+substance).
-            Refresh command: php artisan empodat-suspect:refresh-prioritisation'
         ");
-
-        $this->info('  ✓ View setup complete');
     }
 
     /**
-     * Create all required indexes on the materialized view
-     */
-    private function createIndexes(): void
-    {
-        $indexes = [
-            'idx_esp_id' => 'id',
-            'idx_esp_matrix' => 'matrix',
-            'idx_esp_country' => 'country',
-            'idx_esp_year' => 'sampling_date_y',
-            'idx_esp_sus_id' => 'sus_id',
-            'idx_esp_ip_max' => 'ip_max',
-            'idx_esp_station_name' => 'station_name',
-            'idx_esp_max_ip_max' => 'max_ip_max',
-        ];
-
-        $indexCount = 0;
-        foreach ($indexes as $indexName => $column) {
-            DB::statement("CREATE INDEX IF NOT EXISTS {$indexName} ON empodat_suspect_prioritisation({$column})");
-            $indexCount++;
-        }
-
-        // Partial indexes for matrix-specific fields
-        $partialIndexes = [
-            'idx_esp_basin_name' => 'basin_name',
-            'idx_esp_df_id' => 'df_id',
-            'idx_esp_dsa_id' => 'dsa_id',
-            'idx_esp_dsgr_id' => 'dsgr_id',
-            'idx_esp_dtiel_id' => 'dtiel_id',
-            'idx_esp_dmeas_id' => 'dmeas_id',
-        ];
-
-        foreach ($partialIndexes as $indexName => $column) {
-            DB::statement("CREATE INDEX IF NOT EXISTS {$indexName} ON empodat_suspect_prioritisation({$column}) WHERE {$column} IS NOT NULL");
-            $indexCount++;
-        }
-
-        // Compound indexes
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_esp_matrix_year ON empodat_suspect_prioritisation(matrix, sampling_date_y)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_esp_country_matrix ON empodat_suspect_prioritisation(country, matrix)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_esp_lat_lon ON empodat_suspect_prioritisation(latitude_decimal, longitude_decimal)');
-        DB::statement('CREATE INDEX IF NOT EXISTS idx_esp_matrix_substance ON empodat_suspect_prioritisation(matrix, sus_id)');
-        $indexCount += 4;
-
-        // UNIQUE index for CONCURRENT refresh support
-        DB::statement('
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_esp_unique_id
-            ON empodat_suspect_prioritisation(id)
-        ');
-        $indexCount++;
-
-        $this->info("  ✓ {$indexCount} indexes created");
-    }
-
-    /**
-     * Show statistics about the materialized view
+     * Show statistics about the current contents of the table.
      */
     private function showStatistics(): void
     {
         $this->info('╔════════════════════════════════════════╗');
-        $this->info('║         View Statistics                ║');
+        $this->info('║         Table Statistics               ║');
         $this->info('╚════════════════════════════════════════╝');
 
         try {
             // Get row count
-            $rowCount = DB::table('empodat_suspect_prioritisation')->count();
+            $rowCount = DB::table(self::TABLE)->count();
             $this->line('  Total records:            '.number_format($rowCount));
 
             // Get unique stations
-            $stationCount = DB::table('empodat_suspect_prioritisation')
+            $stationCount = DB::table(self::TABLE)
                 ->distinct('station_name')
                 ->count('station_name');
             $this->line('  Unique stations:          '.number_format($stationCount));
 
             // Get unique countries
-            $countryCount = DB::table('empodat_suspect_prioritisation')
+            $countryCount = DB::table(self::TABLE)
                 ->distinct('country')
                 ->count('country');
             $this->line('  Unique countries:         '.number_format($countryCount));
 
             // Get unique substances
-            $substanceCount = DB::table('empodat_suspect_prioritisation')
+            $substanceCount = DB::table(self::TABLE)
                 ->distinct('sus_id')
                 ->count('sus_id');
             $this->line('  Unique substances:        '.number_format($substanceCount));
 
             // Get matrix distribution
-            $matrixDistribution = DB::table('empodat_suspect_prioritisation')
+            $matrixDistribution = DB::table(self::TABLE)
                 ->select('matrix', DB::raw('count(*) as count'))
                 ->groupBy('matrix')
                 ->orderBy('count', 'desc')
@@ -400,39 +412,33 @@ class RefreshEmpodatSuspectPrioritisation extends Command
             }
 
             // Get records with matrix-specific data
-            $biotaCount = DB::table('empodat_suspect_prioritisation')
+            $biotaCount = DB::table(self::TABLE)
                 ->whereNotNull('dsgr_id')
                 ->count();
             $this->line("\n  Records with biota data:  ".number_format($biotaCount));
 
-            $waterWasteCount = DB::table('empodat_suspect_prioritisation')
+            $waterWasteCount = DB::table(self::TABLE)
                 ->whereNotNull('df_id')
                 ->count();
             $this->line('  Records with water waste data: '.number_format($waterWasteCount));
 
-            // Get records with max_ip_max
-            $maxIpMaxCount = DB::table('empodat_suspect_prioritisation')
-                ->whereNotNull('max_ip_max')
-                ->count();
-            $this->line('  Records with max_ip_max:  '.number_format($maxIpMaxCount));
-
-            // Get view size
+            // Sizes must be summed across the partition tree: a partitioned
+            // parent holds no storage of its own, so pg_relation_size() and
+            // pg_total_relation_size() both report 0 bytes for it.
             $sizeResult = DB::select("
-                SELECT pg_size_pretty(pg_total_relation_size('empodat_suspect_prioritisation')) as size
+                SELECT pg_size_pretty(SUM(pg_total_relation_size(relid))) AS total_size,
+                       pg_size_pretty(SUM(pg_relation_size(relid)))       AS data_size
+                FROM pg_partition_tree('".self::TABLE."')
+                WHERE isleaf
             ");
-            $this->line("\n  Total size (with indexes): ".($sizeResult[0]->size ?? 'N/A'));
-
-            // Get data-only size
-            $mvInfo = DB::select("
-                SELECT pg_size_pretty(pg_relation_size('empodat_suspect_prioritisation')) as size
-            ");
-            $this->line('  View size (data only):     '.($mvInfo[0]->size ?? 'N/A'));
+            $this->line("\n  Total size (with indexes): ".($sizeResult[0]->total_size ?? 'N/A'));
+            $this->line('  Table size (data only):    '.($sizeResult[0]->data_size ?? 'N/A'));
 
             // Count non-null values for sparse columns
             $this->line("\n  Non-null values in matrix-specific columns:");
-            $sparseColumns = ['basin_name', 'df_id', 'dsa_id', 'dsgr_id', 'dtiel_id', 'dmeas_id', 'max_ip_max'];
+            $sparseColumns = ['basin_name', 'df_id', 'dsa_id', 'dsgr_id', 'dtiel_id', 'dmeas_id', 'effluent_influent_id'];
             foreach ($sparseColumns as $column) {
-                $nonNullCount = DB::table('empodat_suspect_prioritisation')
+                $nonNullCount = DB::table(self::TABLE)
                     ->whereNotNull($column)
                     ->count();
                 $percentage = $rowCount > 0 ? round(($nonNullCount / $rowCount) * 100, 2) : 0;

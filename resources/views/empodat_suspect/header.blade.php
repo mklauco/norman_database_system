@@ -27,6 +27,12 @@
     DCT Download
   </x-nav-link-header>
 
+  @can('empodat-suspect.refresh')
+  <x-nav-link-header :href="route('empodat_suspect.commands.index')" :active="request()->routeIs('empodat_suspect.commands.*')">
+    Commands
+  </x-nav-link-header>
+  @endcan
+
   @role('super_admin')
   <x-nav-link-header :href="route('querylog.index', ['module' => 'empodat_suspect'])" :active="request()->is('*querylog*')">
     History of Search
