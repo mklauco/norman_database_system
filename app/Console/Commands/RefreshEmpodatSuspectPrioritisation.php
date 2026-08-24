@@ -9,6 +9,75 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
+/**
+ * Rebuild the LIST-partitioned `empodat_suspect_prioritisation` table.
+ *
+ * WHICH empodat_main ROW SUPPLIES matrix, year AND THE MATRIX-SPECIFIC COLUMNS
+ * ---------------------------------------------------------------------------
+ * `empodat_suspect_prioritisation` carries columns that do not exist in the
+ * suspect data at all — `matrix`, `sampling_date_y`, `basin_name`, `df_id`,
+ * `dsa_id`, `dsgr_id`, `dtiel_id`, `dmeas_id`, `effluent_influent_id`. They are
+ * borrowed from the legacy EMPODAT data along this path:
+ *
+ *   empodat_suspect_main.station_id
+ *        = empodat_main.station_id
+ *          -> empodat_main.id
+ *             = empodat_matrix_<X>.id  ->  the column
+ *
+ * `empodat_stations` is NOT a hop in that chain. It is joined in parallel and
+ * supplies only `country`, `latitude_decimal` and `longitude_decimal`.
+ *
+ * The chain is lossy at its first step, and this is the whole design question:
+ * one station has MANY `empodat_main` rows — up to 2 863 in the current data,
+ * across different years and different matrices — but each `empodat_matrix_<X>`
+ * row belongs to exactly one of them. So a single row must be chosen per
+ * station, and that choice decides every borrowed column.
+ *
+ * DECISION: take the FIRST row, i.e. the lowest `empodat_main.id`
+ * ---------------------------------------------------------------
+ * Previously this was the MOST RECENT row, ordered by
+ * `sampling_date_year DESC NULLS LAST`. That was changed deliberately.
+ *
+ * "Most recent" made already-built partitions go stale without their own source
+ * file changing: importing legacy EMPODAT data for a station could introduce a
+ * newer row, change which row won, and silently alter the matrix, year and
+ * matrix-specific columns of suspect rows belonging to entirely different
+ * files. Every suspect station has more than one `empodat_main` row (measured:
+ * all 750, up to 2 863), so the tie-break is always live.
+ *
+ * "First" removes that: `empodat_main.id` is a monotonically increasing
+ * sequence, so any row added later gets a HIGHER id and can never displace the
+ * existing choice. A partition built today stays correct tomorrow, which is
+ * what makes per-file rebuilds sound.
+ *
+ * The trade-off is explicit and accepted: the borrowed matrix and year are the
+ * station's OLDEST legacy measurement rather than its newest.
+ *
+ * WHY basin_name IS RESOLVED SEPARATELY
+ * -------------------------------------
+ * `basin_name` is a property of the PLACE, not of the measurement — measured
+ * across the whole database it is identical for 99.05% of stations (935 of
+ * 97 943 disagree). Routing it through the chosen row therefore threw data away
+ * for no reason: if that row happened to sit in a matrix table the query did not
+ * join, the station lost its basin even though a dozen sibling rows carried it.
+ * It is now resolved per station from any of the eight matrix tables that have
+ * the column (all except `empodat_matrix_air`), ties broken on the lowest
+ * `empodat_main.id` so rebuilds are reproducible.
+ *
+ * The other six borrowed columns are genuinely measurement-level — a station's
+ * 2019 sediment sample and its 2025 biota sample legitimately differ — so they
+ * stay tied to the chosen row.
+ *
+ * WHY NOT JOIN ON substance_id
+ * ----------------------------
+ * Adding `empodat_main.substance_id` to the station join was measured on
+ * 2026-08-24 and rejected: only 10 816 of 122 763 suspect
+ * (station, substance) pairs exist in `empodat_main`, because suspect screening
+ * exists precisely to find substances legacy monitoring never measured. The
+ * closing `WHERE ... em.id IS NOT NULL` would then discard 91.5% of all rows.
+ *
+ * @see Empodat-Suspect-1-database.md in the internal documentation repository
+ */
 class RefreshEmpodatSuspectPrioritisation extends Command
 {
     /**
@@ -263,11 +332,17 @@ class RefreshEmpodatSuspectPrioritisation extends Command
             WITH limited_suspect AS (
                 SELECT * FROM empodat_suspect_main WHERE file_id = {$fileId}
             ),
-            most_recent_main AS (
-                -- Get most recent empodat_main record per station
-                -- This prevents Cartesian product and massive memory usage.
-                -- Joins on station_id ONLY: joining on substance_id too was
-                -- investigated and rejected, it drops 91.5% of rows.
+            first_main AS (
+                -- ONE empodat_main record per station: the FIRST one, i.e. the
+                -- lowest empodat_main.id. See the class docblock for why this
+                -- row must be chosen at all, and why 'first' rather than 'most
+                -- recent'. Collapsing to one row per station also prevents a
+                -- Cartesian product.
+                --
+                -- Joins on station_id ONLY. Adding substance_id was measured
+                -- and rejected: only 10 816 of 122 763 suspect
+                -- (station, substance) pairs exist in empodat_main, so it would
+                -- drop 91.5% of rows.
                 SELECT DISTINCT ON (station_id)
                     id,
                     station_id,
@@ -275,7 +350,33 @@ class RefreshEmpodatSuspectPrioritisation extends Command
                     sampling_date_year
                 FROM empodat_main
                 WHERE station_id IN (SELECT DISTINCT station_id FROM limited_suspect)
-                ORDER BY station_id, sampling_date_year DESC NULLS LAST
+                ORDER BY station_id, id ASC
+            ),
+            -- basin_name is resolved separately, per STATION, because it is a
+            -- property of the place and not of the measurement: measured across
+            -- the whole database it is constant for 99.05% of stations (935 of
+            -- 97 943 disagree). Tying it to first_main would discard it for
+            -- every station whose chosen row happens to sit in a matrix with no
+            -- basin_name, which is what the previous implementation did.
+            -- Ties are broken on the lowest empodat_main.id so rebuilds are
+            -- reproducible.
+            station_basin AS (
+                SELECT DISTINCT ON (em.station_id)
+                    em.station_id,
+                    mx.basin_name
+                FROM empodat_main em
+                INNER JOIN (
+                    SELECT id, basin_name FROM empodat_matrix_biota            WHERE basin_name IS NOT NULL
+                    UNION ALL SELECT id, basin_name FROM empodat_matrix_sediments        WHERE basin_name IS NOT NULL
+                    UNION ALL SELECT id, basin_name FROM empodat_matrix_soil             WHERE basin_name IS NOT NULL
+                    UNION ALL SELECT id, basin_name FROM empodat_matrix_water_surface    WHERE basin_name IS NOT NULL
+                    UNION ALL SELECT id, basin_name FROM empodat_matrix_water_ground     WHERE basin_name IS NOT NULL
+                    UNION ALL SELECT id, basin_name FROM empodat_matrix_water_waste      WHERE basin_name IS NOT NULL
+                    UNION ALL SELECT id, basin_name FROM empodat_matrix_suspended_matter WHERE basin_name IS NOT NULL
+                    UNION ALL SELECT id, basin_name FROM empodat_matrix_sewage_sludge    WHERE basin_name IS NOT NULL
+                ) mx ON mx.id = em.id
+                WHERE em.station_id IN (SELECT DISTINCT station_id FROM limited_suspect)
+                ORDER BY em.station_id, em.id ASC
             )
             SELECT
                 -- Primary identifiers
@@ -297,31 +398,17 @@ class RefreshEmpodatSuspectPrioritisation extends Command
                 -- Substance information
                 ss.code AS sus_id,
 
-                -- Matrix-specific fields using COALESCE
-                -- basin_name (from biota or water_waste)
-                COALESCE(
-                    emb.basin_name,
-                    emww.basin_name,
-                    emws.basin_name,
-                    emwg.basin_name
-                ) AS basin_name,
+                -- Station-level: independent of which empodat_main row was chosen
+                sb.basin_name,
 
-                -- df_id (from water_waste only)
+                -- Measurement-level: these come from the matrix table that owns
+                -- first_main's chosen row, so exactly one of the joins below can
+                -- contribute and the rest are NULL.
                 emww.df_id,
-
-                -- dsa_id (from water_waste)
                 emww.dsa_id,
-
-                -- dsgr_id (from biota)
                 emb.dsgr_id,
-
-                -- dtiel_id (from biota)
                 emb.dtiel_id,
-
-                -- dmeas_id (from biota)
                 emb.dmeas_id,
-
-                -- effluent_influent_id (from water_waste)
                 emww.effluent_influent_id
 
             FROM limited_suspect esm
@@ -330,35 +417,30 @@ class RefreshEmpodatSuspectPrioritisation extends Command
             INNER JOIN empodat_stations es
                 ON esm.station_id = es.id
 
-            -- Join to most recent empodat_main record per station
-            LEFT JOIN most_recent_main em
+            -- Join to the chosen empodat_main record per station
+            LEFT JOIN first_main em
                 ON em.station_id = esm.station_id
+
+            -- Station-level basin, resolved independently of first_main
+            LEFT JOIN station_basin sb
+                ON sb.station_id = esm.station_id
 
             -- Join to substances for substance code
             LEFT JOIN susdat_substances ss
                 ON esm.substance_id = ss.id
 
-            -- Matrix-specific LEFT JOINs based on matrix_id ranges
-
-            -- Biota (matrix_id: 39-47)
-            LEFT JOIN empodat_matrix_biota emb
-                ON em.id = emb.id
-                AND em.matrix_id BETWEEN 39 AND 47
-
-            -- Water waste (matrix_id: 72-74)
-            LEFT JOIN empodat_matrix_water_waste emww
-                ON em.id = emww.id
-                AND em.matrix_id BETWEEN 72 AND 74
-
-            -- Water surface (matrix_id: specific IDs)
-            LEFT JOIN empodat_matrix_water_surface emws
-                ON em.id = emws.id
-                AND em.matrix_id IN (2,3,4,5,6,7,8)
-
-            -- Water ground (matrix_id: 1)
-            LEFT JOIN empodat_matrix_water_ground emwg
-                ON em.id = emwg.id
-                AND em.matrix_id = 1
+            -- Matrix-specific LEFT JOINs, keyed purely on empodat_main.id.
+            --
+            -- There is deliberately NO 'AND em.matrix_id ...' predicate here.
+            -- The previous implementation carried one per join and three of the
+            -- four were wrong against the data: water_ground filtered on
+            -- matrix_id = 1, which has zero rows in empodat_main (ground water is
+            -- matrix 10); water_surface omitted matrix 9; water_waste omitted
+            -- matrices 11-14. The predicates are also unnecessary — the matrix
+            -- tables partition empodat_main.id almost perfectly, with only 43 ids
+            -- in the entire database appearing in more than one of them.
+            LEFT JOIN empodat_matrix_biota emb            ON emb.id  = em.id
+            LEFT JOIN empodat_matrix_water_waste emww     ON emww.id = em.id
 
             WHERE esm.station_id IS NOT NULL
                 AND es.id IS NOT NULL
