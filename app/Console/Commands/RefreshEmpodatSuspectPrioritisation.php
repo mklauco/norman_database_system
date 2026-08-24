@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Rebuild the LIST-partitioned `empodat_suspect_prioritisation` table.
+ * Rebuild the LIST-partitioned `empodat_suspect_prioritisation_dataset`
+ * table, which lives alongside — and is intended to eventually replace —
+ * the `empodat_suspect_prioritisation` materialized view.
  *
  * WHICH empodat_main ROW SUPPLIES matrix, year AND THE MATRIX-SPECIFIC COLUMNS
  * ---------------------------------------------------------------------------
- * `empodat_suspect_prioritisation` carries columns that do not exist in the
- * suspect data at all — `matrix`, `sampling_date_y`, `basin_name`, `df_id`,
+ * `empodat_suspect_prioritisation_dataset` carries columns that do not exist
+ * in the suspect data at all — `matrix`, `sampling_date_y`, `basin_name`, `df_id`,
  * `dsa_id`, `dsgr_id`, `dtiel_id`, `dmeas_id`, `effluent_influent_id`. They are
  * borrowed from the legacy EMPODAT data along this path:
  *
@@ -94,12 +96,12 @@ class RefreshEmpodatSuspectPrioritisation extends Command
      *
      * @var string
      */
-    protected $description = 'Rebuild one or all partitions of the empodat_suspect_prioritisation table';
+    protected $description = 'Rebuild one or all partitions of the empodat_suspect_prioritisation_dataset table';
 
     /**
      * Name of the LIST-partitioned parent table.
      */
-    private const TABLE = 'empodat_suspect_prioritisation';
+    private const TABLE = 'empodat_suspect_prioritisation_dataset';
 
     /**
      * Name of the table tracking one row per partition rebuild.
@@ -296,8 +298,8 @@ class RefreshEmpodatSuspectPrioritisation extends Command
 
     /**
      * Create a standalone table with the same column structure as the
-     * empodat_suspect_prioritisation parent, ready to be populated and later
-     * attached as one of its partitions.
+     * empodat_suspect_prioritisation_dataset parent, ready to be populated
+     * and later attached as one of its partitions.
      */
     private function createStagingTable(string $tableName): void
     {

@@ -85,7 +85,7 @@ return [
         'refresh_prioritisation' => [
             'signature' => 'empodat-suspect:refresh-prioritisation',
             'label' => 'Refresh Prioritisation',
-            'description' => 'Rebuilds the empodat_suspect_prioritisation materialized view. '
+            'description' => 'Rebuilds the empodat_suspect_prioritisation_dataset table. '
                 .'Requires refresh-filters to have run first.',
             'estimated_duration' => '10-60 minutes',
             'destructive' => false,
