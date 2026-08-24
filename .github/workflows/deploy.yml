@@ -168,12 +168,28 @@ jobs:
           docker exec nds-app php artisan optimize
           echo "::endgroup::"
 
-          # ---- 8. maintenance mode OFF ---------------------------------------
+          # ---- 8. regenerate gitignored public/ artefacts ---------------------
+          # Both public/storage and public/docs are gitignored, so the fresh
+          # `git clone` in step 1 cannot carry them — every release starts
+          # without them and they must be rebuilt here.
+          #   storage:link → public/storage symlink into shared/storage/app/public;
+          #                  without it every user-facing file 404s at nginx level.
+          #   scribe:generate → public/docs static site; Scribe runs in 'static'
+          #                  mode (config/scribe.php), so /docs is a plain file,
+          #                  NOT a Laravel route. Without it /docs 404s.
+          # Response calls are disabled in config/scribe.php, so generation makes
+          # no live API calls and writes nothing to the database.
+          echo "::group::artisan storage:link + scribe:generate"
+          docker exec nds-app php artisan storage:link --force
+          docker exec nds-app php artisan scribe:generate
+          echo "::endgroup::"
+
+          # ---- 9. maintenance mode OFF ---------------------------------------
           echo "::group::php artisan up"
           docker exec nds-app php artisan up
           echo "::endgroup::"
 
-          # ---- 9. prune old releases -----------------------------------------
+          # ---- 10. prune old releases ----------------------------------------
           echo "::group::Prune old releases (keeping last $KEEP_RELEASES)"
           active_canonical="$(readlink -f "$PROJECT_ROOT/current")"
           cd "$PROJECT_ROOT/releases"
