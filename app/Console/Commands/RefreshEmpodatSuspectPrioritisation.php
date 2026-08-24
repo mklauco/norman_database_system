@@ -107,6 +107,13 @@ class RefreshEmpodatSuspectPrioritisation extends Command
     private const BUILDS_TABLE = 'empodat_suspect_prioritisation_builds';
 
     /**
+     * Per-station basin lookup, rebuilt once at the start of every run by
+     * {@see buildBasinHelper()}. Derived data with no migration of its own,
+     * following the same pattern as `empodat_suspect_stations_helper`.
+     */
+    private const BASIN_HELPER_TABLE = 'empodat_suspect_prioritisation_basin_helper';
+
+    /**
      * Execute the console command.
      */
     public function handle(): int
@@ -123,6 +130,8 @@ class RefreshEmpodatSuspectPrioritisation extends Command
 
             return Command::FAILURE;
         }
+
+        $this->buildBasinHelper();
 
         $failures = 0;
 
@@ -321,6 +330,60 @@ class RefreshEmpodatSuspectPrioritisation extends Command
      * Populate the staging table for one file_id and return the number of
      * rows inserted.
      */
+    /**
+     * Build the per-station basin lookup, once per command run.
+     *
+     * This deliberately does NOT live inside the per-partition INSERT. Its
+     * result depends only on `empodat_main` and the eight matrix tables that
+     * carry a `basin_name`, so it is identical for every partition — but the
+     * UNION over those tables spans roughly 100 million rows (96 M in
+     * `empodat_matrix_water_surface` alone). Computing it inline made a full
+     * 15-partition rebuild pay that scan fifteen times, taking the run from
+     * 7 seconds to 1 minute 50. Materialising it once collapses that back to a
+     * single scan feeding a lookup of one row per station.
+     *
+     * Scoped to stations that actually appear in `empodat_suspect_main`, so the
+     * result stays small regardless of how large the matrix tables grow.
+     *
+     * Ties are broken on the lowest `empodat_main.id` so rebuilds are
+     * reproducible — 935 of 97 943 stations carry more than one distinct
+     * `basin_name` across their legacy rows.
+     */
+    private function buildBasinHelper(): void
+    {
+        $this->info('→ Building per-station basin lookup...');
+        $start = microtime(true);
+
+        DB::statement('DROP TABLE IF EXISTS '.self::BASIN_HELPER_TABLE);
+
+        DB::statement('
+            CREATE TABLE '.self::BASIN_HELPER_TABLE.' AS
+            SELECT DISTINCT ON (em.station_id)
+                em.station_id,
+                mx.basin_name
+            FROM empodat_main em
+            INNER JOIN (
+                SELECT id, basin_name FROM empodat_matrix_biota            WHERE basin_name IS NOT NULL
+                UNION ALL SELECT id, basin_name FROM empodat_matrix_sediments        WHERE basin_name IS NOT NULL
+                UNION ALL SELECT id, basin_name FROM empodat_matrix_soil             WHERE basin_name IS NOT NULL
+                UNION ALL SELECT id, basin_name FROM empodat_matrix_water_surface    WHERE basin_name IS NOT NULL
+                UNION ALL SELECT id, basin_name FROM empodat_matrix_water_ground     WHERE basin_name IS NOT NULL
+                UNION ALL SELECT id, basin_name FROM empodat_matrix_water_waste      WHERE basin_name IS NOT NULL
+                UNION ALL SELECT id, basin_name FROM empodat_matrix_suspended_matter WHERE basin_name IS NOT NULL
+                UNION ALL SELECT id, basin_name FROM empodat_matrix_sewage_sludge    WHERE basin_name IS NOT NULL
+            ) mx ON mx.id = em.id
+            WHERE em.station_id IN (SELECT DISTINCT station_id FROM empodat_suspect_main WHERE station_id IS NOT NULL)
+            ORDER BY em.station_id, em.id ASC
+        ');
+
+        DB::statement('CREATE UNIQUE INDEX idx_espbh_station_id ON '.self::BASIN_HELPER_TABLE.'(station_id)');
+
+        $count = DB::table(self::BASIN_HELPER_TABLE)->count();
+        $duration = round(microtime(true) - $start, 2);
+
+        $this->info("  ✓ {$count} station(s) with a basin ({$duration}s)");
+    }
+
     private function populateStagingTable(string $tableName, int $fileId): int
     {
         return DB::affectingStatement("
@@ -351,32 +414,6 @@ class RefreshEmpodatSuspectPrioritisation extends Command
                 FROM empodat_main
                 WHERE station_id IN (SELECT DISTINCT station_id FROM limited_suspect)
                 ORDER BY station_id, id ASC
-            ),
-            -- basin_name is resolved separately, per STATION, because it is a
-            -- property of the place and not of the measurement: measured across
-            -- the whole database it is constant for 99.05% of stations (935 of
-            -- 97 943 disagree). Tying it to first_main would discard it for
-            -- every station whose chosen row happens to sit in a matrix with no
-            -- basin_name, which is what the previous implementation did.
-            -- Ties are broken on the lowest empodat_main.id so rebuilds are
-            -- reproducible.
-            station_basin AS (
-                SELECT DISTINCT ON (em.station_id)
-                    em.station_id,
-                    mx.basin_name
-                FROM empodat_main em
-                INNER JOIN (
-                    SELECT id, basin_name FROM empodat_matrix_biota            WHERE basin_name IS NOT NULL
-                    UNION ALL SELECT id, basin_name FROM empodat_matrix_sediments        WHERE basin_name IS NOT NULL
-                    UNION ALL SELECT id, basin_name FROM empodat_matrix_soil             WHERE basin_name IS NOT NULL
-                    UNION ALL SELECT id, basin_name FROM empodat_matrix_water_surface    WHERE basin_name IS NOT NULL
-                    UNION ALL SELECT id, basin_name FROM empodat_matrix_water_ground     WHERE basin_name IS NOT NULL
-                    UNION ALL SELECT id, basin_name FROM empodat_matrix_water_waste      WHERE basin_name IS NOT NULL
-                    UNION ALL SELECT id, basin_name FROM empodat_matrix_suspended_matter WHERE basin_name IS NOT NULL
-                    UNION ALL SELECT id, basin_name FROM empodat_matrix_sewage_sludge    WHERE basin_name IS NOT NULL
-                ) mx ON mx.id = em.id
-                WHERE em.station_id IN (SELECT DISTINCT station_id FROM limited_suspect)
-                ORDER BY em.station_id, em.id ASC
             )
             SELECT
                 -- Primary identifiers
@@ -421,8 +458,9 @@ class RefreshEmpodatSuspectPrioritisation extends Command
             LEFT JOIN first_main em
                 ON em.station_id = esm.station_id
 
-            -- Station-level basin, resolved independently of first_main
-            LEFT JOIN station_basin sb
+            -- Station-level basin, resolved independently of first_main.
+            -- Built once per command run by buildBasinHelper().
+            LEFT JOIN ".self::BASIN_HELPER_TABLE." sb
                 ON sb.station_id = esm.station_id
 
             -- Join to substances for substance code
