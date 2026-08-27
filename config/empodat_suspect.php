@@ -24,4 +24,18 @@ return [
 
     'seed_row_limit' => env('EMPODAT_SUSPECT_SEED_ROW_LIMIT'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Database entity id
+    |--------------------------------------------------------------------------
+    |
+    | The `database_entities` row that marks a `files` record as belonging to
+    | EMPODAT Suspect. Enforced in the database by the trigger
+    | `trg_check_empodat_suspect_data_source_file`, which rejects any
+    | `empodat_suspect_data_source.file_id` whose file is not this entity.
+    |
+    */
+
+    'database_entity_id' => 18,
+
 ];

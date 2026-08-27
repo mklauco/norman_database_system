@@ -1,0 +1,80 @@
+name: Open Release PR
+
+# Opens the release PR (development -> main) as soon as development moves
+# ahead of main, so a release is always one click away instead of a task
+# somebody has to remember. Opening is not releasing: the PR still has to be
+# reviewed and merged by hand, and only that merge fires the deploy workflow.
+#
+# If a release PR is already open, this does nothing — GitHub keeps an open
+# PR up to date with its head branch on its own.
+
+on:
+  push:
+    branches: [development]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: release-pr
+  cancel-in-progress: false
+
+jobs:
+  open-release-pr:
+    name: Open release PR if development is ahead
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Open release PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          existing=$(gh pr list --repo "$REPO" --base main --head development \
+                       --state open --json number --jq 'length')
+
+          if [ "$existing" != "0" ]; then
+            echo "A release PR is already open; GitHub keeps it current. Nothing to do."
+            exit 0
+          fi
+
+          ahead=$(gh api "repos/$REPO/compare/main...development" --jq '.ahead_by')
+
+          if [ "$ahead" = "0" ]; then
+            echo "development is not ahead of main. Nothing to release."
+            exit 0
+          fi
+
+          echo "development is $ahead commit(s) ahead of main; opening release PR."
+
+          gh pr create --repo "$REPO" --base main --head development \
+            --title "Release: development -> main" \
+            --body "$(cat <<'BODY'
+          Opened automatically when `development` moved ahead of `main`.
+
+          **Opening a release PR is not releasing.** Nothing deploys until this
+          PR is merged by hand. Review the aggregate diff first — this is the
+          last gate before production.
+
+          ### Merge with a merge commit, never squash
+
+          Squashing makes `development` and `main` diverge, and every release
+          after that needs a reconcile PR.
+
+          ### Before merging
+
+          - Check whether any commit here adds a migration. Migrations do not
+            run on deploy — after the deploy lands, run the **Migrate Production
+            DB** Action with `pretend: true` first.
+
+          ### Why there are no checks on this PR
+
+          CI runs on every push to `development` and to `main`, so these commits
+          were already built when they landed on `development`, and will be built
+          again on merge. A PR opened by `GITHUB_TOKEN` deliberately does not
+          fire the `pull_request` event, which is why no check appears here.
+          BODY
+          )"

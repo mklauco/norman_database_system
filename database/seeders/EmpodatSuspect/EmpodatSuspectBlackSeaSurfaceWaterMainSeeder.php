@@ -26,7 +26,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  * captured from an INSERT ... RETURNING. An optional per-file row cap
  * ({@see SeedRowLimiter}) can bound a run for local smoke-testing.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §3a
+ * See: Empodat-Suspect-3-new-source.md §1
  */
 class EmpodatSuspectBlackSeaSurfaceWaterMainSeeder extends Seeder
 {

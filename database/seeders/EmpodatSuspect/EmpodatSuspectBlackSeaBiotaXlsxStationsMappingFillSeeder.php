@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  *
  * Excludes deprecated stations (`is_deprecated = true`).
  *
- * See: Empodat-Suspect-new-source-onboarding.md §3a (column-by-column log, Block D)
+ * See: Empodat-Suspect-3-new-source.md §1 (station-match strategy)
  */
 class EmpodatSuspectBlackSeaBiotaXlsxStationsMappingFillSeeder extends Seeder
 {

@@ -127,7 +127,8 @@ class EmpodatController extends Controller
         // (data_kingdom -> list_kingdoms, data_phylum -> list_phyla, etc.).
         // Legacy renders these as human-readable names ("Kingdom: Animalia");
         // this enriches the response so the modal does the same. Imported via
-        // Phase 6 of the legacy migration; see LEGACY_MIGRATION_PLAN.md.
+        // Phase 6 of the legacy migration; see appendix_a_legacy_migration_plan.md
+        // in the internal documentation repository (docs/migration_from_v1_v2/legacy_delta_migration/).
         if ($matrixMetadata !== null) {
             $matrixMetadata['meta_data'] = $this->enrichLookupIds(
                 $matrixMetadata['meta_data'] ?? [],
