@@ -27,7 +27,7 @@ This document is short on purpose. For deeper detail see [CICD_ARCHITECTURE.md](
 | PR | Who opens it | Who reviews & merges |
 |---|---|---|
 | **Feature PR** — `feature/X → development` | The developer who wrote the change (you) | Martin |
-| **Release PR** — `development → main` | Martin | Martin |
+| **Release PR** — `development → main` | Opened automatically once `development` moves ahead of `main` | Martin |
 
 - As a developer, you only ever open feature PRs targeting `development`. You never touch `main`.
 - Martin batches accumulated `development` work into a release PR when he decides to ship.
@@ -241,7 +241,9 @@ Nothing automatic. The new code waits in `development` for the next release.
 
 `development` is the integration branch — it's where multiple features pile up before they ship together.
 
-**Releases are Martin's call.** He decides when there's enough on `development` to justify a release, opens the release PR (`development → main`), reviews the aggregate diff, and merges. As a developer, you don't open the release PR yourself. If your change is urgent and can't wait for the next release, ping Martin — he'll cut the release.
+The release PR (`development → main`) is opened **automatically** by `.github/workflows/release-pr.yml` as soon as `development` moves ahead of `main`, and stays open, accumulating commits, until someone merges it. If one is already open it is left alone — GitHub keeps it current by itself.
+
+**Opening it is not releasing it.** Nothing deploys until the PR is merged, and **releases are still Martin's call**: he decides when there's enough on `development` to justify shipping, reviews the aggregate diff, and merges. Merge it with a **merge commit, never a squash** — squashing makes the two branches diverge and every release after that needs a reconcile PR. As a developer you never merge the release PR yourself. If your change is urgent and can't wait, ping Martin — he'll cut the release.
 
 ---
 
