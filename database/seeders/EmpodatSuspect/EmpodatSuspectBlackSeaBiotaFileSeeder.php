@@ -40,12 +40,12 @@ class EmpodatSuspectBlackSeaBiotaFileSeeder extends Seeder
     private const int MONITORING_TYPE_ID = 3;
 
     /**
-     * Organisation: Environmental Institute, s.r.o. (list_data_source_organisations.id = 1).
+     * Organisation: Environmental Institute (EI), Koš, Slovakia (list_data_source_organisations.id = 1).
      */
     private const int ORGANISATION_ID = 1;
 
     /**
-     * Laboratory: Laboratory of Analytical Chemistry (list_data_source_laboratories.id = 103).
+     * Laboratory: Laboratory of Analytical Chemistry, Athens, Greece (list_data_source_laboratories.id = 103).
      */
     private const int LABORATORY_ID = 103;
 
