@@ -19,7 +19,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  * Station columns: everything AFTER 'Units' and BEFORE 'mz score' (the metadata
  * block boundary). Expected: 20 stations.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §3a (column-by-column log)
+ * See: Empodat-Suspect-3-new-source.md §1 (pre-flight column checklist)
  */
 class EmpodatSuspectBlackSeaSurfaceWaterXlsxStationsMappingSeeder extends Seeder
 {

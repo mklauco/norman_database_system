@@ -36,7 +36,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *     `numoffragments score` — reflected in METADATA_COLUMN_MAP below.
  *   - `Identification_Proofs` is absent in this file (stored as null).
  *
- * See: Empodat-Suspect-new-source-onboarding.md §8 (TerraChem)
+ * See: Empodat-Suspect-3-new-source.md §11 (TerraChem)
  */
 class EmpodatSuspectTerraChemRodentMainSeeder extends Seeder
 {

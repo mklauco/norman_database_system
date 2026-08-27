@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
  * Scoped to file_id = 10010. Handles non-uniqueness via MIN(s.id) + STRING_AGG.
  * Excludes deprecated stations.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §3a (Block D)
+ * See: Empodat-Suspect-3-new-source.md §1 (station-match strategy)
  */
 class EmpodatSuspectBlackSeaSedimentXlsxStationsMappingFillSeeder extends Seeder
 {

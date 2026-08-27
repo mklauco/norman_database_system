@@ -35,7 +35,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  * rather than relying on PostgreSQL RETURNING order. An optional per-file
  * row cap ({@see SeedRowLimiter}) can bound a run for local smoke-testing.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §3a (column-by-column log)
+ * See: Empodat-Suspect-3-new-source.md §1 (pre-flight column checklist)
  */
 class EmpodatSuspectBlackSeaBiotaMainSeeder extends Seeder
 {

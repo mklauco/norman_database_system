@@ -46,7 +46,8 @@ abstract class Step
 
     /**
      * Connection to the legacy MariaDB. Configure `legacy_empodat`
-     * in config/database.php — see LEGACY_MIGRATION_PLAN.md.
+     * in config/database.php — see appendix_a_legacy_migration_plan.md in the
+     * internal documentation repository (docs/migration_from_v1_v2/legacy_delta_migration/).
      */
     protected function legacy(): ConnectionInterface
     {
