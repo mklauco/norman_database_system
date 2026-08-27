@@ -19,7 +19,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *
  * Idempotent: rows existing for (norman_id, file_id) are skipped.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §3a (Block A, Column 2 `Name`)
+ * See: Empodat-Suspect-3-new-source.md §1 (substance identifier column)
  */
 class EmpodatSuspectBlackSeaBiotaSubstancesSeeder extends Seeder
 {

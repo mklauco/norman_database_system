@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
  * Scoped to file_id = 10013. Handles non-uniqueness via MIN(s.id) + STRING_AGG.
  * Excludes deprecated stations.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §8 (TerraChem)
+ * See: Empodat-Suspect-3-new-source.md §11 (TerraChem)
  */
 class EmpodatSuspectTerraChemPlantXlsxStationsMappingFillSeeder extends Seeder
 {

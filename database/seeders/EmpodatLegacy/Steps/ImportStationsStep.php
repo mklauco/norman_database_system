@@ -12,8 +12,9 @@ use Throwable;
  * Source : SELECT DISTINCT (13 cols) FROM legacy `dct_analysis` WHERE id >= sinceId.
  * Target : PG `empodat_stations` (auto-id sequence).
  *
- * Per LEGACY_MIGRATION_PLAN.md: insert all distinct station signatures as new
- * rows. No matching against existing PG stations — pre-existing
+ * Per appendix_a_legacy_migration_plan.md in the internal documentation
+ * repository (docs/migration_from_v1_v2/legacy_delta_migration/): insert all
+ * distinct station signatures as new rows. No matching against existing PG stations — pre-existing
  * `empodat_station_merge_log` handles canonicalisation in a later pass.
  *
  * Column mapping (legacy -> PG):

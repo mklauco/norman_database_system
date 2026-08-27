@@ -35,7 +35,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *   - HRMS column is spelled `numberoffragments score` (with "ber"), not
  *     `numoffragments score` — reflected in METADATA_COLUMN_MAP below.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §8 (TerraChem)
+ * See: Empodat-Suspect-3-new-source.md §11 (TerraChem)
  */
 class EmpodatSuspectTerraChemSoilMainSeeder extends Seeder
 {

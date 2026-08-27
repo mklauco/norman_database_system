@@ -37,7 +37,8 @@ use Throwable;
  *   php artisan empodat-legacy:rollback {run_id}
  *
  * Requires the `legacy_empodat` connection in config/database.php pointing at
- * the staging MariaDB — see LEGACY_MIGRATION_PLAN.md.
+ * the staging MariaDB — see appendix_a_legacy_migration_plan.md in the internal
+ * documentation repository (docs/migration_from_v1_v2/legacy_delta_migration/).
  *
  * Run:
  *   php artisan db:seed --class=Database\\Seeders\\EmpodatLegacy\\EmpodatLegacySeeder

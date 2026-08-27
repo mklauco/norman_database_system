@@ -41,7 +41,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *   - A stray `Unit` column sits inside Block C; it is not in METADATA_COLUMN_MAP
  *     and is therefore ignored. `Identification_Proofs` is absent (stored as null).
  *
- * See: Empodat-Suspect-new-source-onboarding.md §8 (TerraChem)
+ * See: Empodat-Suspect-3-new-source.md §11 (TerraChem)
  */
 class EmpodatSuspectTerraChemPlantMainSeeder extends Seeder
 {
