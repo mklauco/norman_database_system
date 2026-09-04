@@ -122,10 +122,14 @@ jobs:
           echo "::group::Clone release $RELEASE_NAME"
           git clone --depth=1 --branch "$GIT_REF" "$REPO_URL" "$RELEASE_PATH"
           cd "$RELEASE_PATH"
-          # Verify we actually got the expected commit (origin may have moved)
+          # Refuse to deploy a commit other than the one this run is for. A merge
+          # landing on main while this clone runs would otherwise ship code the
+          # pipeline never checked, and every later assertion would still pass.
           ACTUAL_SHA="$(git rev-parse HEAD)"
           if [[ "$ACTUAL_SHA" != "$GIT_SHA" ]]; then
-            echo "WARNING: cloned $ACTUAL_SHA, expected $GIT_SHA. Origin moved during clone?"
+            echo "Cloned $ACTUAL_SHA but this deploy is for $GIT_SHA."
+            echo "Origin moved during the clone; aborting so the next run deploys it cleanly."
+            exit 1
           fi
           cd "$PROJECT_ROOT"
           echo "::endgroup::"
@@ -253,9 +257,14 @@ jobs:
           echo "Deploy succeeded: $RELEASE_NAME"
 
           # ---- 11. assert production really is running this commit ------------
+          # Check the commit in the deployed tree, not the release directory
+          # name: the name is built from GIT_SHA and would match even if the
+          # directory held different code.
           ACTIVE="$(readlink "$PROJECT_ROOT/current")"
-          if [[ "$ACTIVE" != *"_${GIT_SHA:0:7}" ]]; then
-            echo "current -> $ACTIVE but expected a release for ${GIT_SHA:0:7}"
+          DEPLOYED_SHA="$(git -C "$PROJECT_ROOT/current" rev-parse HEAD)"
+          echo "current -> $ACTIVE ($DEPLOYED_SHA)"
+          if [[ "$DEPLOYED_SHA" != "$GIT_SHA" ]]; then
+            echo "Production is running $DEPLOYED_SHA, expected $GIT_SHA"
             exit 1
           fi
 
@@ -317,11 +326,12 @@ jobs:
           GIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          active="$(ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+          read -r active deployed <<<"$(ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
                       "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-                      'readlink /opt/projects/norman_database_system/current')"
-          echo "current -> $active"
-          if [[ "$active" != *"_${GIT_SHA:0:7}" ]]; then
-            echo "Production is NOT running ${GIT_SHA:0:7}."
+                      'cd /opt/projects/norman_database_system \
+                       && echo "$(readlink current) $(git -C current rev-parse HEAD)"')"
+          echo "current -> $active ($deployed)"
+          if [[ "$deployed" != "$GIT_SHA" ]]; then
+            echo "Production is running $deployed, expected $GIT_SHA."
             exit 1
           fi
