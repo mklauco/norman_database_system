@@ -77,14 +77,16 @@ jobs:
           [[ -L current ]] || { echo "current/ symlink missing — bootstrap not run."; exit 1; }
 
           ACTIVE="$(readlink current)"
-          echo "Current release: $ACTIVE"
+          DEPLOYED_SHA="$(git -C current rev-parse HEAD)"
+          echo "Current release: $ACTIVE ($DEPLOYED_SHA)"
 
           # A half-finished deploy leaves current/ pointing at the previous
           # release. Migrating then reports a green "Nothing to migrate" while
-          # the new migrations are silently skipped (2026-09-04).
-          if [[ "$ACTIVE" != *"_${GIT_SHA:0:7}" ]]; then
-            echo "Production is running $ACTIVE, not a release for ${GIT_SHA:0:7}."
-            echo "Deploy first, then re-run this workflow."
+          # the new migrations are silently skipped (2026-09-04). Compare the
+          # deployed commit itself, not the release directory name.
+          if [[ "$DEPLOYED_SHA" != "$GIT_SHA" ]]; then
+            echo "Production is running $DEPLOYED_SHA, not $GIT_SHA."
+            echo "Deploy first, then re-run this workflow from the branch you deployed."
             exit 1
           fi
 
