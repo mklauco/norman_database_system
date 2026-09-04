@@ -52,6 +52,7 @@ jobs:
 
           gh pr create --repo "$REPO" --base main --head development \
             --title "Release: development -> main" \
+            --assignee mklauco \
             --body "$(cat <<'BODY'
           Opened automatically when `development` moved ahead of `main`.
 
@@ -67,8 +68,10 @@ jobs:
           ### Before merging
 
           - Check whether any commit here adds a migration. Migrations do not
-            run on deploy — after the deploy lands, run the **Migrate Production
-            DB** Action with `pretend: true` first.
+            run on deploy — once the deploy has finished, run the **Migrate
+            Production DB** Action. It refuses to run unless production is
+            already serving this exact commit, so it cannot silently migrate
+            against a stale release.
 
           ### Why there are no checks on this PR
 
