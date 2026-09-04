@@ -44,14 +44,20 @@
           </div>
 
           <!-- Database Filter (Master) -->
-          <div class="mb-4">
-            <label for="database_entity_id" class="block text-sm font-medium text-gray-700">Database</label>
-            <select id="database_entity_id" onchange="window.location.href='{{ route('files.index') }}?database_entity_id=' + this.value" class="mt-1 block w-64 pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
-              <option value="">All Databases</option>
-              @foreach($databaseEntities as $entity)
-                <option value="{{ $entity->id }}" {{ $databaseEntityId == $entity->id ? 'selected' : '' }}>{{ $entity->name }}</option>
-              @endforeach
-            </select>
+          <div class="mb-4 flex items-end gap-4">
+            <div>
+              <label for="database_entity_id" class="block text-sm font-medium text-gray-700">Database</label>
+              <select id="database_entity_id" onchange="window.location.href='{{ route('files.index') }}?database_entity_id=' + this.value" class="mt-1 block w-64 pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
+                <option value="">All Databases</option>
+                @foreach($databaseEntities as $entity)
+                  <option value="{{ $entity->id }}" {{ $databaseEntityId == $entity->id ? 'selected' : '' }}>{{ $entity->name }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            @if((int) $databaseEntityId === config('empodat_suspect.database_entity_id'))
+              <x-empodat-suspect-onboarding-modal />
+            @endif
           </div>
 
           <!-- Search and Filter Form -->

@@ -22,7 +22,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  * Differs from BlackSea SEDIMENT only in the Blank-column skip: TerraChem files
  * carry 1–5 'Blank ...' columns between 'Units' and the first sample column.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §8 (TerraChem)
+ * See: Empodat-Suspect-3-new-source.md §11 (TerraChem)
  */
 class EmpodatSuspectTerraChemRodentXlsxStationsMappingSeeder extends Seeder
 {

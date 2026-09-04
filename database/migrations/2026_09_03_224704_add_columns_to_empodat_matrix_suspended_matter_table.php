@@ -15,7 +15,7 @@ return new class extends Migration
             $table->tinyInteger('dtt_id')->nullable()->comment('Advanced treatment steps (data_tertiary_treatment)');
             $table->string('dtt_other', 255)->nullable();
             $table->string('capacity', 255)->nullable()->comment('Capacity (population equivalent)');
-            $table->numeric('flow')->nullable()->comment('Daily flow [m3/day]');
+            $table->string('flow', 255)->nullable()->comment('Daily flow [m3/day]');
         });
     }
 

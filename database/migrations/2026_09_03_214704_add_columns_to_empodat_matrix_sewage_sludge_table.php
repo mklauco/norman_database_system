@@ -13,18 +13,18 @@ return new class extends Migration
     {
         Schema::table('empodat_matrix_sewage_sludge', function (Blueprint $table) {
             $table->string('name', 255)->nullable()->comment('Name of river / estuary / lake / reservoir / sea')->after('id');
-            $table->numeric('cod')->nullable()->comment('Chemical Oxygen Demand (COD) [g/m3]');
-            $table->numeric('toc')->nullable()->comment('Total organic carbon (TOC) [g/m3]');
-            $table->numeric('conductivity')->nullable()->comment('Conductivity [µS/cm]');
-            $table->numeric('bod5')->nullable()->comment('BOD5 [g/m3]');
-            $table->numeric('orthophosphate_po43')->nullable()->comment('Orthophosphate (PO43-) [g/m3]');
-            $table->numeric('p_total')->nullable()->comment('P total [g/m3]');
-            $table->numeric('nitrate_no3')->nullable()->comment('Nitrate (NO3-) [g/m3]');
-            $table->numeric('ammonium_nh4')->nullable()->comment('Ammonium (NH4+) [g/m3]');
-            $table->numeric('n_total')->nullable()->comment('N total [g/m3]');
-            $table->numeric('sludge_retention_time')->nullable()->comment('Sludge retention time [day/s]');
+            $table->string('cod', 100)->nullable()->comment('Chemical Oxygen Demand (COD) [g/m3]');
+            $table->string('toc', 100)->nullable()->comment('Total organic carbon (TOC) [g/m3]');
+            $table->string('conductivity', 100)->nullable()->comment('Conductivity [µS/cm]');
+            $table->string('bod5', 100)->nullable()->comment('BOD5 [g/m3]');
+            $table->string('orthophosphate_po43', 100)->nullable()->comment('Orthophosphate (PO43-) [g/m3]');
+            $table->string('p_total', 100)->nullable()->comment('P total [g/m3]');
+            $table->string('nitrate_no3', 100)->nullable()->comment('Nitrate (NO3-) [g/m3]');
+            $table->string('ammonium_nh4', 100)->nullable()->comment('Ammonium (NH4+) [g/m3]');
+            $table->string('n_total', 100)->nullable()->comment('N total [g/m3]');
+            $table->string('sludge_retention_time', 100)->nullable()->comment('Sludge retention time [day/s]');
             $table->tinyInteger('dtbu_id')->nullable()->comment('Treatment before use');
-            $table->numeric('flow')->nullable()->comment('Daily flow [m3/day]');
+            $table->string('flow', 255)->nullable()->comment('Daily flow [m3/day]');
         });
     }
 

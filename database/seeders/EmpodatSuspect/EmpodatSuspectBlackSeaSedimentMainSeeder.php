@@ -30,7 +30,7 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  * optional per-file row cap ({@see SeedRowLimiter}) can bound a run for
  * local smoke-testing.
  *
- * See: Empodat-Suspect-new-source-onboarding.md §3a
+ * See: Empodat-Suspect-3-new-source.md §1
  */
 class EmpodatSuspectBlackSeaSedimentMainSeeder extends Seeder
 {

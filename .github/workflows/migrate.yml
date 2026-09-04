@@ -16,10 +16,10 @@ on:
         required: true
         type: string
       pretend:
-        description: 'Run --pretend (show SQL, change nothing). Recommended first.'
+        description: 'Run --pretend (show SQL, change nothing).'
         required: true
         type: boolean
-        default: true
+        default: false
 
 concurrency:
   group: migrate-production
@@ -29,6 +29,7 @@ jobs:
   migrate:
     name: Run migrations on production
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: production-migrate
 
@@ -49,7 +50,7 @@ jobs:
           if [ -n "${{ secrets.DEPLOY_KNOWN_HOSTS }}" ]; then
             echo "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           else
-            ssh-keyscan -p "${{ secrets.DEPLOY_SSH_PORT || '22' }}" -H "${{ secrets.DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+            ssh-keyscan -4 -p "${{ secrets.DEPLOY_SSH_PORT || '22' }}" -H "${{ secrets.DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
           fi
           chmod 644 ~/.ssh/known_hosts
 
@@ -59,19 +60,36 @@ jobs:
           DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
           DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
           PRETEND: ${{ inputs.pretend }}
+          GIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          ssh -i ~/.ssh/deploy_key \
+          ssh -4 -i ~/.ssh/deploy_key \
               -p "$DEPLOY_SSH_PORT" \
               -o StrictHostKeyChecking=yes \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=15 \
+              -o ServerAliveCountMax=4 \
               "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-              PRETEND="$PRETEND" bash -s <<'REMOTE'
+              PRETEND="$PRETEND" GIT_SHA="$GIT_SHA" bash -s <<'REMOTE'
           set -euo pipefail
           cd /opt/projects/norman_database_system
 
           [[ -L current ]] || { echo "current/ symlink missing — bootstrap not run."; exit 1; }
 
-          echo "Current release: $(readlink current)"
+          ACTIVE="$(readlink current)"
+          DEPLOYED_SHA="$(git -C current rev-parse HEAD)"
+          echo "Current release: $ACTIVE ($DEPLOYED_SHA)"
+
+          # A half-finished deploy leaves current/ pointing at the previous
+          # release. Migrating then reports a green "Nothing to migrate" while
+          # the new migrations are silently skipped (2026-09-04). Compare the
+          # deployed commit itself, not the release directory name.
+          if [[ "$DEPLOYED_SHA" != "$GIT_SHA" ]]; then
+            echo "Production is running $DEPLOYED_SHA, not $GIT_SHA."
+            echo "Deploy first, then re-run this workflow from the branch you deployed."
+            exit 1
+          fi
+
           echo "App version: $(docker exec nds-app php artisan --version)"
           echo ""
           echo "Pending migrations:"
@@ -80,7 +98,7 @@ jobs:
 
           if [[ "$PRETEND" == "true" ]]; then
             echo "=== PRETEND MODE — showing SQL only, not executing ==="
-            docker exec nds-app php artisan migrate --pretend
+            docker exec nds-app php artisan migrate --pretend --force
           else
             echo "=== EXECUTING MIGRATIONS ==="
             docker exec nds-app php artisan migrate --force

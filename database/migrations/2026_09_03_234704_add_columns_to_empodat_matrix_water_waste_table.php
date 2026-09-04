@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('empodat_matrix_water_waste', function (Blueprint $table) {
-            $table->numeric('cod')->nullable()->comment('Chemical Oxygen Demand (COD) [g/m3]');
-            $table->numeric('toc')->nullable()->comment('Total organic carbon (TOC) [g/m3]');
-            $table->numeric('conductivity')->nullable()->comment('Conductivity [µS/cm]');
-            $table->numeric('orthophosphate_po43')->nullable()->comment('Orthophosphate (PO43-) [g/m3]');
-            $table->numeric('p_total')->nullable()->comment('P total [g/m3]');
-            $table->numeric('n_no2')->nullable()->comment('N(NO2-) [mg/l]');
-            $table->numeric('nitrate_no3')->nullable()->comment('Nitrate (NO3-) [g/m3]');
-            $table->numeric('ammonium_nh4')->nullable()->comment('Ammonium (NH4+) [g/m3]');
-            $table->numeric('n_total')->nullable()->comment('N total [g/m3] [g/m3]');
-            $table->numeric('bod5')->nullable()->comment('BOD5 [g/m3]');
+            $table->string('cod', 100)->nullable()->comment('Chemical Oxygen Demand (COD) [g/m3]');
+            $table->string('toc', 100)->nullable()->comment('Total organic carbon (TOC) [g/m3]');
+            $table->string('conductivity', 100)->nullable()->comment('Conductivity [µS/cm]');
+            $table->string('orthophosphate_po43', 100)->nullable()->comment('Orthophosphate (PO43-) [g/m3]');
+            $table->string('p_total', 100)->nullable()->comment('P total [g/m3]');
+            $table->string('n_no2', 100)->nullable()->comment('N(NO2-) [mg/l]');
+            $table->string('nitrate_no3', 100)->nullable()->comment('Nitrate (NO3-) [g/m3]');
+            $table->string('ammonium_nh4', 100)->nullable()->comment('Ammonium (NH4+) [g/m3]');
+            $table->string('n_total', 100)->nullable()->comment('N total [g/m3] [g/m3]');
+            $table->string('bod5', 100)->nullable()->comment('BOD5 [g/m3]');
         });
     }
 
