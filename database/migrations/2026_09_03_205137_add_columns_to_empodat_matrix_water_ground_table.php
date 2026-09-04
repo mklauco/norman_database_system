@@ -12,19 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('empodat_matrix_water_ground', function (Blueprint $table) {
-            $table->string('alkalinity', 100)->nullable()->comment('Alkalinity [mmol/l]');
-            $table->string('nh4', 100)->nullable()->comment('Ammonium (NH4+) [mg/l]');
-            $table->string('dissolved_o2', 100)->nullable()->comment('Dissolved O2 [mg/l]');
-            $table->string('cod', 100)->nullable()->comment('Chemical Oxygen Demand (COD) [mg/l]');
-            $table->string('so42', 100)->nullable()->comment('Sulphate (SO42-) [mg/l]');
-            $table->string('hco3', 100)->nullable()->comment('Hydrocarbonate (HCO3-) [mg/l]');
-            $table->string('toc', 100)->nullable()->comment('Total organic carbon (TOC) [mg/l]');
-            $table->string('cl', 100)->nullable()->comment('Chloride (Cl-) [mg/l]');
-            $table->string('po43', 100)->nullable()->comment('Orthophosphate (PO43-) [mg/l]');
-            $table->string('calcium', 100)->nullable()->comment('Calcium [mg/l]');
-            $table->string('iron', 100)->nullable()->comment('Iron [mg/l]');
-            $table->string('magnesium', 100)->nullable()->comment('Magnesium [mg/l]');
-            $table->string('manganese', 100)->nullable()->comment('Manganese [mg/l]');
+            $table->numeric('alkalinity')->nullable()->comment('Alkalinity [mmol/l]');
+            $table->numeric('nh4')->nullable()->comment('Ammonium (NH4+) [mg/l]');
+            $table->numeric('dissolved_o2')->nullable()->comment('Dissolved O2 [mg/l]');
+            $table->numeric('cod')->nullable()->comment('Chemical Oxygen Demand (COD) [mg/l]');
+            $table->numeric('so42')->nullable()->comment('Sulphate (SO42-) [mg/l]');
+            $table->numeric('hco3')->nullable()->comment('Hydrocarbonate (HCO3-) [mg/l]');
+            $table->numeric('toc')->nullable()->comment('Total organic carbon (TOC) [mg/l]');
+            $table->numeric('cl')->nullable()->comment('Chloride (Cl-) [mg/l]');
+            $table->numeric('po43')->nullable()->comment('Orthophosphate (PO43-) [mg/l]');
+            $table->numeric('calcium')->nullable()->comment('Calcium [mg/l]');
+            $table->numeric('iron')->nullable()->comment('Iron [mg/l]');
+            $table->numeric('magnesium')->nullable()->comment('Magnesium [mg/l]');
+            $table->numeric('manganese')->nullable()->comment('Manganese [mg/l]');
         });
     }
 
