@@ -3,6 +3,9 @@ name: Deploy
 on:
   push:
     branches: [main]
+  # Lets a failed or interrupted deploy be retried from the Actions tab
+  # without pushing an empty commit to main.
+  workflow_dispatch:
 
 concurrency:
   group: deploy-production
@@ -12,6 +15,11 @@ jobs:
   deploy:
     name: Deploy to production
     runs-on: ubuntu-latest
+    # Without this the job inherits GitHub's 6-hour default. On 2026-09-04 a
+    # dead SSH connection held this workflow (and the concurrency group)
+    # hostage for two hours. Deploys normally finish in 1-3 minutes, 8 with
+    # cold composer/npm caches, so 20 is already generous.
+    timeout-minutes: 20
     environment:
       name: production
 
@@ -33,9 +41,24 @@ jobs:
           else
             ssh-keyscan -4 -p "${{ secrets.DEPLOY_SSH_PORT || '22' }}" -H "${{ secrets.DEPLOY_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
           fi
+          # Keepalives: a silently dropped connection must surface as an error
+          # within ~1 minute instead of blocking on a dead socket forever.
+          cat > ~/.ssh/config <<'SSHCFG'
+          Host *
+            AddressFamily inet
+            ConnectTimeout 30
+            ServerAliveInterval 15
+            ServerAliveCountMax 4
+            TCPKeepAlive yes
+            StrictHostKeyChecking yes
+          SSHCFG
+          chmod 600 ~/.ssh/config
 
-      - name: Run remote deploy
-        id: deploy
+      # The deploy script runs detached (setsid) on the server and writes its
+      # progress to a log file. A dropped SSH connection can therefore no longer
+      # kill a half-finished deploy - the runner just reconnects and keeps
+      # reading the log.
+      - name: Launch remote deploy
         env:
           DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
           DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
@@ -44,17 +67,40 @@ jobs:
           GIT_REF: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          ssh -4 -i ~/.ssh/deploy_key \
+          ssh -i ~/.ssh/deploy_key \
               -p "$DEPLOY_SSH_PORT" \
-              -o StrictHostKeyChecking=yes \
-              -o ConnectTimeout=30 \
               "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
-              GIT_SHA="$GIT_SHA" GIT_REF="$GIT_REF" bash -s <<'REMOTE'
+              GIT_SHA="$GIT_SHA" GIT_REF="$GIT_REF" bash -s <<'LAUNCH'
+          set -euo pipefail
+
+          RUN_DIR="/opt/projects/norman_database_system/shared/deploy-runs"
+          mkdir -p "$RUN_DIR"
+          find "$RUN_DIR" -type f -mtime +30 -delete 2>/dev/null || true
+
+          SCRIPT="$RUN_DIR/$GIT_SHA.sh"
+          LOG="$RUN_DIR/$GIT_SHA.log"
+          rm -f "$LOG" "$RUN_DIR/$GIT_SHA.status"
+
+          cat > "$SCRIPT" <<'DEPLOY'
           set -euo pipefail
 
           PROJECT_ROOT="/opt/projects/norman_database_system"
           REPO_URL="https://github.com/mklauco/norman_database_system.git"
           KEEP_RELEASES=5
+
+          RUN_DIR="$PROJECT_ROOT/shared/deploy-runs"
+          STATUS="$RUN_DIR/$GIT_SHA.status"
+
+          # If anything below dies, never leave production sitting in maintenance mode.
+          # The 2026-09-04 outage hung between `artisan down` and the symlink swap.
+          on_failure() {
+            code=$?
+            echo "DEPLOY FAILED at line $1 (exit $code) - lifting maintenance mode"
+            docker exec nds-app php artisan up || true
+            echo "FAIL line=$1 exit=$code" > "$STATUS"
+            exit "$code"
+          }
+          trap 'on_failure $LINENO' ERR
 
           cd "$PROJECT_ROOT"
 
@@ -205,4 +251,77 @@ jobs:
 
           echo ""
           echo "Deploy succeeded: $RELEASE_NAME"
-          REMOTE
+
+          # ---- 11. assert production really is running this commit ------------
+          ACTIVE="$(readlink "$PROJECT_ROOT/current")"
+          if [[ "$ACTIVE" != *"_${GIT_SHA:0:7}" ]]; then
+            echo "current -> $ACTIVE but expected a release for ${GIT_SHA:0:7}"
+            exit 1
+          fi
+
+          echo "OK" > "$STATUS"
+          DEPLOY
+
+          setsid nohup env GIT_SHA="$GIT_SHA" GIT_REF="$GIT_REF" \
+            bash "$SCRIPT" > "$LOG" 2>&1 < /dev/null &
+          echo "Launched deploy of $GIT_SHA (log: $LOG)"
+          LAUNCH
+
+      - name: Stream remote deploy until it finishes
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          RUN_DIR="/opt/projects/norman_database_system/shared/deploy-runs"
+          LOG="$RUN_DIR/$GIT_SHA.log"
+          STATUS="$RUN_DIR/$GIT_SHA.status"
+          SENT=0
+          DEADLINE=$(( SECONDS + 900 ))
+
+          while (( SECONDS < DEADLINE )); do
+            out="$(ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+                     "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+                     "tail -n +$((SENT + 1)) '$LOG' 2>/dev/null; \
+                      echo '@@STATUS@@'; cat '$STATUS' 2>/dev/null || echo RUNNING")" || {
+              echo "(poll failed, retrying in 15s)"
+              sleep 15
+              continue
+            }
+
+            new="${out%@@STATUS@@*}"
+            status="${out##*@@STATUS@@}"
+
+            if [ -n "$new" ]; then
+              printf '%s' "$new"
+              SENT=$(( SENT + $(printf '%s' "$new" | grep -c '') ))
+            fi
+
+            case "$status" in
+              *OK*)   echo "Remote deploy finished successfully."; exit 0 ;;
+              *FAIL*) echo "Remote deploy failed:$status"; exit 1 ;;
+            esac
+            sleep 10
+          done
+
+          echo "Timed out after 15 minutes waiting for the remote deploy."
+          exit 1
+
+      - name: Verify production is serving this commit
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT || '22' }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          active="$(ssh -i ~/.ssh/deploy_key -p "$DEPLOY_SSH_PORT" \
+                      "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST" \
+                      'readlink /opt/projects/norman_database_system/current')"
+          echo "current -> $active"
+          if [[ "$active" != *"_${GIT_SHA:0:7}" ]]; then
+            echo "Production is NOT running ${GIT_SHA:0:7}."
+            exit 1
+          fi

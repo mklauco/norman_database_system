@@ -1,0 +1,33 @@
+name: Assign PR
+
+# Every pull request is assigned to mklauco so it shows up under
+# "Assigned to you" in the GitHub mobile app.
+#
+# Note: the release PR is not covered here. It is opened by GITHUB_TOKEN,
+# and GitHub deliberately does not fire workflow events for those, so
+# release-pr.yml sets its assignee at creation time instead.
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+concurrency:
+  group: assign-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  assign:
+    name: Assign to mklauco
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Assign the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh pr edit "$PR" --repo "$REPO" --add-assignee mklauco
