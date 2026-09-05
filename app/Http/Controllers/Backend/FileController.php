@@ -8,6 +8,7 @@ use App\Models\Backend\File;
 use App\Models\Backend\Project;
 use App\Models\Backend\Template;
 use App\Models\DatabaseEntity;
+use App\Services\EmpodatSuspect\PrioritisationCoverage;
 use App\Services\FileRescanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -70,6 +71,16 @@ class FileController extends Controller
         $showingEmpodatSuspect = $empodatSuspectEntityId !== null
             && (int) $databaseEntityId === $empodatSuspectEntityId;
 
+        // Row counts are readable by any admin; triggering a rebuild stays
+        // super_admin only (enforced on the route, not just in the view).
+        $showPrioritisationCoverage = $showingEmpodatSuspect
+            && Auth::user()?->hasAnyRole(['admin', 'super_admin']) === true;
+
+        // How long a rebuild took is operational detail for whoever can
+        // trigger one, not part of "how much data does this file contribute".
+        $showBuildDuration = $showPrioritisationCoverage
+            && Auth::user()?->hasRole('super_admin') === true;
+
         return view('backend.files.index', [
             'files' => $files,
             'columns' => $this->getVisibleColumns(),
@@ -82,6 +93,11 @@ class FileController extends Controller
             'showingEmpodatSuspect' => $showingEmpodatSuspect,
             // Only worth a query when the column is actually on screen.
             'hasActiveEmpodatSuspectRun' => $showingEmpodatSuspect && $queue->hasActiveRun(),
+            'showPrioritisationCoverage' => $showPrioritisationCoverage,
+            'showBuildDuration' => $showBuildDuration,
+            'prioritisationCoverage' => $showPrioritisationCoverage
+                ? app(PrioritisationCoverage::class)->forFiles($files->pluck('id')->all())
+                : [],
         ]);
     }
 
