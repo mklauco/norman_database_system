@@ -103,27 +103,47 @@
           </form>
 
           <!-- Files Table -->
-          <div>
-            <table class="table-standard w-full text-xs table-fixed">
+          {{-- EVERY column carries a width, File Name included.
+               With table-fixed, a column without one absorbs all remaining
+               space: File Name was taking ~950px on a wide screen while Date,
+               Uploaded By and DB wrapped onto two lines. With all widths
+               declared, the browser distributes any surplus proportionally
+               instead of dumping it into one column.
+               The widths below are sized to real content at text-xs:
+               "Empodat Suspect", "Martin Klaučo", "2026-08-19", 11-digit ids.
+               They total 1358px, which is what min-w-[1360px] holds — below
+               that the container scrolls rather than scaling every column
+               down and pushing the Actions icons outside their cell. --}}
+          <div class="overflow-x-auto">
+            <table class="table-standard w-full min-w-[1360px] text-xs table-fixed">
               <thead>
                 <tr class="bg-gray-600 text-white">
-                  <th class="px-1 py-1 text-left w-[50px]">ID</th>
-                  <th class="px-1 py-1 text-left">File Name</th>
-                  <th class="px-1 py-1 text-left w-[80px]">Project</th>
-                  <th class="px-1 py-1 text-left w-[70px]">DB</th>
-                  <th class="px-1 py-1 text-right w-[85px] whitespace-nowrap">ID From</th>
-                  <th class="px-1 py-1 text-right w-[85px] whitespace-nowrap">ID To</th>
-                  <th class="px-1 py-1 text-right w-[85px] whitespace-nowrap">Records</th>
-                  <th class="px-1 py-1 text-center w-[55px]">Protected</th>
-                  <th class="px-1 py-1 text-center w-[50px]">Deleted</th>
-                  <th class="px-1 py-1 text-left w-[80px]">Uploaded By</th>
-                  <th class="px-1 py-1 text-left w-[65px]">Date</th>
+                  <th class="px-1 py-1 text-left w-[60px]">ID</th>
+                  <th class="px-1 py-1 text-left w-[300px]">File Name</th>
+                  <th class="px-1 py-1 text-left w-[70px]">Project</th>
+                  <th class="px-1 py-1 text-left w-[100px]">DB</th>
+                  <th class="px-1 py-1 text-right w-[90px] whitespace-nowrap">ID From</th>
+                  <th class="px-1 py-1 text-right w-[90px] whitespace-nowrap">ID To</th>
+                  <th class="px-1 py-1 text-right w-[90px] whitespace-nowrap">Records</th>
+                  <th class="px-1 py-1 text-center w-[70px]">Protected</th>
+                  <th class="px-1 py-1 text-center w-[60px]">Deleted</th>
+                  <th class="px-1 py-1 text-left w-[100px]">Uploaded By</th>
+                  <th class="px-1 py-1 text-left w-[80px]">Date</th>
+                  @if($showPrioritisationCoverage)
+                    <th class="px-1 py-1 text-right w-[90px]" title="Rows this file contributes to empodat_suspect_prioritisation_dataset, as recorded by its last successful rebuild">
+                      Prioritisation rows
+                    </th>
+                  @endif
                   @if($showingEmpodatSuspect)
                     @role('super_admin')
-                      <th class="px-1 py-1 text-center w-[95px]">Prioritisation</th>
+                      <th class="px-1 py-1 text-center w-[80px]">Prioritisation</th>
                     @endrole
                   @endif
-                  <th class="px-1 py-1 text-center w-[70px]">Actions</th>
+                  {{-- 4 icons x 16px + 3 gaps x 2px + px-1 padding = 78px.
+                       Anything narrower and the icons overflow the cell,
+                       because table-fixed will not grow a column to fit its
+                       content. --}}
+                  <th class="px-1 py-1 text-center w-[78px]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -131,8 +151,8 @@
                   <tr class="@if ($loop->odd) bg-slate-100 @else bg-slate-200 @endif hover:bg-slate-300">
                     <td class="px-1 py-1 font-mono break-all">{{ $file->id }}</td>
                     <td class="px-1 py-1 break-words">{{ $file->original_name ?? $file->name ?? '-' }} @if($file->formatted_file_size)<span class="text-gray-500">({{ $file->formatted_file_size }})</span>@endif</td>
-                    <td class="px-1 py-1 break-words">{{ $file->project->name ?? '-' }}</td>
-                    <td class="px-1 py-1 break-words">{{ $file->databaseEntity->name ?? '-' }}</td>
+                    <td class="px-1 py-1 truncate" title="{{ $file->project->name ?? '' }}">{{ $file->project->name ?? '-' }}</td>
+                    <td class="px-1 py-1 truncate" title="{{ $file->databaseEntity->name ?? '' }}">{{ $file->databaseEntity->name ?? '-' }}</td>
                     <td class="px-1 py-1 text-right font-mono whitespace-nowrap">{{ $file->main_id_from ? number_format($file->main_id_from, 0, '.', ' ') : '-' }}</td>
                     <td class="px-1 py-1 text-right font-mono whitespace-nowrap">{{ $file->main_id_to ? number_format($file->main_id_to, 0, '.', ' ') : '-' }}</td>
                     <td class="px-1 py-1 text-right font-mono whitespace-nowrap">{{ number_format($file->number_of_records ?? 0, 0, '.', ' ') }}</td>
@@ -144,32 +164,75 @@
                         No
                       @endif
                     </td>
-                    <td class="px-1 py-1 break-words">{{ $file->uploader ? $file->uploader->first_name . ' ' . $file->uploader->last_name : '-' }}</td>
-                    <td class="px-1 py-1 break-words">{{ $file->uploaded_at ? $file->uploaded_at->format('Y-m-d') : '-' }}</td>
+                    @php
+                      $uploaderName = $file->uploader ? $file->uploader->first_name.' '.$file->uploader->last_name : '-';
+                    @endphp
+                    <td class="px-1 py-1 truncate" title="{{ $uploaderName }}">{{ $uploaderName }}</td>
+                    <td class="px-1 py-1 whitespace-nowrap font-mono">{{ $file->uploaded_at ? $file->uploaded_at->format('Y-m-d') : '-' }}</td>
+                    @if($showPrioritisationCoverage)
+                      @php
+                        $coverage = $prioritisationCoverage[$file->id] ?? null;
+                      @endphp
+                      <td class="px-1 py-1 text-right whitespace-nowrap">
+                        @if($coverage === null)
+                          <span class="text-gray-400" title="No rebuild has ever been recorded for this file">Never built</span>
+                        @elseif($coverage['row_count'] === null)
+                          <span class="text-red-700" title="Every recorded rebuild for this file failed or was interrupted">No successful build</span>
+                        @else
+                          <span class="font-mono">{{ number_format($coverage['row_count'], 0, '.', ' ') }}</span>
+                          @if($coverage['is_stale'])
+                            <span class="text-amber-700" title="The most recent rebuild attempt did not succeed ({{ $coverage['latest_status'] }}). This count is from an earlier build.">&#9888;</span>
+                          @endif
+                          <span class="block text-gray-500 whitespace-nowrap">{{ $coverage['built_at']?->format('Y-m-d') ?? '-' }}</span>
+                          @if($showBuildDuration && $coverage['duration_ms'] !== null)
+                            {{-- Own line: the column is 90px and the date
+                                 already fills it. --}}
+                            <span class="block text-gray-500 font-mono whitespace-nowrap"
+                                  title="Wall-clock time of the last successful rebuild of this partition. Excludes the shared basin lookup, which is rebuilt once per command run.">{{ number_format($coverage['duration_ms'] / 1000, 1, '.', ' ') }} s</span>
+                          @endif
+                        @endif
+                      </td>
+                    @endif
                     @if($showingEmpodatSuspect)
                       @role('super_admin')
                         <td class="px-1 py-2 text-center">
-                          <form method="POST" action="{{ route('files.refresh_prioritisation', $file) }}"
-                                onsubmit="return confirm('Rebuild the prioritisation partition for file {{ $file->id }}?\n\nEvery run rebuilds the shared basin lookup first (~4 minutes on production) before touching this file. To rebuild several files, one unfiltered run from EMPODAT Suspect → Commands is cheaper.');">
-                            @csrf
-                            <button type="submit"
-                                    @disabled($hasActiveEmpodatSuspectRun)
-                                    title="{{ $hasActiveEmpodatSuspectRun
-                                        ? 'Another EMPODAT Suspect command is queued or running.'
-                                        : 'Queue empodat-suspect:refresh-prioritisation --file=' . $file->id }}"
-                                    class="px-2 py-1 rounded text-xs font-medium border
-                                      {{ $hasActiveEmpodatSuspectRun
-                                          ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
-                                          : 'border-lime-600 text-lime-700 bg-white hover:bg-lime-50' }}">
-                              Rebuild
-                            </button>
-                          </form>
+                          {{-- x-data="{}" so Alpine initialises the button and
+                               $dispatch resolves; the modal itself is a single
+                               instance rendered once below the table. --}}
+                          <button type="button"
+                                  x-data="{}"
+                                  @disabled($hasActiveEmpodatSuspectRun)
+                                  @if(! $hasActiveEmpodatSuspectRun)
+                                    @click="$dispatch('empodat-suspect-rebuild-requested', {
+                                      fileId: {{ $file->id }},
+                                      fileName: @js($file->original_name ?? $file->name ?? ''),
+                                      rowCount: @js(isset($prioritisationCoverage[$file->id]['row_count'])
+                                          ? number_format($prioritisationCoverage[$file->id]['row_count'], 0, '.', ' ')
+                                          : null),
+                                      action: @js(route('files.refresh_prioritisation', $file))
+                                    })"
+                                  @endif
+                                  title="{{ $hasActiveEmpodatSuspectRun
+                                      ? 'Another EMPODAT Suspect command is queued or running.'
+                                      : 'Queue empodat-suspect:refresh-prioritisation --file=' . $file->id }}"
+                                  class="px-2 py-1 rounded text-xs font-medium border
+                                    {{ $hasActiveEmpodatSuspectRun
+                                        ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+                                        : 'border-lime-600 text-lime-700 bg-white hover:bg-lime-50' }}">
+                            Rebuild
+                          </button>
                         </td>
                       @endrole
                     @endif
                     <td class="px-1 py-2 text-center">
                       @role(['admin', 'super_admin'])
-                      <div class="flex justify-center space-x-1">
+                      {{-- Fixed four-slot grid, not a flex row: Download and
+                           Rescan are conditional, and a flex row collapses the
+                           gap when one is absent, so the icons stopped lining
+                           up column-to-column. Every row now reserves all four
+                           slots and renders an empty one where the action does
+                           not apply. --}}
+                      <div class="inline-grid grid-cols-4 gap-0.5 items-center">
                         <a href="{{ route('files.show', $file) }}" class="text-gray-600 hover:text-gray-900" title="View">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -187,24 +250,35 @@
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                           </a>
+                        @else
+                          <span class="block h-4 w-4" title="File not found on disk" aria-hidden="true"></span>
                         @endif
                         @if($file->database_entity_id)
-                          <form action="{{ route('files.rescan', $file) }}" method="POST" class="inline">
+                          <form action="{{ route('files.rescan', $file) }}" method="POST">
                             @csrf
-                            <button type="submit" class="text-purple-600 hover:text-purple-800" title="Rescan">
+                            <button type="submit" class="block text-purple-600 hover:text-purple-800" title="Rescan">
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                               </svg>
                             </button>
                           </form>
+                        @else
+                          <span class="block h-4 w-4" aria-hidden="true"></span>
                         @endif
                       </div>
                       @endrole
                     </td>
                   </tr>
                 @empty
+                  @php
+                    // 12 base columns, plus the coverage column, plus the
+                    // super_admin-only rebuild column.
+                    $emptyColspan = 12
+                        + ($showPrioritisationCoverage ? 1 : 0)
+                        + ($showingEmpodatSuspect && auth()->user()?->hasRole('super_admin') ? 1 : 0);
+                  @endphp
                   <tr class="bg-slate-100">
-                    <td colspan="{{ $showingEmpodatSuspect && auth()->user()?->hasRole('super_admin') ? 13 : 12 }}" class="py-6 px-4 text-center text-gray-500">
+                    <td colspan="{{ $emptyColspan }}" class="py-6 px-4 text-center text-gray-500">
                       No files found.
                     </td>
                   </tr>
@@ -212,6 +286,12 @@
               </tbody>
             </table>
           </div>
+
+          @if($showingEmpodatSuspect)
+            @role('super_admin')
+              <x-empodat-suspect-rebuild-modal />
+            @endrole
+          @endif
 
           <!-- Pagination -->
           <div class="mt-4">
