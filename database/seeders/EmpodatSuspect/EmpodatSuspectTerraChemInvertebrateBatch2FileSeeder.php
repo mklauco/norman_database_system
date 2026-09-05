@@ -9,6 +9,7 @@ use App\Models\EmpodatSuspect\EmpodatSuspectDataSource;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
 /**
  * Register the TerraChem INVERTEBRATE 2nd batch source file (id=10016) in the
@@ -18,14 +19,20 @@ use Illuminate\Database\Seeder;
  * only. Called by EmpodatSuspectTerraChemInvertebrateBatch2Seeder so the
  * orchestrator doesn't touch unrelated file rows.
  *
- * Idempotent (updateOrCreate by id / file_id). The provenance write must
- * happen after the `files` row is saved: `empodat_suspect_data_source` is
+ * Idempotent (looked up by id / file_id). The `files` row is written with
+ * forceFill, not updateOrCreate: `id` is absent from File::$fillable, so mass
+ * assignment silently discards it and a row that does not exist yet — which is
+ * the case on production — would be created on the broken files_id_seq instead
+ * of the reserved id. The seeder is authoritative about which id this source
+ * occupies, so it asserts the id it got before going on.
+ *
+ * The provenance write must happen after the `files` row is saved: `empodat_suspect_data_source` is
  * guarded by a trigger that rejects any file_id whose
  * files.database_entity_id is not 18.
  *
  * ⚠️ On the development database a row 10016 already exists from a web upload
  * (user 545, 2026-08-17) whose original_name and file_path both carry a
- * "FINAL" suffix the physical file never had. updateOrCreate rewrites both to
+ * "FINAL" suffix the physical file never had. This seeder rewrites both to
  * the real on-disk name below. Columns this seeder does not list —
  * is_protected, uploaded_by, number_of_records, main_id_from/main_id_to — are
  * deliberately left as they are; the id ranges are filled by the web UI's
@@ -59,21 +66,28 @@ class EmpodatSuspectTerraChemInvertebrateBatch2FileSeeder extends Seeder
 
     public function run(): void
     {
-        $file = File::updateOrCreate(
-            ['id' => self::FILE_ID],
-            [
-                'original_name' => 'TerraChem Invertebrates 2nd Batch.xlsx',
-                'name' => 'TerraChem INVERTEBRATE 2nd Batch Suspect Screening Results',
-                'description' => 'TerraChem — suspect screening, INVERTEBRATE samples, 2nd batch (biota matrix). Includes HRMS identification metadata stored in empodat_suspect_metadata.',
-                'file_path' => 'empodat_suspect/TerraChem Invertebrates 2nd Batch.xlsx',
-                'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'database_entity_id' => 18,
-                'uploaded_at' => Carbon::now(),
-                'is_deleted' => false,
-            ]
-        );
+        $file = File::find(self::FILE_ID) ?? new File;
+        $isNew = ! $file->exists;
 
-        $verb = $file->wasRecentlyCreated ? 'Created' : 'Updated';
+        $file->forceFill([
+            'id' => self::FILE_ID,
+            'original_name' => 'TerraChem Invertebrates 2nd Batch.xlsx',
+            'name' => 'TerraChem INVERTEBRATE 2nd Batch Suspect Screening Results',
+            'description' => 'TerraChem — suspect screening, INVERTEBRATE samples, 2nd batch (biota matrix). Includes HRMS identification metadata stored in empodat_suspect_metadata.',
+            'file_path' => 'empodat_suspect/TerraChem Invertebrates 2nd Batch.xlsx',
+            'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'database_entity_id' => 18,
+            'uploaded_at' => Carbon::now(),
+            'is_deleted' => false,
+        ])->save();
+
+        if ((int) $file->id !== self::FILE_ID) {
+            throw new RuntimeException(
+                'Refusing to continue: the files row landed on id '.$file->id.' instead of '.self::FILE_ID.'.'
+            );
+        }
+
+        $verb = $isNew ? 'Created' : 'Updated';
         $this->command->info("{$verb} File ID {$file->id}: {$file->name}");
 
         EmpodatSuspectDataSource::updateOrCreate(

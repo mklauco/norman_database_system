@@ -40,9 +40,14 @@ class PrioritisationCoverageColumnTest extends TestCase
         $this->suspectEntity = DatabaseEntity::factory()->create(['code' => 'empodat_suspect']);
     }
 
+    /**
+     * `id` is not in File::$fillable, so File::create() silently discards it
+     * and the row lands on the sequence id instead. Every coverage lookup here
+     * keys on the reserved 100xx id, so the id has to be forced.
+     */
     private function suspectFile(int $id, string $name = 'DCT source.xlsx'): File
     {
-        return File::create([
+        return File::forceCreate([
             'id' => $id,
             'name' => $name,
             'original_name' => $name,
@@ -135,7 +140,7 @@ class PrioritisationCoverageColumnTest extends TestCase
     public function test_coverage_column_is_absent_for_other_database_entities(): void
     {
         $otherEntity = DatabaseEntity::factory()->create(['code' => 'empodat']);
-        File::create([
+        File::forceCreate([
             'id' => 501,
             'name' => 'Other.xlsx',
             'database_entity_id' => $otherEntity->id,
