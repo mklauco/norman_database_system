@@ -171,6 +171,12 @@ Route::prefix('backend')->middleware('auth')->group(function () {
 Route::prefix('backend')->group(function () {
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
     Route::post('files/{file}/rescan', [FileController::class, 'rescan'])->name('files.rescan');
+    // Explicit auth + role middleware: this prefix group carries only `web`,
+    // and the controller's own super_admin check should not be the single
+    // thing standing between an anonymous POST and a queued production job.
+    Route::post('files/{file}/refresh-prioritisation', [FileController::class, 'refreshPrioritisation'])
+        ->middleware(['auth', 'role:super_admin'])
+        ->name('files.refresh_prioritisation');
     Route::get('templates/entity/{code}', [TemplateController::class, 'specificIndex'])->name('templates.specific.index');
 });
 

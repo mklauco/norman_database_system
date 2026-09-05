@@ -55,7 +55,7 @@
               </select>
             </div>
 
-            @if((int) $databaseEntityId === config('empodat_suspect.database_entity_id'))
+            @if($showingEmpodatSuspect)
               <x-empodat-suspect-onboarding-modal />
             @endif
           </div>
@@ -118,6 +118,11 @@
                   <th class="px-1 py-1 text-center w-[50px]">Deleted</th>
                   <th class="px-1 py-1 text-left w-[80px]">Uploaded By</th>
                   <th class="px-1 py-1 text-left w-[65px]">Date</th>
+                  @if($showingEmpodatSuspect)
+                    @role('super_admin')
+                      <th class="px-1 py-1 text-center w-[95px]">Prioritisation</th>
+                    @endrole
+                  @endif
                   <th class="px-1 py-1 text-center w-[70px]">Actions</th>
                 </tr>
               </thead>
@@ -141,6 +146,27 @@
                     </td>
                     <td class="px-1 py-1 break-words">{{ $file->uploader ? $file->uploader->first_name . ' ' . $file->uploader->last_name : '-' }}</td>
                     <td class="px-1 py-1 break-words">{{ $file->uploaded_at ? $file->uploaded_at->format('Y-m-d') : '-' }}</td>
+                    @if($showingEmpodatSuspect)
+                      @role('super_admin')
+                        <td class="px-1 py-2 text-center">
+                          <form method="POST" action="{{ route('files.refresh_prioritisation', $file) }}"
+                                onsubmit="return confirm('Rebuild the prioritisation partition for file {{ $file->id }}?\n\nEvery run rebuilds the shared basin lookup first (~4 minutes on production) before touching this file. To rebuild several files, one unfiltered run from EMPODAT Suspect → Commands is cheaper.');">
+                            @csrf
+                            <button type="submit"
+                                    @disabled($hasActiveEmpodatSuspectRun)
+                                    title="{{ $hasActiveEmpodatSuspectRun
+                                        ? 'Another EMPODAT Suspect command is queued or running.'
+                                        : 'Queue empodat-suspect:refresh-prioritisation --file=' . $file->id }}"
+                                    class="px-2 py-1 rounded text-xs font-medium border
+                                      {{ $hasActiveEmpodatSuspectRun
+                                          ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+                                          : 'border-lime-600 text-lime-700 bg-white hover:bg-lime-50' }}">
+                              Rebuild
+                            </button>
+                          </form>
+                        </td>
+                      @endrole
+                    @endif
                     <td class="px-1 py-2 text-center">
                       @role(['admin', 'super_admin'])
                       <div class="flex justify-center space-x-1">
@@ -178,7 +204,7 @@
                   </tr>
                 @empty
                   <tr class="bg-slate-100">
-                    <td colspan="12" class="py-6 px-4 text-center text-gray-500">
+                    <td colspan="{{ $showingEmpodatSuspect && auth()->user()?->hasRole('super_admin') ? 13 : 12 }}" class="py-6 px-4 text-center text-gray-500">
                       No files found.
                     </td>
                   </tr>
