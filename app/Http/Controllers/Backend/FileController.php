@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Backend;
 
+use App\Actions\EmpodatSuspect\QueueEmpodatSuspectCommand;
 use App\Http\Controllers\Controller;
 use App\Models\Backend\File;
 use App\Models\Backend\Project;
 use App\Models\Backend\Template;
 use App\Models\DatabaseEntity;
 use App\Services\FileRescanService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +19,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileController extends Controller
 {
+    /**
+     * Allowlist key for the prioritisation rebuild, resolved server-side in
+     * config/empodat_suspect_commands.php. Never a command string.
+     */
+    private const PRIORITISATION_COMMAND_KEY = 'refresh_prioritisation';
+
     /**
      * Display a listing of the files.
      *
@@ -57,6 +65,11 @@ class FileController extends Controller
         $files = $query->paginate($perPage)->appends($request->except('page'));
         $databaseEntities = DatabaseEntity::whereNull('parent_id')->orderBy('id')->get();
 
+        $queue = app(QueueEmpodatSuspectCommand::class);
+        $empodatSuspectEntityId = $queue->empodatSuspectEntityId();
+        $showingEmpodatSuspect = $empodatSuspectEntityId !== null
+            && (int) $databaseEntityId === $empodatSuspectEntityId;
+
         return view('backend.files.index', [
             'files' => $files,
             'columns' => $this->getVisibleColumns(),
@@ -66,6 +79,9 @@ class FileController extends Controller
             'direction' => $direction,
             'databaseEntities' => $databaseEntities,
             'databaseEntityId' => $databaseEntityId,
+            'showingEmpodatSuspect' => $showingEmpodatSuspect,
+            // Only worth a query when the column is actually on screen.
+            'hasActiveEmpodatSuspectRun' => $showingEmpodatSuspect && $queue->hasActiveRun(),
         ]);
     }
 
@@ -647,5 +663,42 @@ class FileController extends Controller
         }
 
         return redirect()->back()->with('error', $result['message']);
+    }
+
+    /**
+     * Queue a prioritisation rebuild for one EMPODAT Suspect source file.
+     *
+     * Runs `empodat-suspect:refresh-prioritisation --file=<id>` through the
+     * same allowlist, queue and run-history path as the Commands page — see
+     * App\Actions\EmpodatSuspect\QueueEmpodatSuspectCommand.
+     *
+     * Every precondition the button encodes is re-checked here. The button is
+     * only rendered for super-admins on EMPODAT Suspect rows, but a rendered
+     * button is not a fact about the request that arrives afterwards.
+     */
+    public function refreshPrioritisation(File $file, QueueEmpodatSuspectCommand $queue): RedirectResponse
+    {
+        if (! Auth::user()?->hasRole('super_admin')) {
+            abort(403);
+        }
+
+        if (! $queue->isEmpodatSuspectFile($file)) {
+            return redirect()->back()->with('error', 'Prioritisation can only be rebuilt for EMPODAT Suspect files.');
+        }
+
+        if ($queue->hasActiveRun()) {
+            return redirect()->back()->with('error',
+                'Another EMPODAT Suspect command is already queued or running. Wait for it to finish.');
+        }
+
+        $arguments = $queue->defaultArgumentsFor(self::PRIORITISATION_COMMAND_KEY);
+        $arguments['file'] = $file->id;
+
+        $queue->queue(self::PRIORITISATION_COMMAND_KEY, $arguments, Auth::id());
+
+        return redirect()->back()->with('success',
+            "Queued prioritisation rebuild for file {$file->id}. Every run rebuilds the shared basin lookup first "
+            .'(~4 minutes on production) before touching this file, so rebuilding several files is cheaper as one '
+            .'unfiltered run from EMPODAT Suspect → Commands.');
     }
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\EmpodatSuspect;
 
+use App\Actions\EmpodatSuspect\QueueEmpodatSuspectCommand;
 use App\Jobs\EmpodatSuspect\RunEmpodatSuspectCommandJob;
 use App\Models\Backend\File;
-use App\Models\DatabaseEntity;
 use App\Models\EmpodatSuspect\EmpodatSuspectCommandRun;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -108,7 +108,7 @@ class CommandCenter extends Component
      */
     public function hasActiveRun(): bool
     {
-        return EmpodatSuspectCommandRun::whereIn('status', EmpodatSuspectCommandRun::ACTIVE_STATUSES)->exists();
+        return $this->queueAction()->hasActiveRun();
     }
 
     /**
@@ -217,13 +217,7 @@ class CommandCenter extends Component
      */
     private function createRun(string $commandKey, array $arguments): EmpodatSuspectCommandRun
     {
-        return EmpodatSuspectCommandRun::create([
-            'command_key' => $commandKey,
-            'arguments' => $arguments,
-            'user_id' => Auth::id(),
-            'queued_at' => now(),
-            'status' => EmpodatSuspectCommandRun::STATUS_QUEUED,
-        ]);
+        return $this->queueAction()->createRun($commandKey, $arguments, Auth::id());
     }
 
     /**
@@ -231,14 +225,21 @@ class CommandCenter extends Component
      */
     private function queueRun(string $commandKey, array $arguments): void
     {
-        $run = $this->createRun($commandKey, $arguments);
-
-        RunEmpodatSuspectCommandJob::dispatch($run->id, $commandKey, $arguments);
+        $this->queueAction()->queue($commandKey, $arguments, Auth::id());
     }
 
     private function empodatSuspectEntityId(): ?int
     {
-        return DatabaseEntity::where('code', 'empodat_suspect')->value('id');
+        return $this->queueAction()->empodatSuspectEntityId();
+    }
+
+    /**
+     * Shared with the per-file trigger on the Uploaded DCT Files page, so both
+     * entry points validate and record a run the same way.
+     */
+    private function queueAction(): QueueEmpodatSuspectCommand
+    {
+        return app(QueueEmpodatSuspectCommand::class);
     }
 
     public function render(): View
