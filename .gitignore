@@ -7,15 +7,36 @@
 /.scribe
 /storage/*.key
 /vendor
+# Environment files. Deny-by-default: every .env.* variant is ignored and
+# only the committed example is allowed back in. Adding a new one (.env.staging,
+# .env.local, ...) must not require remembering to update this file.
 .env
-.env.backup
-.env.production
+.env.*
+!.env.example
 .phpactor.json
 .phpunit.result.cache
-.env.docker-compose
 Homestead.json
 Homestead.yaml
 auth.json
+
+# Keys, certificates and SSH material — must never reach a public repository.
+*.pem
+*.key
+*.ppk
+*.p12
+*.pfx
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+known_hosts
+
+# Database dumps. Structure or data dumps describe the schema in detail and,
+# for the legacy system, belong in the private internal-documentation repo.
+*.sql
+*.sql.gz
+*.dump
+!database/**/*.sql
 npm-debug.log
 yarn-error.log
 /.fleet
@@ -29,10 +50,21 @@ yarn-error.log
 .DS_Store
 **/.DS_Store
 
-# Internal working notes — moved to the private internal-documentation repo.
+# Internal working notes and legacy-system material — moved to the private
+# internal-documentation repo.
 # Live home: docs/migration_from_v1_v2/legacy_delta_migration/ in norman_database_system_internal_documentation.
 # Anything that would describe the legacy system, prod credentials, or internal-only operational
 # detail belongs there, never in this repo.
+
+# Internal operations detail (host paths, ownership, server procedures).
+# Imported by CLAUDE.md so Claude keeps the context, never published.
+# Canonical copy lives in norman_database_system_internal_documentation.
+.claude/ops-internal.md
+
+# Working data directory: legacy schema dumps and internal structure notes.
+# The logo and favicon assets that used to live here are the only files that
+# were ever meant to be public, and they are served from public/ instead.
+_data/
 
 database/seeders/seeds/*.log
 _dbdata/
