@@ -8,7 +8,7 @@
   </x-nav-link-header>
 
   <x-nav-link-header :href="route('ecotox.data.search.filter')" :active="request()->is('*data*')">
-    Search Data
+    Search Ecotox data
   </x-nav-link-header>
 
   @role('super_admin|admin|ecotox')
@@ -26,12 +26,12 @@
     Search Quality Target
   </x-nav-link-header>
 
-  <x-nav-link-header :href="route('templates.specific.index', ['code' => 'ecotox'])" :active="request()->is('backend/templates/entity/ecotox*')">
-    DCT Download
+  <x-nav-link-header :href="route('ecotox.lowestpnec.index')" :active="request()->is('ecotox/lowestpnec*')">
+    Lowest PNECs
   </x-nav-link-header>
 
-  <x-nav-link-header :href="route('ecotox.lowestpnec.index')" :active="request()->is('ecotox/lowestpnec*')">
-    Lowest PNEC
+  <x-nav-link-header :href="route('templates.specific.index', ['code' => 'ecotox'])" :active="request()->is('backend/templates/entity/ecotox*')">
+    DCT Download
   </x-nav-link-header>
 
 
