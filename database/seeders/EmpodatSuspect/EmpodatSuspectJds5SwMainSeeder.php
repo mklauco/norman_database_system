@@ -39,12 +39,11 @@ use Spatie\SimpleExcel\SimpleExcelReader;
  *
  * JDS5 SURFACE WATER deviations:
  *   - NO `Units` COLUMN. STATION_BLOCK_START_AFTER is `BasedonHRMSLibrary`, not
- *     `Units` as everywhere else. Consequently `empodat_suspect_main.units` is
- *     NULL for every row of this file: the column the value comes from does not
- *     exist. Confirmed 2026-09-05 — one sheet (JDS5_SW), 70 columns, no
- *     unit-like header and no unit value anywhere in Block A. The provider is
- *     to confirm the unit; the agreed fix is a single UPDATE against the
- *     imported rows, not a change here.
+ *     `Units` as everywhere else. Confirmed 2026-09-05 — one sheet (JDS5_SW),
+ *     70 columns, no unit-like header and no unit value anywhere in Block A.
+ *     The provider confirmed the unit is ng/L on 2026-09-06, so
+ *     {@see FALLBACK_UNITS} supplies it and `empodat_suspect_main.units` is
+ *     populated normally.
  *   - 49 station columns behind one control column, `Blank JDS5 SW`.
  *   - `Identification_Proofs` is absent from the metadata block (12 columns,
  *     not 13), same as the groundwater file. The per-row lookup falls back to
@@ -72,6 +71,17 @@ class EmpodatSuspectJds5SwMainSeeder extends Seeder
     protected const FILE_NAME = 'SUSPECT_SW_JDS5_EI_20260708.xlsx';
 
     protected const STATION_BLOCK_START_AFTER = 'BasedonHRMSLibrary';
+
+    /**
+     * The source file has no `Units` column, so nothing in it says what the
+     * concentrations are in. The provider confirmed ng/L on 2026-09-06, and
+     * that is applied here rather than left NULL for a later UPDATE.
+     *
+     * The lookup is still `$sourceRow['Units'] ?? null` first: if a future
+     * revision of this file gains a Units column, whatever it says wins and
+     * this constant stops being used.
+     */
+    protected const FALLBACK_UNITS = 'ng/L';
 
     protected const METADATA_BOUNDARY = 'mz score';
 
@@ -258,7 +268,7 @@ class EmpodatSuspectJds5SwMainSeeder extends Seeder
         $ip = $this->cleanString($sourceRow['IP'] ?? null);
         $ipMax = $this->cleanDouble($sourceRow['IP_max'] ?? null);
         $basedOnHrms = $this->cleanBoolean($sourceRow['BasedonHRMSLibrary'] ?? null);
-        $units = $this->cleanString($sourceRow['Units'] ?? null);
+        $units = $this->cleanString($sourceRow['Units'] ?? null) ?? self::FALLBACK_UNITS;
         $method = $this->cleanString($sourceRow['Method'] ?? null);
 
         $metadataPayload = ['method' => $method];
