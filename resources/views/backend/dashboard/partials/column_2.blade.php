@@ -111,10 +111,10 @@
         </div>
       @endif
 
-      <!-- Data Templates for non-admin users -->
+      <!-- Data Collection Templates (DCT) for non-admin users -->
       @if ($entitiesWithTemplates->count() > 0)
         <div class="mt-6 pt-4 border-t border-gray-200">
-          <h4 class="font-medium text-gray-700 text-sm uppercase tracking-wide mb-3">Data Templates</h4>
+          <h4 class="font-medium text-gray-700 text-sm uppercase tracking-wide mb-3">Data Collection Templates (DCT)</h4>
           <div class="grid grid-cols-1 gap-3">
             @foreach ($entitiesWithTemplates as $entity)
               @if($entity->is_public)
