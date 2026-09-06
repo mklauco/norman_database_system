@@ -72,7 +72,7 @@ class EmpodatSuspectJds5SwFileSeeder extends Seeder
             'id' => self::FILE_ID,
             'original_name' => 'SUSPECT_SW_JDS5_EI_20260708.xlsx',
             'name' => 'JDS5 SURFACE WATER Suspect Screening Results',
-            'description' => 'Joint Danube Survey 5 — suspect screening, surface water samples, analysed by the Environmental Institute. Includes HRMS identification metadata stored in empodat_suspect_metadata. The source file carries no Units column, so empodat_suspect_main.units is NULL for every row of this file, pending confirmation of the unit from the provider.',
+            'description' => 'Joint Danube Survey 5 — suspect screening, surface water samples, analysed by the Environmental Institute. Includes HRMS identification metadata stored in empodat_suspect_metadata. The source file carries no Units column; the provider confirmed the unit is ng/L on 2026-09-06 and the Main seeder supplies it.',
             'file_path' => 'empodat_suspect/SUSPECT_SW_JDS5_EI_20260708.xlsx',
             'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'database_entity_id' => 18,
