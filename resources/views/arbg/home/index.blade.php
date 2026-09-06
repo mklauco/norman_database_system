@@ -10,6 +10,11 @@
       <div class="bg-white shadow-lg sm:rounded-lg">
         <div class="p-6 text-gray-900">
 
+          <!-- Title -->
+          <h1 class="text-2xl font-bold text-gray-800 mb-4">
+            NORMAN Antibiotic Resistant Bacteria/Genes Database
+          </h1>
+
           <!-- Description with floated image -->
           <div class="mb-4">
             <img src="{{ asset('images/databases/arbg.jpeg') }}"
