@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Backend\ServerPayment;
 use App\Models\User;
+use App\Services\ServerStatsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,7 +17,7 @@ class SystemSettingsController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(ServerStatsService $serverStatsService)
     {
         $user = Auth::user();
 
@@ -53,12 +54,18 @@ class SystemSettingsController extends Controller
             }
         }
 
+        // Server disk usage and uptime, shown to super admins only
+        $serverStats = $user->hasRole('super_admin')
+            ? $serverStatsService->stats()
+            : ['disk' => null, 'uptime' => null];
+
         return view('backend.system-settings.index', [
             'user' => $user,
             'statistics' => $statistics,
             'serverPayment' => $serverPayment,
             'daysRemaining' => $daysRemaining,
             'progressPercentage' => $progressPercentage,
+            'serverStats' => $serverStats,
         ]);
     }
 }

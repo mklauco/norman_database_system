@@ -90,67 +90,33 @@ All user-facing file content (DCTs, exports, attachments) lives on the **`public
 - File presence check: `Storage::disk('public')->exists($file->file_path)` (see `app/Models/Backend/File.php::fileExistsOnDisk()`)
 - Download streams via `Storage::disk('public')->download(...)` (see `app/Http/Controllers/Backend/FileController.php::download()`)
 
-### Server layout (production, Docker + Deployer release pattern)
+### Production storage (summary)
 
-Production runs in Docker containers defined by `docker-compose.production.yml`. The on-disk layout on the host:
+Production runs in Docker. Laravel's `storage/` is a symlink into a persistent
+directory that is bind-mounted from the host and survives deploys; the release
+directory itself is replaced on every deploy. The practical consequence for
+code is simply: write user-facing files through `Storage::disk('public')` and
+let the symlink handle the rest.
 
-```
-/opt/projects/norman_database_system/
-├── current -> releases/<timestamp>/         # atomic symlink, swapped on deploy
-├── releases/
-│   └── <timestamp>/
-│       └── storage -> ../../shared/storage  # Laravel storage is a symlink into shared/
-└── shared/
-    └── storage/app/public/                  # THE persistent file location
-        ├── empodat_suspect/
-        ├── literature/
-        ├── uploads/
-        ├── templates/
-        └── substances/
-```
+The concrete host paths, ownership, and the rsync/`docker exec` procedure for
+placing seeder files on the server are internal operational detail and are not
+published here. They are kept in the gitignored `.claude/ops-internal.md`,
+imported below, with the canonical copy in the private internal-documentation
+repo. `docs/DEPLOY.md` covers the deploy pipeline itself with placeholders for
+host and user.
 
-Container mounts (from `docker-compose.production.yml`):
-- `./current:/var/www` — code, swapped atomically
-- `./shared:/opt/projects/norman_database_system/shared` — persistent storage
-
-Inside the container, `/var/www/storage` is a symlink → `/opt/projects/norman_database_system/shared/storage`. Anything written there survives deploys; anything written to `releases/<x>/storage/` directly is **lost on the next release** (and the bare `/opt/projects/norman_database_system/storage/` is a stray sibling — NOT mounted, NOT visible to the app).
-
-### Adding files to production storage
-
-**The only valid host path is `/opt/projects/norman_database_system/shared/storage/app/public/<subdir>/`.**
-
-Two-step pattern (files from `database/seeders/seeds/` are gitignored and never reach the server via git — they must be rsynced separately):
-
-```bash
-# 1. From local — push to a staging dir on the server
-ssh deployer@<host> 'mkdir -p /tmp/dct_upload'
-rsync -avh --progress \
-  "/path/to/database/seeders/seeds/<subdir>/" \
-  deployer@<host>:/tmp/dct_upload/<subdir>/
-
-# 2. On the server — move into shared/storage and match existing ownership (deployer:1004)
-sudo mkdir -p /opt/projects/norman_database_system/shared/storage/app/public/<subdir>
-sudo rsync -av --remove-source-files \
-  /tmp/dct_upload/<subdir>/ \
-  /opt/projects/norman_database_system/shared/storage/app/public/<subdir>/
-sudo chown -R deployer:1004 /opt/projects/norman_database_system/shared/storage/app/public/<subdir>
-sudo chmod -R u+rwX,g+rwX,o+rX /opt/projects/norman_database_system/shared/storage/app/public/<subdir>
-
-# 3. Verify from inside the container — only check that matters
-sudo docker exec nds-app ls -la "/var/www/storage/app/public/<subdir>/<filename>"
-```
+@.claude/ops-internal.md
 
 ### When adding new `File` records via seeders
 
 - Always store **relative** paths in `file_path` (e.g. `empodat_suspect/foo.csv`), never absolute paths and never with a leading `/` or `storage/app/public/` prefix.
-- The actual file must be transferred to `shared/storage/app/public/<that-same-path>` on the server. Git won't carry it: `database/seeders/seeds/empodat_suspect/.gitignore` is `*`, and other large seed files are listed in the root `.gitignore`.
+- The actual file must be transferred to the matching path under the persistent storage directory on the server. Git won't carry it: `database/seeders/seeds/empodat_suspect/.gitignore` is `*`, and other large seed files are listed in the root `.gitignore`.
 - If a seeder row's `file_path` doesn't match a real file on disk, `File::fileExistsOnDisk()` returns `false`, the show page shows "File not found", and Download 404s.
 
 ### Do NOT
-- Don't write to `/opt/projects/norman_database_system/storage/...` (stray dir, not mounted).
-- Don't write to `releases/<x>/storage/...` (wiped on next deploy).
+- Don't write files into a release directory's own `storage/` — it is discarded on the next deploy. Only the shared, bind-mounted storage persists.
 - Don't use `Storage::disk('local')` for user-downloadable content — it points at `storage/app/`, not `storage/app/public/`, and is not what `FileController::download()` reads.
-- Don't `chown` to `www-data` on the host — the container's PHP user maps to gid `1004` (developers). Match the sibling dirs: `deployer:1004`.
+- Don't guess at host ownership when placing files on the server; the required user and group are documented in the private internal-documentation repo.
 
 ## Testing
 - Feature tests for user-facing functionality
