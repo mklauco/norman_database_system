@@ -11,34 +11,17 @@ use App\Models\Empodat\EmpodatMain;
 use App\Models\Empodat\SearchCountries;
 use App\Models\Empodat\SearchMatrix;
 use App\Models\List\AnalyticalMethod;
-use App\Models\List\AnalyticalMethod as AnalyticalMethodList;
-use App\Models\List\Authority;
 use App\Models\List\ConcentrationIndicator;
-use App\Models\List\ControlChart;
-use App\Models\List\CorrectedRecovery;
 use App\Models\List\Country;
-use App\Models\List\CoverageFactor;
-use App\Models\List\DataAccesibility;
 use App\Models\List\DataSourceLaboratory;
 use App\Models\List\DataSourceOrganisation;
-use App\Models\List\FieldBlank;
-use App\Models\List\GivenAnalyte;
-use App\Models\List\InternalStandard;
-use App\Models\List\Iso;
-use App\Models\List\LaboratoryParticipate;
 use App\Models\List\Matrix;
 use App\Models\List\QualityEmpodatAnalyticalMethods;
-use App\Models\List\SamplePreparationMethod;
-use App\Models\List\SamplingCollectionDevice;
-use App\Models\List\SamplingMethod;
-use App\Models\List\StandardisedMethod;
-use App\Models\List\SummaryPerformance;
 use App\Models\List\TypeDataSource;
-use App\Models\List\TypeMonitoring;
-use App\Models\List\ValidatedMethod;
 use App\Models\SLE\SuspectListExchangeSource;
 use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
+use App\Services\Empodat\EmpodatRecordDisplay;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -74,9 +57,8 @@ class EmpodatController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, EmpodatRecordDisplay $display)
     {
-        //
         $empodat = EmpodatMain::query()
           // Apply user permissions filter
             ->byUserPermissions()
@@ -110,215 +92,36 @@ class EmpodatController extends Controller
         }
 
         // ==============================
-        // REMAP ANALYTICAL METHOD & DATA SOURCE FIELDS (batch optimized)
+        // BUILD THE MODAL DISPLAY FIELDS
         // ==============================
 
-        $this->remapFieldsOptimized($empodat);
+        // Each section is emitted as a flat (label => value) map with the
+        // codelist ids already resolved, the "Other" free text collapsed
+        // into a single row and the DCT labels applied — see
+        // EmpodatRecordDisplay and issue #22. The underlying relationships
+        // stay on the payload untouched, so EmpodatResource and the CSV
+        // export keep seeing raw column values.
+        $unit = EmpodatRecordDisplay::plainUnit($empodat->matrix?->unit);
 
-        // ==============================
-        // END REMAP FIELDS
-        // ==============================
+        $empodat->station_details = $display->stationFields($empodat->station);
+        $empodat->analytical_method_details = $display->analyticalMethodFields($empodat->analyticalMethod, $unit);
+        $empodat->data_source_details = $display->dataSourceFields($empodat->dataSource);
+        $empodat->additional_details = $display->minorFields($empodat->minor);
 
-        // ==============================
-        // CONSOLIDATE MATRIX DATA
-        // ==============================
-
-        // Resolve raw FK integer ids in matrix metadata against PG list_* tables
-        // (data_kingdom -> list_kingdoms, data_phylum -> list_phyla, etc.).
-        // Legacy renders these as human-readable names ("Kingdom: Animalia");
-        // this enriches the response so the modal does the same. Imported via
-        // Phase 6 of the legacy migration; see appendix_a_legacy_migration_plan.md
-        // in the internal documentation repository (docs/migration_from_v1_v2/legacy_delta_migration/).
         if ($matrixMetadata !== null) {
-            $matrixMetadata['meta_data'] = $this->enrichLookupIds(
+            $matrixMetadata['meta_data'] = $display->matrixFields(
                 $matrixMetadata['meta_data'] ?? [],
-                $this->lookupConfigForMatrix($matrixMetadata['type'] ?? ''),
+                $matrixMetadata['type'] ?? '',
             );
         }
 
-        // Set matrix_data from the loaded matrix metadata
         $empodat->matrix_data = $matrixMetadata;
 
-        // Same enrichment for empodat_minor: replace cryptic dpc_id/dcod_id/
-        // etc. integer ids with the corresponding labelled name. Exposed as
-        // `additional_details` so the public API resource (EmpodatResource)
-        // and CSV export (EmpodatCsvExportJob) — which both read `minor`
-        // directly — see unchanged raw rows.
-        $empodat->additional_details = $empodat->minor
-            ? $this->enrichLookupIds(
-                $this->stripMinorEnvelopeAttributes($empodat->minor->getAttributes()),
-                $this->lookupConfigForMinor(),
-            )
-            : [];
-
         // ==============================
-        // END CONSOLIDATE MATRIX DATA
+        // END MODAL DISPLAY FIELDS
         // ==============================
 
         return response()->json($empodat);
-    }
-
-    /**
-     * Drop the columns from `empodat_minor->getAttributes()` that the modal
-     * shouldn't render in "Additional Record Details" (the PK / timestamps
-     * the modal would otherwise list as cryptic rows).
-     *
-     * @param  array<string, mixed>  $attrs
-     * @return array<string, mixed>
-     */
-    private function stripMinorEnvelopeAttributes(array $attrs): array
-    {
-        unset($attrs['id'], $attrs['created_at'], $attrs['updated_at'], $attrs['empodat_main_id']);
-
-        return $attrs;
-    }
-
-    /**
-     * Walk a flat (column => value) array. For each key configured as a
-     * lookup FK id:
-     *   - if value is zero/null/empty: drop the field
-     *   - if the configured list_* table is null (e.g. data_order has no
-     *     PG counterpart): drop the field
-     *   - else look up the name in the configured table and emit a row keyed
-     *     by the friendly label (e.g. "Kingdom: Animalia")
-     * Keys not in the config pass through verbatim (text fields, dates,
-     * numeric measurements like biota_weight). Lookup queries are batched —
-     * one SELECT WHERE id IN (...) per distinct list_* table involved.
-     *
-     * @param  array<string, mixed>  $data
-     * @param  array<string, array{label:string,table:?string}>  $config
-     * @return array<string, mixed>
-     */
-    private function enrichLookupIds(array $data, array $config): array
-    {
-        // Pass 1 — collect (table, id) pairs we'll need.
-        $pendingByTable = [];
-        foreach ($data as $key => $value) {
-            if (! isset($config[$key]) || $config[$key]['table'] === null) {
-                continue;
-            }
-            if ($value === null || $value === '' || $value === 0 || $value === '0') {
-                continue;
-            }
-            $pendingByTable[$config[$key]['table']][] = (int) $value;
-        }
-
-        // Pass 2 — bulk-load names (id => name) per table.
-        // Wrap each table in its own try/catch so a missing list_* table on a
-        // partially-migrated environment (e.g. a deploy where the Phase 6c
-        // schema migration hasn't run yet) degrades to "no enrichment for
-        // this field" instead of a 500. Other tables in the same request still
-        // resolve normally.
-        $nameCache = [];
-        foreach ($pendingByTable as $table => $ids) {
-            try {
-                $nameCache[$table] = DB::table($table)
-                    ->whereIn('id', array_values(array_unique($ids)))
-                    ->pluck('name', 'id')
-                    ->all();
-            } catch (\Throwable $e) {
-                Log::warning('enrichLookupIds: lookup table query failed', [
-                    'table' => $table,
-                    'error' => $e->getMessage(),
-                ]);
-                // Leave $nameCache[$table] unset so the pass-3 branch treats
-                // each id as "no matching row" and hides the field.
-            }
-        }
-
-        // Pass 3 — emit the resolved structure, preserving order.
-        $result = [];
-        foreach ($data as $key => $value) {
-            if (isset($config[$key])) {
-                $cfg = $config[$key];
-                if ($cfg['table'] === null) {
-                    continue; // No PG lookup; hide the cryptic id.
-                }
-                if ($value === null || $value === '' || $value === 0 || $value === '0') {
-                    continue;
-                }
-                $name = $nameCache[$cfg['table']][(int) $value] ?? null;
-                if ($name !== null) {
-                    $result[$cfg['label']] = $name;
-                }
-
-                // No row found in lookup → hide field (consistent with legacy).
-                continue;
-            }
-            // Pass-through (text fields, dates, numeric measurements).
-            $result[$key] = $value;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Per-matrix-type lookup configuration: maps each legacy FK id column on
-     * an `empodat_matrix_*` table to its PG `list_*` table and the
-     * user-facing label. `table => null` means the column has no PG
-     * counterpart (legacy `data_order` / `data_family` / `data_habitat_type`
-     * dumps are not available); those rows get hidden in the modal output.
-     *
-     * @return array<string, array{label:string,table:?string}>
-     */
-    private function lookupConfigForMatrix(string $matrixType): array
-    {
-        return match (strtolower($matrixType)) {
-            'biota' => [
-                'dki_id' => ['label' => 'Kingdom', 'table' => 'list_kingdoms'],
-                'dph_id' => ['label' => 'Phylum', 'table' => 'list_phyla'],
-                'dcla_id' => ['label' => 'Class', 'table' => 'list_classes'],
-                'dord_id' => ['label' => 'Order', 'table' => null],
-                'dfam_id' => ['label' => 'Family', 'table' => null],
-                'dspc_id' => ['label' => 'Species', 'table' => 'list_biota_species'],
-                'diop_id' => ['label' => 'Individual or pooled', 'table' => 'list_individual_or_pooled'],
-                'dcat_id' => ['label' => 'Category', 'table' => 'list_categories'],
-                'dht_id' => ['label' => 'Habitat type', 'table' => null],
-                'dmeas_id' => ['label' => 'Basis of measurement', 'table' => 'list_measurements'],
-                'dtiel_id' => ['label' => 'Tissue element', 'table' => 'list_tissues'],
-                'dpr_id' => ['label' => 'Proxy pressures', 'table' => 'list_proxy_pressures'],
-                'dsgr_id' => ['label' => 'Species group', 'table' => 'list_species_groups'],
-            ],
-            'soil' => [
-                'de_id' => ['label' => 'Depth sampling type', 'table' => 'list_depths'],
-                'dps_id' => ['label' => 'Particle size', 'table' => 'list_particle_sizes'],
-                'dgra_id' => ['label' => 'Grain size distribution', 'table' => 'list_grain_size_distributions'],
-                'dsot_id' => ['label' => 'Soil texture', 'table' => 'list_soil_textures'],
-                'dcnps_id' => ['label' => 'Conc. normalised (particle size)', 'table' => 'list_conc_normal_particle_sizes'],
-                'dcat_id' => ['label' => 'Category', 'table' => 'list_categories'],
-                'dtbu_id' => ['label' => 'Treatment before use', 'table' => null],
-                'dpr_id' => ['label' => 'Proxy pressures', 'table' => 'list_proxy_pressures'],
-            ],
-            'sediments' => [
-                'dpr_id' => ['label' => 'Proxy pressures', 'table' => 'list_proxy_pressures'],
-                'de_id' => ['label' => 'Depth sampling type', 'table' => 'list_depths'],
-                'df_id' => ['label' => 'Fraction', 'table' => 'list_fractions'],
-                'dcat_id' => ['label' => 'Category', 'table' => 'list_categories'],
-                'dtbu_id' => ['label' => 'Treatment before use', 'table' => null],
-            ],
-            default => [],
-        };
-    }
-
-    /**
-     * Lookup configuration for the `empodat_minor` FK id columns the modal
-     * exposes via "Additional Record Details". Same conventions as
-     * lookupConfigForMatrix.
-     *
-     * @return array<string, array{label:string,table:?string}>
-     */
-    private function lookupConfigForMinor(): array
-    {
-        return [
-            'dpc_id' => ['label' => 'Precision of coordinates', 'table' => 'list_coordinate_precisions'],
-            'dcod_id' => ['label' => 'Concentration data', 'table' => 'list_concentration_data'],
-            'dst_id' => ['label' => 'Sampling technique', 'table' => 'list_sampling_techniques'],
-            'dplu_id' => ['label' => 'Prevalent land use', 'table' => 'list_prevalent_land_uses'],
-            'dtl_id' => ['label' => 'Treatment less', 'table' => 'list_treatment_less'],
-            'dtod_id' => ['label' => 'Type of data', 'table' => null],   // no PG counterpart
-            'dtos_id' => ['label' => 'Type of sampling', 'table' => null], // no PG counterpart
-            'dmm_id' => ['label' => 'Aggregation type', 'table' => null],  // no PG counterpart
-        ];
     }
 
     /**
@@ -384,104 +187,6 @@ class EmpodatController extends Controller
             'type' => $normalizedLink,
             'meta_data' => ! empty($metaData) ? $metaData : null,
         ];
-    }
-
-    /**
-     * Remap analytical method and data source fields using batch queries (optimized)
-     */
-    private function remapFieldsOptimized($empodat): void
-    {
-        // Group all lookups by model class to minimize queries
-        $lookupsByModel = [];
-
-        // Collect analytical method lookups
-        if ($empodat->analyticalMethod) {
-            $fieldsMap = $this->fieldMapAnalyticalMethods();
-            foreach ($fieldsMap as $field => $meta) {
-                $fieldId = data_get($empodat->analyticalMethod, $field);
-                if (! empty($fieldId)) {
-                    $modelClass = $meta['model'];
-                    if (! isset($lookupsByModel[$modelClass])) {
-                        $lookupsByModel[$modelClass] = ['ids' => [], 'fields' => []];
-                    }
-                    $lookupsByModel[$modelClass]['ids'][] = $fieldId;
-                    $lookupsByModel[$modelClass]['fields'][] = [
-                        'source' => 'analyticalMethod',
-                        'field' => $field,
-                        'targetAttribute' => $meta['targetAttribute'],
-                        'id' => $fieldId,
-                    ];
-                }
-            }
-        }
-
-        // Collect data source lookups (excluding laboratory fields which need special handling)
-        if ($empodat->dataSource) {
-            $fieldsMap = $this->fieldMapEmpodatDataSources();
-            foreach ($fieldsMap as $field => $meta) {
-                if (str_contains($field, 'laboratory')) {
-                    continue; // Handle separately
-                }
-                $fieldId = data_get($empodat->dataSource, $field);
-                if (! empty($fieldId)) {
-                    $modelClass = $meta['model'];
-                    if (! isset($lookupsByModel[$modelClass])) {
-                        $lookupsByModel[$modelClass] = ['ids' => [], 'fields' => []];
-                    }
-                    $lookupsByModel[$modelClass]['ids'][] = $fieldId;
-                    $lookupsByModel[$modelClass]['fields'][] = [
-                        'source' => 'dataSource',
-                        'field' => $field,
-                        'targetAttribute' => $meta['targetAttribute'],
-                        'id' => $fieldId,
-                    ];
-                }
-            }
-        }
-
-        // Execute batch queries (one query per model class)
-        foreach ($lookupsByModel as $modelClass => $data) {
-            $uniqueIds = array_unique($data['ids']);
-            $names = $modelClass::whereIn('id', $uniqueIds)->pluck('name', 'id');
-
-            foreach ($data['fields'] as $fieldInfo) {
-                $name = $names[$fieldInfo['id']] ?? null;
-                if ($name) {
-                    $source = $fieldInfo['source'] === 'analyticalMethod' ? $empodat->analyticalMethod : $empodat->dataSource;
-                    data_set($source, $fieldInfo['targetAttribute'], $name);
-                    data_set($source, $fieldInfo['field'], null);
-                }
-            }
-        }
-
-        // Handle laboratory fields separately (need full_name accessor)
-        if ($empodat->dataSource) {
-            $labFields = ['laboratory1_id', 'laboratory2_id'];
-            $labIds = [];
-            foreach ($labFields as $field) {
-                $fieldId = data_get($empodat->dataSource, $field);
-                if (! empty($fieldId)) {
-                    $labIds[$field] = $fieldId;
-                }
-            }
-
-            if (! empty($labIds)) {
-                $labs = DataSourceLaboratory::with('country')->whereIn('id', array_values($labIds))->get()->keyBy('id');
-                $targetMap = ['laboratory1_id' => 'laboratory_name', 'laboratory2_id' => 'laboratory_name_2'];
-                foreach ($labIds as $field => $id) {
-                    $lab = $labs[$id] ?? null;
-                    if ($lab) {
-                        data_set($empodat->dataSource, $targetMap[$field], $lab->full_name);
-                        data_set($empodat->dataSource, $field, null);
-                    }
-                }
-            }
-        }
-
-        // Map rating value to descriptive text
-        if ($empodat->analyticalMethod) {
-            $this->remapRatingField($empodat->analyticalMethod);
-        }
     }
 
     /**
@@ -1156,108 +861,6 @@ class EmpodatController extends Controller
         return $p;
     }
 
-    public function fieldMapAnalyticalMethods()
-    {
-        // 1) Map each *_id field to its model & target attribute name:
-        return [
-            'coverage_factor_id' => [
-                'model' => CoverageFactor::class,
-                'targetAttribute' => 'coverage_factor_name',
-            ],
-            'sample_preparation_method_id' => [
-                'model' => SamplePreparationMethod::class,
-                'targetAttribute' => 'sample_preparation_method_name',
-            ],
-            'analytical_method_id' => [
-                'model' => AnalyticalMethodList::class,
-                'targetAttribute' => 'analytical_method',
-            ],
-            'standardised_method_id' => [
-                'model' => StandardisedMethod::class,
-                'targetAttribute' => 'standardised_method_name',
-            ],
-            'validated_method_id' => [
-                'model' => ValidatedMethod::class,
-                'targetAttribute' => 'validated_method_name',
-            ],
-            'corrected_recovery_id' => [
-                'model' => CorrectedRecovery::class,
-                'targetAttribute' => 'corrected_recovery_name',
-            ],
-            'field_blank_id' => [
-                'model' => FieldBlank::class,
-                'targetAttribute' => 'field_blank_name',
-            ],
-            'iso_id' => [
-                'model' => Iso::class,
-                'targetAttribute' => 'iso_name',
-            ],
-            'given_analyte_id' => [
-                'model' => GivenAnalyte::class,
-                'targetAttribute' => 'given_analyte_name',
-            ],
-            'laboratory_participate_id' => [
-                'model' => LaboratoryParticipate::class,
-                'targetAttribute' => 'laboratory_participate_name',
-            ],
-            'summary_performance_id' => [
-                'model' => SummaryPerformance::class,
-                'targetAttribute' => 'summary_performance_name',
-            ],
-            'control_charts_id' => [
-                'model' => ControlChart::class,
-                'targetAttribute' => 'control_charts_name',
-            ],
-            'internal_standards_id' => [
-                'model' => InternalStandard::class,
-                'targetAttribute' => 'internal_standards_name',
-            ],
-            'authority_id' => [
-                'model' => Authority::class,
-                'targetAttribute' => 'authority_name',
-            ],
-            'sampling_method_id' => [
-                'model' => SamplingMethod::class,
-                'targetAttribute' => 'sampling_method_name',
-            ],
-            'sampling_collection_device_id' => [
-                'model' => SamplingCollectionDevice::class,
-                'targetAttribute' => 'sampling_collection_device_name',
-            ],
-        ];
-    }
-
-    public function fieldMapEmpodatDataSources()
-    {
-        // 1) Map each *_id field to its model & target attribute name:
-        return [
-            'type_data_source_id' => [
-                'model' => TypeDataSource::class,
-                'targetAttribute' => 'type_data_source_name',
-            ],
-            'type_monitoring_id' => [
-                'model' => TypeMonitoring::class,
-                'targetAttribute' => 'type_monitoring_name',
-            ],
-            'data_accessibility_id' => [
-                'model' => DataAccesibility::class,
-                'targetAttribute' => 'data_accessibility_name',
-            ],
-            'organisation_id' => [
-                'model' => DataSourceOrganisation::class,
-                'targetAttribute' => 'organisation_name',
-            ],
-            'laboratory1_id' => [
-                'model' => DataSourceLaboratory::class,
-                'targetAttribute' => 'laboratory_name',
-            ],
-            'laboratory2_id' => [
-                'model' => DataSourceLaboratory::class,
-                'targetAttribute' => 'laboratory_name_2',
-            ],
-        ];
-    }
-
     /**
      * Apply ID search filtering to the query
      */
@@ -1290,40 +893,6 @@ class EmpodatController extends Controller
     }
 
     /**
-     * Remap rating field value to descriptive text based on quality ranges
-     */
-    private function remapRatingField($analyticalMethod)
-    {
-        if (! $analyticalMethod || ! isset($analyticalMethod->rating)) {
-            return;
-        }
-
-        $rating = $analyticalMethod->rating;
-
-        // Define the rating ranges and their descriptions
-        $ratingRanges = [
-            ['min' => 68, 'max' => 100, 'description' => 'Adequately supported by quality-related information'],
-            ['min' => 52, 'max' => 68, 'description' => 'Supported by limited quality-related information'],
-            ['min' => 22, 'max' => 52, 'description' => 'Minimal quality-related information'],
-            ['min' => 0, 'max' => 22, 'description' => 'Not supported by quality-related information'],
-        ];
-
-        // Find the matching range and replace the rating with composite information
-        foreach ($ratingRanges as $range) {
-            if ($rating >= $range['min'] && $rating < $range['max']) {
-                // Replace the rating value with the composite information
-                $analyticalMethod->rating = $rating.' - '.$range['description'];
-                break;
-            }
-        }
-
-        // If no range matches (edge case), set a default description
-        if (is_numeric($analyticalMethod->rating)) {
-            $analyticalMethod->rating = $rating.' - Rating value out of range';
-        }
-    }
-
-    /**
      * Remap rating fields for search results (multiple records)
      */
     private function remapRatingFieldsForSearchResults($empodats)
@@ -1336,11 +905,11 @@ class EmpodatController extends Controller
         if ($empodats instanceof \Illuminate\Database\Eloquent\Collection) {
             foreach ($empodats as $empodat) {
                 if (isset($empodat->analyticalMethod)) {
-                    $this->remapRatingField($empodat->analyticalMethod);
+                    $empodat->analyticalMethod->rating = EmpodatRecordDisplay::describeRating($empodat->analyticalMethod->rating);
                 }
             }
         } elseif (is_object($empodats) && isset($empodats->analyticalMethod)) {
-            $this->remapRatingField($empodats->analyticalMethod);
+            $empodats->analyticalMethod->rating = EmpodatRecordDisplay::describeRating($empodats->analyticalMethod->rating);
         }
     }
 
