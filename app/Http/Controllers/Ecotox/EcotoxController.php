@@ -371,17 +371,38 @@ class EcotoxController extends Controller
             }
         }
 
+        // Apply sorting (#41). Only the columns listed here can be sorted on;
+        // any other value falls back to the previous fixed order. The result
+        // set is already narrowed to one substance, so no extra index is
+        // needed. reorder() is required because the base query above sets an
+        // order that would otherwise win.
+        $sortableColumns = ['ecotox_id', 'scientific_name', 'concentration_value'];
+
+        $sortColumn = in_array($request->input('sort'), $sortableColumns, true)
+            ? $request->input('sort')
+            : null;
+        $sortDirection = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+
+        $resultsObjects = $resultsObjects->reorder();
+
+        if ($sortColumn !== null) {
+            // Both values come from the whitelist above, never from the request.
+            // NULLS LAST keeps empty effect values out of the way in either
+            // direction, which is the point of sorting by value at all.
+            $resultsObjects = $resultsObjects
+                ->orderByRaw(sprintf('%s %s NULLS LAST', $sortColumn, $sortDirection))
+                ->orderBy('id', 'asc');
+        } else {
+            $resultsObjects = $resultsObjects->orderBy('id', 'asc');
+        }
+
         // Apply pagination based on display option
         if ($request->input('displayOption') == 1) {
             // Use simple pagination
-            $resultsObjects = $resultsObjects->orderBy('id', 'asc')
-                ->simplePaginate(200)
-                ->withQueryString();
+            $resultsObjects = $resultsObjects->simplePaginate(200)->withQueryString();
         } else {
             // Use cursor pagination
-            $resultsObjects = $resultsObjects->orderBy('id', 'asc')
-                ->paginate(200)
-                ->withQueryString();
+            $resultsObjects = $resultsObjects->paginate(200)->withQueryString();
         }
 
         // Return the view with results and metadata
@@ -391,6 +412,8 @@ class EcotoxController extends Controller
             'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id ?? 0,
             'request' => $request,
             'searchParameters' => $searchParameters,
+            'sortColumn' => $sortColumn,
+            'sortDirection' => $sortDirection,
         ], $main_request);
     }
 

@@ -134,13 +134,41 @@
 
           <!-- Results Table -->
           {{-- Single Unified Table --}}
+          @php
+            // Sortable column headers (#41). Clicking a header toggles the
+            // direction; every other query parameter is preserved.
+            $sortLink = function (string $column) use ($sortColumn, $sortDirection) {
+                return request()->fullUrlWithQuery([
+                    'sort' => $column,
+                    'direction' => ($sortColumn === $column && $sortDirection === 'asc') ? 'desc' : 'asc',
+                ]);
+            };
+          @endphp
           <div class="mt-4">
             <table class="table-standard">
               <thead>
                 <tr class="bg-gray-600 text-white">
-                  <th>Biotest ID</th>
+                  <th>
+                    <a href="{{ $sortLink('ecotox_id') }}" class="inline-flex items-center gap-1 hover:underline">
+                      Biotest ID
+                      @if ($sortColumn === 'ecotox_id')
+                        <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                      @else
+                        <i class="fas fa-sort text-gray-400"></i>
+                      @endif
+                    </a>
+                  </th>
                   <th>Taxonomic group</th>
-                  <th>Scientific name</th>
+                  <th>
+                    <a href="{{ $sortLink('scientific_name') }}" class="inline-flex items-center gap-1 hover:underline">
+                      Scientific name
+                      @if ($sortColumn === 'scientific_name')
+                        <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                      @else
+                        <i class="fas fa-sort text-gray-400"></i>
+                      @endif
+                    </a>
+                  </th>
                   <th>Endpoint</th>
                   <th>Duration</th>
                   <th>Effect measurement</th>
@@ -151,7 +179,16 @@
                   <th>Exposure regime</th>
                   <th>Purity [%]</th>
                   <th></th>
-                  <th>Effect value [µg/L]</th>
+                  <th>
+                    <a href="{{ $sortLink('concentration_value') }}" class="inline-flex items-center gap-1 hover:underline">
+                      Effect value [µg/L]
+                      @if ($sortColumn === 'concentration_value')
+                        <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }}"></i>
+                      @else
+                        <i class="fas fa-sort text-gray-400"></i>
+                      @endif
+                    </a>
+                  </th>
                   <th>Measured or nominal</th>
                   <th>Reference</th>
                   @if (auth()->check() &&
