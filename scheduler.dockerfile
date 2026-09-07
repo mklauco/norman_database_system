@@ -7,6 +7,10 @@ COPY composer.json /var/www/
 WORKDIR /var/www
 
 # Install dependencies
+#
+# procps provides ps and pgrep. The queue containers' healthchecks in
+# docker-compose.production.yml call both, so without it every queue worker
+# reports unhealthy no matter what it is actually doing.
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -22,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     libzip-dev \
     libpq-dev \
-    postgresql-client
+    postgresql-client \
+    procps
 
 # Install Node.js and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
