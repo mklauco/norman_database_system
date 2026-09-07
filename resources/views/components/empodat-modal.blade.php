@@ -89,7 +89,7 @@
                                 <template x-if="record?.concentration_indicator_id == 1">
                                     <span>
                                         <span class="font-medium" x-text="record?.concentration_value || 'N/A'"></span>
-                                        <span class="ml-1" x-text="record?.matrix?.unit || ''"></span>
+                                        <span class="ml-1" x-text="record?.matrix?.display_unit || ''"></span>
                                     </span>
                                 </template>
                             </div>
