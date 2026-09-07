@@ -79,6 +79,10 @@
                 <h3 class="text-sm font-medium text-gray-800 mb-1">Monoisotopic Mass</h3>
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->mass_iso ? number_format((float)$substance->mass_iso, 4, '.', ' ') : 'N/A' }}</p>
               </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-800 mb-1">Average Mass</h3>
+                <p class="text-sm text-teal-800 font-mono">{{ $substance->average_mass ? number_format((float)$substance->average_mass, 4, '.', ' ') : 'N/A' }}</p>
+              </div>
               </div>
             </div>
           </div>
