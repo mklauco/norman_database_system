@@ -241,7 +241,7 @@
                       @endif
                     @else
                       <span
-                        class="font-medium">{{ $e->concentration_value !== null ? number_format($e->concentration_value, 3, '.', '') : 'N/A' }}</span>&nbsp;{{ $e->matrix ? $e->matrix->unit ?? '' : '' }}
+                        class="font-medium">{{ $e->concentration_value !== null ? number_format($e->concentration_value, 3, '.', '') : 'N/A' }}</span>&nbsp;{{ $e->matrix ? $e->matrix->display_unit ?? '' : '' }}
                     @endif
                   </td>
                   <td class="p-1 text-center">

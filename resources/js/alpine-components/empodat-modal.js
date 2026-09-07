@@ -134,91 +134,78 @@ export default function empodatModal() {
         },
 
         buildStationArray() {
-            if (this.record?.station) {
-                // Only exclude system fields and coordinates (which are shown separately)
-                const excludedKeys = ['id', 'created_at', 'updated_at', 'latitude', 'longitude'];
-
-                this.stationArray = Object.entries(this.record.station)
-                    .filter(([key, val]) => {
-                        // Skip excluded system fields
-                        if (excludedKeys.includes(key)) {
-                            return false;
-                        }
-
-                        // Skip null or empty string values
-                        if (val === null || val === '') {
-                            return false;
-                        }
-
-                        // Skip zero values only for numeric ID fields (foreign keys)
-                        if ((key.endsWith('_id') || key === 'country_id' || key === 'country_other_id') && val === 0) {
-                            return false;
-                        }
-
-                        return true;
-                    })
-                    .map(([key, val]) => [
-                        this.formatFieldName(key),
-                        val
-                    ]);
-            } else {
-                this.stationArray = [];
-            }
+            // `station_details` is built server-side: country resolved from
+            // the relation, raw FKs and internal flags dropped, labels
+            // applied. Falling back to the raw relation printed
+            // "Country Relation: [object Object]" (issue #22).
+            this.stationArray = this.buildLabelledArray(
+                this.record?.station_details,
+                this.record?.station,
+            );
         },
 
         buildAnalyticalMethodArray() {
-            if (this.record?.analytical_method) {
-                const excludedKeys = ['id', 'created_at', 'updated_at'];
-                this.analyticalMethodArray = Object.entries(this.record.analytical_method)
-                    .filter(([key, val]) =>
-                        !excludedKeys.includes(key) &&
-                        val !== null &&
-                        val !== ''
-                    )
-                    .map(([key, val]) => [
-                        this.formatFieldName(key),
-                        val
-                    ]);
-            } else {
-                this.analyticalMethodArray = [];
-            }
+            // Server returns `analytical_method_details`: a flat
+            // (label => value) map with codelist ids already resolved, the
+            // "Other" free text collapsed into the same row and the DCT
+            // labels applied (issue #22). Fall back to the raw relationship
+            // if an older controller didn't populate it.
+            this.analyticalMethodArray = this.buildLabelledArray(
+                this.record?.analytical_method_details,
+                this.record?.analytical_method,
+            );
         },
 
         buildDataSourceArray() {
-            if (this.record?.data_source) {
-                const excludedKeys = ['id', 'created_at', 'updated_at'];
-                this.dataSourceArray = Object.entries(this.record.data_source)
-                    .filter(([key, val]) =>
-                        !excludedKeys.includes(key) &&
-                        val !== null &&
-                        val !== ''
-                    )
-                    .map(([key, val]) => [
-                        this.formatFieldName(key),
-                        val
-                    ]);
-            } else {
-                this.dataSourceArray = [];
+            this.dataSourceArray = this.buildLabelledArray(
+                this.record?.data_source_details,
+                this.record?.data_source,
+            );
+        },
+
+        /**
+         * Turn a server-built (label => value) map into the [label, value]
+         * pairs the template renders. Keys of `details` are already
+         * user-facing labels; keys of the raw `fallback` object are column
+         * names and still need Title-Casing.
+         */
+        buildLabelledArray(details, fallback) {
+            if (details && Object.keys(details).length > 0) {
+                return Object.entries(details)
+                    .filter(([, val]) => !this.isEmptyValue(val))
+                    // Columns with no entry in config/empodat_field_labels.php
+                    // arrive as raw column names ('doc_mg_cl', 'toc', 'cl');
+                    // those still need Title-Casing. A real label always has
+                    // a capital or a space, so anything without either is a
+                    // raw column name.
+                    .map(([key, val]) => [this.isRawColumnName(key) ? this.formatFieldName(key) : key, val]);
             }
+
+            if (!fallback) {
+                return [];
+            }
+
+            const excludedKeys = ['id', 'created_at', 'updated_at'];
+
+            return Object.entries(fallback)
+                .filter(([key, val]) => !excludedKeys.includes(key) && !this.isEmptyValue(val))
+                .map(([key, val]) => [this.formatFieldName(key), val]);
+        },
+
+        isEmptyValue(val) {
+            return val === null || val === undefined || val === '';
+        },
+
+        isRawColumnName(key) {
+            return !/[A-Z ]/.test(key);
         },
 
         buildMetaDataArray() {
-            if (this.record?.matrix_data?.meta_data) {
-                const excludedKeys = ['id', 'created_at', 'updated_at'];
-
-                this.metaDataArray = Object.entries(this.record.matrix_data.meta_data)
-                    .filter(([key, val]) =>
-                        !excludedKeys.includes(key) &&
-                        val !== null &&
-                        val !== ''
-                    )
-                    .map(([key, val]) => [
-                        this.formatFieldName(key),
-                        val
-                    ]);
-            } else {
-                this.metaDataArray = [];
-            }
+            // Already labelled server-side, same as the sections above.
+            this.metaDataArray = this.buildLabelledArray(
+                this.record?.matrix_data?.meta_data,
+                null,
+            );
         },
 
         buildMinorArray() {
