@@ -52,7 +52,7 @@
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->name ?? 'N/A' }}</p>
               </div>
               <div>
-                <h3 class="text-sm font-medium text-gray-800 mb-1">CAS Number</h3>
+                <h3 class="text-sm font-medium text-gray-800 mb-1">CAS RN</h3>
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->cas_number ?? 'N/A' }}</p>
               </div>
               <div>

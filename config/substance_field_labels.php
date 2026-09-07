@@ -31,7 +31,7 @@ return [
     'name_dashboard' => 'Name - DashBoard',
     'name_chemspider' => 'Name - ChemSpider',
     'name_iupac' => 'Name - IUPAC',
-    'cas_number' => 'CAS Number',
+    'cas_number' => 'CAS RN',
     'smiles' => 'SMILES',
     'smiles_dashboard' => 'SMILES - DashBoard',
     'stdinchi' => 'StdInChI',
