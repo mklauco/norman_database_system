@@ -252,13 +252,17 @@
                                         {{ $fieldTranslations[$field] ?? ucwords(str_replace(['_', '-'], ' ', $field)) }}
                                       </td>
                                       <td class="px-4 py-3 text-sm text-gray-700 font-mono break-all">
-                                        @if(is_array($value))
-                                          @foreach($value as $item)
-                                            <div>{{ $item }}</div>
-                                          @endforeach
-                                        @else
-                                          {{ $value ?: 'N/A' }}
-                                        @endif
+                                        @foreach((is_array($value) ? $value : [$value]) as $item)
+                                          @if($field === 'dtxid' && $item)
+                                            <div><a href="https://comptox.epa.gov/dashboard/chemical/details/{{ $item }}"
+                                                    target="_blank" rel="noopener noreferrer" class="link-lime-text">{{ $item }}</a></div>
+                                          @elseif($field === 'pubchem_cid' && $item)
+                                            <div><a href="https://pubchem.ncbi.nlm.nih.gov/compound/{{ $item }}"
+                                                    target="_blank" rel="noopener noreferrer" class="link-lime-text">{{ $item }}</a></div>
+                                          @else
+                                            <div>{{ $item ?: 'N/A' }}</div>
+                                          @endif
+                                        @endforeach
                                       </td>
                                     </tr>
                                   @endforeach

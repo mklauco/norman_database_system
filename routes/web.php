@@ -206,7 +206,6 @@ Route::prefix('factsheets')->group(function () {
         Route::get('search/', [FactsheetController::class, 'search'])->name('factsheets.search.search');
     });
 
-    Route::get('show/{id}', [FactsheetController::class, 'show'])->name('factsheets.show');
 
     // Factsheet Statistics Routes
     Route::prefix('statistics')->middleware('auth')->group(function () {
