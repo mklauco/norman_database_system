@@ -164,7 +164,8 @@ class EmpodatRecordDisplayFieldsTest extends TestCase
             ->json('matrix_data.meta_data');
 
         $this->assertSame('Dissolved fraction', $metaData['Fraction']);
-        $this->assertSame(7.4, $metaData['pH']);
+        // `ph` is a varchar in this table, so it round-trips as a string.
+        $this->assertSame('7.4', $metaData['pH']);
         $this->assertArrayNotHasKey('df_id', $metaData);
     }
 
