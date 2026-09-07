@@ -52,7 +52,7 @@
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->name ?? 'N/A' }}</p>
               </div>
               <div>
-                <h3 class="text-sm font-medium text-gray-800 mb-1">CAS_RN</h3>
+                <h3 class="text-sm font-medium text-gray-800 mb-1">CAS RN</h3>
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->cas_number ?? 'N/A' }}</p>
               </div>
               <div>
@@ -64,7 +64,7 @@
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->dtxid ?? 'N/A' }}</p>
               </div>
               <div>
-                <h3 class="text-sm font-medium text-gray-800 mb-1">PubChem_CID</h3>
+                <h3 class="text-sm font-medium text-gray-800 mb-1">PubChem CID</h3>
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->pubchem_cid ?? 'N/A' }}</p>
               </div>
               <div>
@@ -78,6 +78,10 @@
               <div>
                 <h3 class="text-sm font-medium text-gray-800 mb-1">Monoisotopic Mass</h3>
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->mass_iso ? number_format((float)$substance->mass_iso, 4, '.', ' ') : 'N/A' }}</p>
+              </div>
+              <div>
+                <h3 class="text-sm font-medium text-gray-800 mb-1">Average Mass</h3>
+                <p class="text-sm text-teal-800 font-mono">{{ $substance->average_mass ? number_format((float)$substance->average_mass, 4, '.', ' ') : 'N/A' }}</p>
               </div>
               </div>
             </div>
@@ -98,7 +102,7 @@
             <table class="table-fixed w-full border-separate border-spacing-1 text-xs">
               @foreach ($substance->toArray() as $key => $value)
                 <tr class="@if ($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
-                  <td class="p-1 font-bold w-40 align-top">{{ $key }}</td>
+                  <td class="p-1 font-bold w-40 align-top">{{ config('substance_field_labels.'.$key, $key) }}</td>
                   @if (substr($key, 0, 8) == 'metadata')
                     @php
                       // Handle both string and array values for metadata
