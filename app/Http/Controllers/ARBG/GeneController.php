@@ -107,10 +107,7 @@ class GeneController extends Controller
             ->distinct()
             ->pluck('sample_matrix_id');
 
-        $matrixList = DataSampleMatrix::whereIn('id', $matrixIds)
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->toArray();
+        $matrixList = DataSampleMatrix::filterList($matrixIds);
 
         // Get distinct organizations using the relationship
         $sourceIds = GeneMain::whereNotNull('source_id')
@@ -181,8 +178,7 @@ class GeneController extends Controller
         // Filter by sample matrix
         if (! empty($matrixSearch)) {
             $resultsObjects = $resultsObjects->whereIn('sample_matrix_id', $matrixSearch);
-            $searchParameters['matrixSearch'] = DataSampleMatrix::whereIn('id', $matrixSearch)
-                ->pluck('name');
+            $searchParameters['matrixSearch'] = array_values(DataSampleMatrix::filterList($matrixSearch));
         }
 
         // Filter by organisation

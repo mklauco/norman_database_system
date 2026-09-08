@@ -114,9 +114,7 @@ class BacteriaController extends Controller
             ->distinct()
             ->pluck('sample_matrix_id');
 
-        $matrixList = DataSampleMatrix::whereIn('id', $sampleMatrixIds)
-            ->orderBy('name')
-            ->pluck('name', 'id')->toArray();
+        $matrixList = DataSampleMatrix::filterList($sampleMatrixIds);
 
         // Get distinct sources (organizations)
         $sourceIds = BacteriaMain::whereNotNull('source_id')
@@ -186,7 +184,7 @@ class BacteriaController extends Controller
         // Filter by sample matrix
         if (! empty($matrixSearch)) {
             $resultsObjects = $resultsObjects->whereIn('sample_matrix_id', $matrixSearch);
-            $searchParameters['matrixSearch'] = DataSampleMatrix::whereIn('id', $matrixSearch)->pluck('name');
+            $searchParameters['matrixSearch'] = array_values(DataSampleMatrix::filterList($matrixSearch));
         }
 
         // Filter by organisation
