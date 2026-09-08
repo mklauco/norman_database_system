@@ -1,0 +1,4 @@
+"list_id","list_file","list_name","list_date","list_analysis_from","list_analysis_to","list_analysis_number","list_source_from","list_source_to","list_source_number","list_method_from","list_method_to","list_method_number","list_type","list_note","list_deleted","list_common"
+"1","ANSWER DCT_ARB Sewage Sludge_ESR10.xlsx","ANSWER DCT_ARB Sewage Sludge_ESR10","2021-12-05","1","22","22","1","1","1","1","1","1","Sewage Sludge",NULL,"0",NULL
+"2","ANSWER DCT_ARB Water_ESR10.xlsx","ANSWER DCT_ARB Water_ESR10","2021-12-05","23","65","43","23","23","1","23","23","1","Wastewater",NULL,"0",NULL
+"3","ANSWER DCT_ARB Water_individual data_v2_APC.xlsx","ANSWER DCT_ARB Water_individual data_v2_APC","2024-09-20","66","86","21","66","66","1","66","66","1","Wastewater",NULL,"0",NULL
