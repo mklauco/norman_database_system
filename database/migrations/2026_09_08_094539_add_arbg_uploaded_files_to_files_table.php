@@ -53,6 +53,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (! $this->databaseEntitiesPresent()) {
+            return;
+        }
+
         $rows = array_merge(
             $this->rowsFor('arb_list.csv', self::ARB_ROWS, self::ARB_ID_BASE, self::ARB_ENTITY_ID, self::ARB_CORRECTIONS),
             $this->rowsFor('arg_list.csv', self::ARG_ROWS, self::ARG_ID_BASE, self::ARG_ENTITY_ID, []),
@@ -76,6 +80,20 @@ return new class extends Migration
             ->whereBetween('id', [self::ARB_ID_BASE, self::ARG_ID_BASE + self::ARG_ROWS - 1])
             ->whereIn('database_entity_id', [self::ARB_ENTITY_ID, self::ARG_ENTITY_ID])
             ->delete();
+    }
+
+    /**
+     * The import references database_entities rows that a seeder creates, not a
+     * migration. On a schema built from migrations alone - CI under
+     * RefreshDatabase, or a bare migrate:fresh - those rows do not exist yet and
+     * the insert would violate files_database_entity_id_foreign. Skip instead,
+     * since such a database has no ARB/G records for the files to describe.
+     */
+    private function databaseEntitiesPresent(): bool
+    {
+        return DB::table('database_entities')
+            ->whereIn('id', [self::ARB_ENTITY_ID, self::ARG_ENTITY_ID])
+            ->count() === 2;
     }
 
     /**
