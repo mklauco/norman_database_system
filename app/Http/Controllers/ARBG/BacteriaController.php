@@ -260,6 +260,14 @@ class BacteriaController extends Controller
             'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id,
             'request' => $request,
             'searchParameters' => $searchParameters,
+            // The view reads these back to rebuild the Refine Search link and to
+            // pick its layout. They used to reach it only through the merged
+            // request, so a URL missing any of them raised an undefined variable.
+            'displayOption' => $request->input('displayOption'),
+            'countrySearch' => $request->input('countrySearch'),
+            'matrixSearch' => $request->input('matrixSearch'),
+            'bacterialGroupSearch' => $request->input('bacterialGroupSearch'),
+            'organisationSearch' => $request->input('organisationSearch'),
         ], $main_request);
     }
 
