@@ -5,6 +5,7 @@ use App\Http\Controllers\ARBG\BacteriaController;
 use App\Http\Controllers\ARBG\BacteriaStatisticsController;
 use App\Http\Controllers\ARBG\GeneController;
 use App\Http\Controllers\ARBG\GeneStatisticsController;
+use App\Http\Controllers\ARBG\UploadedFileController;
 use App\Http\Controllers\Backend\Display\DisplayColumnController;
 use App\Http\Controllers\Backend\Display\DisplaySectionController;
 use App\Http\Controllers\Backend\FileController;
@@ -205,7 +206,6 @@ Route::prefix('factsheets')->group(function () {
         Route::get('filter/', [FactsheetController::class, 'filter'])->name('factsheets.search.filter');
         Route::get('search/', [FactsheetController::class, 'search'])->name('factsheets.search.search');
     });
-
 
     // Factsheet Statistics Routes
     Route::prefix('statistics')->middleware('auth')->group(function () {
@@ -415,6 +415,8 @@ Route::prefix('arbg')->group(function () {
     Route::resource('arbghome', ARBGHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::get('countAll', [ARBGHomeController::class, 'countAll'])->middleware('auth')->name('arbg.countAll');
     Route::get('bacteria/countAll', [ARBGHomeController::class, 'countAllBacteria'])->middleware('auth')->name('arbg.bacteria.countAll');
+
+    Route::get('uploaded-files', [UploadedFileController::class, 'index'])->name('arbg.files.index');
 
     Route::prefix('bacteria')->group(function () {
         Route::get('search/filter/', [BacteriaController::class, 'filter'])->name('arbg.bacteria.search.filter');

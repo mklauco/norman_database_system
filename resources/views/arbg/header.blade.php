@@ -43,6 +43,10 @@
     DCT Download
   </x-nav-link-header>
 
+  <x-nav-link-header :href="route('arbg.files.index')" :active="request()->is('arbg/uploaded-files*')">
+    Uploaded Files
+  </x-nav-link-header>
+
   @role('super_admin')
   <x-nav-link-header :href="route('querylog.index', ['module' => 'arbg'])" :active="request()->is('*querylog*')">
     History of search
