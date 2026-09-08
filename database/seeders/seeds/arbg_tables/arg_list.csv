@@ -1,0 +1,28 @@
+"list_id","list_file","list_name","list_date","list_analysis_from","list_analysis_to","list_analysis_number","list_source_from","list_source_to","list_source_number","list_method_from","list_method_to","list_method_number","list_coordinate_from","list_coordinate_to","list_coordinate_number","list_type","list_note","list_deleted","list_common"
+"1","ANSWER DCT_ARG Groundwater_ESR03v2.xlsx","ANSWER DCT_ARG Groundwater_ESR03v2","2021-12-05","1","255","255","1","1","1","1","2","2","0","0","0","Groundwater",NULL,"0",NULL
+"2","ANSWER DCT_ARG Groundwater_ESR9v2.xlsx","ANSWER DCT_ARG Groundwater_ESR9v2","2021-12-05","256","315","60","256","256","1","256","256","1","0","0","0","Groundwater",NULL,"0",NULL
+"3","ANSWER DCT_ARG Sewage Sludge_ESR10v2.xlsx","ANSWER DCT_ARG Sewage Sludge_ESR10v2","2021-12-05","316","336","21","316","316","1","316","316","1","0","0","0","Sewage Sludge",NULL,"0",NULL
+"4","ANSWER DCT_ARG Soil_ESR03v2.xlsx","ANSWER DCT_ARG Soil_ESR03v2","2021-12-05","337","672","336","337","337","1","337","340","4","0","0","0","Soil",NULL,"0",NULL
+"5","ANSWER DCT_ARG Soil_ESR1v2.xlsx","ANSWER DCT_ARG Soil_ESR1v2","2021-12-05","673","678","6","673","674","2","673","677","5","0","0","0","Soil",NULL,"0",NULL
+"6","ANSWER DCT_ARG Soil_ESR2v2.xlsx","ANSWER DCT_ARG Soil_ESR2v2","2021-12-23","679","762","84","679","679","1","679","679","1","0","0","0","Soil",NULL,"0",NULL
+"7","ANSWER DCT_ARG Soil_ESR6v2.xlsx","ANSWER DCT_ARG Soil_ESR6v2","2021-12-24","763","1102","340","763","764","2","763","763","1","0","0","0","Soil",NULL,"0",NULL
+"8","ANSWER DCT_ARG Soil_ESR9v2.xlsx","ANSWER DCT_ARG Soil_ESR9v2","2021-12-24","1103","1131","29","1103","1103","1","1103","1103","1","0","0","0","Soil",NULL,"0",NULL
+"9","ANSWER DCT_ARG Surface water_Eskilstuna_Sweden_SLUv2.xlsx","ANSWER DCT_ARG Surface water_Eskilstuna_Sweden_SLUv2","2021-12-24","1132","1161","30","1132","1132","1","1132","1132","1","0","0","0","Surface water",NULL,"0",NULL
+"10","ANSWER DCT_ARG Surface water_ESR2v2.xlsx","ANSWER DCT_ARG Surface water_ESR2v2","2021-12-24","1162","1189","28","1162","1162","1","1162","1162","1","0","0","0","Surface water",NULL,"0",NULL
+"11","ANSWER DCT_ARG Surface water_ESR5v2.xlsx","ANSWER DCT_ARG Surface water_ESR5v2","2021-12-25","1190","1228","39","1190","1191","2","1190","1191","2","0","0","0","Surface water",NULL,"0",NULL
+"12","ANSWER DCT_ARG Surface water_Stockholm_Sweden_SLUv2.xlsx","ANSWER DCT_ARG Surface water_Stockholm_Sweden_SLUv2","2021-12-25","1229","1279","51","1229","1229","1","1229","1229","1","0","0","0","Surface water",NULL,"0",NULL
+"13","ANSWER DCT_ARG Surface water_Uppsala_Sweden_SLUv2.xlsx","ANSWER DCT_ARG Surface water_Uppsala_Sweden_SLUv2","2021-12-25","1280","1411","132","1280","1280","1","1280","1280","1","0","0","0","Surface water",NULL,"0",NULL
+"14","ANSWER DCT_ARG Surface water_Vasteras_Sweden_SLUv2.xlsx","ANSWER DCT_ARG Surface water_Vasteras_Sweden_SLUv2","2021-12-25","1412","1648","237","1412","1412","1","1412","1412","1","0","0","0","Surface water",NULL,"0",NULL
+"15","ANSWER DCT_ARG Wastewater_ESR10v2.xlsx","ANSWER DCT_ARG Wastewater_ESR10v2","2021-12-25","1649","1692","44","1649","1649","1","1649","1660","12","0","0","0","Wastewater",NULL,"0",NULL
+"16","ANSWER DCT_ARG Wastewater_ESR2v2.xlsx","ANSWER DCT_ARG Wastewater_ESR2v2","2021-12-25","1693","1727","35","1693","1693","1","1693","1693","1","0","0","0","Wastewater",NULL,"0",NULL
+"17","ANSWER DCT_ARG Wastewater_ESR3v2.xlsx","ANSWER DCT_ARG Wastewater_ESR3v2","2021-12-25","1728","1769","42","1728","1728","1","1728","1728","1","0","0","0","Wastewater","=> 24","1",NULL
+"18","ANSWER DCT_ARG Wastewater_ESR5v2.xlsx","ANSWER DCT_ARG Wastewater_ESR5v2","2021-12-25","1770","1795","26","1770","1770","1","1770","1771","2","0","0","0","Wastewater",NULL,"0",NULL
+"19","1.Ben et al., 2017_ARG v2.xlsx","1.Ben et al., 2017_ARG v2 - Wastewater","2023-06-13","1796","2015","220","1796","1806","11","1796","1806","11","0","0","0","Wastewater",NULL,"0",NULL
+"20","3.Du et al., 2014_ARG v2.xlsx","3.Du et al., 2014_ARG v2 - Wastewater","2023-06-13","2016","2065","50","2016","2025","10","2016","2025","10","0","0","0","Wastewater",NULL,"0",NULL
+"21","5.Amarasiri et al., 2022_ARG v2.xlsx","5.Amarasiri et al., 2022_ARG v2 - Surface water","2023-06-13","2066","2143","78","2066","2091","26","2066","2091","26","0","0","0","Surface water",NULL,"0",NULL
+"22","5.Amarasiri et al., 2022_ARG v2.xlsx","5.Amarasiri et al., 2022_ARG v2 - Groundwater","2023-06-13","2144","2533","390","2066","2091","26","2066","2091","26","0","0","0","Groundwater",NULL,"0",NULL
+"23","ANSWER DCT_ARG Wastewater_individual data_Iakovides_ESR 11 v2.xlsx","ANSWER DCT_ARG Wastewater_individual data_Iakovides_ESR 11 v2 - Wastewater","2023-09-21","2534","2557","24","2534","2555","22","2534","2557","24","0","0","0","Wastewater",NULL,"0",NULL
+"24","ANSWER DCT_ARG Wastewater_ESR3v3.xlsx","ANSWER DCT_ARG Wastewater_ESR3v3","2024-04-11","1728","1769","42","1728","1728","1","1728","1728","1","0","0","0","Wastewater",NULL,"0",NULL
+"25","NORMAN tables for ARGs_mail18092024_APC.xlsx","NORMAN tables for ARGs_mail18092024_APC - surface","2024-09-20","2558","2920","363","2558","2558","1","2558","2558","1","0","0","0","Sufrace water",NULL,"0",NULL
+"26","NORMAN tables for ARGs_mail18092024_APC.xlsx","NORMAN tables for ARGs_mail18092024_APC - wastewater","2024-09-20","2921","3646","726","2921","2921","1","2921","2921","1","2921","2986","66","Wastewater",NULL,"0",NULL
+"27","DCT_SW_ARG_EU4EMBLAS_NationalAntarcticScientificCenter_2025_v3.xlsx","DCT_SW_ARG_EU4EMBLAS_NationalAntarcticScientificCenter_2025_v3","2026-04-11","3647","3680","34","3647","3647","1","3647","3680","34","3647","3651","5","Sufrace water",NULL,"0",NULL

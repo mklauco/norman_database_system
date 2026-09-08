@@ -114,9 +114,7 @@ class BacteriaController extends Controller
             ->distinct()
             ->pluck('sample_matrix_id');
 
-        $matrixList = DataSampleMatrix::whereIn('id', $sampleMatrixIds)
-            ->orderBy('name')
-            ->pluck('name', 'id')->toArray();
+        $matrixList = DataSampleMatrix::filterList($sampleMatrixIds);
 
         // Get distinct sources (organizations)
         $sourceIds = BacteriaMain::whereNotNull('source_id')
@@ -186,7 +184,7 @@ class BacteriaController extends Controller
         // Filter by sample matrix
         if (! empty($matrixSearch)) {
             $resultsObjects = $resultsObjects->whereIn('sample_matrix_id', $matrixSearch);
-            $searchParameters['matrixSearch'] = DataSampleMatrix::whereIn('id', $matrixSearch)->pluck('name');
+            $searchParameters['matrixSearch'] = array_values(DataSampleMatrix::filterList($matrixSearch));
         }
 
         // Filter by organisation
@@ -262,6 +260,14 @@ class BacteriaController extends Controller
             'query_log_id' => QueryLog::orderBy('id', 'desc')->first()->id,
             'request' => $request,
             'searchParameters' => $searchParameters,
+            // The view reads these back to rebuild the Refine Search link and to
+            // pick its layout. They used to reach it only through the merged
+            // request, so a URL missing any of them raised an undefined variable.
+            'displayOption' => $request->input('displayOption'),
+            'countrySearch' => $request->input('countrySearch'),
+            'matrixSearch' => $request->input('matrixSearch'),
+            'bacterialGroupSearch' => $request->input('bacterialGroupSearch'),
+            'organisationSearch' => $request->input('organisationSearch'),
         ], $main_request);
     }
 
