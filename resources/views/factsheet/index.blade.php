@@ -144,7 +144,7 @@
               'name' => 'Name',
               'cas_number' => 'CAS Registry Number',
               'smiles' => 'SMILES',
-              'stdinchikey' => 'InChIKey',
+              'stdinchikey' => 'StdInChIKey',
               'molecular_formula' => 'Molecular Formula',
               'mass_iso' => 'Monoisotopic Mass [g/mol]',
               'dtxid' => 'DSSTox Substance ID',

@@ -51,7 +51,7 @@
                   <th class="px-4 py-2">ID</th>
                   <th class="px-4 py-2">NORMAN SusDat ID</th>
                   <th class="px-4 py-2">CAS RN</th>
-                  <th class="px-4 py-2">InChIKey</th>
+                  <th class="px-4 py-2">StdInChIKey</th>
                   <th class="px-4 py-2">Molecular Formula</th>
                   <th class="px-4 py-2">Actions</th>
                 </tr>
