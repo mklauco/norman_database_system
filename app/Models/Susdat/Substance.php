@@ -114,6 +114,17 @@ class Substance extends Model implements Auditable
     }
 
     /**
+     * Get the three-level use categories associated with this substance.
+     *
+     * A substance is linked to every node on its path, so filtering on a
+     * parent category needs no recursive query.
+     */
+    public function useCategories()
+    {
+        return $this->belongsToMany(UseCategory::class, 'susdat_substance_use_category', 'substance_id', 'use_category_id')->withTimestamps();
+    }
+
+    /**
      * Get the sources associated with this substance.
      */
     public function sources()

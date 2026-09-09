@@ -8,14 +8,17 @@ use App\Models\Backend\QueryLog;
 use App\Models\SLE\SuspectListExchangeSource;
 use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
+use App\Models\Susdat\UseCategory;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class SubstanceController extends Controller
@@ -345,11 +348,36 @@ class SubstanceController extends Controller
     }
 
     /**
+     * The three-level use-category tree replaces the flat susdat_categories
+     * list, but its tables are created by a migration that can only run after
+     * this code is already deployed. Until the migration and its seeders have
+     * run, everything keeps reading the legacy flat tables.
+     */
+    private function useCategoryTreeAvailable(): bool
+    {
+        return Cache::remember('use_category_tree_available', 60, function (): bool {
+            return Schema::hasTable('susdat_use_categories') && UseCategory::query()->exists();
+        });
+    }
+
+    /**
+     * Legacy flat categories shaped like the tree the filter view expects.
+     */
+    private function legacyCategoriesAsFlatTree(): EloquentCollection
+    {
+        return Category::orderBy('name', 'asc')->get()->each(
+            fn (Category $category) => $category->setRelation('children', new EloquentCollection)
+        );
+    }
+
+    /**
      * Show the filter form
      */
     public function filter(Request $request)
     {
-        $categories = Category::orderBy('name', 'asc')->get();
+        $categories = $this->useCategoryTreeAvailable()
+            ? UseCategory::with('children.children')->roots()->get()
+            : $this->legacyCategoriesAsFlatTree();
         $sources = SuspectListExchangeSource::where('show', 1)->whereNotNull('order')->orderBy('order', 'asc')->get();
         $sourceList = [];
         foreach ($sources as $s) {
@@ -388,8 +416,10 @@ class SubstanceController extends Controller
         $substancesSearch = array_filter(array_map('intval', $substancesSearch), fn ($id) => $id > 0);
 
         // Get all categories and sources (cached)
-        $allCategories = Cache::remember('all_category_ids', 300, function () {
-            return Category::pluck('id')->toArray();
+        $usesCategoryTree = $this->useCategoryTreeAvailable();
+
+        $allCategories = Cache::remember($usesCategoryTree ? 'all_use_category_ids' : 'all_category_ids', 300, function () use ($usesCategoryTree) {
+            return $usesCategoryTree ? UseCategory::pluck('id')->toArray() : Category::pluck('id')->toArray();
         });
 
         $allSources = Cache::remember('all_source_ids', 300, function () {
@@ -401,8 +431,8 @@ class SubstanceController extends Controller
 
         // Apply search filters efficiently
         if ($request->input('searchCategory') == 1 && ! empty($categoriesSearch)) {
-            $substances->whereHas('categories', function ($query) use ($categoriesSearch) {
-                $query->whereIn('susdat_categories.id', $categoriesSearch);
+            $substances->whereHas($usesCategoryTree ? 'useCategories' : 'categories', function ($query) use ($categoriesSearch, $usesCategoryTree) {
+                $query->whereIn($usesCategoryTree ? 'susdat_use_categories.id' : 'susdat_categories.id', $categoriesSearch);
             });
         } elseif ($request->input('searchSource') == 1 && ! empty($sourcesSearch)) {
             $substances->whereHas('sources', function ($query) use ($sourcesSearch) {
