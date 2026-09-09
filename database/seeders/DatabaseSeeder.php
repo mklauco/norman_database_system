@@ -59,6 +59,15 @@ class DatabaseSeeder extends Seeder
             ListMatricesSeeder::class,
             EmpodatDataSourceSeeder::class,
 
+            // Matrix metadata codelists (issue #22) — resolve the raw ids
+            // still rendered as bare integers in the record modal.
+            ListAirLocationSeeder::class,
+            ListAirSamplingModeSeeder::class,
+            ListTypeWasteSeeder::class,
+            ListSewageSludgeSeeder::class,
+            ListTreatmentPlantSeeder::class,
+            ListAdvancedTreatmentStepSeeder::class,
+
             // EMPODAT
             EmpodatStationSeeder::class,
 

@@ -579,10 +579,15 @@ class EmpodatRecordDisplay
      * suspended-matter and sewage-sludge tables reuse the mappings already
      * verified for sediments and soil.
      *
-     * `empodat_matrix_air` is deliberately absent: its `dloca_id` /
-     * `dsmo_id` / `dscd_id` values fall outside the id ranges of any
-     * `list_*` table in PostgreSQL, so the legacy codelists behind them
-     * were never imported and any mapping would be a guess.
+     * The air, waste-water and sewage-sludge codelists were added for issue
+     * #22: `dloca_id` / `dsmo_id` / `dtw_id` / `dss_id` resolve against
+     * `list_*` tables created by
+     * `2026_09_08_120000_create_empodat_matrix_lookup_list_tables.php`, while
+     * `dtp_id` / `dtt_id` use the tables that had existed empty since 2024.
+     * Note that `dloca_id` uses `list_air_locations`, NOT `list_locations` —
+     * those are two separate legacy codelists with clashing ids — and
+     * `dsmo_id` likewise uses `list_air_sampling_modes`, not
+     * `list_sampling_methods`.
      *
      * @return array<string, ?string>
      */
@@ -596,7 +601,18 @@ class EmpodatRecordDisplay
             'dtbu_id' => null,
         ];
 
+        $treatment = [
+            'dtp_id' => 'list_treatment_plants',
+            'dtt_id' => 'list_advanced_treatment_steps',
+            'dsa_id' => 'list_sampling_methods',
+        ];
+
         return match (strtolower($matrixType)) {
+            'air' => [
+                'dloca_id' => 'list_air_locations',
+                'dsmo_id' => 'list_air_sampling_modes',
+                'dscd_id' => 'list_sampling_collection_devices',
+            ],
             'biota' => [
                 'dki_id' => 'list_kingdoms',
                 'dph_id' => 'list_phyla',
@@ -618,10 +634,17 @@ class EmpodatRecordDisplay
                 'dsot_id' => 'list_soil_textures',
                 'dcnps_id' => 'list_conc_normal_particle_sizes',
             ],
-            'sediments', 'suspended_matter', 'sewage_sludge',
-            'water_surface', 'water_ground' => $shared,
-            'water_waste' => $shared + [
+            'suspended_matter' => $shared + [
+                'dsa_id' => 'list_sampling_methods',
+                'dtt_id' => 'list_advanced_treatment_steps',
+            ],
+            'sewage_sludge' => $shared + $treatment + [
+                'dss_id' => 'list_sewage_sludges',
+            ],
+            'sediments', 'water_surface', 'water_ground' => $shared,
+            'water_waste' => $shared + $treatment + [
                 'effluent_influent_id' => 'list_effluent_influents',
+                'dtw_id' => 'list_type_wastes',
             ],
             default => [],
         };
