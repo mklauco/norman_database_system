@@ -113,6 +113,8 @@ return [
         'sampling_technique' => 'Sampling technique as reported',
         'sampling_date' => 'Sampling date',
         'sampling_date_t' => 'Sampling time',
+        'sampling_date_m' => 'Sampling month',
+        'sampling_date_d' => 'Sampling day',
         'sampling_date1' => 'Sampling date (end)',
         'sampling_date1_t' => 'Sampling time (end)',
         'sampling_date1_y' => 'Sampling year (end)',

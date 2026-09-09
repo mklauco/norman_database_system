@@ -547,11 +547,44 @@ class EmpodatMain extends Model
             return Carbon::parse($raw)->format('Y-m-d');
         }
 
+        $assembled = $this->samplingDateFromParts();
+        if ($assembled !== null) {
+            return $assembled;
+        }
+
         if ($this->sampling_date_year && (int) $this->sampling_date_year > 0) {
             return (string) $this->sampling_date_year;
         }
 
         return 'N/A';
+    }
+
+    /**
+     * Assemble `Y-m-d` from the legacy date parts when the `sampling_date`
+     * datetime is absent.
+     *
+     * Above `empodat_minor.id` ≈ 20 000 000 the legacy system left
+     * `sampling_date` empty and kept the date only as year/month/day parts
+     * (issue #22). `empodat_minor.sampling_date_m` / `_d` are the destination
+     * for those parts; they are empty until the external migrator populates
+     * them, and while they are empty this returns null and the caller falls
+     * back to the year alone, exactly as before.
+     */
+    private function samplingDateFromParts(): ?string
+    {
+        $year = (int) ($this->sampling_date_year ?? 0);
+        $month = (int) ($this->minor?->sampling_date_m ?? 0);
+        $day = (int) ($this->minor?->sampling_date_d ?? 0);
+
+        if ($year <= 0 || $month < 1 || $month > 12 || $day < 1 || $day > 31) {
+            return null;
+        }
+
+        if (! checkdate($month, $day, $year)) {
+            return null;
+        }
+
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
     }
 
     /**
