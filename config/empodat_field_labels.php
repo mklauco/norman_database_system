@@ -113,6 +113,8 @@ return [
         'sampling_technique' => 'Sampling technique as reported',
         'sampling_date' => 'Sampling date',
         'sampling_date_t' => 'Sampling time',
+        'sampling_date_m' => 'Sampling month',
+        'sampling_date_d' => 'Sampling day',
         'sampling_date1' => 'Sampling date (end)',
         'sampling_date1_t' => 'Sampling time (end)',
         'sampling_date1_y' => 'Sampling year (end)',
@@ -160,6 +162,14 @@ return [
         'dtbu_id' => 'Treatment before use',
         'df_id' => 'Fraction',
         'effluent_influent_id' => 'Effluent/Influent',
+        'dloca_id' => 'Location',
+        'dsmo_id' => 'Sampling mode',
+        'dscd_id' => 'Sampling collection device',
+        'dsa_id' => 'Sampling method',
+        'dtw_id' => 'Type of waste water',
+        'dtp_id' => 'Type of treatment plant',
+        'dtt_id' => 'Advanced treatment steps',
+        'dss_id' => 'Type of sewage sludge',
         'name' => 'Name of river / estuary / lake / reservoir / sea',
         'basin_name' => 'River Basin / Sea Region Name',
         'km' => 'River km',
@@ -203,6 +213,108 @@ return [
         'wind_speed' => 'Wind speed',
         'wind_direction' => 'Wind direction',
         'flow_rate' => 'Flow rate',
+
+        /*
+        | Remaining matrix columns (issue #22). Without an entry these render
+        | as Title-Cased column names — "Doc Mg Cl", "Tarsus Width". A unit is
+        | given only where the stored values confirm it; the rest are left
+        | unitless rather than guessed.
+        |
+        | The flat map is safe because no two columns sharing a label ever
+        | appear on the same `empodat_matrix_*` table: `nh4` / `ammonium_nh4`
+        | and `n_no3` / `nitrate_no3` are the surface-water and waste-water
+        | spellings of the same determinand and never co-occur.
+        */
+
+        // Biota — specimen handling and biometry
+        'species_alive' => 'Species alive',
+        'was_species_alive' => 'Was the species alive',
+        'was_species_euthanised' => 'Was the species euthanised',
+        'receive_medical_treatment' => 'Did the specimen receive medical treatment',
+        'cause_death' => 'Cause of death',
+        'year_death' => 'Year of death',
+        'agegroup' => 'Age group',
+        'nutrition_condition' => 'Nutrition condition',
+        'geographic_range' => 'Geographic range',
+        'standardised_protocols' => 'Standardised protocols used',
+        'time_freezing' => 'Time to freezing',
+        'storage_temperature' => 'Storage temperature',
+        'packing_material' => 'Packing material',
+        'head_length' => 'Head length',
+        'bill_length' => 'Bill length',
+        'wing_length' => 'Wing length',
+        'tarsus_length' => 'Tarsus length',
+        'tarsus_width' => 'Tarsus width',
+
+        // Soil
+        'soil_type' => 'Soil type',
+        'soil_texture' => 'Soil texture (as reported)',
+        'dilution_factor' => 'Dilution factor',
+        'bulk_density' => 'Bulk density',
+        'ph_cacl2' => 'pH (CaCl2)',
+        'ph_h2o' => 'pH (H2O)',
+        'no_pooled_sub_samples' => 'Number of pooled sub-samples',
+        'sample_wet_weight' => 'Sample wet weight',
+        'sample_dry_weight' => 'Sample dry weight',
+
+        // Suspended matter — as-reported values and transect end coordinates
+        'spm_orig' => 'Suspended particulate matter (as reported)',
+        'carbon_orig' => 'Organic carbon (as reported)',
+        'distance' => 'Distance',
+        'end_north_south' => 'End latitude - N/S',
+        'end_latitude_d' => 'End latitude - degrees',
+        'end_latitude_m' => 'End latitude - minutes',
+        'end_latitude_s' => 'End latitude - seconds',
+        'end_latitude_decimal' => 'End latitude (decimal)',
+        'end_east_west' => 'End longitude - E/W',
+        'end_longitude_d' => 'End longitude - degrees',
+        'end_longitude_m' => 'End longitude - minutes',
+        'end_longitude_s' => 'End longitude - seconds',
+        'end_longitude_decimal' => 'End longitude (decimal)',
+
+        // Waste water and sewage sludge — treatment plant operation
+        'srt' => 'Sludge retention time (SRT)',
+        'sludge_retention_time' => 'Sludge retention time',
+        'reactor' => 'Reactor',
+        'dry_matter' => 'Dry matter',
+        'description_sampling' => 'Description of sampling',
+
+        // Water body description
+        'surface' => 'Surface',
+        'horizon' => 'Horizon [m]',
+        'ocean_sea_region_name' => 'Ocean / sea region name',
+        'sampled_volume' => 'Sampled volume',
+
+        // Supporting water chemistry
+        'cod' => 'Chemical oxygen demand (COD)',
+        'bod5' => 'Biochemical oxygen demand (BOD5)',
+        'doc_mg_cl' => 'Dissolved organic carbon [mg C/l]',
+        'o2_m' => 'Dissolved oxygen [mg/l]',
+        'o2_p' => 'Oxygen saturation [%]',
+        'dissolved_o2' => 'Dissolved oxygen',
+        'alkalinity' => 'Alkalinity',
+        'spm_conc' => 'Suspended particulate matter concentration',
+        'tss' => 'Total suspended solids (TSS)',
+        'n_total' => 'Total nitrogen',
+        'p_total' => 'Total phosphorus',
+        'n_no2' => 'Nitrite nitrogen (N-NO2)',
+        'n_no3' => 'Nitrate nitrogen (N-NO3)',
+        'nitrate_no3' => 'Nitrate nitrogen (N-NO3)',
+        'p_po4' => 'Phosphate phosphorus (P-PO4)',
+        'nh4' => 'Ammonium (NH4)',
+        'ammonium_nh4' => 'Ammonium (NH4)',
+        'po43' => 'Phosphate (PO4)',
+        'orthophosphate_po43' => 'Orthophosphate (PO4)',
+        'so42' => 'Sulfate (SO4)',
+        'sulfates' => 'Sulfates',
+        'hco3' => 'Bicarbonate (HCO3)',
+        'cl' => 'Chloride (Cl)',
+        'chlorides' => 'Chlorides',
+        'h2s' => 'Hydrogen sulfide (H2S)',
+        'calcium' => 'Calcium',
+        'iron' => 'Iron',
+        'magnesium' => 'Magnesium',
+        'manganese' => 'Manganese',
     ],
 
 ];
