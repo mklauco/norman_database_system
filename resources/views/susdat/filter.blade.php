@@ -40,11 +40,55 @@
                   
                   <div class="space-y-1 pr-2">
                     @foreach ($categories as $category)
-                    <div class="flex items-center space-x-3 p-0.5 rounded hover:bg-gray-100 transition-colors duration-150">
-                      <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}" id="category_{{$category->id}}" class="w-5 h-5 text-lime-600 border-gray-300 rounded focus:ring-lime-500 focus:ring-2">
-                      <label for="category_{{$category->id}}" class="text-base text-gray-700 cursor-pointer select-none">
-                        {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
-                      </label>
+                    <div @if($category->children->isNotEmpty()) x-data="{ open: false }" @endif>
+                      <div class="flex items-center space-x-2 p-0.5 rounded hover:bg-gray-100 transition-colors duration-150">
+                        @if ($category->children->isNotEmpty())
+                        <button type="button" x-on:click="open = !open" :aria-expanded="open" class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-500 hover:text-lime-700" aria-label="Toggle subcategories of {{ $category->name }}">
+                          <svg class="w-4 h-4 transition-transform duration-150" :class="open ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                          </svg>
+                        </button>
+                        @else
+                        <span class="shrink-0 w-5 h-5"></span>
+                        @endif
+                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}" id="category_{{$category->id}}" class="w-5 h-5 text-lime-600 border-gray-300 rounded focus:ring-lime-500 focus:ring-2">
+                        <label for="category_{{$category->id}}" class="text-base text-gray-700 cursor-pointer select-none">
+                          {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
+                        </label>
+                      </div>
+
+                      @if ($category->children->isNotEmpty())
+                      <div x-show="open" x-collapse class="ml-7 border-l border-gray-200 pl-2 space-y-1">
+                        @foreach ($category->children as $subcategory)
+                        <div @if($subcategory->children->isNotEmpty()) x-data="{ openSub: false }" @endif>
+                          <div class="flex items-center space-x-2 p-0.5 rounded hover:bg-gray-100 transition-colors duration-150">
+                            @if ($subcategory->children->isNotEmpty())
+                            <button type="button" x-on:click="openSub = !openSub" :aria-expanded="openSub" class="shrink-0 w-4 h-4 flex items-center justify-center text-gray-500 hover:text-lime-700" aria-label="Toggle subcategories of {{ $subcategory->name }}">
+                              <svg class="w-3 h-3 transition-transform duration-150" :class="openSub ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                              </svg>
+                            </button>
+                            @else
+                            <span class="shrink-0 w-4 h-4"></span>
+                            @endif
+                            <input type="checkbox" name="categoriesSearch[]" value="{{$subcategory->id}}" id="category_{{$subcategory->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded focus:ring-lime-500 focus:ring-2">
+                            <label for="category_{{$subcategory->id}}" class="text-sm text-gray-700 cursor-pointer select-none">{{ $subcategory->name }}</label>
+                          </div>
+
+                          @if ($subcategory->children->isNotEmpty())
+                          <div x-show="openSub" x-collapse class="ml-6 border-l border-gray-200 pl-2 space-y-1">
+                            @foreach ($subcategory->children as $leaf)
+                            <div class="flex items-center space-x-2 p-0.5 rounded hover:bg-gray-100 transition-colors duration-150">
+                              <input type="checkbox" name="categoriesSearch[]" value="{{$leaf->id}}" id="category_{{$leaf->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded focus:ring-lime-500 focus:ring-2">
+                              <label for="category_{{$leaf->id}}" class="text-sm text-gray-600 cursor-pointer select-none">{{ $leaf->name }}</label>
+                            </div>
+                            @endforeach
+                          </div>
+                          @endif
+                        </div>
+                        @endforeach
+                      </div>
+                      @endif
                     </div>
                     @endforeach
                   </div>
