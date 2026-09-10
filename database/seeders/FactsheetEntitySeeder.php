@@ -38,7 +38,7 @@ class FactsheetEntitySeeder extends Seeder
             [
                 'name' => 'Environmental occurrence (all data)',
                 'sort_order' => 4,
-                'data' => json_encode([]),
+                'data' => json_encode(['method_of_presentation' => 'controller_method', 'method' => 'getSurfaceWaterOccurrenceData']),
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -80,7 +80,7 @@ class FactsheetEntitySeeder extends Seeder
             [
                 'name' => 'Potential risk of exceedance of lowest PNEC',
                 'sort_order' => 10,
-                'data' => json_encode([]),
+                'data' => json_encode(['method_of_presentation' => 'controller_method', 'method' => 'getRiskOfExceedanceData']),
                 'created_at' => $now,
                 'updated_at' => $now,
             ],

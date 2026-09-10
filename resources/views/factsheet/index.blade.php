@@ -314,6 +314,135 @@
                         <div class="border-l-4 p-4 {{ $colorClass }} rounded-r-lg">
                           <p class="text-sm font-medium leading-relaxed">{{ $entity->processed_data['text'] }}</p>
                         </div>
+                      @elseif($entity->processed_data['type'] === 'occurrence_tables')
+                        {{-- Environmental occurrence (all data): the three
+                             surface-water tables from the legacy factsheet.
+                             Counts carry no score of their own, so their Score
+                             cell reads "n.a."; a ">LoQ" count below the lowest
+                             prioritisation band scores nothing and stays
+                             blank. --}}
+                        @php $occ = $entity->processed_data['occurrence']; @endphp
+                        <div class="space-y-6">
+                          @foreach([
+                            'all_data' => 'Occurrence data (NORMAN – all data)',
+                            'recent_data' => 'Occurrence data (NORMAN – recent data)',
+                          ] as $blockKey => $blockTitle)
+                            @php $b = $occ[$blockKey]; @endphp
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 overflow-x-auto">
+                              <h4 class="text-sm font-semibold text-gray-900 mb-3">
+                                {{ $blockTitle }}
+                                @if($blockKey === 'recent_data')
+                                  <span class="font-normal text-gray-500">({{ $b['from_year'] }}–{{ $b['to_year'] }})</span>
+                                @endif
+                              </h4>
+                              <table class="min-w-full text-sm">
+                                <thead>
+                                  <tr class="bg-slate-50 text-left text-slate-700">
+                                    <th class="px-3 py-2 font-medium">Surface water (relevant matrix)</th>
+                                    <th class="px-3 py-2 font-medium">No. of Countries</th>
+                                    <th class="px-3 py-2 font-medium">No. of Countries with Analysis &gt; LoQ</th>
+                                    <th class="px-3 py-2 font-medium">No. of Stations</th>
+                                    <th class="px-3 py-2 font-medium">No. of Stations with Analysis &gt; LoQ</th>
+                                    <th class="px-3 py-2 font-medium">No. of Analyses</th>
+                                    <th class="px-3 py-2 font-medium">Frequency of Quantification</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr class="border-t border-gray-200">
+                                    <th class="px-3 py-2 text-left font-medium text-slate-700">Value</th>
+                                    <td class="px-3 py-2 font-mono">{{ number_format($b['countries'], 0, '.', ' ') }}</td>
+                                    <td class="px-3 py-2 font-mono">{{ number_format($b['countries_above_loq'], 0, '.', ' ') }}</td>
+                                    <td class="px-3 py-2 font-mono">{{ number_format($b['stations'], 0, '.', ' ') }}</td>
+                                    <td class="px-3 py-2 font-mono">{{ number_format($b['stations_above_loq'], 0, '.', ' ') }}</td>
+                                    <td class="px-3 py-2 font-mono">{{ number_format($b['analyses'], 0, '.', ' ') }}</td>
+                                    <td class="px-3 py-2 font-mono">{{ $b['frequency_of_quantification'] !== null ? number_format($b['frequency_of_quantification'], 2, '.', ' ').' %' : '—' }}</td>
+                                  </tr>
+                                  <tr class="border-t border-gray-200 bg-slate-50/50">
+                                    <th class="px-3 py-2 text-left font-medium text-slate-700">Score<sup>1</sup></th>
+                                    <td class="px-3 py-2 text-slate-400">n.a.</td>
+                                    <td class="px-3 py-2 font-mono">{{ $b['scores']['countries_above_loq'] ?? '' }}</td>
+                                    <td class="px-3 py-2 text-slate-400">n.a.</td>
+                                    <td class="px-3 py-2 font-mono">{{ $b['scores']['stations_above_loq'] ?? '' }}</td>
+                                    <td class="px-3 py-2 text-slate-400">n.a.</td>
+                                    <td class="px-3 py-2 font-mono">{{ $b['scores']['frequency'] !== null ? number_format($b['scores']['frequency'], 2) : '' }}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          @endforeach
+
+                          @if(!empty($occ['concentrations']))
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 overflow-x-auto">
+                              <h4 class="text-sm font-semibold text-gray-900 mb-3">LOQmin, Median, Max and MEC95</h4>
+                              <table class="min-w-full text-sm">
+                                <thead>
+                                  <tr class="bg-slate-50 text-left text-slate-700">
+                                    <th class="px-3 py-2 font-medium">Matrix</th>
+                                    <th class="px-3 py-2 font-medium">LOQmin [{{ $occ['unit'] }}]</th>
+                                    <th class="px-3 py-2 font-medium">Median concentration [{{ $occ['unit'] }}]</th>
+                                    <th class="px-3 py-2 font-medium">Max concentration [{{ $occ['unit'] }}]</th>
+                                    <th class="px-3 py-2 font-medium">MEC95 [{{ $occ['unit'] }}] (all data)</th>
+                                    <th class="px-3 py-2 font-medium">MEC95 [{{ $occ['unit'] }}] (recent data)</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  @foreach($occ['concentrations'] as $c)
+                                    <tr class="border-t border-gray-200" wire:key="conc-{{ $c['matrix_id'] }}">
+                                      <td class="px-3 py-2">{{ $c['matrix_name'] }}</td>
+                                      @foreach(['loq_min', 'median', 'max', 'mec95_all', 'mec95_recent'] as $col)
+                                        <td class="px-3 py-2 font-mono">{{ $c[$col] !== null ? rtrim(rtrim(number_format($c[$col], 6, '.', ' '), '0'), '.') : '—' }}</td>
+                                      @endforeach
+                                    </tr>
+                                  @endforeach
+                                </tbody>
+                              </table>
+                              <p class="text-xs text-gray-500 mt-2">Concentration figures cover measured values only; results reported as below the limit of detection or quantification are excluded.</p>
+                            </div>
+                          @endif
+
+                          <p class="text-xs text-gray-500">
+                            <sup>1</sup> According to the
+                            <a href="https://www.norman-network.net/sites/default/files/norman_prioritisation_manual_15%20April2013_final_for_website.pdf"
+                               target="_blank" rel="noopener noreferrer" class="link-lime-text">NORMAN Prioritisation Methodology</a>
+                            (Dulio &amp; von der Ohe 2013)
+                          </p>
+                        </div>
+
+                      @elseif($entity->processed_data['type'] === 'exceedance_table')
+                        {{-- Potential risk of exceedance of lowest PNEC. Scores
+                             are omitted on purpose: the prioritisation bands for
+                             these two figures are not agreed anywhere we have,
+                             and the legacy page contradicts itself on them. --}}
+                        @php $ex = $entity->processed_data['exceedance']; @endphp
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 overflow-x-auto">
+                          <h4 class="text-sm font-semibold text-gray-900 mb-3">Summary: Risk of Exceedance of the Lowest PNEC</h4>
+                          <table class="min-w-full text-sm">
+                            <thead>
+                              <tr class="bg-slate-50 text-left text-slate-700">
+                                <th class="px-3 py-2 font-medium">&nbsp;</th>
+                                <th class="px-3 py-2 font-medium">Value</th>
+                                <th class="px-3 py-2 font-medium">Score<sup>1</sup></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr class="border-t border-gray-200">
+                                <th class="px-3 py-2 text-left font-medium text-slate-700">Frequency of Exceedance</th>
+                                <td class="px-3 py-2 font-mono">{{ $ex['frequency_of_exceedance'] !== null ? number_format($ex['frequency_of_exceedance'], 2, '.', ' ').' %' : '—' }}</td>
+                                <td class="px-3 py-2 font-mono">{{ isset($ex['scores']['frequency_of_exceedance']) ? number_format($ex['scores']['frequency_of_exceedance'], 2) : '' }}</td>
+                              </tr>
+                              <tr class="border-t border-gray-200">
+                                <th class="px-3 py-2 text-left font-medium text-slate-700">Extent of Exceedance (MEC95 / PNEC)</th>
+                                <td class="px-3 py-2 font-mono">{{ $ex['extent_of_exceedance'] !== null ? number_format($ex['extent_of_exceedance'], 3, '.', ' ') : '—' }}</td>
+                                <td class="px-3 py-2 font-mono"></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <p class="text-xs text-gray-500 mt-2">
+                            Lowest PNEC fresh water: <span class="font-mono">{{ $ex['pnec_freshwater'] }}</span> {{ $entity->processed_data['unit'] }}
+                            — {{ number_format($ex['exceeding'], 0, '.', ' ') }} of {{ number_format($ex['measured'], 0, '.', ' ') }} measured surface water values exceed it.
+                          </p>
+                        </div>
+
                       @elseif($entity->processed_data['type'] === 'table')
                         {{-- CASE 4: Table presentation for country-year data --}}
                         <div class="bg-white border border-gray-200 rounded-lg p-4">
