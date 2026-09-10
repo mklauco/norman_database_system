@@ -279,7 +279,23 @@
                       @elseif($entity->processed_data['type'] === 'text')
                         {{-- CASE 2: Text presentation --}}
                         <div class="bg-white border border-gray-200 rounded-lg p-4">
-                          <p class="text-sm text-gray-700 leading-relaxed">{{ $entity->processed_data['content'] }}</p>
+                          @php
+                            // Turn `link_text` into a hyperlink where it occurs
+                            // in the citation, matching the legacy factsheet.
+                            // Each part is escaped on its own, so no HTML from
+                            // the database is ever rendered raw.
+                            $content = $entity->processed_data['content'];
+                            $linkText = $entity->processed_data['link_text'] ?? null;
+                            $linkUrl = $entity->processed_data['link_url'] ?? null;
+                            $at = ($linkText && $linkUrl) ? strpos($content, $linkText) : false;
+                          @endphp
+                          <p class="text-sm text-gray-700 leading-relaxed">
+                            @if($at !== false)
+                              {{ substr($content, 0, $at) }}<a href="{{ $linkUrl }}" target="_blank" rel="noopener noreferrer" class="link-lime-text font-semibold">{{ $linkText }}</a>{{ substr($content, $at + strlen($linkText)) }}
+                            @else
+                              {{ $content }}
+                            @endif
+                          </p>
                         </div>
                       @elseif($entity->processed_data['type'] === 'banner')
                         {{-- CASE 3: Banner presentation --}}

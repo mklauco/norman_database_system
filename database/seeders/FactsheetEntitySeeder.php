@@ -95,7 +95,15 @@ class FactsheetEntitySeeder extends Seeder
             [
                 'name' => 'Bibliography, sources and supportive information',
                 'sort_order' => 12,
-                'data' => json_encode(['method_of_presentation' => 'text', 'text' => 'Dulio V. and Von der Ohe P. (2013) NORMAN Prioritisation framework for emerging substances. NORMAN Association, Verneuil en Halatte, France, 70 pages.']),
+                // `link_text` is hyperlinked to `link_url` where it occurs in
+                // `text`, matching the legacy factsheet, which links the title
+                // of the framework to the published PDF.
+                'data' => json_encode([
+                    'method_of_presentation' => 'text',
+                    'text' => 'Dulio V. and Von der Ohe P. (2013) NORMAN Prioritisation framework for emerging substances. NORMAN Association, Verneuil en Halatte, France, 70 pages.',
+                    'link_text' => 'NORMAN Prioritisation framework for emerging substances',
+                    'link_url' => 'https://www.norman-network.net/sites/default/files/norman_prioritisation_manual_15%20April2013_final_for_website.pdf',
+                ]),
                 'created_at' => $now,
                 'updated_at' => $now,
             ],

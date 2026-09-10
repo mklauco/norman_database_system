@@ -170,6 +170,12 @@ class FactsheetController extends Controller
         return [
             'type' => 'text',
             'content' => $entity->data['text'] ?? 'No text content available',
+            // Optional hyperlink. The legacy factsheet links a phrase inside
+            // the citation to a PDF; `link_text` is the phrase to turn into a
+            // link and `link_url` its target. The view escapes the three parts
+            // separately rather than rendering raw HTML from the database.
+            'link_text' => $entity->data['link_text'] ?? null,
+            'link_url' => $entity->data['link_url'] ?? null,
         ];
     }
 
