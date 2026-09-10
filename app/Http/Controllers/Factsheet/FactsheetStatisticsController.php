@@ -116,9 +116,12 @@ class FactsheetStatisticsController extends Controller
     }
 
     /**
-     * Generate comprehensive statistics for a specific substance
+     * Generate comprehensive statistics for a specific substance.
+     *
+     * Public so `factsheets:generate-statistics` can drive it in bulk; the
+     * "Populate all" button only ever created placeholder rows.
      */
-    private function generateStatisticsForSubstance($substanceId)
+    public function generateStatisticsForSubstance($substanceId)
     {
         // Generate all statistics categories
         $countryYearStats = $this->generateCountryYearStats($substanceId);
