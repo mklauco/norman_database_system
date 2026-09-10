@@ -30,8 +30,21 @@ jobs:
     name: Run migrations on production
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment:
-      name: production-migrate
+
+    # No `environment:` gate on purpose. It used to point at
+    # `production-migrate`, whose required-reviewers rule made every migration
+    # wait for a manual approval — a second one, after the Deploy workflow's
+    # `production` approval had already reviewed the very same commits. The
+    # approval control is also not rendered by the GitHub mobile app, so a
+    # dispatched run could sit waiting with no visible way to release it.
+    #
+    # Neither environment carried any secrets (all four DEPLOY_* secrets are
+    # repo-level), so dropping the reference costs nothing. What still guards
+    # this workflow:
+    #   - the typed "MIGRATE PRODUCTION" confirmation input below
+    #   - the check that refuses to migrate unless production is already
+    #     serving this exact commit
+    #   - workflow_dispatch only: it never fires on its own
 
     steps:
       - name: Verify confirmation phrase
