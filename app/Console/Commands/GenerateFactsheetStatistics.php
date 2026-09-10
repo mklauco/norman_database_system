@@ -6,7 +6,9 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\Factsheet\FactsheetStatisticsController;
 use App\Models\Factsheet\FactsheetStatistic;
+use App\Services\Factsheet\FactsheetStatisticsBulkBuilder;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -27,14 +29,25 @@ use Throwable;
 class GenerateFactsheetStatistics extends Command
 {
     protected $signature = 'factsheets:generate-statistics
-                            {--substance=* : Substance id to process; repeatable. Omit to process all}
+                            {--substance=* : Substance id to process; repeatable. Implies --per-substance}
                             {--all : Recompute every substance, including those already up to date}
-                            {--limit= : Stop after this many substances}';
+                            {--limit= : Stop after this many substances; implies --per-substance}
+                            {--per-substance : Compute one substance at a time instead of in bulk (slow)}';
 
-    protected $description = 'Compute factsheet occurrence statistics per substance (slow; ~2.5s each)';
+    protected $description = 'Compute factsheet occurrence statistics for every substance';
 
-    public function handle(FactsheetStatisticsController $controller): int
-    {
+    public function handle(
+        FactsheetStatisticsController $controller,
+        FactsheetStatisticsBulkBuilder $builder,
+    ): int {
+        // A whole-database rebuild goes through the bulk builder: six queries
+        // grouped by substance, rather than six per substance. Measured at
+        // about a minute and a half against 2.5 hours for ~7 600 substances.
+        // The per-substance path stays for targeted regeneration.
+        if (! $this->wantsPerSubstance()) {
+            return $this->rebuildInBulk($builder);
+        }
+
         $ids = $this->resolveSubstanceIds();
 
         if ($ids === []) {
@@ -78,6 +91,52 @@ class GenerateFactsheetStatistics extends Command
     }
 
     /**
+     * The per-substance path is only for targeted work: specific substances,
+     * a capped run, or an explicit request for it.
+     */
+    private function wantsPerSubstance(): bool
+    {
+        return (bool) $this->option('per-substance')
+            || (array) $this->option('substance') !== []
+            || $this->option('limit') !== null;
+    }
+
+    private function rebuildInBulk(FactsheetStatisticsBulkBuilder $builder): int
+    {
+        $this->info('Rebuilding statistics for every substance in EMPODAT (bulk mode).');
+
+        $bar = null;
+        $t0 = microtime(true);
+
+        try {
+            $written = $builder->rebuildAll(function (int $done, int $total) use (&$bar) {
+                if ($bar === null) {
+                    $bar = $this->output->createProgressBar($total);
+                    $bar->start();
+                }
+
+                $bar->setProgress($done);
+            });
+        } catch (Throwable $e) {
+            Log::error('factsheets:generate-statistics bulk rebuild failed: '.$e->getMessage());
+            $this->error('Bulk rebuild failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+
+        $bar?->finish();
+        $this->newLine(2);
+
+        $this->info(sprintf(
+            'Wrote statistics for %s substance(s) in %.1f s.',
+            number_format($written),
+            microtime(true) - $t0
+        ));
+
+        return self::SUCCESS;
+    }
+
+    /**
      * @return list<int>
      */
     private function resolveSubstanceIds(): array
@@ -88,26 +147,36 @@ class GenerateFactsheetStatistics extends Command
             return $explicit;
         }
 
-        $query = FactsheetStatistic::query();
+        // Driven off the substances that actually appear in EMPODAT, NOT off
+        // the rows that happen to exist in `factsheet_substance_statistics`.
+        // The two sets differ sharply: 7 592 substances carry occurrence data
+        // while only 4 705 statistics rows exist, so iterating the statistics
+        // table would silently skip 2 888 substances and leave their
+        // factsheets blank after a full run.
+        $ids = DB::table('empodat_main')
+            ->whereNotNull('substance_id')
+            ->distinct()
+            ->orderBy('substance_id')
+            ->pluck('substance_id')
+            ->map(fn ($id) => (int) $id);
 
         if (! $this->option('all')) {
-            // A row is stale when it predates the surface-water occurrence
-            // block, which is what this command was written to backfill.
+            // Already carrying the surface-water occurrence block, so current.
             // `jsonb_exists()` rather than the `?` operator: Laravel reads a
             // literal `?` in raw SQL as a binding placeholder.
-            $query->where(function ($q) {
-                $q->whereNull('meta_data')
-                    ->orWhereRaw("not jsonb_exists(meta_data::jsonb, 'surface_water_occurrence')");
-            });
-        }
+            $current = FactsheetStatistic::whereNotNull('meta_data')
+                ->whereRaw("jsonb_exists(meta_data::jsonb, 'surface_water_occurrence')")
+                ->pluck('substance_id')
+                ->flip();
 
-        $ids = $query->orderBy('substance_id')->pluck('substance_id');
+            $ids = $ids->reject(fn (int $id) => $current->has($id))->values();
+        }
 
         if ($limit = $this->option('limit')) {
             $ids = $ids->take((int) $limit);
         }
 
-        return $ids->map(fn ($id) => (int) $id)->all();
+        return $ids->all();
     }
 
     private function humanEta(int $count): string
