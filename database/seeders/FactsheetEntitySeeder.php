@@ -13,7 +13,6 @@ class FactsheetEntitySeeder extends Seeder
     public function run(): void
     {
         $now = now();
-        FactsheetEntity::truncate();
         $entities = [
             [
                 'name' => 'Chemical identity',
@@ -39,7 +38,7 @@ class FactsheetEntitySeeder extends Seeder
             [
                 'name' => 'Environmental occurrence (all data)',
                 'sort_order' => 4,
-                'data' => json_encode([]),
+                'data' => json_encode(['method_of_presentation' => 'controller_method', 'method' => 'getSurfaceWaterOccurrenceData']),
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -81,7 +80,7 @@ class FactsheetEntitySeeder extends Seeder
             [
                 'name' => 'Potential risk of exceedance of lowest PNEC',
                 'sort_order' => 10,
-                'data' => json_encode([]),
+                'data' => json_encode(['method_of_presentation' => 'controller_method', 'method' => 'getRiskOfExceedanceData']),
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -95,13 +94,44 @@ class FactsheetEntitySeeder extends Seeder
             [
                 'name' => 'Bibliography, sources and supportive information',
                 'sort_order' => 12,
-                'data' => json_encode(['method_of_presentation' => 'text', 'text' => 'Dulio V. and Von der Ohe P. (2013) NORMAN Prioritisation framework for emerging substances. NORMAN Association, Verneuil en Halatte, France, 70 pages.']),
+                // `link_text` is hyperlinked to `link_url` where it occurs in
+                // `text`, matching the legacy factsheet, which links the title
+                // of the framework to the published PDF.
+                'data' => json_encode([
+                    'method_of_presentation' => 'text',
+                    'text' => 'Dulio V. and Von der Ohe P. (2013) NORMAN Prioritisation framework for emerging substances. NORMAN Association, Verneuil en Halatte, France, 70 pages.',
+                    'link_text' => 'NORMAN Prioritisation framework for emerging substances',
+                    'link_url' => 'https://www.norman-network.net/sites/default/files/norman_prioritisation_manual_15%20April2013_final_for_website.pdf',
+                ]),
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
         ];
 
-        FactsheetEntity::insert($entities);
+        // Matched on `sort_order`, which identifies a section. This used to be
+        // `truncate()` followed by a blind `insert()`, which dropped every
+        // section configuration — including any row edited by hand — and made
+        // the seeder unsafe to run anywhere with real data. Sections are now
+        // refreshed in place, and ids stay stable.
+        //
+        // `updateOrCreate` rather than `upsert` because `sort_order` carries no
+        // unique index, which PostgreSQL requires for an upsert's conflict
+        // target. Twelve rows make the per-row cost irrelevant.
+        // `data` is declared as an `array` cast on the model, so it must be
+        // handed the array and left to encode it. The entries above carry
+        // pre-encoded JSON because the previous `insert()` bypassed casts;
+        // passing that string straight through would store a JSON string
+        // *inside* a JSON document and every `$entity->data['...']` lookup
+        // would then fail.
+        foreach ($entities as $entity) {
+            FactsheetEntity::updateOrCreate(
+                ['sort_order' => $entity['sort_order']],
+                [
+                    'name' => $entity['name'],
+                    'data' => json_decode($entity['data'], true),
+                ],
+            );
+        }
     }
 }
 // php artisan db:seed --class=FactsheetEntitySeeder

@@ -170,6 +170,12 @@ class FactsheetController extends Controller
         return [
             'type' => 'text',
             'content' => $entity->data['text'] ?? 'No text content available',
+            // Optional hyperlink. The legacy factsheet links a phrase inside
+            // the citation to a PDF; `link_text` is the phrase to turn into a
+            // link and `link_url` its target. The view escapes the three parts
+            // separately rather than rendering raw HTML from the database.
+            'link_text' => $entity->data['link_text'] ?? null,
+            'link_url' => $entity->data['link_url'] ?? null,
         ];
     }
 
@@ -222,6 +228,19 @@ class FactsheetController extends Controller
                             'table_data' => $methodData['table_data'] ?? [],
                             'years' => $methodData['years'] ?? [],
                             'summary' => $methodData['summary'] ?? [],
+                        ];
+                    } elseif ($methodData['type'] === 'occurrence_tables') {
+                        return [
+                            'type' => 'occurrence_tables',
+                            'occurrence' => $methodData['occurrence'] ?? null,
+                            'message' => $methodData['message'] ?? null,
+                        ];
+                    } elseif ($methodData['type'] === 'exceedance_table') {
+                        return [
+                            'type' => 'exceedance_table',
+                            'exceedance' => $methodData['exceedance'] ?? null,
+                            'unit' => $methodData['unit'] ?? null,
+                            'message' => $methodData['message'] ?? null,
                         ];
                     } elseif ($methodData['type'] === 'matrix_table') {
                         // Return matrix table data directly
@@ -354,6 +373,75 @@ class FactsheetController extends Controller
         }
 
         return $pnecValues;
+    }
+
+    /**
+     * "Environmental occurrence (all data)" — the three surface-water tables
+     * (all data, recent data, and the concentration summary) shown on the
+     * legacy factsheet (#26).
+     *
+     * The figures are precomputed by `FactsheetStatisticsController` into
+     * `factsheet_substance_statistics`; computing them per page view would put
+     * a scan of `empodat_main` — past 100 million rows — in front of the user.
+     *
+     * @param  Substance  $substance
+     * @return array<string, mixed>
+     */
+    private function getSurfaceWaterOccurrenceData($substance): array
+    {
+        $statistics = FactsheetStatistic::where('substance_id', $substance->id)->value('meta_data');
+        $occurrence = $statistics['surface_water_occurrence'] ?? null;
+
+        if (! is_array($occurrence) || ! ($occurrence['available'] ?? false)) {
+            return [
+                'type' => 'banner',
+                'color' => 'light-green',
+                'text' => "Occurrence statistics for {$substance->name} have not been generated yet.",
+            ];
+        }
+
+        if (($occurrence['all_data']['analyses'] ?? 0) === 0) {
+            return [
+                'type' => 'banner',
+                'color' => 'light-green',
+                'text' => "No surface water data for {$substance->name} in the Chemical Occurrence Database.",
+            ];
+        }
+
+        return [
+            'type' => 'occurrence_tables',
+            'occurrence' => $occurrence,
+        ];
+    }
+
+    /**
+     * "Potential risk of exceedance of lowest PNEC" — how often measured
+     * surface-water concentrations exceed the freshwater PNEC, and by how much
+     * (#26). Also precomputed.
+     *
+     * @param  Substance  $substance
+     * @return array<string, mixed>
+     */
+    private function getRiskOfExceedanceData($substance): array
+    {
+        $statistics = FactsheetStatistic::where('substance_id', $substance->id)->value('meta_data');
+        $occurrence = $statistics['surface_water_occurrence'] ?? null;
+        $exceedance = $occurrence['exceedance'] ?? null;
+
+        if (! is_array($exceedance) || ($exceedance['pnec_freshwater'] ?? null) === null) {
+            return [
+                'type' => 'banner',
+                'color' => 'light-green',
+                'text' => $exceedance['reason']
+                    ?? "No freshwater PNEC available for {$substance->name}, so the risk of exceedance cannot be assessed.",
+            ];
+        }
+
+        return [
+            'type' => 'exceedance_table',
+            'exceedance' => $exceedance,
+            'unit' => $occurrence['unit'] ?? null,
+        ];
     }
 
     /**
