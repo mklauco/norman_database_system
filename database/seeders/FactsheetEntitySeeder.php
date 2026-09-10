@@ -13,7 +13,6 @@ class FactsheetEntitySeeder extends Seeder
     public function run(): void
     {
         $now = now();
-        FactsheetEntity::truncate();
         $entities = [
             [
                 'name' => 'Chemical identity',
@@ -109,7 +108,30 @@ class FactsheetEntitySeeder extends Seeder
             ],
         ];
 
-        FactsheetEntity::insert($entities);
+        // Matched on `sort_order`, which identifies a section. This used to be
+        // `truncate()` followed by a blind `insert()`, which dropped every
+        // section configuration — including any row edited by hand — and made
+        // the seeder unsafe to run anywhere with real data. Sections are now
+        // refreshed in place, and ids stay stable.
+        //
+        // `updateOrCreate` rather than `upsert` because `sort_order` carries no
+        // unique index, which PostgreSQL requires for an upsert's conflict
+        // target. Twelve rows make the per-row cost irrelevant.
+        // `data` is declared as an `array` cast on the model, so it must be
+        // handed the array and left to encode it. The entries above carry
+        // pre-encoded JSON because the previous `insert()` bypassed casts;
+        // passing that string straight through would store a JSON string
+        // *inside* a JSON document and every `$entity->data['...']` lookup
+        // would then fail.
+        foreach ($entities as $entity) {
+            FactsheetEntity::updateOrCreate(
+                ['sort_order' => $entity['sort_order']],
+                [
+                    'name' => $entity['name'],
+                    'data' => json_decode($entity['data'], true),
+                ],
+            );
+        }
     }
 }
 // php artisan db:seed --class=FactsheetEntitySeeder
