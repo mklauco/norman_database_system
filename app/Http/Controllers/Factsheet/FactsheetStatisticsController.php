@@ -281,6 +281,9 @@ class FactsheetStatisticsController extends Controller
             ->where('em.substance_id', $substanceId)
             ->groupBy('lc.name', 'lc.code', 'lc.id')
             ->orderBy('record_count', 'desc')
+            // Countries with equal counts otherwise come back in whatever order
+            // the scan produced, so the stored payload changed between runs.
+            ->orderBy('lc.name')
             ->get();
 
         return [
