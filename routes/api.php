@@ -23,7 +23,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // EMPODAT (authenticated)
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::prefix('empodat')->group(function () {
             Route::get('{search_type}/{search_value}', [EmpodatController::class, 'search'])
                 ->where('search_type', 'substance|country');
