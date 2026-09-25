@@ -231,7 +231,11 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
             EmpodatSuspectConnect2SedimentsXlsxStationsMappingFillSeeder::class,
         ]);
         $this->deleteSubstancesForFile(10003);
-        $this->call(EmpodatSuspectConnect2SedimentsMainSeeder::class);
+        // 10003/10004 default to re-using their existing id block (they are the two
+        // re-imported v2 sources). A full reload has just truncated the table and
+        // restarted its identity, so there is no block to re-use — these two must
+        // draw from the sequence like every other source here.
+        $this->callWith(EmpodatSuspectConnect2SedimentsMainSeeder::class, ['useFixedIdRange' => false]);
 
         // File ID 10004 — CONNECT 2 BIOTA
         $this->call([
@@ -239,7 +243,8 @@ class EmpodatSuspectResetAndReseedSeeder extends Seeder
             EmpodatSuspectConnect2BiotaXlsxStationsMappingFillSeeder::class,
         ]);
         $this->deleteSubstancesForFile(10004);
-        $this->call(EmpodatSuspectConnect2BiotaMainSeeder::class);
+        // See the note on 10003 above: sequence ids, not the fixed block.
+        $this->callWith(EmpodatSuspectConnect2BiotaMainSeeder::class, ['useFixedIdRange' => false]);
 
         // File ID 10005 — HELCOM PreEMPT SEDIMENTS
         $this->call([

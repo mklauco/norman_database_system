@@ -28,6 +28,13 @@ use Illuminate\Support\Facades\DB;
 class SuspectRowWriter
 {
     /**
+     * When set, ids come from this fixed range instead of the table's
+     * BIGSERIAL sequence — see {@see allocateFrom()} and
+     * {@see FixedRangeIdAllocator}.
+     */
+    private ?FixedRangeIdAllocator $fixedRange = null;
+
+    /**
      * Bound-parameter budget for a single multi-row INSERT.
      *
      * PostgreSQL hard-caps bound parameters at 65535 per statement. Rather
@@ -89,6 +96,20 @@ class SuspectRowWriter
      *
      * @throws \LogicException if `$mainRows` and `$metadataRows` differ in length
      */
+    /**
+     * Draw ids from `$allocator`'s fixed range instead of the sequence, for a
+     * re-import that must land back on the id block it previously occupied.
+     *
+     * Opt-in and per-instance: a writer that is never handed an allocator keeps
+     * using `nextval`, so every existing caller is unaffected. The allocator
+     * throws when the range is exhausted; callers must run inside a transaction
+     * so that abort leaves nothing behind.
+     */
+    public function allocateFrom(FixedRangeIdAllocator $allocator): void
+    {
+        $this->fixedRange = $allocator;
+    }
+
     public function write(array $mainRows, array $metadataRows, int $fileId): int
     {
         $count = count($mainRows);
@@ -143,6 +164,10 @@ class SuspectRowWriter
      */
     private function allocateIds(int $n): array
     {
+        if ($this->fixedRange !== null) {
+            return $this->fixedRange->allocate($n);
+        }
+
         $rows = DB::select(
             "SELECT nextval('empodat_suspect_main_id_seq') AS id FROM generate_series(1, ?)",
             [$n]

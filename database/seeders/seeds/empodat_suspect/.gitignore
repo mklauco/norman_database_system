@@ -1,2 +1,3 @@
+# Source spreadsheets/CSVs are rsynced to the server, never tracked in git.
 *
 !.gitignore
