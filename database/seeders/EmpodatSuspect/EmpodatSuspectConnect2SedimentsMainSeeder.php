@@ -56,7 +56,7 @@ class EmpodatSuspectConnect2SedimentsMainSeeder extends Seeder
         DB::statement('SET session_replication_role = replica;');
         DB::statement('SET synchronous_commit = off;');
 
-        $path = storage_path('app/public/empodat_suspect/OK_CONNECT 2_suspect screening results_ng g dry weight_1192 - SEDIMENTS.xlsx');
+        $path = storage_path('app/public/empodat_suspect/OK_CONNECT 2_suspect screening results_ng g dry weight_1192 - SEDIMENTS v2.xlsx');
 
         if (! file_exists($path)) {
             $this->command->error("Excel file not found: {$path}");
