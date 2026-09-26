@@ -83,29 +83,37 @@ Route::get('/test-public', function () {
 Route::prefix('backend')->middleware('auth')->group(function () {
     Route::get('overview', [DashboardMainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-    // System Settings (admin and super_admin only)
-    Route::prefix('system-settings')->middleware('role:super_admin|admin')->group(function () {
+    // System Settings (admin, super_admin and user_manager)
+    Route::prefix('system-settings')->middleware('role:super_admin|admin|user_manager')->group(function () {
         Route::get('/', [SystemSettingsController::class, 'index'])->name('backend.system-settings.index');
+        Route::get('maintenance', [SystemSettingsController::class, 'maintenance'])->middleware('role:super_admin')->name('backend.system-settings.maintenance');
     });
 
     Route::resource('users', UserController::class);
     Route::get('/user-data', [UserController::class, 'getUserData'])->middleware('auth');
 
-    Route::resource('projects', ProjectController::class);
+    Route::resource('projects', ProjectController::class)->middleware('role:super_admin|admin|project_manager');
 
-    Route::resource('templates', TemplateController::class);
+    // Template management. `templates.download` stays outside this group (below) so every
+    // logged-in user can still download a DCT template; `templates.specific.index` (the
+    // per-entity template list linked from every module header) is defined separately further
+    // down and is intentionally not role-gated here.
+    Route::resource('templates', TemplateController::class)->middleware('role:super_admin|admin');
     Route::get('templates/{template}/download', [TemplateController::class, 'download'])->name('templates.download');
 
-    Route::get('files/export-csv', [FileController::class, 'exportCsv'])->name('files.export.csv');
-    Route::get('files/export-markdown', [FileController::class, 'exportMarkdown'])->name('files.export.markdown');
-    Route::resource('files', FileController::class);
-    Route::get('/file-data', [FileController::class, 'getFileData'])->middleware('auth');
+    // File management. None of these are linked from outside the admin Files pages.
+    Route::middleware('role:super_admin|admin')->group(function () {
+        Route::get('files/export-csv', [FileController::class, 'exportCsv'])->name('files.export.csv');
+        Route::get('files/export-markdown', [FileController::class, 'exportMarkdown'])->name('files.export.markdown');
+        Route::resource('files', FileController::class);
+        Route::get('/file-data', [FileController::class, 'getFileData'])->middleware('auth');
+    });
     // Specific templates for a database entity code
 
     Route::get('export-downloads', [App\Http\Controllers\Backend\ExportDownloadController::class, 'index'])->name('export_downloads.index');
 
     Route::resource('general_route', GeneralController::class);
-    Route::resource('querylog', QueryLogController::class)->middleware('auth');
+    Route::resource('querylog', QueryLogController::class)->middleware(['auth', 'role:super_admin']);
 
     // User Login Retention routes
     Route::prefix('user-login-retention')->middleware('role:super_admin')->group(function () {
@@ -169,10 +177,15 @@ Route::prefix('backend')->middleware('auth')->group(function () {
 });
 
 Route::prefix('backend')->group(function () {
-    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
-    Route::post('files/{file}/rescan', [FileController::class, 'rescan'])->name('files.rescan');
-    // Explicit auth + role middleware: this prefix group carries only `web`,
-    // and the controller's own super_admin check should not be the single
+    // Explicit auth + role middleware on each route below: this prefix group carries only
+    // `web`, so nothing here can rely on a parent group for protection.
+    Route::get('files/{file}/download', [FileController::class, 'download'])
+        ->middleware(['auth', 'role:super_admin|admin'])
+        ->name('files.download');
+    Route::post('files/{file}/rescan', [FileController::class, 'rescan'])
+        ->middleware(['auth', 'role:super_admin|admin'])
+        ->name('files.rescan');
+    // The controller's own super_admin check should not be the single
     // thing standing between an anonymous POST and a queued production job.
     Route::post('files/{file}/refresh-prioritisation', [FileController::class, 'refreshPrioritisation'])
         ->middleware(['auth', 'role:super_admin'])
@@ -199,19 +212,21 @@ Route::middleware('auth')->group(function () {
 Route::prefix('factsheets')->group(function () {
     Route::get('index', [FactsheetController::class, 'index'])->name('factsheets.index');
     Route::get('home', [App\Http\Controllers\Factsheet\FactsheetHomeController::class, 'index'])->name('factsheets.home.index');
-    Route::get('countAll', [App\Http\Controllers\Factsheet\FactsheetHomeController::class, 'countAll'])->middleware('auth')->name('factsheets.countAll');
+    Route::get('countAll', [App\Http\Controllers\Factsheet\FactsheetHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('factsheets.countAll');
 
     Route::prefix('search')->group(function () {
         Route::get('filter/', [FactsheetController::class, 'filter'])->name('factsheets.search.filter');
         Route::get('search/', [FactsheetController::class, 'search'])->name('factsheets.search.search');
     });
 
-
     // Factsheet Statistics Routes
     Route::prefix('statistics')->middleware('auth')->group(function () {
-        Route::post('populate-all', [FactsheetStatisticsController::class, 'populateAll'])->name('factsheets.statistics.populate-all');
+        // Any authenticated user may generate statistics for a substance that doesn't have
+        // any yet, and view the raw JSON once it exists (resources/views/factsheet/index.blade.php).
         Route::post('generate-for-substance', [FactsheetStatisticsController::class, 'generateForSubstance'])->name('factsheets.statistics.generate-for-substance');
         Route::get('raw-json/{substance_id}', [FactsheetStatisticsController::class, 'showRawJson'])->name('factsheets.statistics.raw-json');
+        // Bulk populate is the super-admin-only dashboard operation button.
+        Route::post('populate-all', [FactsheetStatisticsController::class, 'populateAll'])->middleware('role:super_admin')->name('factsheets.statistics.populate-all');
     });
 });
 
@@ -285,12 +300,14 @@ Route::prefix('empodat')->group(function () {
     Route::resource('dctitems', DataCollectionTemplateFileController::class)->only(['index']);
     Route::resource('dctitems', DataCollectionTemplateFileController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
 
-    // generate unique search tables
-    Route::post('unique/search/country', [UniqueSearchController::class, 'countries'])->name('cod.unique.search.countries');
-    Route::post('unique/search/matrix', [UniqueSearchController::class, 'matrices'])->name('cod.unique.search.matrices');
+    // generate unique search tables (super-admin dashboard operation buttons)
+    Route::middleware(['auth', 'role:super_admin'])->group(function () {
+        Route::post('unique/search/country', [UniqueSearchController::class, 'countries'])->name('cod.unique.search.countries');
+        Route::post('unique/search/matrix', [UniqueSearchController::class, 'matrices'])->name('cod.unique.search.matrices');
 
-    Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
-    Route::post('unique/search/dbentity/lastupdate', [UniqueSearchController::class, 'updateDatabaseEntitiesLastUpdate'])->name('update.dbentities.lastupdate');
+        Route::post('unique/search/dbentity', [UniqueSearchController::class, 'updateDatabaseEntitiesCounts'])->name('update.dbentities.counts');
+        Route::post('unique/search/dbentity/lastupdate', [UniqueSearchController::class, 'updateDatabaseEntitiesLastUpdate'])->name('update.dbentities.lastupdate');
+    });
 
     Route::get('templates/entity/{code}', [EmpodatHomeController::class, 'specificIndex'])->name('empodat.templates');
 
@@ -334,7 +351,7 @@ Route::prefix('ecotox')->group(function () {
         Route::get('data', [LowestPNECController::class, 'getData'])->name('ecotox.lowestpnec.data');
         Route::get('search/', [LowestPNECController::class, 'search'])->name('ecotox.lowestpnec.search');
         Route::get('show/{sus_id}', [LowestPNECController::class, 'show'])->name('ecotox.lowestpnec.show');
-        Route::get('countAll', [LowestPNECController::class, 'countAll'])->middleware('auth')->name('ecotox.lowestpnec.countAll');
+        Route::get('countAll', [LowestPNECController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('ecotox.lowestpnec.countAll');
         Route::post('csv/export', [LowestPNECController::class, 'startDownloadJob'])->middleware('auth')->name('ecotox.lowestpnec.csv.export');
         Route::get('csv/download/{filename}', [LowestPNECController::class, 'downloadCsv'])->name('ecotox.lowestpnec.csv.download');
     });
@@ -347,17 +364,19 @@ Route::prefix('ecotox')->group(function () {
         Route::get('changes/{ecotoxId}/{columnName}', [EcotoxController::class, 'getChanges'])->name('ecotox.data.changes');
     });
 
-    Route::get('e/countAll', [EcotoxController::class, 'countAll'])->middleware('auth')->name('ecotox.ecotox.countAll');
-    Route::get('ee/countAll', [EcotoxHomeController::class, 'countAll'])->middleware('auth')->name('ecotox.countAll');
-    Route::get('unique/search/substances', [EcotoxHomeController::class, 'syncNewSubstances'])->name('ecotox.unique.search.substances');
-    Route::get('unique/search/substances/pnec3', [EcotoxHomeController::class, 'syncNewSubstancesPnec3'])->name('ecotox.unique.search.substances.pnec3');
+    Route::get('e/countAll', [EcotoxController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('ecotox.ecotox.countAll');
+    Route::get('ee/countAll', [EcotoxHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('ecotox.countAll');
+    Route::get('unique/search/substances', [EcotoxHomeController::class, 'syncNewSubstances'])->middleware(['auth', 'role:super_admin'])->name('ecotox.unique.search.substances');
+    Route::get('unique/search/substances/pnec3', [EcotoxHomeController::class, 'syncNewSubstancesPnec3'])->middleware(['auth', 'role:super_admin'])->name('ecotox.unique.search.substances.pnec3');
 
     // CRED Evaluation routes
     Route::prefix('credevaluation')->middleware(['auth', 'role:super_admin|admin|ecotox'])->group(function () {
         Route::resource('home', EcotoxCREDEvaluationHomeController::class)->only(['index'])->names(['index' => 'ecotox.credevaluation.home.index']);
         Route::get('search/filter/', [EcotoxCREDEvaluationController::class, 'filter'])->name('ecotox.credevaluation.search.filter');
         Route::get('search/search/', [EcotoxCREDEvaluationController::class, 'search'])->name('ecotox.credevaluation.search.search');
-        Route::get('countAll', [EcotoxCREDEvaluationController::class, 'countAll'])->middleware('auth')->name('ecotox.credevaluation.countAll');
+        // Narrower than the group's role:super_admin|admin|ecotox — this specific
+        // record-count refresh operation is super-admin only.
+        Route::get('countAll', [EcotoxCREDEvaluationController::class, 'countAll'])->middleware('role:super_admin')->name('ecotox.credevaluation.countAll');
 
         // CRED Evaluation Form Routes
         Route::get('form/{recordId}', [EcotoxCREDEvaluationController::class, 'showForm'])->name('ecotox.credevaluation.form');
@@ -384,7 +403,7 @@ Route::prefix('ecotox')->group(function () {
         Route::get('/', [PNECDerivationController::class, 'index'])->name('ecotox.pnecderivation.index');
         Route::get('search/filter/', [PNECDerivationController::class, 'filter'])->name('ecotox.pnecderivation.search.filter');
         Route::get('search/search/', [PNECDerivationController::class, 'search'])->name('ecotox.pnecderivation.search.search');
-        Route::get('countAll', [PNECDerivationController::class, 'countAll'])->middleware('auth')->name('ecotox.pnecderivation.countAll');
+        Route::get('countAll', [PNECDerivationController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('ecotox.pnecderivation.countAll');
         Route::post('save-quality-votes', [PNECDerivationController::class, 'saveQualityVotes'])->middleware('auth')->name('ecotox.pnecderivation.saveQualityVotes');
     });
 
@@ -394,7 +413,7 @@ Route::prefix('sle')->group(function () {
     Route::get('slehome', [SuspectListExchangeHomeController::class, 'index'])->name('slehome.index');
     // Route::resource('slehome', SuspectListExchangeHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
 
-    Route::get('slehome/countAll', [SuspectListExchangeHomeController::class, 'countAll'])->middleware('auth')->name('slehome.countAll');
+    Route::get('slehome/countAll', [SuspectListExchangeHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('slehome.countAll');
 
     // CRUD routes for SuspectListExchangeSource
     Route::get('sources', [SuspectListExchangeController::class, 'main'])->name('sle.sources.index')->withoutMiddleware(['auth', 'role:admin|super_admin|sle']);
@@ -413,8 +432,8 @@ Route::prefix('sle')->group(function () {
 Route::prefix('arbg')->group(function () {
     Route::resource('arbghome', ARBGHomeController::class)->only(['index']);
     Route::resource('arbghome', ARBGHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
-    Route::get('countAll', [ARBGHomeController::class, 'countAll'])->middleware('auth')->name('arbg.countAll');
-    Route::get('bacteria/countAll', [ARBGHomeController::class, 'countAllBacteria'])->middleware('auth')->name('arbg.bacteria.countAll');
+    Route::get('countAll', [ARBGHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('arbg.countAll');
+    Route::get('bacteria/countAll', [ARBGHomeController::class, 'countAllBacteria'])->middleware(['auth', 'role:super_admin'])->name('arbg.bacteria.countAll');
 
     Route::prefix('bacteria')->group(function () {
         Route::get('search/filter/', [BacteriaController::class, 'filter'])->name('arbg.bacteria.search.filter');
@@ -422,7 +441,7 @@ Route::prefix('arbg')->group(function () {
         Route::get('search/downloadjob/{query_log_id}', [BacteriaController::class, 'startDownloadJob'])->name('arbg.bacteria.search.download');
         Route::get('search/download/{filename}', [BacteriaController::class, 'downloadCsv'])
             ->name('arbg.bacteria.csv.download');
-        Route::get('countAll', [ARBGHomeController::class, 'countAllBacteria'])->middleware('auth')->name('arbg.bacteria.countAll');
+        Route::get('countAll', [ARBGHomeController::class, 'countAllBacteria'])->middleware(['auth', 'role:super_admin'])->name('arbg.bacteria.countAll');
 
         // Statistics routes
         Route::prefix('statistics')->group(function () {
@@ -442,7 +461,7 @@ Route::prefix('arbg')->group(function () {
         Route::get('search/downloadjob/{query_log_id}', [GeneController::class, 'startDownloadJob'])->name('arbg.gene.search.download');
         Route::get('search/download/{filename}', [GeneController::class, 'downloadCsv'])
             ->name('arbg.gene.csv.download');
-        Route::get('countAll', [ARBGHomeController::class, 'countAllGene'])->middleware('auth')->name('arbg.gene.countAll');
+        Route::get('countAll', [ARBGHomeController::class, 'countAllGene'])->middleware(['auth', 'role:super_admin'])->name('arbg.gene.countAll');
 
         // Statistics routes
         Route::prefix('statistics')->group(function () {
@@ -467,7 +486,7 @@ Route::prefix('indoor')->group(function () {
     Route::get('search/downloadjob/{query_log_id}', [IndoorController::class, 'startDownloadJob'])->name('indoor.search.download');
     Route::get('search/download/{filename}', [IndoorController::class, 'downloadCsv'])->name('indoor.csv.download');
 
-    Route::get('indoor/countAll', [IndoorHomeController::class, 'countAll'])->middleware('auth')->name('indoor.countAll');
+    Route::get('indoor/countAll', [IndoorHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('indoor.countAll');
 
     // Statistics routes
     Route::prefix('statistics')->group(function () {
@@ -501,7 +520,7 @@ Route::prefix('passive')->group(function () {
         'destroy' => 'passive.search.destroy',
     ]);
 
-    Route::get('passive/countAll', [PassiveHomeController::class, 'countAll'])->middleware('auth')->name('passive.countAll');
+    Route::get('passive/countAll', [PassiveHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('passive.countAll');
 
     // Statistics routes
     Route::prefix('statistics')->group(function () {
@@ -537,7 +556,7 @@ Route::prefix('bioassays')->group(function () {
         'destroy' => 'bioassay.search.destroy',
     ]);
 
-    Route::get('bioassay/countAll', [BioassayHomeController::class, 'countAll'])->middleware('auth')->name('bioassay.countAll');
+    Route::get('bioassay/countAll', [BioassayHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('bioassay.countAll');
 
     // Statistics routes
     Route::prefix('statistics')->group(function () {
@@ -634,7 +653,7 @@ Route::prefix('literature')->group(function () {
     ]);
 
     // Count all records
-    Route::get('literature/countAll', [LiteratureHomeController::class, 'countAll'])->middleware('auth')->name('literature.countAll');
+    Route::get('literature/countAll', [LiteratureHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('literature.countAll');
 
     // Statistics routes
     Route::prefix('statistics')->group(function () {
@@ -780,7 +799,7 @@ Route::prefix('empodat_suspect')->group(function () {
     ]);
 
     // Count all records
-    Route::get('empodat_suspect/countAll', [EmpodatSuspectHomeController::class, 'countAll'])->middleware('auth')->name('empodat_suspect.countAll');
+    Route::get('empodat_suspect/countAll', [EmpodatSuspectHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('empodat_suspect.countAll');
 
     // Statistics
     Route::prefix('statistics')->group(function () {
@@ -827,7 +846,7 @@ Route::prefix('prioritisation')->group(function () {
     Route::get('/monitoring-danube/download/csv', [MonitoringDanubeController::class, 'downloadCsv'])->middleware('auth')->name('prioritisation.monitoring-danube.csv');
     Route::get('/monitoring-scarce/download/csv', [MonitoringScarceController::class, 'downloadCsv'])->middleware('auth')->name('prioritisation.monitoring-scarce.csv');
 
-    Route::get('prioritisation/countAll', [PrioritisationHomeController::class, 'countAll'])->middleware('auth')->name('prioritisation.countAll');
+    Route::get('prioritisation/countAll', [PrioritisationHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('prioritisation.countAll');
 });
 
 Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
