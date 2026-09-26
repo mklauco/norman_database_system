@@ -21,7 +21,7 @@
 
           <!-- File Actions -->
           <div class="mb-6 flex justify-between items-center">
-            <h2 class="text-xl font-semibold text-gray-800">Files Management</h2>
+            <h2 class="text-xl font-semibold text-gray-800">Uploaded DCT Files</h2>
             <div class="flex space-x-3">
               @php
                 $exportParams = array_filter([

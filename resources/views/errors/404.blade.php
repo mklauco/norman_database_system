@@ -17,7 +17,7 @@
             <h1 class="text-xl font-semibold text-gray-800 mb-2">Error - 404</h1>
             <p class="text-gray-600 mb-4">Page not found</p>
             <p class="text-gray-600 mb-4">Please contact the administrator</p>
-            <a href="{{ route('home') }}" class="btn-submit inline-block px-4 py-2 text-white rounded hover:bg-slate-700 transition-colors">
+            <a href="{{ route('home') }}" class="inline-block px-4 py-2 bg-slate-500 hover:bg-slate-700 text-white font-bold rounded shadow transition-colors">
                 Go Home
             </a>
         </div>

@@ -1,6 +1,6 @@
 <x-app-layout>
   <x-slot name="header">
-    @include('backend.dashboard.header')
+    @include('backend.system-settings.header')
 </x-slot>
 
     <div class="py-12">
