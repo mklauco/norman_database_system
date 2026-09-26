@@ -1,51 +1,25 @@
-@if(isset($serverPayment) && $serverPayment)
-  <div class="space-y-4">
-    <!-- Payment Period and Status in same line -->
-    <div class="flex justify-between items-center">
-      <div>
-        <p class="text-sm text-gray-600">Current Period:</p>
-        <p class="font-medium">{{ $serverPayment->formatted_period }}</p>
-      </div>
-      <div class="text-right">
-        <p class="text-sm text-gray-600">Status:</p>
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-          @if($serverPayment->status === 'paid') bg-green-100 text-green-800
-          @elseif($serverPayment->status === 'pending') bg-yellow-100 text-yellow-800
-          @else bg-red-100 text-red-800
-          @endif">
-          {{ ucfirst(str_replace('_', ' ', $serverPayment->status)) }}
-        </span>
-      </div>
-    </div>
-    
-    <!-- Days Remaining Progress Bar -->
-    @if($serverPayment->status === 'paid' && $daysRemaining !== null)
-      <div>
-        <div class="flex flex-col gap-1 mb-1">
-          <div class="flex justify-between text-sm text-gray-600">
-            <span>Days Remaining</span>
-            <span class="font-medium">{{ $daysRemaining }} days</span>
-          </div>
-          <span class="text-xs text-gray-500">until {{ $serverPayment->period_end_date->format('Y-m-d') }}</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div class="h-2 rounded-full
-            @if($daysRemaining > 30) bg-green-500
-            @elseif($daysRemaining > 14) bg-yellow-500
-            @else bg-red-500
-            @endif"
-            style="width: {{ max(0, min(100, 100 - $progressPercentage)) }}%"></div>
-        </div>
-        @if($daysRemaining <= 14)
-          <p class="text-xs text-red-600 mt-1">⚠️ Payment renewal needed soon</p>
-        @endif
-      </div>
+@if ($serverPaymentStatus && $serverPaymentStatus['payment'])
+  @php
+    $payment = $serverPaymentStatus['payment'];
+    $daysRemaining = $serverPaymentStatus['days_remaining'];
+    $renewalDue = $serverPaymentStatus['renewal_due'];
+  @endphp
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 rounded-lg border shadow-sm {{ $renewalDue ? 'bg-amber-50 border-amber-400' : 'bg-lime-50 border-lime-400' }}">
+    <span class="font-semibold text-gray-800">
+      <i class="fas fa-server mr-2 {{ $renewalDue ? 'text-amber-600' : 'text-lime-700' }}"></i>
+      Server status
+      <x-role-lock :roles="\App\Services\ServerPaymentStatusService::VIEWER_ROLES" class="ml-1" />
+    </span>
+    <span class="text-sm text-gray-700">
+      Paid until <span class="font-medium text-gray-900">{{ $payment->period_end_date->format('Y-m-d') }}</span>
+    </span>
+    @if ($daysRemaining !== null)
+      <span class="text-sm {{ $renewalDue ? 'font-semibold text-amber-700' : 'text-gray-700' }}">
+        {{ number_format($daysRemaining, 0, '.', ' ') }} {{ $daysRemaining === 1 ? 'day' : 'days' }} left{{ $renewalDue ? ', renewal due soon' : '' }}
+      </span>
     @endif
-  
-    
-  </div>
-@else
-  <div class="text-center py-4">
-    <p class="text-gray-500 text-sm">No server payment data available</p>
+    <a href="{{ route('backend.server-payments.index') }}" class="link-lime-text text-sm sm:ml-auto">
+      Server Payments
+    </a>
   </div>
 @endif

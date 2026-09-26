@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Cache;
  */
 class ServerStatsService
 {
+    /**
+     * @var array<int, string>
+     */
+    public const VIEWER_ROLES = ['super_admin', 'server_payment_viewer'];
+
     private const CACHE_KEY = 'system.server_stats';
 
     private const CACHE_TTL_SECONDS = 60;
@@ -27,6 +33,11 @@ class ServerStatsService
      * platform this application runs on.
      */
     private const CLOCK_TICKS_PER_SECOND = 100;
+
+    public function canView(User $user): bool
+    {
+        return $user->hasAnyRole(self::VIEWER_ROLES);
+    }
 
     /**
      * Cached snapshot of the server statistics shown on the System Settings page.

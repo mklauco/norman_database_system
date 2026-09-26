@@ -5,8 +5,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Sentry\Laravel\Integration;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -31,6 +33,24 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         Integration::handles($exceptions);
+
+        // Expired session / CSRF token mismatch (HTTP 419): end the session the same way
+        // logout does, then send browser requests to the landing page with a notice.
+        $exceptions->renderable(function (HttpException $e, Request $request) {
+            if ($e->getStatusCode() !== 419 || ! $request->hasSession()) {
+                return null;
+            }
+
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            if ($request->expectsJson() || $request->hasHeader('X-Livewire')) {
+                return null;
+            }
+
+            return redirect()->route('home')->with('session_expired', true);
+        });
         $exceptions->renderable(function (NotFoundHttpException $e, Request $request) {
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Object not found'], 404);

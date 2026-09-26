@@ -1,3 +1,8 @@
+{{-- navSection is shared by the section sub-menu header the page includes (backend/dashboard/header, backend/system-settings/header) --}}
+@php
+    $isDashboardSection = view()->shared('navSection') === 'dashboard';
+    $isSystemSettingsSection = view()->shared('navSection') === 'system-settings';
+@endphp
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,13 +19,13 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     @auth
-                    <x-nav-link :href="route('dashboard')" :active="(request()->is('dashboard*') || request()->routeIs('dashboard'))">
+                    <x-nav-link :href="route('dashboard')" :active="$isDashboardSection">
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    @hasanyrole('super_admin|admin')
-                    <x-nav-link :href="route('backend.system-settings.index')" :active="request()->is('backend/system-settings*')"
-                        :class="request()->is('backend/system-settings*') ? 'bg-purple-50 border-purple-500 text-gray-900' : 'hover:bg-purple-50'">
+                    @hasanyrole('super_admin|admin|user_manager')
+                    <x-nav-link :href="route('backend.system-settings.index')" :active="$isSystemSettingsSection"
+                        :class="$isSystemSettingsSection ? 'bg-purple-50 border-purple-500 text-gray-900' : 'hover:bg-purple-50'">
                         {{ __('System Settings') }}
                     </x-nav-link>
                     @endhasanyrole
@@ -108,11 +113,11 @@
 <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
     @auth
     <div class="pt-2 pb-3 space-y-1">
-        <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+        <x-responsive-nav-link :href="route('dashboard')" :active="$isDashboardSection">
             {{ __('Dashboard') }}
         </x-responsive-nav-link>
-        @hasanyrole('super_admin|admin')
-        <x-responsive-nav-link :href="route('backend.system-settings.index')" :active="request()->is('backend/system-settings*')">
+        @hasanyrole('super_admin|admin|user_manager')
+        <x-responsive-nav-link :href="route('backend.system-settings.index')" :active="$isSystemSettingsSection">
             {{ __('System Settings') }}
         </x-responsive-nav-link>
         @endhasanyrole

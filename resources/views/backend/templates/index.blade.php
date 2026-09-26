@@ -9,7 +9,7 @@
         <div class="p-6 text-gray-900">
           <!-- Template Actions -->
           <div class="mb-6 flex justify-between items-center">
-            <h2 class="text-xl font-semibold text-gray-800">Templates</h2>
+            <h2 class="text-xl font-semibold text-gray-800">DCT Templates</h2>
             <a href="{{ route('templates.create') }}" class="btn-create">
               Add New Template
             </a>

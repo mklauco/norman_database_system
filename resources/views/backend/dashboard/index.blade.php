@@ -2,54 +2,16 @@
   <x-slot name="header">
     @include('backend.dashboard.header')
   </x-slot>
-  
+
   <div class="py-4">
-    <div class="w-full px-4 sm:px-6 lg:px-8">
-      @role(['admin', 'super_admin'])
-        <!-- 4-column layout for admin/super_admin with server status -->
-        <div class="grid lg:grid-cols-4 gap-6">
-          
-          <div class="">
-            <!-- FIRST COLUMN: Database Entities (All Users) -->
-            @include('backend.dashboard.partials.column_1')
-          </div>
-          
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      @include('backend.dashboard.partials.server_payment_status')
 
-          <div class="">
-            <!-- SECOND COLUMN: Templates & Messages (Admin/Super Admin) -->
-            @include('backend.dashboard.partials.column_2')
-          </div>
+      @if ($serverStats)
+        @include('backend.partials.server_statistics')
+      @endif
 
-          <div class="">
-            <!-- THIRD COLUMN: Admin Tools (Super Admin Only) -->
-            @include('backend.dashboard.partials.column_3')
-          </div>
-
-          <div class="">
-            <!-- FOURTH COLUMN: Server Status (Server Payment Roles Only) -->
-            @role(['super_admin', 'server_payment_admin', 'server_payment_viewer'])
-              @include('backend.dashboard.partials.column_4')
-            @endrole
-          </div>
-
-        </div>
-      @else
-        <!-- 2-column layout for regular users -->
-        <div class="grid lg:grid-cols-2 gap-6">
-          
-          <div class="">
-            <!-- FIRST COLUMN: Database Entities (All Users) -->
-            @include('backend.dashboard.partials.column_1')
-          </div>
-          
-
-          <div class="">
-            <!-- SECOND COLUMN: API Access & Templates for regular users -->
-            @include('backend.dashboard.partials.column_2')
-          </div>
-
-        </div>
-      @endrole
+      @include('backend.dashboard.partials.databases')
     </div>
   </div>
 </x-app-layout>
