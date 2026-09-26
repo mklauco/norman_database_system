@@ -9,7 +9,7 @@
   </x-nav-link-header>
   @hasanyrole('super_admin|admin')
   <x-nav-link-header :href="route('templates.index')" :active="request()->routeIs('templates.*')">
-    Templates
+    DCT Templates
   </x-nav-link-header>
   @endhasanyrole
   @hasanyrole('super_admin|admin')
