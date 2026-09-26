@@ -125,16 +125,14 @@ class PrioritisationCoverageColumnTest extends TestCase
         $response->assertDontSee('0.0 s');
     }
 
-    public function test_user_without_an_admin_role_does_not_see_the_coverage_column(): void
+    public function test_user_without_an_admin_role_cannot_open_the_files_page(): void
     {
         $this->suspectFile(10009);
         $this->build(10009, EmpodatSuspectPrioritisationBuild::STATUS_SUCCESS, 1053111);
 
         $response = $this->actingAs(User::factory()->create())->get($this->indexUrl());
 
-        $response->assertOk();
-        $response->assertDontSee('Prioritisation rows');
-        $response->assertDontSee('1 053 111');
+        $response->assertForbidden();
     }
 
     public function test_coverage_column_is_absent_for_other_database_entities(): void
