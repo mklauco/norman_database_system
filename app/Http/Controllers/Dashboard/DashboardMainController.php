@@ -1,276 +1,96 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Backend\File;
-use App\Models\Backend\Project;
-use App\Models\Backend\ServerPayment;
-use App\Models\Backend\Template;
 use App\Models\DatabaseEntity;
 use App\Models\User;
-use Carbon\Carbon;
+use App\Services\ServerPaymentStatusService;
+use App\Services\ServerStatsService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class DashboardMainController extends Controller
 {
     /**
      * Display the dashboard index.
-     *
-     * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(ServerPaymentStatusService $serverPaymentStatusService, ServerStatsService $serverStatsService): View
     {
-        $user = User::with('tokens')->find(Auth::id());
+        /** @var User $user */
+        $user = Auth::user();
 
-        // Get database entities for dashboard display with query log counts
-        $databaseEntities = DatabaseEntity::where('show_in_dashboard', true)->where('dashboard_route_name', 'not like', '%https%')->select('database_entities.*', DB::raw('COUNT(query_logs.id) as query_log_count'))->leftJoin('query_logs', 'database_entities.code', '=', 'query_logs.database_key')->groupBy('database_entities.id', 'database_entities.name', 'database_entities.description', 'database_entities.image_path', 'database_entities.code', 'database_entities.dashboard_route_name', 'database_entities.last_update', 'database_entities.number_of_records', 'database_entities.parent_id', 'database_entities.show_in_dashboard', 'database_entities.has_templates', 'database_entities.created_at', 'database_entities.updated_at')->orderBy('name')->get();
+        $canViewSearches = $user->hasAnyRole(['admin', 'super_admin']);
 
-        // Get database entities that have templates enabled with their template counts
-        $entitiesWithTemplateCounts = DatabaseEntity::where('has_templates', true)
-            ->where('show_in_dashboard', true)
-            ->withCount([
-                'templates as active_templates_count' => function ($query) {
-                    $query->where('is_active', true);
-                },
-                'templates as inactive_templates_count' => function ($query) {
-                    $query->where('is_active', false);
-                },
-                'templates as total_templates_count',
-            ])
-            ->orderBy('name')
-            ->get();
+        $databaseEntities = $this->getDashboardDatabaseEntities($user, $canViewSearches);
 
-        // Add template counts to main database entities for backward compatibility
-        $templateCounts = $entitiesWithTemplateCounts->pluck('total_templates_count', 'id');
-        $databaseEntities->each(function ($entity) use ($templateCounts) {
-            $entity->template_count = $templateCounts[$entity->id] ?? 0;
-        });
+        $serverPaymentStatus = $serverPaymentStatusService->canView($user)
+            ? $serverPaymentStatusService->status()
+            : null;
 
-        // Get database entities with active templates
-        $entitiesWithTemplates = DatabaseEntity::where('show_in_dashboard', true)
-            ->where('dashboard_route_name', 'not like', '%https%')
-            ->whereHas('templates', function ($query) {
-                $query->where('is_active', true);
-            })
-            ->orderBy('name')
-            ->take(6)
-            ->get();
-
-        // System statistics
-        $statistics = [
-            'total_templates' => Template::count(),
-            'total_files' => File::count(),
-            'total_projects' => Project::count(),
-            'user_files' => File::where('uploaded_by', Auth::id())->count(),
-            'recent_activity' => $this->getRecentActivity(),
-        ];
-
-        // Quick access links
-        $quickAccessLinks = [
-            [
-                'name' => 'Templates',
-                'route' => 'templates.index',
-                'icon' => 'fas fa-file-alt',
-                'color' => 'blue',
-            ],
-            [
-                'name' => 'Files',
-                'route' => 'files.index',
-                'icon' => 'fas fa-upload',
-                'color' => 'green',
-            ],
-            [
-                'name' => 'Projects',
-                'route' => 'projects.index',
-                'icon' => 'fas fa-project-diagram',
-                'color' => 'purple',
-            ],
-            [
-                'name' => 'Substances',
-                'route' => 'substances.search.filter',
-                'icon' => 'fas fa-flask',
-                'color' => 'red',
-            ],
-        ];
-
-        // Admin process groups - ordered by database_entity id
-        $adminProcessGroups = [
-            [
-                'name' => 'Empodat',
-                'processes' => [
-                    [
-                        'name' => 'Generate Countries',
-                        'route' => 'cod.unique.search.countries',
-                        'method' => 'POST',
-                    ],
-                    [
-                        'name' => 'Generate Ecosystems',
-                        'route' => 'cod.unique.search.matrices',
-                        'method' => 'POST',
-                    ],
-                    [
-                        'name' => 'Update DB Counts',
-                        'route' => 'update.dbentities.counts',
-                        'method' => 'POST',
-                    ],
-                ],
-            ],
-            [
-                // Ordered by database_entity.id: 3=ecotox, 4=sle, 5=arbg, 8=indoor, 9=passive, 11=prioritisation, 12=bioassay, 17=literature, 18=empodat_suspect
-                'name' => 'Database Counts',
-                'processes' => [
-                    [
-                        'name' => 'Ecotox',
-                        'route' => 'ecotox.ecotox.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Entire Ecotox DB',
-                        'route' => 'ecotox.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Lowest PNEC',
-                        'route' => 'ecotox.lowestpnec.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'SLE',
-                        'route' => 'slehome.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'ARBG',
-                        'route' => 'arbg.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Indoor',
-                        'route' => 'indoor.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Passive',
-                        'route' => 'passive.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Prioritisation',
-                        'route' => 'prioritisation.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Bioassay',
-                        'route' => 'bioassay.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Literature',
-                        'route' => 'literature.countAll',
-                        'method' => 'GET',
-                    ],
-                    [
-                        'name' => 'Empodat Suspect',
-                        'route' => 'empodat_suspect.countAll',
-                        'method' => 'GET',
-                    ],
-                ],
-            ],
-        ];
-
-        // Get server payment data for server payment roles
-        $serverPayment = null;
-        $daysRemaining = null;
-        $progressPercentage = 0;
-
-        if ($user->hasAnyRole(['super_admin', 'server_payment_admin', 'server_payment_viewer'])) {
-            $serverPayment = ServerPayment::where('status', 'paid')
-                ->orderBy('period_end_date', 'desc')
-                ->first();
-
-            if ($serverPayment) {
-                $today = Carbon::today();
-                $endDate = Carbon::parse($serverPayment->period_end_date);
-
-                if ($endDate->isFuture()) {
-                    $daysRemaining = $today->diffInDays($endDate, false);
-                    $totalDays = Carbon::parse($serverPayment->period_start_date)->diffInDays($endDate);
-                    $daysPassed = $totalDays - $daysRemaining;
-                    $progressPercentage = $totalDays > 0 ? ($daysPassed / $totalDays) * 100 : 0;
-                } else {
-                    $daysRemaining = 0;
-                    $progressPercentage = 100;
-                }
-            }
-        }
+        $serverStats = $serverStatsService->canView($user)
+            ? $serverStatsService->stats()
+            : null;
 
         return view('backend.dashboard.index', [
             'user' => $user,
             'databaseEntities' => $databaseEntities,
-            'entitiesWithTemplates' => $entitiesWithTemplates,
-            'entitiesWithTemplateCounts' => $entitiesWithTemplateCounts,
-            'statistics' => $statistics,
-            'quickAccessLinks' => $quickAccessLinks,
-            'adminProcessGroups' => $adminProcessGroups,
-            'currentDate' => now(),
-            'serverPayment' => $serverPayment,
-            'daysRemaining' => $daysRemaining,
-            'progressPercentage' => $progressPercentage,
+            'canViewSearches' => $canViewSearches,
+            'serverPaymentStatus' => $serverPaymentStatus,
+            'serverStats' => $serverStats,
         ]);
     }
 
     /**
-     * Get recent activity for the dashboard.
+     * Database entities shown on the dashboard, filtered to the ones the given
+     * user may access. Mirrors the access rule in
+     * DatabaseDirectoryController::canUserAccessModule() so the Main panel and
+     * the public database directory agree on visibility.
      *
-     * @return array
+     * @return Collection<int, DatabaseEntity>
      */
-    private function getRecentActivity()
+    private function getDashboardDatabaseEntities(User $user, bool $withSearchCounts): Collection
     {
-        // Recent uploads - files uploaded in the last 30 days
-        $recentUploads = File::with('uploader')
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function ($file) {
-                return [
-                    'type' => 'file_upload',
-                    'title' => $file->name ?? $file->original_name,
-                    'user' => $file->uploader->name ?? 'Unknown',
-                    'date' => $file->created_at,
-                    'url' => route('files.show', $file->id),
-                ];
-            });
+        $query = DatabaseEntity::query()
+            ->where('show_in_dashboard', true)
+            ->where('dashboard_route_name', 'not like', '%https%');
 
-        // Recent templates - templates created in the last 30 days
-        $recentTemplates = Template::with(['creator', 'databaseEntity'])
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function ($template) {
-                return [
-                    'type' => 'template_create',
-                    'title' => $template->name,
-                    'entity' => $template->databaseEntity->name ?? 'Unknown',
-                    'user' => $template->creator->name ?? 'Unknown',
-                    'date' => $template->created_at,
-                    'url' => route('templates.show', $template->id),
-                ];
-            });
-
-        // Combine all activities
-        $allActivities = $recentUploads->toArray();
-        foreach ($recentTemplates->toArray() as $template) {
-            $allActivities[] = $template;
+        if ($withSearchCounts) {
+            // GROUP BY the primary key is enough in PostgreSQL: every other
+            // column of database_entities is functionally dependent on it.
+            $query
+                ->leftJoin('query_logs', 'database_entities.code', '=', 'query_logs.database_key')
+                ->select('database_entities.*')
+                ->selectRaw('COUNT(query_logs.id) as query_log_count')
+                ->groupBy('database_entities.id');
         }
 
-        // Sort the combined array by date
-        usort($allActivities, function ($a, $b) {
-            return strtotime($b['date']) - strtotime($a['date']);
-        });
+        return $query
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (DatabaseEntity $entity): bool => $this->userCanAccessDatabaseEntity($user, $entity))
+            ->values();
+    }
 
-        // Take only the 5 most recent activities
-        return array_slice($allActivities, 0, 5);
+    /**
+     * Access rules:
+     * 1. Public database entities are visible to everyone.
+     * 2. Private entities are visible to admin/super_admin, and to users
+     *    holding the role matching the entity's code.
+     */
+    private function userCanAccessDatabaseEntity(User $user, DatabaseEntity $entity): bool
+    {
+        if ($entity->is_public) {
+            return true;
+        }
+
+        if ($user->hasRole('admin') || $user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $user->hasRole($entity->code);
     }
 }

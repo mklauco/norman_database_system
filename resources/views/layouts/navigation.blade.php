@@ -23,7 +23,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    @hasanyrole('super_admin|admin')
+                    @hasanyrole('super_admin|admin|user_manager')
                     <x-nav-link :href="route('backend.system-settings.index')" :active="$isSystemSettingsSection"
                         :class="$isSystemSettingsSection ? 'bg-purple-50 border-purple-500 text-gray-900' : 'hover:bg-purple-50'">
                         {{ __('System Settings') }}
@@ -116,7 +116,7 @@
         <x-responsive-nav-link :href="route('dashboard')" :active="$isDashboardSection">
             {{ __('Dashboard') }}
         </x-responsive-nav-link>
-        @hasanyrole('super_admin|admin')
+        @hasanyrole('super_admin|admin|user_manager')
         <x-responsive-nav-link :href="route('backend.system-settings.index')" :active="$isSystemSettingsSection">
             {{ __('System Settings') }}
         </x-responsive-nav-link>
