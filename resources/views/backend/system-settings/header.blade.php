@@ -1,3 +1,4 @@
+@php(view()->share('navSection', 'system-settings'))
 <div class="px-4 sm:px-6 lg:px-8">
   <span class="mr-12 font-bold text-purple-700">
     System Settings
