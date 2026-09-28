@@ -17,9 +17,12 @@ class UserSearch extends Component
 
     public string $fieldName = 'uploaded_by';
 
-    public function mount(?int $selectedUserId = null, string $fieldName = 'uploaded_by'): void
+    public int $minimumSearchLength = 2;
+
+    public function mount(?int $selectedUserId = null, string $fieldName = 'uploaded_by', int $minimumSearchLength = 2): void
     {
         $this->fieldName = $fieldName;
+        $this->minimumSearchLength = $minimumSearchLength;
 
         if ($selectedUserId) {
             $this->selectedUserId = $selectedUserId;
@@ -37,12 +40,18 @@ class UserSearch extends Component
     public function render()
     {
         $results = collect();
+        $search = trim($this->search);
+        $isUserId = ctype_digit($search);
 
-        if (strlen($this->search) >= 2) {
-            $results = User::where(function ($query) {
-                $query->where('last_name', 'ilike', '%'.$this->search.'%')
-                    ->orWhere('first_name', 'ilike', '%'.$this->search.'%')
-                    ->orWhere('email', 'ilike', '%'.$this->search.'%');
+        if ($isUserId || mb_strlen($search) >= $this->minimumSearchLength) {
+            $results = User::where(function ($query) use ($search, $isUserId): void {
+                $query->where('last_name', 'ilike', '%'.$search.'%')
+                    ->orWhere('first_name', 'ilike', '%'.$search.'%')
+                    ->orWhere('email', 'ilike', '%'.$search.'%');
+
+                if ($isUserId) {
+                    $query->orWhere('id', (int) $search);
+                }
             })
                 ->orderBy('last_name')
                 ->orderBy('first_name')
@@ -52,6 +61,7 @@ class UserSearch extends Component
 
         return view('livewire.backend.user-search', [
             'results' => $results,
+            'showResults' => $isUserId || mb_strlen($search) >= $this->minimumSearchLength,
         ]);
     }
 

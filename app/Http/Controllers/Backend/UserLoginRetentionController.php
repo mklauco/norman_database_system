@@ -4,30 +4,15 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Backend\UserLoginRetention;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class UserLoginRetentionController extends Controller
 {
     public function filter(Request $request)
     {
-        $users = User::orderBy('last_name')->orderBy('first_name')->get();
-
-        // Debug: Log the users data
-        Log::info('UserLoginRetention filter users:', [
-            'users_count' => $users->count(),
-            'users_data' => $users->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->last_name.', '.$user->first_name,
-                    'first_name' => $user->first_name,
-                    'last_name' => $user->last_name,
-                ];
-            })->toArray(),
-        ]);
-
-        return view('backend.user-login-retention.filter', compact('users'));
+        return view('backend.user-login-retention.filter');
     }
 
     public function search(Request $request)
@@ -47,12 +32,14 @@ class UserLoginRetentionController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        // Filter by date range - set defaults if not provided
-        $dateFrom = $request->filled('date_from') ? $request->date_from : now()->subMonth()->format('Y-m-d');
-        $dateTo = $request->filled('date_to') ? $request->date_to : now()->format('Y-m-d');
+        // Filter by date range - set defaults if not provided.
+        // The dates are Bratislava calendar days, converted to the stored (app) timezone.
+        $timezone = UserLoginRetention::DISPLAY_TIMEZONE;
+        $dateFrom = $request->filled('date_from') ? $request->date_from : now($timezone)->subMonth()->format('Y-m-d');
+        $dateTo = $request->filled('date_to') ? $request->date_to : now($timezone)->format('Y-m-d');
 
-        $query->whereDate('login_datetime', '>=', $dateFrom);
-        $query->whereDate('login_datetime', '<=', $dateTo);
+        $query->where('login_datetime', '>=', Carbon::parse($dateFrom, $timezone)->startOfDay()->setTimezone(config('app.timezone')));
+        $query->where('login_datetime', '<=', Carbon::parse($dateTo, $timezone)->endOfDay()->setTimezone(config('app.timezone')));
 
         // Order by login datetime (newest first)
         $query->orderBy('login_datetime', 'desc');
@@ -64,8 +51,10 @@ class UserLoginRetentionController extends Controller
             'filters' => $request->all(),
         ]);
 
-        $results = $query->cursorPaginate(100);
+        $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100], true) ? $request->integer('per_page') : 25;
 
-        return view('backend.user-login-retention.search', compact('results'));
+        $results = $query->paginate($perPage);
+
+        return view('backend.user-login-retention.search', compact('results', 'perPage'));
     }
 }
