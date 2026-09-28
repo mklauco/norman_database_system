@@ -15,14 +15,12 @@
                                 <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
                                     User
                                 </label>
-                                <select name="user_id" id="user_id" class="form-select">
-                                    <option value="">All Users</option>
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
-                                            {{ $user->last_name }}, {{ $user->first_name }} (ID: {{ $user->id }})
-                                        </option>
-                                    @endforeach
-                                </select>
+                                @livewire('backend.user-search', [
+                                    'selectedUserId' => request()->integer('user_id') ?: null,
+                                    'fieldName' => 'user_id',
+                                    'minimumSearchLength' => 3,
+                                ])
+                                <p class="mt-1 text-xs text-gray-500">Leave empty for all users.</p>
                             </div>
 
                             <!-- Date From -->

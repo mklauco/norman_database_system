@@ -10,6 +10,8 @@ class UserLoginRetention extends Model
 {
     use HasFactory;
 
+    public const DISPLAY_TIMEZONE = 'Europe/Bratislava';
+
     protected $table = 'user_login_retentions';
 
     protected $fillable = [
@@ -31,6 +33,6 @@ class UserLoginRetention extends Model
 
     public function getFormattedLoginDateAttribute(): string
     {
-        return $this->login_datetime->setTimezone('Europe/Bratislava')->format('Y-m-d H:i:s');
+        return $this->login_datetime->setTimezone(self::DISPLAY_TIMEZONE)->format('Y-m-d H:i:s');
     }
 }
