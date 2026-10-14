@@ -868,18 +868,9 @@ class SubstanceController extends Controller
                 throw new \Exception("Unable to open file for writing: {$path}");
             }
 
-            // Write CSV headers
-            fputcsv($handle, [
-                'NORMAN SusDat ID',
-                'Name',
-                'CAS_RN',
-                'StdInChIKey',
-                'DTXSID',
-                'PubChem_CID',
-                'Molecular Formula',
-                'SMILES',
-                'Monoisotopic Mass',
-            ]);
+            // Write CSV headers (same names and order as the legacy SusDat export)
+            $exportColumns = $this->susdatExportColumns();
+            fputcsv($handle, array_keys($exportColumns));
 
             // Parse query log content
             $content = json_decode($queryLog->content, true);
@@ -948,17 +939,27 @@ class SubstanceController extends Controller
             $pdo = DB::connection()->getPdo();
             $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, true);
 
+            $selectList = implode(",\n                        ", array_values($exportColumns));
+
             $sql = "SELECT
-                        code,
-                        name,
-                        cas_number,
-                        stdinchikey,
-                        dtxid,
-                        pubchem_cid,
-                        molecular_formula,
-                        smiles,
-                        mass_iso
+                        {$selectList}
                     FROM susdat_substances
+                    LEFT JOIN (
+                        SELECT source_substance.substance_id, string_agg(sources.code, '; ' ORDER BY sources.code) AS source_codes
+                        FROM susdat_source_substance AS source_substance
+                        JOIN suspect_list_exchange_sources AS sources ON sources.id = source_substance.source_id
+                        GROUP BY source_substance.substance_id
+                    ) AS source_list ON source_list.substance_id = susdat_substances.id
+                    LEFT JOIN (
+                        SELECT DISTINCT ON (usepa.substance_id)
+                            usepa.substance_id,
+                            usepa.\"usepa_Koc_min_experimental\" AS koc_min_experimental,
+                            usepa.\"usepa_Koc_max_experimental\" AS koc_max_experimental,
+                            usepa.\"usepa_Koc_min_predicted\" AS koc_min_predicted,
+                            usepa.\"usepa_Koc_max_predicted\" AS koc_max_predicted
+                        FROM susdat_usepa AS usepa
+                        ORDER BY usepa.substance_id, usepa.id
+                    ) AS koc ON koc.substance_id = susdat_substances.id
                     WHERE {$whereClause}
                     ORDER BY {$orderColumn} {$orderDirection}";
 
@@ -966,19 +967,16 @@ class SubstanceController extends Controller
             $stmt->execute();
 
             $totalExported = 0;
+            $codeIndex = array_search('Norman_SusDat_ID', array_keys($exportColumns), true);
+            $monoisoMassIndex = array_search('Monoiso_Mass', array_keys($exportColumns), true);
+            $averageMassIndex = array_search('average_mass', array_keys($exportColumns), true);
 
-            while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-                fputcsv($handle, [
-                    'NS'.$row['code'],
-                    $row['name'],
-                    $row['cas_number'],
-                    $row['stdinchikey'],
-                    $row['dtxid'],
-                    $row['pubchem_cid'],
-                    $row['molecular_formula'],
-                    $row['smiles'],
-                    $row['mass_iso'] ? number_format((float) $row['mass_iso'], 4, '.', '') : '',
-                ]);
+            while ($row = $stmt->fetch(\PDO::FETCH_NUM)) {
+                $row[$codeIndex] = 'NS'.$row[$codeIndex];
+                $row[$monoisoMassIndex] = $row[$monoisoMassIndex] !== null ? number_format((float) $row[$monoisoMassIndex], 6, '.', '') : '';
+                $row[$averageMassIndex] = $row[$averageMassIndex] !== null ? rtrim(rtrim((string) $row[$averageMassIndex], '0'), '.') : '';
+
+                fputcsv($handle, $row);
                 $totalExported++;
             }
 
@@ -1069,6 +1067,103 @@ class SubstanceController extends Controller
         return response()->download($path, $filename, [
             'Content-Type' => 'text/csv',
         ]);
+    }
+
+    /**
+     * Columns of the SusDat CSV export: legacy export header => SQL expression.
+     *
+     * Names and order follow the legacy SusDat export; Validation_Level is left out
+     * because it was never imported. Values kept in the JSON metadata columns are read
+     * under the keys the legacy import stored them with.
+     *
+     * @return array<string, string>
+     */
+    private function susdatExportColumns(): array
+    {
+        $json = fn (string $column, string $key): string => "{$column}->>'".str_replace("'", "''", $key)."'";
+
+        $general = [
+            'M+H+' => '[M+H]+',
+            'M-H-' => '[M-H]-',
+            'Pred_RTI_Positive_ESI' => 'Pred_RTI_Positive_ESI',
+            'Uncertainty_RTI_pos' => 'Uncertainty_RTI_pos',
+            'Pred_RTI_Negative_ESI' => 'Pred_RTI_Negative_ESI',
+            'Uncertainty_RTI_neg' => 'Uncertainty_RTI_neg',
+            'Tetrahymena_pyriformis_toxicity' => 'Tetrahymena_pyriformis_toxicity',
+            'IGC50_48_hr_ug/L' => 'IGC50_48_hr_ug/L',
+            'Uncertainty_Tetrahymena_pyriformis_toxicity' => 'Uncertainty_Tetrahymena_pyriformis_toxicity',
+            'Daphnia_toxicity' => 'Daphnia_toxicity',
+            'LC50_48_hr_ug/L' => 'LC50_48_hr_ug/L',
+            'Uncertainty_Daphnia_toxicity' => 'Uncertainty_Daphnia_toxicity',
+            'Algae_toxicity' => 'Algae_toxicity',
+            'EC50_72_hr_ug/L' => 'EC50_72_hr_ug/L',
+            'Uncertainty_Algae_toxicity' => 'Uncertainty_Algae_toxicity',
+            'Pimephales_promelas_toxicity' => 'Pimephales_promelas_toxicity',
+            'LC50_96_hr_ug/L' => 'LC50_96_hr_ug/L',
+            'Uncertainty_Pimephales_promelas_toxicity' => 'Uncertainty_Pimephales_promelas_toxicity',
+            'logKow_EPISuite' => 'logKow_EPISuite',
+            'Exp_logKow_EPISuite' => 'Exp_logKow_EPISuite',
+            'alogp_ChemSpider' => 'alogp_ChemSpider',
+            'xlogp_ChemSpider' => 'xlogp_ChemSpider',
+            'Species' => 'Species',
+            'Uncertainty' => 'Uncertainty',
+            'ExposureScore_Water_KEMI' => 'ExposureScore_Water_KEMI',
+            'HazScore_EcoChronic_KEMI' => 'HazScore_EcoChronic_KEMI',
+            'ValidationLevel_KEMI' => 'ValidationLevel_KEMI',
+            'Prob. of GC' => 'Prob_of_GC',
+            'Prob. RPLC' => 'Prob_RPLC',
+            'Pred. Chromatography' => 'Pred_Chromatography',
+            'Prob. of both Ionization Source' => 'Prob_of_both_Ionization_Source',
+            'Prob. EI' => 'Prob_EI',
+            'Prob. ESI' => 'Prob_ESI',
+            'Pred. Ionization source' => 'Pred_Ionization_source',
+            'Prob. both ESI mode' => 'Prob_both_ESI_mode',
+            'Prob. +ESI' => 'Prob_plusESI',
+            'Prob. -ESI' => 'Prob_minusESI',
+            'Pred. ESI mode' => 'Pred_ESI_mode',
+            'Preferable Platform by decision Tree' => 'Preferable_Platform_by_decision_Tree',
+        ];
+
+        $columns = [
+            'Norman_SusDat_ID' => 'code',
+            'Name' => 'name',
+            'Name_Dashboard' => 'name_dashboard',
+            'Name_ChemSpider' => 'name_chemspider',
+            'Name_IUPAC' => 'name_iupac',
+            'Synonyms_ChemSpider' => $json('metadata_synonyms', 'Synonyms ChemSpider'),
+            'Reliability_of_Synonyms_ChemSpider' => $json('metadata_synonyms', 'Reliability of Synonyms ChemSpider'),
+            'CAS_RN' => 'cas_number',
+            'CAS_RN_Dashboard' => $json('metadata_cas', 'CAS_RN Dashboard'),
+            'CAS_RN_PubChem' => $json('metadata_cas', 'CAS_RN PubChem'),
+            'CAS_RN_Cactus' => $json('metadata_cas', 'CAS_RN Cactus'),
+            'CAS_RN_ChemSpider' => $json('metadata_cas', 'CAS_RN ChemSpider'),
+            'Reliability_of_CAS_ChemSpider' => $json('metadata_cas', 'Reliability of CAS_ChemSpider'),
+            'SMILES' => 'smiles',
+            'SMILES_Dashboard' => 'smiles_dashboard',
+            'StdInChI' => 'stdinchi',
+            'StdInChIKey' => 'stdinchikey',
+            'MS_Ready_SMILES' => $json('metadata_ms_ready', 'MS_Ready_SMILES'),
+            'MS_Ready_StdInChI' => $json('metadata_ms_ready', 'MS_Ready_StdInChI'),
+            'MS_Ready_StdInChIKey' => $json('metadata_ms_ready', 'MS_Ready_StdInChIKey'),
+            'Source' => 'source_list.source_codes',
+            'PubChem_CID' => 'pubchem_cid',
+            'ChemSpiderID' => 'chemspider_id',
+            'DTXSID' => 'dtxid',
+            'Molecular_Formula' => 'molecular_formula',
+            'Monoiso_Mass' => 'mass_iso',
+            'average_mass' => 'average_mass',
+        ];
+
+        foreach ($general as $header => $key) {
+            $columns[$header] = $json('metadata_general', $key);
+        }
+
+        return $columns + [
+            'Koc_min_experimental (L/kg)' => 'koc.koc_min_experimental',
+            'Koc_max_experimental (L/kg)' => 'koc.koc_max_experimental',
+            'Koc_min_predicted (L/kg)' => 'koc.koc_min_predicted',
+            'Koc_max_predicted (L/kg)' => 'koc.koc_max_predicted',
+        ];
     }
 
     /**
