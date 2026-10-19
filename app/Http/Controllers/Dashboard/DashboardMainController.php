@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\User;
+use App\Services\BackupStatusService;
 use App\Services\ServerPaymentStatusService;
 use App\Services\ServerStatsService;
 use Illuminate\Support\Collection;
@@ -18,8 +19,11 @@ class DashboardMainController extends Controller
     /**
      * Display the dashboard index.
      */
-    public function index(ServerPaymentStatusService $serverPaymentStatusService, ServerStatsService $serverStatsService): View
-    {
+    public function index(
+        ServerPaymentStatusService $serverPaymentStatusService,
+        ServerStatsService $serverStatsService,
+        BackupStatusService $backupStatusService,
+    ): View {
         /** @var User $user */
         $user = Auth::user();
 
@@ -35,12 +39,17 @@ class DashboardMainController extends Controller
             ? $serverStatsService->stats()
             : null;
 
+        $backupStatus = $backupStatusService->canView($user)
+            ? $backupStatusService->status()
+            : null;
+
         return view('backend.dashboard.index', [
             'user' => $user,
             'databaseEntities' => $databaseEntities,
             'canViewSearches' => $canViewSearches,
             'serverPaymentStatus' => $serverPaymentStatus,
             'serverStats' => $serverStats,
+            'backupStatus' => $backupStatus,
         ]);
     }
 
