@@ -39,4 +39,9 @@ return [
         'tracking_id' => env('GOOGLE_ANALYTICS_ID'),
     ],
 
+    'backup_status' => [
+        'url' => env('BACKUP_STATUS_URL'),
+        'slug' => env('BACKUP_STATUS_SLUG'),
+    ],
+
 ];
