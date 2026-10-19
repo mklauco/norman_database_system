@@ -1,0 +1,23 @@
+{
+  "config": {
+    "slug": "nds-backups",
+    "title": "NDS backups"
+  },
+  "incident": null,
+  "publicGroupList": [
+    {
+      "id": 1,
+      "name": "Backups",
+      "weight": 1,
+      "monitorList": [
+        {
+          "id": 1,
+          "name": "NDS2.0 nightly backup",
+          "sendUrl": 0,
+          "type": "push"
+        }
+      ]
+    }
+  ],
+  "maintenanceList": []
+}
