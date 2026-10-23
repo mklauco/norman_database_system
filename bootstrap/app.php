@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
+        $middleware->authenticateSessions();
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureAuthenticatedUserIsVerified::class);
