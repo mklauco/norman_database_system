@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    public const INACTIVE_ACCOUNT_MESSAGE = 'This account has been deactivated. Please contact the NORMAN Database System administrators.';
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -41,11 +44,23 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $accountIsInactive = false;
+
+        $authenticated = Auth::attemptWhen(
+            $this->only('email', 'password'),
+            function (User $user) use (&$accountIsInactive): bool {
+                $accountIsInactive = ! $user->isActive();
+
+                return ! $accountIsInactive;
+            },
+            $this->boolean('remember'),
+        );
+
+        if (! $authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => $accountIsInactive ? self::INACTIVE_ACCOUNT_MESSAGE : trans('auth.failed'),
             ]);
         }
 

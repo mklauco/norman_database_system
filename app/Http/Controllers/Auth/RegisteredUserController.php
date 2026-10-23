@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Backend\UserLoginRetention;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -21,6 +20,8 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
+        session()->put(RegisterRequest::FORM_RENDERED_AT_SESSION_KEY, now()->timestamp);
+
         return view('auth.register');
     }
 
@@ -29,15 +30,8 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
-        $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
         $user = new User([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -49,6 +43,8 @@ class RegisteredUserController extends Controller
         $user->save();
 
         $user->assignRole('user');
+
+        $request->session()->forget(RegisterRequest::FORM_RENDERED_AT_SESSION_KEY);
 
         event(new Registered($user));
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class MainAPIController extends Controller
 {
@@ -28,13 +27,9 @@ class MainAPIController extends Controller
         $tokenName = 'token_'.lcfirst($user->first_name).ucfirst($user->last_name).str_pad($user->tokens()->count() + 1, 3, '0', STR_PAD_LEFT);
 
         $token = $user->createToken($this->convertToAscii($tokenName));
-        // dd($token->accessToken->id);
-        // eloquent queiry to update the plaintexttoken to the database based on token id
-        DB::table('personal_access_tokens')->where('id', $token->accessToken->id)->update(['plain_text_token' => $token->plainTextToken]);
 
-        // dd($token);
-        // 3|SlFIgwo8XBEbIYf6Xu0B39Hj4arD7SmSZBss5j1d98bd76c9
-        return redirect()->back();
+        // Only the hash is stored; the plain token is shown once and cannot be recovered later.
+        return redirect()->back()->with('new_api_token', $token->plainTextToken);
     }
 
     public function destroy(Request $request)
