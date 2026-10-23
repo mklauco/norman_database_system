@@ -2,6 +2,11 @@
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
+        <div class="hidden" aria-hidden="true">
+            <label for="website">Website</label>
+            <input id="website" type="text" name="website" value="" tabindex="-1" autocomplete="off">
+        </div>
+
         <!-- Name -->
         <div class="mt-4">
             <x-input-label for="first_name" :value="__('First name')" />

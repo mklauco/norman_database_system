@@ -7,13 +7,31 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
       <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
         <div class="max-w">
-          
+
+          @if(session('new_api_token'))
+          <div class="mb-6 p-4 border-2 border-amber-400 bg-amber-50 rounded" role="alert">
+            <p class="text-base font-bold text-amber-900">
+              <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Copy your new API token now. It will NOT be shown again.
+            </p>
+            <p class="mt-1 text-sm text-amber-900">
+              For security, only a fingerprint of the token is stored. Once you leave or reload this page, nobody &mdash; including the administrators &mdash; can display it again. If you lose it, revoke it and create a new one.
+            </p>
+            <span class="inline-block bg-white text-black text-sm font-semibold py-2 px-4 my-2 font-mono break-all border border-amber-300">
+              <span id="new-api-token">{{ session('new_api_token') }}</span>
+            </span>
+            <span class="btn-submit" onclick="copyToClipboard('new-api-token')">
+              <i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp;Copy
+            </span>
+          </div>
+          @endif
+
           @if($user->tokens->count() > 0)
+          <p class="mb-2 text-sm text-gray-600">Tokens are shown only once, right after they are created. If you no longer have a token, revoke it and create a new one.</p>
           <table class="table-standard">
             <thead>
               <tr class="bg-gray-600 text-white">
               <th>Token name</th>
-              <th>Token plaintext</th>
+              <th>Created</th>
               <th>Expiration</th>
               <th>Last used</th>
               <th>Actions</th>
@@ -25,13 +43,8 @@
               <td class="p-1 text-center">
                 {{ $token->name }}
               </td>
-              <td class="text-center">
-                <span class="inline-block bg-white text-black text-sm font-semibold py-2 px-4 m-2 font-mono">
-                  <div id="{{ $token->plain_text_token }}">{{ $token->plain_text_token }}</div>
-                </span>
-                <span class="btn-submit" onclick="copyToClipboard('{{ $token->plain_text_token }}')">
-                  <i class="fa fa-clipboard" aria-hidden="true"></i>&nbsp;Copy
-                </span>
+              <td class="p-1 text-center">
+                {{ $token->created_at }}
               </td>
               <td class="p-1 text-center">
                 @if(is_null($token->expires_at))

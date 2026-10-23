@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Backend\Project;
 use App\Models\User;
+use App\Services\UserRoleAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class UserController extends Controller implements HasMiddleware
 {
+    public function __construct(private readonly UserRoleAssignment $roleAssignment) {}
+
     public static function middleware(): array
     {
         return [
@@ -138,7 +142,7 @@ class UserController extends Controller implements HasMiddleware
 
         return view('backend.dashboard.users.upsert', [
             'edit' => false,
-            'roles' => \Spatie\Permission\Models\Role::all(),
+            'roles' => $this->roleAssignment->assignableRoleNames(auth()->user()),
             'projects' => Project::all(),
             'countries' => $countries,
             'organisations' => $organisations,
@@ -156,16 +160,15 @@ class UserController extends Controller implements HasMiddleware
             'first_name' => 'required',
             'last_name' => 'required',
             'email' => 'required',
-            'roles' => 'required',
+            'roles' => 'required|array',
+            'roles.*' => 'string',
             'projects' => 'nullable',
         ];
         $request->validate($validation_array);
 
-        // Check if non-super_admin is trying to assign server payment roles
-        $serverPaymentRoles = ['server_payment_admin', 'server_payment_viewer'];
-        $requestedServerRoles = array_intersect($request->roles ?? [], $serverPaymentRoles);
-        if (! empty($requestedServerRoles) && ! auth()->user()->hasRole('super_admin')) {
-            return redirect()->back()->with('error', 'Only super_admin can assign server payment roles.')
+        $forbiddenRoles = $this->roleAssignment->forbiddenRequestedRoles(auth()->user(), $request['roles']);
+        if ($forbiddenRoles !== []) {
+            return redirect()->back()->with('error', 'You are not allowed to assign: '.implode(', ', $forbiddenRoles).'.')
                 ->withInput();
         }
         $temporary_password = Str::random(12);
@@ -184,11 +187,7 @@ class UserController extends Controller implements HasMiddleware
         try {
             $user->save();
             // Assign roles after user is saved
-            $roles = $request['roles'] ?? [];
-            if (! in_array('user', $roles)) {
-                $roles[] = 'user';
-            }
-            $user->syncRoles($roles);
+            $user->syncRoles($this->roleAssignment->rolesToSync(auth()->user(), $request['roles']));
 
             // other operations
             return redirect()->route('users.index')->with('success', 'User updated successfully');
@@ -249,10 +248,13 @@ class UserController extends Controller implements HasMiddleware
         $countries = $this->getSortedCountries();
         $organisations = $this->getSortedOrganisations();
 
+        $user = User::with('projects')->findOrFail($id);
+        Gate::authorize('update', $user);
+
         return view('backend.dashboard.users.upsert', [
             'edit' => true,
-            'user' => User::with('projects')->find($id),
-            'roles' => \Spatie\Permission\Models\Role::all(),
+            'user' => $user,
+            'roles' => $this->roleAssignment->assignableRoleNames(auth()->user()),
             'projects' => Project::all(),
             'countries' => $countries,
             'organisations' => $organisations,
@@ -269,20 +271,21 @@ class UserController extends Controller implements HasMiddleware
             'first_name' => 'required',
             'last_name' => 'required',
             'email' => 'required',
-            'roles' => 'required',
+            'roles' => 'required|array',
+            'roles.*' => 'string',
             'projects' => 'nullable',
         ];
         $request->validate($validation_array);
 
-        // Check if non-super_admin is trying to assign server payment roles
-        $serverPaymentRoles = ['server_payment_admin', 'server_payment_viewer'];
-        $requestedServerRoles = array_intersect($request->roles ?? [], $serverPaymentRoles);
-        if (! empty($requestedServerRoles) && ! auth()->user()->hasRole('super_admin')) {
-            return redirect()->back()->with('error', 'Only super_admin can assign server payment roles.')
+        $user = User::findOrFail($id);
+        Gate::authorize('update', $user);
+
+        $forbiddenRoles = $this->roleAssignment->forbiddenRequestedRoles(auth()->user(), $request['roles']);
+        if ($forbiddenRoles !== []) {
+            return redirect()->back()->with('error', 'You are not allowed to assign: '.implode(', ', $forbiddenRoles).'.')
                 ->withInput();
         }
 
-        $user = User::find($id);
         $user->first_name = $request['first_name'];
         $user->last_name = $request['last_name'];
         $user->email = $request['email'];
@@ -291,12 +294,8 @@ class UserController extends Controller implements HasMiddleware
         $user->country_id = $request['country_id'];
         $user->organisation_id = $request['organisation_id'];
         $user->active = $request->has('active') ? true : false;
-        // Ensure 'user' role is always included and cannot be removed
-        $roles = $request['roles'] ?? [];
-        if (! in_array('user', $roles)) {
-            $roles[] = 'user';
-        }
-        $user->syncRoles($roles);
+        // 'user' is always included
+        $user->syncRoles($this->roleAssignment->rolesToSync(auth()->user(), $request['roles']));
         $user->projects()->sync($request['projects']);
         try {
             $user->save();

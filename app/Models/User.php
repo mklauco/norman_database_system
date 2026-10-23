@@ -34,6 +34,15 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * Mirrors the column defaults, so freshly built instances are active.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'active' => true,
+    ];
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
@@ -77,6 +86,14 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return $this->getFullNameAttribute();
+    }
+
+    /**
+     * Determine whether the account is allowed to log in and use the API.
+     */
+    public function isActive(): bool
+    {
+        return $this->active === true;
     }
 
     /**

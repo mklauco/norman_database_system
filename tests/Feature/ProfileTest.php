@@ -45,6 +45,23 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_profile_email_can_not_be_changed_to_a_disposable_domain(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'first_name' => 'Test',
+                'last_name' => 'User',
+                'email' => 'someone@fextemp.com',
+            ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertNotSame('someone@fextemp.com', $user->refresh()->email);
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
         $user = User::factory()->create();
