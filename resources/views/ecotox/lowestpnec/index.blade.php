@@ -154,7 +154,7 @@
                   <tr class="hover:bg-slate-300 transition" :class="index % 2 === 0 ? 'bg-slate-100' : 'bg-slate-200'">
                     <td class="p-1 text-center text-xs">
                       <div x-text="pnec.substance ? pnec.substance.prefixed_code : 'Unknown'"></div>
-                      <a :href="'{{ route('ecotox.lowestpnec.show', '') }}/' + pnec.sus_id" class="link-lime-text">
+                      <a :href="'{{ route('ecotox.lowestpnec.show', ['sus_id' => '__SUS_ID__']) }}'.replace('__SUS_ID__', pnec.sus_id)" class="link-lime-text">
                         <i class="fas fa-search"></i>
                       </a>
                     </td>
