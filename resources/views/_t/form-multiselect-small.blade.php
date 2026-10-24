@@ -24,7 +24,7 @@
       <div class="inline-block relative w-full">
         <div class="flex flex-col items-center relative">
           <div x-on:click="open" class="w-full  svelte-1l8159u">
-            <div class="my-2 p-1 flex border border-gray-200 bg-white rounded svelte-1l8159u">
+            <div class="my-2 p-1 flex border border-gray-200 bg-white rounded-sm svelte-1l8159u">
               <div class="flex flex-auto flex-wrap">
                 <template x-for="(option,index) in selected" :key="options[option].value">
                   <div
@@ -46,7 +46,7 @@
               </template>
               <div x-show="selected.length    == 0" class="flex-1">
                 <input placeholder="Select a option"
-                class="bg-transparent p-1 px-2 appearance-none outline-none h-full w-full text-gray-800"
+                class="bg-transparent p-1 px-2 appearance-none outline-hidden h-full w-full text-gray-800"
                 x-bind:value="selectedValues()"
                 >
               </div>
@@ -55,7 +55,7 @@
             class="text-gray-300 w-8 py-1 pl-2 pr-1 border-l flex items-center border-gray-200 svelte-1l8159u">
             
             <button type="button" x-show="isOpen() === true" x-on:click="open"
-            class="cursor-pointer w-6 h-6 text-gray-600 outline-none focus:outline-none">
+            class="cursor-pointer w-6 h-6 text-gray-600 outline-hidden focus:outline-hidden">
             <svg version="1.1" class="fill-current h-4 w-4" viewBox="0 0 20 20">
               <path d="M17.418,6.109c0.272-0.268,0.709-0.268,0.979,0s0.271,0.701,0,0.969l-7.908,7.83
 c-0.27,0.268-0.707,0.268-0.979,0l-7.908-7.83c-0.27-0.268-0.27-0.701,0-0.969c0.271-0.268,0.709-0.268,0.979,0L10,13.25
@@ -64,7 +64,7 @@ L17.418,6.109z" />
             
           </button>
           <button type="button" x-show="isOpen() === false" @click="close"
-          class="cursor-pointer w-6 h-6 text-gray-600 outline-none focus:outline-none">
+          class="cursor-pointer w-6 h-6 text-gray-600 outline-hidden focus:outline-hidden">
           <svg class="fill-current h-4 w-4" viewBox="0 0 20 20">
             <path d="M2.582,13.891c-0.272,0.268-0.709,0.268-0.979,0s-0.271-0.701,0-0.969l7.908-7.83
 c0.27-0.268,0.707-0.268,0.979,0l7.908,7.83c0.27,0.268,0.27,0.701,0,0.969c-0.271,0.268-0.709,0.268-0.978,0L10,6.75L2.582,13.891z
@@ -77,7 +77,7 @@ c0.27-0.268,0.707-0.268,0.979,0l7.908,7.83c0.27,0.268,0.27,0.701,0,0.969c-0.271,
   </div>
   <div class="w-full px-4">
     <div x-show.transition.origin.top="isOpen()"
-    class="absolute shadow top-100 bg-white z-40 w-full lef-0 rounded max-h-select overflow-y-auto svelte-5uyqqj"
+    class="absolute shadow-sm top-100 bg-white z-40 w-full lef-0 rounded-sm max-h-select overflow-y-auto svelte-5uyqqj"
     x-on:click.away="close">
     <div class="flex flex-col w-full">
       <template x-for="(option,index) in options" :key="option">
@@ -98,7 +98,7 @@ c0.27-0.268,0.707-0.268,0.979,0l7.908,7.83c0.27,0.268,0.27,0.701,0,0.969c-0.271,
 </div>
 </div>
 <!-- on tailwind components page will no work  -->
-{{-- <button disabled class="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded" type="submit">Test</button> --}}
+{{-- <button disabled class="shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded-sm" type="submit">Test</button> --}}
 
 </div>
 

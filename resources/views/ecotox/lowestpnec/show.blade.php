@@ -23,7 +23,7 @@
         <div class="col-span-1">
           <div class="mb-4">
             <a href="{{ route('ecotox.lowestpnec.index') }}"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
               ← Go Back to Database
             </a>
           </div>
@@ -35,7 +35,7 @@
           </div>
         </div>
         <div class="col-span-2">
-          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Substance Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
@@ -70,7 +70,7 @@
       </div>
 
       <!-- Detailed Information Table -->
-      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-white border border-gray-200 rounded-lg shadow-xs overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full border border-gray-300 text-sm">
             <thead>
@@ -379,7 +379,7 @@
     <!-- Go Back Button -->
     <div class="mt-6 flex justify-center">
       <a href="{{ route('ecotox.lowestpnec.index') }}" 
-         class="inline-flex items-center px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+         class="inline-flex items-center px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
         ← Go Back to Database
       </a>
     </div>

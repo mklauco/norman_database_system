@@ -61,7 +61,7 @@
           <span class="text-sm text-teal-800 font-mono whitespace-nowrap">NS{{$substance->code}}</span>
         </td>
         {{-- Name --}}
-        <td class="p-1 w-40 break-words">{{$substance->name}}</td>
+        <td class="p-1 w-40 wrap-break-word">{{$substance->name}}</td>
         {{-- CAS_RN --}}
         <td class="p-1 font-mono w-20 whitespace-nowrap">{{$substance->cas_number}}</td>
         {{-- StdInChIKey --}}
@@ -71,7 +71,7 @@
         {{-- PubChem_CID --}}
         <td class="p-1 text-center font-mono w-24"><a class="btn-link-lime" href="https://pubchem.ncbi.nlm.nih.gov/compound/{{$substance->pubchem_cid}}" target="_blank">{{$substance->pubchem_cid}}</a></td>
         {{-- Molecular Formula --}}
-        <td class="p-1 text-center w-28 break-words text-xs">{{$substance->molecular_formula}}</td>
+        <td class="p-1 text-center w-28 wrap-break-word text-xs">{{$substance->molecular_formula}}</td>
         {{-- SMILES --}}
         <td class="p-1 font-mono text-xs break-all w-48">{{$substance->smiles}}</td>
         {{-- Monoisotopic Mass --}}

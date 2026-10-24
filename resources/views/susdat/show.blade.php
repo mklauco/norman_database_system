@@ -14,11 +14,11 @@
         <div class="p-6 text-gray-900">
 
           {{-- Substance Information at Glance --}}
-          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Substance Information at Glance</h2>
             <div class="flex flex-col lg:flex-row gap-6">
               @if($substance->structure_image_url)
-              <div class="flex-shrink-0" x-data="{ open: false }">
+              <div class="shrink-0" x-data="{ open: false }">
                 <img src="{{ $substance->structure_image_url }}"
                      alt="Structure of {{ $substance->name }}"
                      class="w-48 h-48 object-contain bg-white border border-gray-200 rounded-lg p-2 cursor-pointer hover:border-gray-400 transition-colors"
@@ -42,7 +42,7 @@
                 </div>
               </div>
               @endif
-              <div class="flex-grow grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div class="grow grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <div>
                 <h3 class="text-sm font-medium text-gray-800 mb-1">NORMAN SusDat ID</h3>
                 <p class="text-sm text-teal-800 font-mono">{{ $substance->prefixed_code ?? 'N/A' }}</p>
@@ -120,7 +120,7 @@
                           $decodedJson = [];
                       }
                     @endphp
-                    <td class="p-1 break-words">
+                    <td class="p-1 wrap-break-word">
                       @if (is_array($decodedJson) && !empty($decodedJson))
                         @foreach ($decodedJson as $keyInner => $valueInner)
                           <span class="block py-1">
@@ -143,19 +143,19 @@
                       @endif
                     </td>
                   @else
-                    <td class="p-1 break-words">
+                    <td class="p-1 wrap-break-word">
                       @if (is_array($value))
                         @if (!empty($value))
                           @if ($key === 'categories')
                             @foreach ($value as $category)
-                              <span class="inline-block bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded mr-1 mb-1">
+                              <span class="inline-block bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-sm mr-1 mb-1">
                                 {{ is_object($category) ? $category->name : (is_array($category) ? $category['name'] ?? 'Unknown' : $category) }}
                               </span>
                             @endforeach
                           @elseif ($key === 'sources')
                             @foreach ($value as $source)
                               <span
-                                class="inline-block bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded mr-1 mb-1">
+                                class="inline-block bg-slate-100 text-slate-800 text-xs px-2 py-1 rounded-sm mr-1 mb-1">
                                 @if (is_object($source))
                                   {{ $source->code }} - {{ $source->name }}
                                 @elseif (is_array($source))

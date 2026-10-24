@@ -5,7 +5,7 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
                     <!-- Back Link -->
@@ -23,7 +23,7 @@
                         <h3 class="text-lg font-medium text-gray-900">
                             Station Details: {{ $station->name ?: 'Unnamed Station' }}
                         </h3>
-                        <a href="{{ route('backend.empodat.stations.edit', $station) }}" class="btn-submit inline-flex items-center px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <a href="{{ route('backend.empodat.stations.edit', $station) }}" class="btn-submit inline-flex items-center px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             Edit Station
                         </a>
                     </div>
@@ -226,11 +226,11 @@
                     <!-- Action Buttons -->
                     <div class="mt-8 flex items-center justify-end space-x-4">
                         <a href="{{ route('backend.empodat.stations.index') }}" 
-                           class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                           class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                             Back to List
                         </a>
                         <a href="{{ route('backend.empodat.stations.edit', $station) }}" 
-                           class="btn-submit px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                           class="btn-submit px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             Edit Station
                         </a>
                     </div>

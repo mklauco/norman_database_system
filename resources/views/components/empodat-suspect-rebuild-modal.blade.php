@@ -50,7 +50,7 @@
           </p>
         </div>
         <button type="button" @click="open = false"
-                class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Close">
+                class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-hidden" aria-label="Close">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -61,7 +61,7 @@
 
         <p>
           This queues
-          <code class="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded">empodat-suspect:refresh-prioritisation --file=<span x-text="fileId"></span></code>
+          <code class="font-mono text-xs bg-gray-100 px-1 py-0.5 rounded-sm">empodat-suspect:refresh-prioritisation --file=<span x-text="fileId"></span></code>
           on the <span class="font-mono text-xs">exports</span> queue. The partition is built into a staging
           table and swapped in at the end, so readers never see a half-written partition.
         </p>
@@ -103,7 +103,7 @@
         <form method="POST" :action="action">
           @csrf
           <button type="submit"
-                  class="px-4 py-2 border border-lime-600 rounded-md text-sm font-medium text-white bg-lime-600 hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-lime-500">
+                  class="px-4 py-2 border border-lime-600 rounded-md text-sm font-medium text-white bg-lime-600 hover:bg-lime-700 focus:outline-hidden focus:ring-2 focus:ring-lime-500">
             Queue rebuild
           </button>
         </form>

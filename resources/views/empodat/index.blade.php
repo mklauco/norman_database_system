@@ -278,23 +278,23 @@
 
             <div class="flex justify-center space-x-4 mt-4">
               @if ($empodats->onFirstPage())
-                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
+                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded-sm cursor-not-allowed">
                   Previous
                 </span>
               @else
                 <a href="{{ $empodats->previousPageUrl() }}"
-                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded-sm hover:bg-stone-600">
                   Previous
                 </a>
               @endif
 
               @if ($empodats->hasMorePages())
                 <a href="{{ $empodats->nextPageUrl() }}"
-                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded-sm hover:bg-stone-600">
                   Next
                 </a>
               @else
-                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
+                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded-sm cursor-not-allowed">
                   Next
                 </span>
               @endif

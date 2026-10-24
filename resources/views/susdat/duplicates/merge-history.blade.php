@@ -86,7 +86,7 @@
                        id="date_from" 
                        name="date_from" 
                        value="{{ $filters['date_from'] ?? '' }}"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
               
               <div>
@@ -95,14 +95,14 @@
                        id="date_to" 
                        name="date_to" 
                        value="{{ $filters['date_to'] ?? '' }}"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               </div>
               
               <div>
                 <label for="merged_by" class="block text-sm font-medium text-gray-700 mb-1">Merged By</label>
                 <select id="merged_by" 
                         name="merged_by" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   <option value="">All Users</option>
                   @foreach($users as $user)
                     <option value="{{ $user->id }}" {{ ($filters['merged_by'] ?? '') == $user->id ? 'selected' : '' }}>

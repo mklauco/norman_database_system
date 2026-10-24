@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Auth;
 
 class MainAPIController extends Controller
 {
-    //
+    public const TOKEN_LIFETIME_MONTHS = 12;
+
     public function index()
     {
 
@@ -26,7 +27,7 @@ class MainAPIController extends Controller
         $user = User::find(Auth::id());
         $tokenName = 'token_'.lcfirst($user->first_name).ucfirst($user->last_name).str_pad($user->tokens()->count() + 1, 3, '0', STR_PAD_LEFT);
 
-        $token = $user->createToken($this->convertToAscii($tokenName));
+        $token = $user->createToken($this->convertToAscii($tokenName), ['*'], now()->addMonths(self::TOKEN_LIFETIME_MONTHS));
 
         // Only the hash is stored; the plain token is shown once and cannot be recovered later.
         return redirect()->back()->with('new_api_token', $token->plainTextToken);

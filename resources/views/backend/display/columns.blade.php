@@ -5,11 +5,11 @@
 
   <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
 
           @if (session('success'))
-            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-sm relative">
               {{ session('success') }}
             </div>
           @endif
@@ -72,7 +72,7 @@
                           @endif
                         </td>
                         <td class="px-3 py-3 whitespace-nowrap">
-                          <span class="px-2 py-1 text-xs rounded bg-gray-100">{{ $column->format_type }}</span>
+                          <span class="px-2 py-1 text-xs rounded-sm bg-gray-100">{{ $column->format_type }}</span>
                           @if($column->format_options)
                             <span class="text-xs text-gray-400" title="{{ json_encode($column->format_options) }}">
                               <i class="fas fa-cog"></i>

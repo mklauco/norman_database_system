@@ -11,7 +11,7 @@
           {{-- Notification Banner --}}
           <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
             <div class="flex items-center">
-              <div class="flex-shrink-0">
+              <div class="shrink-0">
                 <i class="fas fa-info-circle text-blue-500 text-lg"></i>
               </div>
               <div class="ml-3">
@@ -24,7 +24,7 @@
           </div>
 
           {{-- Record Information at Glance --}}
-          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">ARG Record at Glance</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               @if ($record->id)

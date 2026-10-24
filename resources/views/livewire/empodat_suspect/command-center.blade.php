@@ -20,8 +20,8 @@
   @endif
 
   <!-- Primary action: Refresh all, in the only correct order -->
-  <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
-    <div class="p-4 bg-gradient-to-r from-lime-600 to-green-700">
+  <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg mb-8">
+    <div class="p-4 bg-linear-to-r from-lime-600 to-green-700">
       <h3 class="text-base font-semibold text-white">
         <i class="fas fa-layer-group mr-2"></i>
         Refresh All
@@ -53,7 +53,7 @@
   </div>
 
   <!-- Advanced: individual commands -->
-  <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-8">
+  <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg mb-8">
     <div class="p-4 bg-gray-800 border-b border-gray-700">
       <h3 class="text-base font-semibold text-white">
         <i class="fas fa-sliders-h mr-2 text-gray-300"></i>
@@ -122,7 +122,7 @@
   </div>
 
   <!-- Run history -->
-  <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+  <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
     <div class="p-4 bg-slate-800 border-b border-slate-700">
       <h3 class="text-base font-semibold text-white">
         <i class="fas fa-history mr-2 text-slate-300"></i>

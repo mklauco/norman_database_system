@@ -36,6 +36,40 @@ class ApiTokenTest extends TestCase
         $this->assertStringNotContainsString($secret, json_encode($stored->getAttributes()));
     }
 
+    public function test_new_token_expires_after_twelve_months(): void
+    {
+        $this->freezeSecond();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('apiresources.store'));
+
+        $stored = PersonalAccessToken::query()->where('tokenable_id', $user->id)->sole();
+        $this->assertTrue($stored->expires_at->equalTo(now()->addMonths(12)));
+    }
+
+    public function test_expiry_migration_dates_existing_tokens_from_their_creation(): void
+    {
+        $user = User::factory()->create();
+        $old = $user->createToken('old')->accessToken;
+        $old->forceFill(['created_at' => '2024-03-15 10:00:00'])->save();
+        $dated = $user->createToken('dated', ['*'], now()->addDays(5))->accessToken;
+        $datedExpiry = $dated->fresh()->expires_at;
+
+        $migration = require database_path('migrations/2026_10_24_065653_set_twelve_month_expiry_on_existing_api_tokens.php');
+        $migration->up();
+
+        $this->assertSame('2025-03-15 10:00:00', $old->fresh()->expires_at->format('Y-m-d H:i:s'));
+        $this->assertTrue($dated->fresh()->expires_at->equalTo($datedExpiry));
+    }
+
+    public function test_expired_token_is_rejected_by_the_api(): void
+    {
+        $user = User::factory()->create();
+        $plainTextToken = $user->createToken('old', ['*'], now()->subDay())->plainTextToken;
+
+        $this->withToken($plainTextToken)->getJson('/api/v1/empodat/substance/NS00000001')->assertUnauthorized();
+    }
+
     public function test_page_warns_that_the_new_token_will_not_be_shown_again(): void
     {
         $user = User::factory()->create();

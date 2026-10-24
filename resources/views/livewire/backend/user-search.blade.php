@@ -18,7 +18,7 @@
             <input
                 type="text"
                 wire:model.live.debounce.300ms="search"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm"
+                class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm"
                 placeholder="Search by name, email or ID..."
             >
 

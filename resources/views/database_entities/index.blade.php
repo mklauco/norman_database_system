@@ -17,7 +17,7 @@
                         <span class="font-bold">{{$d->name}}</span>
                         <span class="block text-gray-500 text-sm">{{$d->description}}</span>
                         @if(!$d->is_public)
-                          <span class="inline-block mt-2 px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">
+                          <span class="inline-block mt-2 px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-sm">
                             <i class="fas fa-lock mr-1"></i>Admin Only
                           </span>
                         @endif

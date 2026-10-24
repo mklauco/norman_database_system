@@ -5,7 +5,7 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
                     <!-- Back Link -->
@@ -27,7 +27,7 @@
 
                     <!-- Validation Errors -->
                     @if ($errors->any())
-                        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-sm relative">
                             <strong>Please fix the following errors:</strong>
                             <ul class="mt-2 list-disc list-inside">
                                 @foreach ($errors->all() as $error)
@@ -58,7 +58,7 @@
                                            name="name" 
                                            id="name" 
                                            value="{{ old('name', $station->name ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('name') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('name') border-red-500 @enderror">
                                     @error('name')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -73,7 +73,7 @@
                                            name="national_name" 
                                            id="national_name" 
                                            value="{{ old('national_name', $station->national_name ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('national_name') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('national_name') border-red-500 @enderror">
                                     @error('national_name')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -93,7 +93,7 @@
                                     </label>
                                     <select name="country_id" 
                                             id="country_id"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('country_id') border-red-500 @enderror">
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('country_id') border-red-500 @enderror">
                                         <option value="">Select a country...</option>
                                         @foreach($countries as $country)
                                             <option value="{{ $country->id }}" 
@@ -114,7 +114,7 @@
                                     </label>
                                     <select name="country_other_id" 
                                             id="country_other_id"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('country_other_id') border-red-500 @enderror">
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('country_other_id') border-red-500 @enderror">
                                         <option value="">Select a country...</option>
                                         @foreach($countries as $country)
                                             <option value="{{ $country->id }}" 
@@ -137,7 +137,7 @@
                                            name="country" 
                                            id="country" 
                                            value="{{ old('country', $station->country ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('country') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('country') border-red-500 @enderror">
                                     @error('country')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -152,7 +152,7 @@
                                            name="country_other" 
                                            id="country_other" 
                                            value="{{ old('country_other', $station->country_other ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('country_other') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('country_other') border-red-500 @enderror">
                                     @error('country_other')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -174,7 +174,7 @@
                                            name="short_sample_code" 
                                            id="short_sample_code" 
                                            value="{{ old('short_sample_code', $station->short_sample_code ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('short_sample_code') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('short_sample_code') border-red-500 @enderror">
                                     @error('short_sample_code')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -189,7 +189,7 @@
                                            name="sample_code" 
                                            id="sample_code" 
                                            value="{{ old('sample_code', $station->sample_code ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('sample_code') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('sample_code') border-red-500 @enderror">
                                     @error('sample_code')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -204,7 +204,7 @@
                                            name="provider_code" 
                                            id="provider_code" 
                                            value="{{ old('provider_code', $station->provider_code ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('provider_code') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('provider_code') border-red-500 @enderror">
                                     @error('provider_code')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -226,7 +226,7 @@
                                            name="code_ec_wise" 
                                            id="code_ec_wise" 
                                            value="{{ old('code_ec_wise', $station->code_ec_wise ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('code_ec_wise') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('code_ec_wise') border-red-500 @enderror">
                                     @error('code_ec_wise')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -241,7 +241,7 @@
                                            name="code_ec_other" 
                                            id="code_ec_other" 
                                            value="{{ old('code_ec_other', $station->code_ec_other ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('code_ec_other') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('code_ec_other') border-red-500 @enderror">
                                     @error('code_ec_other')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -256,7 +256,7 @@
                                            name="code_other" 
                                            id="code_other" 
                                            value="{{ old('code_other', $station->code_other ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('code_other') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('code_other') border-red-500 @enderror">
                                     @error('code_other')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -278,7 +278,7 @@
                                            name="specific_locations" 
                                            id="specific_locations" 
                                            value="{{ old('specific_locations', $station->specific_locations ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('specific_locations') border-red-500 @enderror">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('specific_locations') border-red-500 @enderror">
                                     @error('specific_locations')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
@@ -294,7 +294,7 @@
                                            name="latitude" 
                                            id="latitude" 
                                            value="{{ old('latitude', $station->latitude ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('latitude') border-red-500 @enderror"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('latitude') border-red-500 @enderror"
                                            placeholder="-90 to 90">
                                     @error('latitude')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -311,7 +311,7 @@
                                            name="longitude" 
                                            id="longitude" 
                                            value="{{ old('longitude', $station->longitude ?? '') }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('longitude') border-red-500 @enderror"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('longitude') border-red-500 @enderror"
                                            placeholder="-180 to 180">
                                     @error('longitude')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -323,11 +323,11 @@
                         <!-- Submit Buttons -->
                         <div class="flex items-center justify-end space-x-4">
                             <a href="{{ route('backend.empodat.stations.index') }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                                 Cancel
                             </a>
                             <button type="submit" 
-                                    class="btn-submit px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    class="btn-submit px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 {{ isset($station) ? 'Update Station' : 'Create Station' }}
                             </button>
                         </div>

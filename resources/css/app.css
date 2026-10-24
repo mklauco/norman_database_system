@@ -1,101 +1,134 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-/* Alpine.js x-cloak directive */
-[x-cloak] {
-    display: none !important;
+@config '../../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  /* Tailwind v4 dropped the pointer cursor on buttons; keep the v3 behaviour. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* v4 preflight zeroes padding everywhere; v3 kept the browser's 1px on table cells. */
+  th,
+  td {
+    padding: 1px;
+  }
 }
 
-@layer components {
+/*
+  In v4 utilities sit in a later cascade layer than the forms plugin, so a
+  border-* utility now also colours a ticked checkbox or radio. v3 hid it.
+*/
+@layer utilities {
+  [type='checkbox']:checked,
+  [type='radio']:checked {
+    border-color: transparent;
+  }
+}
 
+@utility table-standard {
   /* tables styling */
-  .table-standard {
-    @apply table-auto w-full border-separate border-spacing-1 text-xs;
-  }
+  @apply table-auto w-full border-separate border-spacing-1 text-xs;
+}
 
-  .btn-link-lime {
-    @apply text-lime-600 hover:text-white hover:bg-lime-500 border-b-2 border-transparent hover:border-lime-500 px-2 py-1 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-lime-500;
-  }
+@utility btn-link-lime {
+  @apply text-lime-600 hover:text-white hover:bg-lime-500 border-b-2 border-transparent hover:border-lime-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-lime-500;
+}
 
-  .link-edit {
-    @apply text-amber-600 hover:text-white hover:bg-amber-500 border-b-2 border-transparent hover:border-amber-500 px-2 py-1 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500
-    ;
-  }
+@utility link-edit {
+  @apply text-amber-600 hover:text-white hover:bg-amber-500 border-b-2 border-transparent hover:border-amber-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-amber-500;
+}
 
-  .link-edit-rose {
-    @apply text-rose-600 hover:text-white hover:bg-rose-500 border-b-2 border-transparent hover:border-rose-500 px-2 py-1 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-rose-500
-    ;
-  }
+@utility link-edit-rose {
+  @apply text-rose-600 hover:text-white hover:bg-rose-500 border-b-2 border-transparent hover:border-rose-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-rose-500;
+}
 
-  .link-indigo {
-    @apply text-indigo-600 hover:text-white hover:bg-indigo-500 border-b-2 border-transparent hover:border-indigo-500 px-2 py-1 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500
-    ;
-  }
+@utility link-indigo {
+  @apply text-indigo-600 hover:text-white hover:bg-indigo-500 border-b-2 border-transparent hover:border-indigo-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-indigo-500;
+}
 
-  .link-lime {
-    @apply text-lime-600 hover:text-white hover:bg-lime-500 border-b-2 border-transparent hover:border-lime-500 px-2 py-1 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-lime-500
-    ;
-  }
+@utility link-lime {
+  @apply text-lime-600 hover:text-white hover:bg-lime-500 border-b-2 border-transparent hover:border-lime-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-lime-500;
+}
 
-  .link-lime-outline {
-    @apply text-lime-600 hover:text-white hover:bg-lime-500 border-2 border-transparent border-lime-500 px-2 py-1 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-lime-500; 
-  }
+@utility link-lime-outline {
+  @apply text-lime-600 hover:text-white hover:bg-lime-500 border-2 border-transparent border-lime-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-lime-500;
+}
 
-  .link-lime-text {
-    @apply text-lime-600 hover:text-white hover:bg-lime-500 border-b-2 border-transparent hover:border-lime-500 rounded transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-lime-500
-    ;
-  }
+@utility link-lime-text {
+  @apply text-lime-600 hover:text-white hover:bg-lime-500 border-b-2 border-transparent hover:border-lime-500 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-lime-500;
+}
 
-  
+@utility btn-submit {
+  @apply inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
+}
 
-  .btn-submit {
-    @apply inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
-  }
+@utility btn-submit-sky {
+  @apply px-4 py-2 bg-sky-400 text-white rounded-sm hover:bg-sky-500 transition duration-150 ease-in-out;
+}
 
-  .btn-submit-sky {
-    @apply px-4 py-2 bg-sky-400 text-white rounded hover:bg-sky-500 transition duration-150 ease-in-out
-  }
+@utility btn-create {
+  @apply px-4 py-2 bg-linear-to-r from-lime-500 to-green-600 text-white rounded-sm hover:from-lime-600 hover:to-green-700 transition;
+}
 
-  .btn-create{
-    @apply px-4 py-2 bg-gradient-to-r from-lime-500 to-green-600 text-white rounded hover:from-lime-600 hover:to-green-700 transition;
-  }
+@utility btn-submit-danger {
+  @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
+}
 
-  .btn-submit-danger{
-    @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
-  }
+@utility btn-clear {
+  @apply border border-slate-500 text-slate-500 hover:bg-slate-300 hover:text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
+}
 
-  .btn-clear{
-    @apply border border-slate-500 text-slate-500 hover:bg-slate-300 hover:text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
-  }
+@utility btn-download {
+  @apply inline-block bg-zinc-500 hover:bg-zinc-800 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
 
-  .btn-download {
-    @apply inline-block bg-zinc-500 hover:bg-zinc-800 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
-  }
-
-  .btn-download:disabled {
+  &:disabled {
     @apply opacity-50 cursor-not-allowed hover:bg-zinc-500;
   }
+}
 
-  .btn-delete{
-    @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow focus:outline-none transition duration-300 ease-in-out;
-  }
+@utility btn-delete {
+  @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
+}
 
+@utility form-text {
   /* input tags styling */
-  .form-text {
-    @apply w-full px-2 py-2 border bg-white border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out;
-  }
+  @apply w-full px-2 py-2 border bg-white border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out;
+}
 
-  .form-select {
-    @apply w-full px-2 py-2 bg-white border border-gray-300 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out;
-  }
+@utility form-select {
+  @apply w-full px-2 py-2 bg-white border border-gray-300 text-gray-900 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out;
+}
 
-  .form-text-small {
-    @apply w-96 px-1 py-1 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out;
-  }
+@utility form-text-small {
+  @apply w-96 px-1 py-1 border border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out;
+}
 
-  .text-xss {
-    @apply text-xs scale-75;
+@utility text-xss {
+  @apply text-xs scale-75;
+}
+
+@layer utilities {
+  /* Alpine.js x-cloak directive */
+  [x-cloak] {
+    display: none !important;
   }
 }
 

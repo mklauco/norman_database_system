@@ -1,17 +1,17 @@
 <div class="pt-2">
   @if (session()->has('success'))
-  <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">{!! session()->get('success') !!}</div>
+  <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-sm relative" role="alert">{!! session()->get('success') !!}</div>
   @endif
   
 
   @if (session()->has('info'))
-  <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+  <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-sm relative" role="alert">
       {!! session()->get('info') !!}
   </div>
   @endif
 
   @if (session()->has('failure') || session()->has('error'))
-  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-sm relative" role="alert">
     @if (session()->has('failure'))
     <div>{!! session()->get('failure') !!}</div>
     @endif
@@ -24,7 +24,7 @@
 
   
   @if ($errors->any())
-  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-sm relative">
     <ul>
       @foreach ($errors->all() as $error)
       <li>{{ $error }}</li>

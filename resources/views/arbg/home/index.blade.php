@@ -79,7 +79,7 @@
             and refer to the publication
           </p>
 
-          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-sm relative" role="alert">
             Nikiforos Alygizakis, Kelsey Ng, Ľuboš Čirka, Thomas Berendonk, Francisco Cerqueira, Eddie Cytryn, Geneviève
             Deviller, Gianuario Fortunato, Iakovos C. Iakovides, Ioannis Kampouris, Irene Michael-Kordatou, Foon Yin
             Lai, Lian Lundy, Celia M. Manaia, Roberto B.M. Marano, Gabriela K. Paulus, Benjamin Piña, Elena Radu, Luigi

@@ -11,6 +11,11 @@ use Illuminate\View\View;
 class PasswordResetLinkController extends Controller
 {
     /**
+     * Shown whether or not the address belongs to an account, so the form cannot be used to find registered emails.
+     */
+    public const LINK_REQUESTED_MESSAGE = 'If an account with that email address exists, we have sent a password reset link to it.';
+
+    /**
      * Display the password reset link request view.
      */
     public function create(): View
@@ -29,16 +34,12 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
+        // Only active accounts get a link. The response is the same whether the
+        // address is unknown, deactivated, throttled or the link was sent.
+        Password::sendResetLink(
+            $request->only('email') + ['active' => true]
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        return back()->with('status', self::LINK_REQUESTED_MESSAGE);
     }
 }

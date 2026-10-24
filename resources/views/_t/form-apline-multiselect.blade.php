@@ -87,7 +87,7 @@
             @keyup.backspace="removeElementByIdx(idx)"
             @keyup.delete="removeElementByIdx(idx)"
             tabindex="0"
-            class="relative m-1 px-2 py-1.5 border rounded-0 cursor-pointer hover:bg-red-100 after:content-['x'] after:ml-1.5 after:text-red-300 outline-none focus:outline-none ring-0 focus:ring-2 focus:ring-amber-300 ring-inset transition-all"
+            class="relative m-1 px-2 py-1.5 border rounded-0 cursor-pointer hover:bg-red-100 after:content-['x'] after:ml-1.5 after:text-red-300 outline-hidden focus:outline-hidden ring-0 focus:ring-2 focus:ring-amber-300 ring-inset transition-all"
           ></li>
         </template>
 
@@ -104,7 +104,7 @@
           @keyup.enter="addActiveItem"
           :placeholder="searchPlaceholder"
           type="text"
-          class="flex-grow py-2 px-2 mx-1 my-1.5 outline-none focus:outline-none focus:ring-lime-300 focus:ring-2 ring-inset transition-all rounded-0 w-24 text-sm"
+          class="grow py-2 px-2 mx-1 my-1.5 outline-hidden focus:outline-hidden focus:ring-lime-300 focus:ring-2 ring-inset transition-all rounded-0 w-24 text-sm"
         />
 
         <!-- Dropdown Toggle Arrow Icon -->
@@ -116,7 +116,7 @@
           stroke-width="0"
           fill="#ccc"
           :class="expanded && 'rotate-180'"
-          class="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-none"
+          class="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer focus:outline-hidden"
           tabindex="-1"
         >
           <path d="M12 17.414 3.293 8.707l1.414-1.414L12 14.586l7.293-7.293 1.414 1.414L12 17.414z" />
@@ -129,7 +129,7 @@
     <template x-if="expanded">
       <ul
         x-ref="listBox"
-        class="w-full list-none border border-2 border-t-0 rounded-0 focus:outline-none overflow-y-auto outline-none focus:outline-none bg-stone-100 absolute left-0 bottom-100 z-10 text-sm"
+        class="w-full list-none border border-2 border-t-0 rounded-0 focus:outline-hidden overflow-y-auto outline-hidden focus:outline-hidden bg-stone-100 absolute left-0 bottom-100 z-10 text-sm"
         tabindex="0"
         :style="listBoxStyle"
       >

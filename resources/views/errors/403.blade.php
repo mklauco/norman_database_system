@@ -25,17 +25,17 @@
 
             <div class="mt-6 space-y-2">
                 @guest
-                    <a href="{{ route('login') }}" class="inline-block w-full px-4 py-2 text-white bg-slate-600 rounded hover:bg-slate-700 transition-colors">
+                    <a href="{{ route('login') }}" class="inline-block w-full px-4 py-2 text-white bg-slate-600 rounded-sm hover:bg-slate-700 transition-colors">
                         Login
                     </a>
-                    <a href="{{ route('home') }}" class="inline-block w-full px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                    <a href="{{ route('home') }}" class="inline-block w-full px-4 py-2 text-gray-700 bg-gray-100 rounded-sm hover:bg-gray-200 transition-colors">
                         Go Home
                     </a>
                 @else
                     <p class="text-sm text-gray-500 mb-4">
                         If you believe you should have access, please contact an administrator.
                     </p>
-                    <a href="{{ route('home') }}" class="inline-block px-4 py-2 text-white bg-slate-600 rounded hover:bg-slate-700 transition-colors">
+                    <a href="{{ route('home') }}" class="inline-block px-4 py-2 text-white bg-slate-600 rounded-sm hover:bg-slate-700 transition-colors">
                         Go Home
                     </a>
                 @endguest

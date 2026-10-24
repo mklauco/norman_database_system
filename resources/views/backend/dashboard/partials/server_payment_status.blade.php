@@ -4,7 +4,7 @@
     $daysRemaining = $serverPaymentStatus['days_remaining'];
     $renewalDue = $serverPaymentStatus['renewal_due'];
   @endphp
-  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 rounded-lg border shadow-sm {{ $renewalDue ? 'bg-amber-50 border-amber-400' : 'bg-lime-50 border-lime-400' }}">
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 rounded-lg border shadow-xs {{ $renewalDue ? 'bg-amber-50 border-amber-400' : 'bg-lime-50 border-lime-400' }}">
     <span class="font-semibold text-gray-800">
       <i class="fas fa-server mr-2 {{ $renewalDue ? 'text-amber-600' : 'text-lime-700' }}"></i>
       Server status

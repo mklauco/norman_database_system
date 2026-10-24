@@ -16,7 +16,7 @@
           <!-- Warning -->
           <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
             <div class="flex">
-              <div class="flex-shrink-0">
+              <div class="shrink-0">
                 <i class="fa fa-exclamation-triangle text-yellow-400"></i>
               </div>
               <div class="ml-3">

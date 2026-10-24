@@ -4,7 +4,7 @@
             <h3 class="text-sm font-medium text-gray-700 mb-2">Selected substance (only one allowed):</h3>
             <div class="flex flex-wrap gap-2">
                 @foreach ($selectedSubstances as $substance)
-                    <div class="flex items-center px-4 py-2 rounded-lg bg-lime-50 border border-lime-200 shadow-sm group hover:bg-lime-100 transition duration-150 ease-in-out">
+                    <div class="flex items-center px-4 py-2 rounded-lg bg-lime-50 border border-lime-200 shadow-xs group hover:bg-lime-100 transition duration-150 ease-in-out">
                         <input type="hidden" name="substances[]" value="{{$substance['id']}}">
                         
                         <div class="flex flex-col">
@@ -12,7 +12,7 @@
                             <span class="text-xs text-lime-600">CAS: {{ $substance['cas_number'] ?? 'N/A' }}</span>
                         </div>
                         
-                        <button type="button" wire:click="removeSubstance({{$substance['id']}})" class="ml-3 text-lime-800 hover:text-red-600 focus:outline-none group-hover:text-red-600 transition duration-150 ease-in-out">
+                        <button type="button" wire:click="removeSubstance({{$substance['id']}})" class="ml-3 text-lime-800 hover:text-red-600 focus:outline-hidden group-hover:text-red-600 transition duration-150 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                             </svg>
@@ -28,7 +28,7 @@
     </div>
     
     <input type="hidden" value="1" name="searchSubstance">
-    <input type="text" wire:model.live.debounce.300ms="search" name="searchSubstanceString" id="searchSubstanceString" class="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out" placeholder="Search for substances...">
+    <input type="text" wire:model.live.debounce.300ms="search" name="searchSubstanceString" id="searchSubstanceString" class="w-full px-4 py-2 border border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out" placeholder="Search for substances...">
     
     <div class="mt-4">
         <span class="text-gray-700">Search by:</span>
@@ -76,7 +76,7 @@
                     value="{{ $result->id }}"
                     class="form-radio h-4 w-4 text-green-600"
                     >
-                    <div class="ml-2 flex-grow">
+                    <div class="ml-2 grow">
                         <div class="font-medium">{{ $result->name }}</div>
                         <div class="text-sm text-gray-500">
                             @if($result->cas_number)

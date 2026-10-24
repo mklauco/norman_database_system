@@ -24,6 +24,10 @@ class PasswordController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Other sessions end through AuthenticateSession once the password hash changes;
+        // this session keeps working because the middleware stores the new hash.
+        $request->user()->tokens()->delete();
+
         return back()->with('status', 'password-updated');
     }
 }

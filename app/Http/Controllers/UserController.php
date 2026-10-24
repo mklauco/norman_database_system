@@ -173,8 +173,6 @@ class UserController extends Controller implements HasMiddleware
         }
         $temporary_password = Str::random(12);
         $user = new User;
-        // Set explicit ID to avoid sequence conflict
-        $user->id = User::max('id') + 1;
         $user->first_name = $request['first_name'];
         $user->last_name = $request['last_name'];
         $user->email = $request['email'];
@@ -336,18 +334,6 @@ class UserController extends Controller implements HasMiddleware
         return redirect()->back()->with('success', "User {$status} successfully.");
     }
 
-    public function resetPassword(string $id)
-    {
-        $user = User::findOrFail($id);
-        $temporary_password = Str::random(12);
-        $user->password = bcrypt($temporary_password);
-        $user->save();
-
-        // Consider sending an email with the new password
-
-        return redirect()->back()->with('success', 'Password reset successfully. Temporary password: '.$temporary_password);
-    }
-
     public function getApiTokens(string $id)
     {
         $user = User::findOrFail($id);
@@ -357,18 +343,6 @@ class UserController extends Controller implements HasMiddleware
             'user' => $user,
             'tokens' => $tokens,
         ]);
-    }
-
-    public function createApiToken(Request $request, string $id)
-    {
-        $request->validate([
-            'token_name' => 'required|string|max:255',
-        ]);
-
-        $user = User::findOrFail($id);
-        $token = $user->createToken($request->token_name);
-
-        return redirect()->back()->with('success', 'Token created successfully: '.$token->plainTextToken);
     }
 
     public function revokeApiToken(string $tokenId)

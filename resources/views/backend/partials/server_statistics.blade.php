@@ -7,7 +7,7 @@
       ->all();
 @endphp
 
-<div class="bg-white overflow-hidden shadow-sm rounded-lg">
+<div class="bg-white overflow-hidden shadow-xs rounded-lg">
   <div class="p-4 bg-zinc-800 border-b border-zinc-700">
     <h3 class="flex items-center gap-2 text-base font-semibold text-white">
       <i class="fas fa-chart-bar text-zinc-300"></i>
@@ -124,7 +124,7 @@
                   @mouseleave="hide()"
                   @focus="show($el)"
                   @blur="hide()"
-                  class="h-7 flex-1 max-w-[10px] rounded-full cursor-help transition-transform hover:scale-y-110 focus:outline-none focus:ring-2 focus:ring-lime-400 {{ $barClasses[$bar['state']] }}"
+                  class="h-7 flex-1 max-w-[10px] rounded-full cursor-help transition-transform hover:scale-y-110 focus:outline-hidden focus:ring-2 focus:ring-lime-400 {{ $barClasses[$bar['state']] }}"
                 ></span>
               @endforeach
               <span

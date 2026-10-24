@@ -11,7 +11,7 @@
         @endforeach
     </div>
     <input type="hidden" value="1" name="searchSubstance">
-    <input type="text" wire:model.live.debounce.300ms="search" name="searchSubstanceString" id="searchSubstanceString" class="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out">
+    <input type="text" wire:model.live.debounce.300ms="search" name="searchSubstanceString" id="searchSubstanceString" class="w-full px-4 py-2 border border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out">
     <div class="mt-4">
         <span class="text-gray-700">Search by:</span>
         <div class="mt-2">
@@ -43,7 +43,7 @@
         <div class="block p-1">
             <label class="flex items-center cursor-pointer">
                 <input wire:model="selectedSubstanceIds" type="checkbox" name="substancesSearch[]" value="{{$result->id}}">
-                <div class="ml-2 flex-grow">
+                <div class="ml-2 grow">
                     <div class="font-medium">{{$result->name}}</div>
                     <div class="text-sm text-gray-500">
                         @if($result->cas_number)

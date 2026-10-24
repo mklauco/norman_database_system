@@ -7,7 +7,7 @@
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
       <!-- Success Message Display -->
       
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- Project Actions -->
           <div class="mb-6 flex justify-between items-center">
@@ -71,7 +71,7 @@
                 {{ $projects->links('pagination::tailwind') }}
               </div>
             @else
-              <div class="bg-gray-100 p-4 rounded text-center">
+              <div class="bg-gray-100 p-4 rounded-sm text-center">
                 <p>No projects found. Create your first project to get started.</p>
               </div>
             @endif
