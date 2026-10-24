@@ -34,10 +34,10 @@ class PasswordResetLinkController extends Controller
             'email' => ['required', 'email'],
         ]);
 
-        // We will send the password reset link to this user. The response is the
-        // same whether the address is unknown, throttled or the link was sent.
+        // Only active accounts get a link. The response is the same whether the
+        // address is unknown, deactivated, throttled or the link was sent.
         Password::sendResetLink(
-            $request->only('email')
+            $request->only('email') + ['active' => true]
         );
 
         return back()->with('status', self::LINK_REQUESTED_MESSAGE);

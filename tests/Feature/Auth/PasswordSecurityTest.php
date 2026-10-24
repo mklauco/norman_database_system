@@ -31,6 +31,34 @@ class PasswordSecurityTest extends TestCase
         Notification::assertSentTo($user, ResetPassword::class);
     }
 
+    public function test_deactivated_account_gets_no_reset_link_but_the_same_answer(): void
+    {
+        Notification::fake();
+        $user = User::factory()->inactive()->create();
+
+        $this->post('/forgot-password', ['email' => $user->email])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status', PasswordResetLinkController::LINK_REQUESTED_MESSAGE);
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_deactivated_account_can_not_reset_its_password_with_an_earlier_link(): void
+    {
+        $user = User::factory()->create();
+        $token = Password::createToken($user);
+        $user->forceFill(['active' => false])->save();
+
+        $this->post('/reset-password', [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertSessionHasErrors(['email' => __(Password::INVALID_TOKEN)]);
+
+        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+    }
+
     public function test_forgot_password_is_throttled_per_ip(): void
     {
         Notification::fake();

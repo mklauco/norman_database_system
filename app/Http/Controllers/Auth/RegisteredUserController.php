@@ -38,8 +38,6 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-        // Set explicit ID to avoid sequence conflict
-        $user->id = User::max('id') + 1;
         $user->save();
 
         $user->assignRole('user');
