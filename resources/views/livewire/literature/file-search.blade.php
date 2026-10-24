@@ -19,7 +19,7 @@
     name="searchFileString"
     id="searchFileString"
     placeholder="Search files by name (Literature module only)..."
-    class="w-full px-4 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ease-in-out"
+    class="w-full px-4 py-2 border border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ease-in-out"
   >
 
   <!-- Info -->
@@ -54,7 +54,7 @@
           <button
             type="button"
             wire:click="applyFileFilter"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
           >
             Add Selected Files to Search
           </button>
@@ -62,7 +62,7 @@
           <button
             type="button"
             wire:click="clearFilters"
-            class="px-4 py-2 ml-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            class="px-4 py-2 ml-2 bg-gray-200 text-gray-800 rounded-sm hover:bg-gray-300"
           >
             Clear List
           </button>

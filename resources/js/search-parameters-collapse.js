@@ -51,7 +51,7 @@ class SearchParametersCollapse {
     createToggleButton(hiddenCount, isExpanded) {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'inline-flex items-center text-sm text-gray-600 hover:text-gray-800 ml-2 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 rounded';
+        button.className = 'inline-flex items-center text-sm text-gray-600 hover:text-gray-800 ml-2 focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-1 rounded-sm';
         
         const text = isExpanded ? 'Show less' : `... and ${hiddenCount} more`;
         const iconPath = isExpanded 

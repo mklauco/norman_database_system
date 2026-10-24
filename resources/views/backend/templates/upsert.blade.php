@@ -5,7 +5,7 @@
 
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- Template Actions -->
           <div class="mb-6 flex justify-between items-center">
@@ -47,7 +47,7 @@
                       name="name" 
                       id="name" 
                       value="{{ old('name', $template->name) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('name') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('name') border-red-500 @enderror"
                       placeholder="Enter template name"
                     >
                     @error('name')
@@ -62,7 +62,7 @@
                       name="description" 
                       id="description" 
                       rows="4" 
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('description') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('description') border-red-500 @enderror"
                       placeholder="Describe the purpose and content of this template..."
                     >{{ old('description', $template->description) }}</textarea>
                     @error('description')
@@ -87,7 +87,7 @@
                       id="version" 
                       value="{{ old('version', $template->version) }}"
                       placeholder="1.0"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('version') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('version') border-red-500 @enderror"
                     >
                     <p class="mt-1 text-xs text-gray-500">Version identifier for this template</p>
                     @error('version')
@@ -103,7 +103,7 @@
                       name="valid_from" 
                       id="valid_from" 
                       value="{{ old('valid_from', $template->valid_from ? date('Y-m-d', strtotime($template->valid_from)) : '') }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('valid_from') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('valid_from') border-red-500 @enderror"
                     >
                     <p class="mt-1 text-xs text-gray-500">Date from which this template becomes valid</p>
                     @error('valid_from')
@@ -133,7 +133,7 @@
                               file:text-sm file:font-semibold
                               file:bg-slate-50 file:text-slate-700
                               hover:file:bg-slate-100
-                              focus:outline-none focus:ring-2 focus:ring-slate-500"
+                              focus:outline-hidden focus:ring-2 focus:ring-slate-500"
                         required
                       >
                       <p class="mt-2 text-sm text-gray-500">
@@ -149,7 +149,7 @@
                     @if($template->file_path)
                       <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Current Template File</label>
-                        <div class="bg-white p-3 rounded border border-gray-300">
+                        <div class="bg-white p-3 rounded-sm border border-gray-300">
                           <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                               <i class="fa fa-file-alt text-2xl text-gray-600"></i>
@@ -205,7 +205,7 @@
                     <select 
                       name="database_entity_id" 
                       id="database_entity_id" 
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('database_entity_id') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('database_entity_id') border-red-500 @enderror"
                     >
                       <option value="">-- No Database Entity --</option>
                       @foreach($databaseEntities as $databaseEntity)
@@ -235,7 +235,7 @@
                         id="is_active" 
                         value="1"
                         {{ old('is_active', $template->is_active ?? true) ? 'checked' : '' }}
-                        class="h-4 w-4 rounded border-gray-300 text-slate-600 focus:ring-slate-500"
+                        class="h-4 w-4 rounded-sm border-gray-300 text-slate-600 focus:ring-slate-500"
                       >
                     </div>
                     <div class="ml-3 text-sm">
@@ -287,14 +287,14 @@
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <a 
                 href="{{ route('templates.index') }}" 
-                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition"
+                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-xs text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition"
               >
                 <i class="fa fa-times mr-2"></i>
                 Cancel
               </a>
               <button 
                 type="submit" 
-                class="btn-submit inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md transition"
+                class="btn-submit inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-xs text-sm font-medium rounded-md transition"
               >
                 @if(isset($isCreate) && $isCreate)
                   <i class="fa fa-plus mr-2"></i>

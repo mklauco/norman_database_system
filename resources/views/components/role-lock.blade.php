@@ -35,7 +35,7 @@
   @scroll.window="hide()"
   tabindex="0"
   aria-label="{{ $label }}"
-  {{ $attributes->merge(['class' => 'inline-flex items-center cursor-help rounded focus:outline-none focus:ring-2 focus:ring-lime-400 '.$color]) }}
+  {{ $attributes->merge(['class' => 'inline-flex items-center cursor-help rounded-sm focus:outline-hidden focus:ring-2 focus:ring-lime-400 '.$color]) }}
 >
   <i class="fas fa-lock-open text-xs" aria-hidden="true"></i>
   <span

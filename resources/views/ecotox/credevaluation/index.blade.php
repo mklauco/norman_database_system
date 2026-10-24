@@ -27,7 +27,7 @@
               ])
             @else
               {{-- Advanced output with better styling --}}
-              <div class="flex flex-wrap items-center bg-gray-50 p-3 rounded-lg shadow-sm border border-gray-200">
+              <div class="flex flex-wrap items-center bg-gray-50 p-3 rounded-lg shadow-xs border border-gray-200">
                 <div class="flex items-center mr-4">
                   <span class="text-gray-700">Number of matched records:</span>
                   <span class="font-bold text-lg ml-2 text-sky-700">
@@ -271,23 +271,23 @@
             {{-- use simple output --}}
             <div class="flex justify-center space-x-4 mt-4">
               @if ($resultsObjects->onFirstPage())
-                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
+                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded-sm cursor-not-allowed">
                   Previous
                 </span>
               @else
                 <a href="{{ $resultsObjects->previousPageUrl() }}"
-                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded-sm hover:bg-stone-600">
                   Previous
                 </a>
               @endif
 
               @if ($resultsObjects->hasMorePages())
                 <a href="{{ $resultsObjects->nextPageUrl() }}"
-                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+                  class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded-sm hover:bg-stone-600">
                   Next
                 </a>
               @else
-                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
+                <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded-sm cursor-not-allowed">
                   Next
                 </span>
               @endif

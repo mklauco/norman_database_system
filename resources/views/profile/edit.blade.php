@@ -17,25 +17,25 @@
 
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- Page Header -->
           <div class="mb-6 flex justify-between items-center">
             <h2 class="text-xl font-semibold text-gray-800">Profile Settings</h2>
-            <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+            <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition">
               <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
             </a>
           </div>
           
           <!-- Success Message -->
           @if(session('status') === 'profile-updated')
-            <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-sm relative" role="alert">
               <span class="block sm:inline">Profile updated successfully!</span>
             </div>
           @endif
 
           @if(session('status') === 'password-updated')
-            <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-sm relative" role="alert">
               <span class="block sm:inline">Password updated successfully!</span>
             </div>
           @endif
@@ -43,7 +43,7 @@
           <div class="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
             
             <!-- Profile Information Section -->
-            <div class="bg-gray-50 rounded-lg shadow p-6">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
               <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Profile Information</h3>
               
               <form method="post" action="{{ route('profile.update') }}" class="space-y-4">
@@ -57,7 +57,7 @@
                     <label for="salutation" class="block text-sm font-medium text-gray-700">Salutation</label>
                     <select name="salutation" 
                             id="salutation" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm">
                       <option value="">None</option>
                       <option value="Dr." {{ old('salutation', $user->salutation ?? '') == 'Dr.' ? 'selected' : '' }}>Dr.</option>
                       <option value="Prof." {{ old('salutation', $user->salutation ?? '') == 'Prof.' ? 'selected' : '' }}>Prof.</option>
@@ -77,7 +77,7 @@
                            name="username" 
                            id="username" 
                            value="{{ old('username', $user->username ?? '') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('username') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('username') border-red-500 @enderror">
                     @error('username')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -94,7 +94,7 @@
                            id="first_name" 
                            value="{{ old('first_name', $user->first_name ?? '') }}" 
                            required
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('first_name') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('first_name') border-red-500 @enderror">
                     @error('first_name')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -108,7 +108,7 @@
                            id="last_name" 
                            value="{{ old('last_name', $user->last_name ?? '') }}" 
                            required
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('last_name') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('last_name') border-red-500 @enderror">
                     @error('last_name')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -123,7 +123,7 @@
                          id="email" 
                          value="{{ old('email', $user->email ?? '') }}" 
                          required
-                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('email') border-red-500 @enderror">
+                         class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('email') border-red-500 @enderror">
                   @error('email')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                   @enderror
@@ -132,7 +132,7 @@
                     <div class="mt-2">
                       <p class="text-sm text-gray-800">
                         Your email address is unverified.
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                           Click here to re-send the verification email.
                         </button>
                       </p>
@@ -153,7 +153,7 @@
                     <label for="organisation_id" class="block text-sm font-medium text-gray-700">Organization</label>
                     <select name="organisation_id"
                             id="organisation_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('organisation_id') border-red-500 @enderror">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('organisation_id') border-red-500 @enderror">
                       <option value="">-- Select Organization --</option>
                       @foreach($organisations as $organisation)
                         <option value="{{ $organisation->id }}"
@@ -172,7 +172,7 @@
                     <label for="country_id" class="block text-sm font-medium text-gray-700">Country</label>
                     <select name="country_id"
                             id="country_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('country_id') border-red-500 @enderror">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('country_id') border-red-500 @enderror">
                       <option value="">-- Select Country --</option>
                       @foreach($countries as $country)
                         <option value="{{ $country->id }}"
@@ -202,7 +202,7 @@
             </div>
             
             <!-- Password Section -->
-            <div class="bg-gray-50 rounded-lg shadow p-6">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
               <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Change Password</h3>
               
               <form method="post" action="{{ route('password.update') }}" class="space-y-4">
@@ -216,7 +216,7 @@
                          name="current_password" 
                          id="update_password_current_password" 
                          autocomplete="current-password"
-                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('current_password', 'updatePassword') border-red-500 @enderror">
+                         class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('current_password', 'updatePassword') border-red-500 @enderror">
                   @error('current_password', 'updatePassword')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                   @enderror
@@ -229,7 +229,7 @@
                          name="password" 
                          id="update_password_password" 
                          autocomplete="new-password"
-                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('password', 'updatePassword') border-red-500 @enderror">
+                         class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('password', 'updatePassword') border-red-500 @enderror">
                   @error('password', 'updatePassword')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                   @enderror
@@ -242,7 +242,7 @@
                          name="password_confirmation" 
                          id="update_password_password_confirmation" 
                          autocomplete="new-password"
-                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('password_confirmation', 'updatePassword') border-red-500 @enderror">
+                         class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('password_confirmation', 'updatePassword') border-red-500 @enderror">
                   @error('password_confirmation', 'updatePassword')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                   @enderror
@@ -260,7 +260,7 @@
           </div>
 
           <!-- Account Deletion Section -->
-          <div class="mt-6 bg-red-50 rounded-lg shadow p-6">
+          <div class="mt-6 bg-red-50 rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-medium text-red-900 mb-4 border-b border-red-200 pb-2">Danger Zone</h3>
             
             <div class="space-y-4">
@@ -271,7 +271,7 @@
               <button
                 x-data=""
                 x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                class="px-4 py-2 bg-red-600 text-white rounded-sm hover:bg-red-700 transition"
               >
                 Delete Account
               </button>
@@ -303,7 +303,7 @@
           id="password"
           name="password"
           type="password"
-          class="mt-1 block w-3/4 rounded-md border-gray-300 shadow-sm focus:border-slate-500 focus:ring-slate-500"
+          class="mt-1 block w-3/4 rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500"
           placeholder="Password"
         />
         @error('password', 'userDeletion')
@@ -312,11 +312,11 @@
       </div>
 
       <div class="mt-6 flex justify-end">
-        <button type="button" x-on:click="$dispatch('close')" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition mr-3">
+        <button type="button" x-on:click="$dispatch('close')" class="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition mr-3">
           Cancel
         </button>
 
-        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-sm hover:bg-red-700 transition">
           Delete Account
         </button>
       </div>

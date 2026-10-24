@@ -25,7 +25,7 @@
                 Input Data Type
               </label>
               <select name="input_type" id="input_type" required 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-lime-500 focus:border-lime-500">
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-lime-500 focus:border-lime-500">
                 <option value="">Select input type...</option>
                 <option value="cas_no" {{ isset($formData['input_type']) && $formData['input_type'] == 'cas_no' ? 'selected' : '' }}>CAS Number</option>
                 <option value="substance_name" {{ isset($formData['input_type']) && $formData['input_type'] == 'substance_name' ? 'selected' : '' }}>Substance Name</option>
@@ -42,7 +42,7 @@
               <div class="flex items-center">
                 <input type="checkbox" name="exact_match" id="exact_match" value="1" 
                        {{ isset($formData['exact_match']) && $formData['exact_match'] ? 'checked' : '' }}
-                       class="h-4 w-4 text-lime-600 focus:ring-lime-500 border-gray-300 rounded">
+                       class="h-4 w-4 text-lime-600 focus:ring-lime-500 border-gray-300 rounded-sm">
                 <label for="exact_match" class="ml-2 block text-sm text-gray-700">
                   Exact match only
                 </label>
@@ -59,7 +59,7 @@
               </label>
               <textarea name="identifiers" id="identifiers" rows="10" required
                         placeholder="Enter identifiers here, one per line&#10;Example:&#10;67-56-1&#10;108-88-3&#10;71-43-2&#10;&#10;For Susdat ID:&#10;NS12345&#10;67890&#10;NS99999"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-lime-500 focus:border-lime-500 font-mono text-sm">{{ $formData['identifiers'] ?? '' }}</textarea>
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-lime-500 focus:border-lime-500 font-mono text-sm">{{ $formData['identifiers'] ?? '' }}</textarea>
               @error('identifiers')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
               @enderror

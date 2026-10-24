@@ -5,19 +5,19 @@
 
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <div class="mb-4">
             <form method="GET" action="{{ route('querylog.index') }}" class="flex items-center gap-2 flex-wrap">
               <label for="module" class="text-sm font-medium">Module:</label>
-              <select id="module" name="module" class="border rounded px-2 py-1 text-sm">
+              <select id="module" name="module" class="border rounded-sm px-2 py-1 text-sm">
                 @foreach ($modules ?? [] as $key => $label)
                   <option value="{{ $key }}" @selected(($activeModule ?? '') === $key)>{{ $label }}</option>
                 @endforeach
               </select>
-              <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+              <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded-sm text-sm">Apply</button>
               @if (!empty($activeModule))
-                <a href="{{ route('querylog.index') }}" class="px-3 py-1 bg-gray-200 rounded text-sm">Reset</a>
+                <a href="{{ route('querylog.index') }}" class="px-3 py-1 bg-gray-200 rounded-sm text-sm">Reset</a>
               @endif
             </form>
           </div>
@@ -94,7 +94,7 @@
                     </td>
 
                     <td class="py-1 px-2 text-xs">
-                      <span class="px-2 py-0.5 bg-slate-100 text-slate-800 rounded font-mono">{{ $moduleKey }}</span>
+                      <span class="px-2 py-0.5 bg-slate-100 text-slate-800 rounded-sm font-mono">{{ $moduleKey }}</span>
                     </td>
 
                     <td class="py-1 px-2 text-xs">

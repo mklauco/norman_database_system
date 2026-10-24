@@ -9,7 +9,7 @@
         <div class="p-6 text-gray-900">
 
           {{-- Literature Record Information at Glance --}}
-          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Literature Record Information at Glance</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               <div>

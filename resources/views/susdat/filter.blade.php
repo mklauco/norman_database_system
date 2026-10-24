@@ -19,7 +19,7 @@
           <!-- Main Search form -->
           <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 xl:gap-8">
             
-            <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-xs hover:shadow-md transition-all duration-300">
               <div class="p-4">
                 <div class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
                   Search Use category:
@@ -29,7 +29,7 @@
                   <input type="hidden" value="1" name="search">
                   
                   <!-- Error message for no category selection -->
-                  <div id="categoryError" class="hidden mb-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  <div id="categoryError" class="hidden mb-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded-sm">
                     <div class="flex items-center">
                       <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
@@ -41,7 +41,7 @@
                   <div class="space-y-1 pr-2">
                     @foreach ($categories as $category)
                     <div @if($category->children->isNotEmpty()) x-data="{ open: false }" @endif>
-                      <div class="flex items-center space-x-2 p-0.5 rounded hover:bg-gray-100 transition-colors duration-150">
+                      <div class="flex items-center space-x-2 p-0.5 rounded-sm hover:bg-gray-100 transition-colors duration-150">
                         @if ($category->children->isNotEmpty())
                         <button type="button" x-on:click="open = !open" :aria-expanded="open" class="shrink-0 w-5 h-5 flex items-center justify-center text-gray-500 hover:text-lime-700" aria-label="Toggle subcategories of {{ $category->name }}">
                           <svg class="w-4 h-4 transition-transform duration-150" :class="open ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@
                         @else
                         <span class="shrink-0 w-5 h-5"></span>
                         @endif
-                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}" id="category_{{$category->id}}" class="w-5 h-5 text-lime-600 border-gray-300 rounded focus:ring-lime-500 focus:ring-2">
+                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}" id="category_{{$category->id}}" class="w-5 h-5 text-lime-600 border-gray-300 rounded-sm focus:ring-lime-500 focus:ring-2">
                         <label for="category_{{$category->id}}" class="text-base text-gray-700 cursor-pointer select-none">
                           {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
                         </label>
@@ -61,7 +61,7 @@
                       <div x-show="open" x-collapse class="ml-7 border-l border-gray-200 pl-2 space-y-1">
                         @foreach ($category->children as $subcategory)
                         <div @if($subcategory->children->isNotEmpty()) x-data="{ openSub: false }" @endif>
-                          <div class="flex items-center space-x-2 p-0.5 rounded hover:bg-gray-100 transition-colors duration-150">
+                          <div class="flex items-center space-x-2 p-0.5 rounded-sm hover:bg-gray-100 transition-colors duration-150">
                             @if ($subcategory->children->isNotEmpty())
                             <button type="button" x-on:click="openSub = !openSub" :aria-expanded="openSub" class="shrink-0 w-4 h-4 flex items-center justify-center text-gray-500 hover:text-lime-700" aria-label="Toggle subcategories of {{ $subcategory->name }}">
                               <svg class="w-3 h-3 transition-transform duration-150" :class="openSub ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,15 +71,15 @@
                             @else
                             <span class="shrink-0 w-4 h-4"></span>
                             @endif
-                            <input type="checkbox" name="categoriesSearch[]" value="{{$subcategory->id}}" id="category_{{$subcategory->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded focus:ring-lime-500 focus:ring-2">
+                            <input type="checkbox" name="categoriesSearch[]" value="{{$subcategory->id}}" id="category_{{$subcategory->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded-sm focus:ring-lime-500 focus:ring-2">
                             <label for="category_{{$subcategory->id}}" class="text-sm text-gray-700 cursor-pointer select-none">{{ $subcategory->name }}</label>
                           </div>
 
                           @if ($subcategory->children->isNotEmpty())
                           <div x-show="openSub" x-collapse class="ml-6 border-l border-gray-200 pl-2 space-y-1">
                             @foreach ($subcategory->children as $leaf)
-                            <div class="flex items-center space-x-2 p-0.5 rounded hover:bg-gray-100 transition-colors duration-150">
-                              <input type="checkbox" name="categoriesSearch[]" value="{{$leaf->id}}" id="category_{{$leaf->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded focus:ring-lime-500 focus:ring-2">
+                            <div class="flex items-center space-x-2 p-0.5 rounded-sm hover:bg-gray-100 transition-colors duration-150">
+                              <input type="checkbox" name="categoriesSearch[]" value="{{$leaf->id}}" id="category_{{$leaf->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded-sm focus:ring-lime-500 focus:ring-2">
                               <label for="category_{{$leaf->id}}" class="text-sm text-gray-600 cursor-pointer select-none">{{ $leaf->name }}</label>
                             </div>
                             @endforeach
@@ -100,7 +100,7 @@
               </div>
             </div>
             
-            <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-xs hover:shadow-md transition-all duration-300">
               <div class="p-4">
                 <div class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
                   Search according to source in SLE:
@@ -122,7 +122,7 @@
               </div>
             </div>
             
-            <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-xs hover:shadow-md transition-all duration-300">
               <div class="p-4">
                 <div class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
                   Interactive search for a specific substance:

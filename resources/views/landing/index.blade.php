@@ -6,7 +6,7 @@
           Your session has expired. Please <a href="{{ route('login') }}" class="link-lime-text">log in</a> again.
         </div>
       @endif
-      <div class="pb-4 sm:p-8 bg-white shadow sm:rounded-lg">
+      <div class="pb-4 sm:p-8 bg-white shadow-sm sm:rounded-lg">
         <div class="text-center border-b-2 border-lime-400 p-2">
           NORMAN organises the development and maintenance of various web-based databases for the collection & evaluation of data / information on emerging substances in the environment
         </div>

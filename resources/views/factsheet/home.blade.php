@@ -92,7 +92,7 @@
                                     <li>3. <strong>Filter:</strong> Narrow down results by substance criteria</li>
                                     <li>4. <strong>Export:</strong> Download data for further analysis</li>
                                 </ol>
-                                <div class="mt-4 p-3 bg-lime-50 border border-lime-200 rounded">
+                                <div class="mt-4 p-3 bg-lime-50 border border-lime-200 rounded-sm">
                                     <p class="text-sm text-lime-800">
                                         <strong>Tip:</strong> Use CAS numbers for the most precise substance identification
                                     </p>

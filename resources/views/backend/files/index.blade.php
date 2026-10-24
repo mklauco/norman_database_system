@@ -9,12 +9,12 @@
         <div class="p-6 text-gray-900">
           <!-- Flash Messages -->
           @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-sm">
               {{ session('success') }}
             </div>
           @endif
           @if(session('error'))
-            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-sm">
               {{ session('error') }}
             </div>
           @endif
@@ -47,7 +47,7 @@
           <div class="mb-4 flex items-end gap-4">
             <div>
               <label for="database_entity_id" class="block text-sm font-medium text-gray-700">Database</label>
-              <select id="database_entity_id" onchange="window.location.href='{{ route('files.index') }}?database_entity_id=' + this.value" class="mt-1 block w-64 pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
+              <select id="database_entity_id" onchange="window.location.href='{{ route('files.index') }}?database_entity_id=' + this.value" class="mt-1 block w-64 pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
                 <option value="">All Databases</option>
                 @foreach($databaseEntities as $entity)
                   <option value="{{ $entity->id }}" {{ $databaseEntityId == $entity->id ? 'selected' : '' }}>{{ $entity->name }}</option>
@@ -67,7 +67,7 @@
               <div class="flex space-x-4 flex-1">
                 <div class="w-32">
                   <label for="perPage" class="block text-sm font-medium text-gray-700">Show</label>
-                  <select name="per_page" id="perPage" onchange="document.getElementById('filterForm').submit()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
+                  <select name="per_page" id="perPage" onchange="document.getElementById('filterForm').submit()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
                     <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
                     <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
                     <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
@@ -82,7 +82,7 @@
                     id="search"
                     value="{{ $search }}"
                     placeholder="Search by name or description..."
-                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-xs py-2 px-3 focus:outline-hidden focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
                 </div>
 
                 <div class="flex items-end">
@@ -150,7 +150,7 @@
                 @forelse ($files as $file)
                   <tr class="@if ($loop->odd) bg-slate-100 @else bg-slate-200 @endif hover:bg-slate-300">
                     <td class="px-1 py-1 font-mono break-all">{{ $file->id }}</td>
-                    <td class="px-1 py-1 break-words">{{ $file->original_name ?? $file->name ?? '-' }} @if($file->formatted_file_size)<span class="text-gray-500">({{ $file->formatted_file_size }})</span>@endif</td>
+                    <td class="px-1 py-1 wrap-break-word">{{ $file->original_name ?? $file->name ?? '-' }} @if($file->formatted_file_size)<span class="text-gray-500">({{ $file->formatted_file_size }})</span>@endif</td>
                     <td class="px-1 py-1 truncate" title="{{ $file->project->name ?? '' }}">{{ $file->project->name ?? '-' }}</td>
                     <td class="px-1 py-1 truncate" title="{{ $file->databaseEntity->name ?? '' }}">{{ $file->databaseEntity->name ?? '-' }}</td>
                     <td class="px-1 py-1 text-right font-mono whitespace-nowrap">{{ $file->main_id_from ? number_format($file->main_id_from, 0, '.', ' ') : '-' }}</td>
@@ -159,7 +159,7 @@
                     <td class="px-1 py-1 text-center">{{ $file->is_protected ? 'Yes' : 'No' }}</td>
                     <td class="px-1 py-1 text-center">
                       @if($file->is_deleted)
-                        <span class="px-1 py-0.5 bg-red-600 text-white text-xs font-medium rounded">Yes</span>
+                        <span class="px-1 py-0.5 bg-red-600 text-white text-xs font-medium rounded-sm">Yes</span>
                       @else
                         No
                       @endif

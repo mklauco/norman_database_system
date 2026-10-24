@@ -5,11 +5,11 @@
 
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-      <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+      <div class="p-4 sm:p-8 bg-white shadow-sm sm:rounded-lg">
         <div class="max-w">
 
           @if(session('new_api_token'))
-          <div class="mb-6 p-4 border-2 border-amber-400 bg-amber-50 rounded" role="alert">
+          <div class="mb-6 p-4 border-2 border-amber-400 bg-amber-50 rounded-sm" role="alert">
             <p class="text-base font-bold text-amber-900">
               <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;Copy your new API token now. It will NOT be shown again.
             </p>
@@ -82,7 +82,7 @@
         </div>
       </div>
       
-      <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+      <div class="p-4 sm:p-8 bg-white shadow-sm sm:rounded-lg">
         <div class="max-w-xl">
           <h2 class="text-lg font-medium text-gray-900 px-2">
             {{ 'Create a new API token'}}

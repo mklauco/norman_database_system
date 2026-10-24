@@ -44,7 +44,7 @@
             <div class="flex space-x-4 flex-1">
               <div class="w-32">
                 <label for="perPage" class="block text-sm font-medium text-gray-700">Show</label>
-                <select id="perPage" x-model="perPage" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
+                <select id="perPage" x-model="perPage" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
                   <option value="10">10</option>
                   <option value="25">25</option>
                   <option value="50">50</option>
@@ -59,13 +59,13 @@
                 x-model="search" 
                 @input="debounceSearch()" 
                 placeholder="Search by substance name (e.g., Benzene, Atrazine...)" 
-                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-xs py-2 px-3 focus:outline-hidden focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
                 <div class="text-xs text-gray-600 mt-1">Only searches substances with PNEC data</div>
               </div>
               
               <div class="w-48">
                 <label for="expPred" class="block text-sm font-medium text-gray-700">Data Type</label>
-                <select id="expPred" x-model="expPred" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
+                <select id="expPred" x-model="expPred" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
                   <option value="">All Records</option>
                   <option value="1">Experimental Only</option>
                   <option value="2">Predicted Only</option>
@@ -81,7 +81,7 @@
                 @csrf
                 <input type="hidden" name="search" x-model="search">
                 <input type="hidden" name="exp_pred" x-model="expPred">
-                <button type="submit" class="btn-submit inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                <button type="submit" class="btn-submit inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-slate-600 hover:bg-slate-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                   </svg>
@@ -189,7 +189,7 @@
                       <span class="font-medium" x-text="pnec.lowest_pnec_value_8 || ''"></span>
                     </td> --}}
                     <td class="p-1 text-center">
-                      <span class="px-2 py-1 rounded text-xs font-medium" 
+                      <span class="px-2 py-1 rounded-sm text-xs font-medium" 
                         :class="pnec.lowest_exp_pred == 1 ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-800'"
                         x-text="pnec.lowest_exp_pred == 1 ? 'Experimental' : 'Predicted'">
                       </span>

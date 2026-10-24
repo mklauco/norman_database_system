@@ -3,7 +3,7 @@
 
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           
           <div class="mb-6">
@@ -13,7 +13,7 @@
               <div class="mt-3 p-4 bg-lime-50 rounded-lg border border-lime-200">
                 <form method="GET" action="{{ route('export_downloads.index') }}" class="flex items-center gap-4">
                   <label for="user_id" class="text-sm font-medium text-gray-700">Filter by User:</label>
-                  <select name="user_id" id="user_id" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 text-sm" onchange="this.form.submit()">
+                  <select name="user_id" id="user_id" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 text-sm" onchange="this.form.submit()">
                     <option value="">-- Select User --</option>
                     @foreach($usersWithExports as $u)
                       <option value="{{ $u->id }}" {{ $userId == $u->id ? 'selected' : '' }}>
@@ -71,7 +71,7 @@
                         <span class="text-gray-800">{{ $download->filename }}</span>
                       </td>
                       <td class="py-2 px-2">
-                        <span class="bg-gray-100 px-1 py-0.5 rounded uppercase">{{ $download->format }}</span>
+                        <span class="bg-gray-100 px-1 py-0.5 rounded-sm uppercase">{{ $download->format }}</span>
                       </td>
                       <td class="py-2 px-2">{{ $download->database_key }}</td>
                       <td class="py-2 px-2">
@@ -97,13 +97,13 @@
                       </td>
                       <td class="py-2 px-2">
                         @if($download->status === 'completed')
-                          <span class="bg-green-100 text-green-800 px-1 py-0.5 rounded">Completed</span>
+                          <span class="bg-green-100 text-green-800 px-1 py-0.5 rounded-sm">Completed</span>
                         @elseif($download->status === 'processing')
-                          <span class="bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded">Processing</span>
+                          <span class="bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded-sm">Processing</span>
                         @elseif($download->status === 'failed')
-                          <span class="bg-red-100 text-red-800 px-1 py-0.5 rounded">Failed</span>
+                          <span class="bg-red-100 text-red-800 px-1 py-0.5 rounded-sm">Failed</span>
                         @else
-                          <span class="bg-gray-100 text-gray-800 px-1 py-0.5 rounded">{{ ucfirst($download->status) }}</span>
+                          <span class="bg-gray-100 text-gray-800 px-1 py-0.5 rounded-sm">{{ ucfirst($download->status) }}</span>
                         @endif
                       </td>
                       <td class="py-2 px-2 text-gray-600">

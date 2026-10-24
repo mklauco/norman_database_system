@@ -51,22 +51,22 @@
                 <div class="mb-4">
                     <div class="font-semibold text-base border-b-2 border-lime-500 text-center mb-2">Substance</div>
                     <div class="space-y-1">
-                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded">
+                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded-sm">
                             <div class="font-semibold">Substance</div>
                             <div x-text="record?.substance?.name || 'N/A'"></div>
                         </div>
-                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded">
+                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded-sm">
                             <div class="font-semibold">Code</div>
                             <a :href="record?.substance_id ? `{{ route('substances.show', ':id') }}`.replace(':id', record.substance_id) : '#'"
                                target="_blank" 
                                class="text-lime-600 hover:text-lime-700 hover:underline"
                                x-text="record?.substance?.prefixed_code || 'N/A'"></a>
                         </div>
-                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded">
+                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded-sm">
                             <div class="font-semibold">StdInChIKey</div>
                             <div class="font-mono text-xs" x-text="record?.substance?.stdinchikey || 'N/A'"></div>
                         </div>
-                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded">
+                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded-sm">
                             <div class="font-semibold">CAS Number</div>
                             <div x-text="record?.substance?.cas_number || 'N/A'"></div>
                         </div>
@@ -77,7 +77,7 @@
                 <div class="mb-4">
                     <div class="font-semibold text-base border-b-2 border-lime-500 text-center mb-2">Concentration</div>
                     <div class="space-y-1">
-                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded">
+                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded-sm">
                             <div class="font-semibold">Concentration</div>
                             <div>
                                 <template x-if="record?.concentration_indicator_id == 0">
@@ -94,7 +94,7 @@
                                 </template>
                             </div>
                         </div>
-                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded">
+                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded-sm">
                             <div class="font-semibold">Sampling Date</div>
                             <div x-text="record?.formatted_sampling_date || 'N/A'"></div>
                         </div>
@@ -109,7 +109,7 @@
                     <div class="space-y-1 mb-3">
                         <template x-for="(pair, index) in stationArray" :key="index">
                             <div :class="index % 2 === 0 ? 'bg-slate-100' : 'bg-slate-200'" 
-                                 class="flex justify-between py-1 px-2 text-sm rounded">
+                                 class="flex justify-between py-1 px-2 text-sm rounded-sm">
                                 <div class="font-semibold" x-text="pair[0]"></div>
                                 <div x-text="pair[1]"></div>
                             </div>
@@ -118,11 +118,11 @@
                         <!-- Coordinates Display (if valid) -->
                         <template x-if="hasValidCoordinates()">
                             <div class="space-y-1">
-                                <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded">
+                                <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded-sm">
                                     <div class="font-semibold">Latitude</div>
                                     <div x-text="formatCoordinate(record.station.latitude, 'latitude')"></div>
                                 </div>
-                                <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded">
+                                <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded-sm">
                                     <div class="font-semibold">Longitude</div>
                                     <div x-text="formatCoordinate(record.station.longitude, 'longitude')"></div>
                                 </div>
@@ -134,7 +134,7 @@
                     <template x-if="hasValidCoordinates()">
                         <div x-transition class="relative">
                             <div id="map" class="w-full h-64 bg-gray-100 rounded-lg border border-gray-300"></div>
-                            <div class="absolute top-2 right-2 bg-white px-2 py-1 rounded shadow-sm text-xs text-gray-600">
+                            <div class="absolute top-2 right-2 bg-white px-2 py-1 rounded-sm shadow-xs text-xs text-gray-600">
                                 Click map to interact
                             </div>
                         </div>
@@ -147,7 +147,7 @@
                     <div class="space-y-1">
                         <template x-for="(pair, index) in analyticalMethodArray" :key="index">
                             <div :class="index % 2 === 0 ? 'bg-slate-100' : 'bg-slate-200'" 
-                                 class="flex justify-between py-1 px-2 text-sm rounded">
+                                 class="flex justify-between py-1 px-2 text-sm rounded-sm">
                                 <div class="font-semibold" x-text="pair[0]"></div>
                                 <div x-text="pair[1]"></div>
                             </div>
@@ -164,7 +164,7 @@
                     <div class="space-y-1">
                         <template x-for="(pair, index) in dataSourceArray" :key="index">
                             <div :class="index % 2 === 0 ? 'bg-slate-100' : 'bg-slate-200'" 
-                                 class="flex justify-between py-1 px-2 text-sm rounded">
+                                 class="flex justify-between py-1 px-2 text-sm rounded-sm">
                                 <div class="font-semibold" x-text="pair[0]"></div>
                                 <div x-text="pair[1]"></div>
                             </div>
@@ -181,7 +181,7 @@
                     <div class="space-y-1">
                         <template x-for="(pair, index) in minorArray" :key="index">
                             <div :class="index % 2 === 0 ? 'bg-slate-100' : 'bg-slate-200'"
-                                 class="flex justify-between py-1 px-2 text-sm rounded">
+                                 class="flex justify-between py-1 px-2 text-sm rounded-sm">
                                 <div class="font-semibold" x-text="pair[0]"></div>
                                 <div x-text="pair[1]"></div>
                             </div>
@@ -204,7 +204,7 @@
                         <div class="space-y-1">
                             <template x-for="(pair, index) in metaDataArray" :key="index">
                                 <div :class="index % 2 === 0 ? 'bg-teal-50' : 'bg-teal-100'"
-                                     class="flex justify-between py-1 px-2 text-sm rounded">
+                                     class="flex justify-between py-1 px-2 text-sm rounded-sm">
                                     <div class="font-semibold text-teal-900" x-text="pair[0]"></div>
                                     <div class="text-teal-800" x-text="pair[1]"></div>
                                 </div>
@@ -222,7 +222,7 @@
         <!-- Modal Footer -->
         <div class="flex justify-end border-t px-4 py-3 bg-gray-50 rounded-b-lg">
             <button @click="closeModal()" 
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200">
+                    class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600 transition-colors duration-200">
                 Close
             </button>
         </div>

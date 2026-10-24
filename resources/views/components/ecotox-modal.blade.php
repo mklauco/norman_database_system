@@ -6,7 +6,7 @@
      @keydown.escape.window="closeModal()"
      class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
 
-    <div class="bg-white w-11/12 md:w-3/4 lg:w-3/4 xl:w-2/3 rounded shadow-lg relative" 
+    <div class="bg-white w-11/12 md:w-3/4 lg:w-3/4 xl:w-2/3 rounded-sm shadow-lg relative" 
          x-transition>
 
         <!-- Modal Header -->
@@ -72,11 +72,11 @@
         <div class="flex justify-between border-t px-4 py-2">
             {{-- <button x-show="tableRows.some(r => r.isEditable)" 
                     @click="saveChanges()" 
-                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                    class="px-4 py-2 bg-green-500 text-white rounded-sm hover:bg-green-600">
                 Save Changes
             </button> --}}
             <button @click="closeModal()" 
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                    class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600">
                 Close
             </button>
         </div>

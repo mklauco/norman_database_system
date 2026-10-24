@@ -5,11 +5,11 @@
 
   <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
 
           @if (session('success'))
-            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-sm relative">
               {{ session('success') }}
             </div>
           @endif
@@ -89,9 +89,9 @@
                       </td>
                       <td class="px-2 py-2">
                         <div class="flex items-center gap-1">
-                          <span class="px-1.5 py-0.5 text-xs rounded {{ $section->effective_header_bg_class }} {{ $section->effective_header_text_class }}">Header</span>
-                          <span class="px-1.5 py-0.5 text-xs rounded {{ $section->effective_row_even_class }} {{ $section->effective_row_text_class }}">Even</span>
-                          <span class="px-1.5 py-0.5 text-xs rounded {{ $section->effective_row_odd_class }} {{ $section->effective_row_text_class }}">Odd</span>
+                          <span class="px-1.5 py-0.5 text-xs rounded-sm {{ $section->effective_header_bg_class }} {{ $section->effective_header_text_class }}">Header</span>
+                          <span class="px-1.5 py-0.5 text-xs rounded-sm {{ $section->effective_row_even_class }} {{ $section->effective_row_text_class }}">Even</span>
+                          <span class="px-1.5 py-0.5 text-xs rounded-sm {{ $section->effective_row_odd_class }} {{ $section->effective_row_text_class }}">Odd</span>
                         </div>
                       </td>
                       <td class="px-2 py-2">

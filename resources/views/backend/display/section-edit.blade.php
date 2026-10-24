@@ -5,17 +5,17 @@
 
   <div class="py-12">
     <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
 
           @if (session('success'))
-            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-sm relative">
               {{ session('success') }}
             </div>
           @endif
 
           @if ($errors->any())
-            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-sm relative">
               <ul class="list-disc list-inside">
                 @foreach ($errors->all() as $error)
                   <li>{{ $error }}</li>
@@ -50,7 +50,7 @@
                   <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Section Name</label>
                     <input type="text" name="name" id="name" value="{{ old('name', $section->name) }}"
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm"
                            placeholder="Leave empty to use type default">
                     <p class="mt-1 text-xs text-gray-500">Override the section type's default name</p>
                   </div>
@@ -58,7 +58,7 @@
                   <div>
                     <label for="section_type_id" class="block text-sm font-medium text-gray-700">Section Type</label>
                     <select name="section_type_id" id="section_type_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                       <option value="">-- Custom (no type) --</option>
                       @foreach($sectionTypes as $type)
                         <option value="{{ $type->id }}" {{ old('section_type_id', $section->section_type_id) == $type->id ? 'selected' : '' }}>
@@ -72,7 +72,7 @@
                   <div>
                     <label for="display_order" class="block text-sm font-medium text-gray-700">Display Order</label>
                     <input type="number" name="display_order" id="display_order" value="{{ old('display_order', $section->display_order) }}"
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm"
                            min="0">
                   </div>
 
@@ -93,7 +93,7 @@
                   <div class="flex items-center">
                     <input type="checkbox" name="is_visible" id="is_visible" value="1"
                            {{ old('is_visible', $section->is_visible) ? 'checked' : '' }}
-                           class="h-4 w-4 rounded border-gray-300 text-lime-600 focus:ring-lime-500">
+                           class="h-4 w-4 rounded-sm border-gray-300 text-lime-600 focus:ring-lime-500">
                     <label for="is_visible" class="ml-2 block text-sm text-gray-700">
                       Visible in show view
                     </label>
@@ -102,7 +102,7 @@
                   <div class="flex items-center">
                     <input type="checkbox" name="is_collapsible" id="is_collapsible" value="1"
                            {{ old('is_collapsible', $section->is_collapsible) ? 'checked' : '' }}
-                           class="h-4 w-4 rounded border-gray-300 text-lime-600 focus:ring-lime-500">
+                           class="h-4 w-4 rounded-sm border-gray-300 text-lime-600 focus:ring-lime-500">
                     <label for="is_collapsible" class="ml-2 block text-sm text-gray-700">
                       Allow section to be collapsed
                     </label>
@@ -111,7 +111,7 @@
                   <div class="flex items-center ml-6">
                     <input type="checkbox" name="is_collapsed_default" id="is_collapsed_default" value="1"
                            {{ old('is_collapsed_default', $section->is_collapsed_default) ? 'checked' : '' }}
-                           class="h-4 w-4 rounded border-gray-300 text-lime-600 focus:ring-lime-500">
+                           class="h-4 w-4 rounded-sm border-gray-300 text-lime-600 focus:ring-lime-500">
                     <label for="is_collapsed_default" class="ml-2 block text-sm text-gray-700">
                       Collapsed by default
                     </label>
@@ -143,18 +143,18 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Header Background</label>
                     <div class="flex items-center gap-3">
-                      <select id="header_bg_color" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="header_bg_color" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         <option value="">-- Use default --</option>
                         @foreach($colors as $name => $shades)
                           <option value="{{ $name }}">{{ ucfirst($name) }}</option>
                         @endforeach
                       </select>
-                      <select id="header_bg_intensity" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="header_bg_intensity" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         @foreach($intensities as $i)
                           <option value="{{ $i }}" {{ $i === '600' ? 'selected' : '' }}>{{ $i }}</option>
                         @endforeach
                       </select>
-                      <div id="header_bg_preview" class="w-8 h-8 rounded border border-gray-300"></div>
+                      <div id="header_bg_preview" class="w-8 h-8 rounded-sm border border-gray-300"></div>
                       <input type="hidden" name="header_bg_class" id="header_bg_class" value="{{ old('header_bg_class', $section->header_bg_class) }}">
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Default: {{ $section->sectionType?->default_header_bg_class ?? 'bg-gray-300' }}</p>
@@ -164,19 +164,19 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Header Text</label>
                     <div class="flex items-center gap-3">
-                      <select id="header_text_color" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="header_text_color" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         <option value="">-- Use default --</option>
                         <option value="white">White</option>
                         @foreach($colors as $name => $shades)
                           <option value="{{ $name }}">{{ ucfirst($name) }}</option>
                         @endforeach
                       </select>
-                      <select id="header_text_intensity" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="header_text_intensity" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         @foreach($intensities as $i)
                           <option value="{{ $i }}" {{ $i === '900' ? 'selected' : '' }}>{{ $i }}</option>
                         @endforeach
                       </select>
-                      <div id="header_text_preview" class="w-8 h-8 rounded border border-gray-300 flex items-center justify-center font-bold">A</div>
+                      <div id="header_text_preview" class="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center font-bold">A</div>
                       <input type="hidden" name="header_text_class" id="header_text_class" value="{{ old('header_text_class', $section->header_text_class) }}">
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Default: {{ $section->sectionType?->default_header_text_class ?? 'text-gray-900' }}</p>
@@ -186,18 +186,18 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Even Row Background</label>
                     <div class="flex items-center gap-3">
-                      <select id="row_even_color" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="row_even_color" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         <option value="">-- Use default --</option>
                         @foreach($colors as $name => $shades)
                           <option value="{{ $name }}">{{ ucfirst($name) }}</option>
                         @endforeach
                       </select>
-                      <select id="row_even_intensity" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="row_even_intensity" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         @foreach($intensities as $i)
                           <option value="{{ $i }}" {{ $i === '50' ? 'selected' : '' }}>{{ $i }}</option>
                         @endforeach
                       </select>
-                      <div id="row_even_preview" class="w-8 h-8 rounded border border-gray-300"></div>
+                      <div id="row_even_preview" class="w-8 h-8 rounded-sm border border-gray-300"></div>
                       <input type="hidden" name="row_even_class" id="row_even_class" value="{{ old('row_even_class', $section->row_even_class) }}">
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Default: {{ $section->sectionType?->default_row_even_class ?? 'bg-slate-100' }}</p>
@@ -207,18 +207,18 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Odd Row Background</label>
                     <div class="flex items-center gap-3">
-                      <select id="row_odd_color" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="row_odd_color" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         <option value="">-- Use default --</option>
                         @foreach($colors as $name => $shades)
                           <option value="{{ $name }}">{{ ucfirst($name) }}</option>
                         @endforeach
                       </select>
-                      <select id="row_odd_intensity" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="row_odd_intensity" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         @foreach($intensities as $i)
                           <option value="{{ $i }}" {{ $i === '100' ? 'selected' : '' }}>{{ $i }}</option>
                         @endforeach
                       </select>
-                      <div id="row_odd_preview" class="w-8 h-8 rounded border border-gray-300"></div>
+                      <div id="row_odd_preview" class="w-8 h-8 rounded-sm border border-gray-300"></div>
                       <input type="hidden" name="row_odd_class" id="row_odd_class" value="{{ old('row_odd_class', $section->row_odd_class) }}">
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Default: {{ $section->sectionType?->default_row_odd_class ?? 'bg-slate-200' }}</p>
@@ -228,18 +228,18 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Row Text</label>
                     <div class="flex items-center gap-3">
-                      <select id="row_text_color" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="row_text_color" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         <option value="">-- Use default --</option>
                         @foreach($colors as $name => $shades)
                           <option value="{{ $name }}">{{ ucfirst($name) }}</option>
                         @endforeach
                       </select>
-                      <select id="row_text_intensity" class="rounded-md border-gray-300 shadow-sm focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
+                      <select id="row_text_intensity" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 sm:text-sm">
                         @foreach($intensities as $i)
                           <option value="{{ $i }}" {{ $i === '900' ? 'selected' : '' }}>{{ $i }}</option>
                         @endforeach
                       </select>
-                      <div id="row_text_preview" class="w-8 h-8 rounded border border-gray-300 flex items-center justify-center font-bold">A</div>
+                      <div id="row_text_preview" class="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center font-bold">A</div>
                       <input type="hidden" name="row_text_class" id="row_text_class" value="{{ old('row_text_class', $section->row_text_class) }}">
                     </div>
                     <p class="mt-1 text-xs text-gray-500">Default: {{ $section->sectionType?->default_row_text_class ?? 'text-gray-900' }}</p>

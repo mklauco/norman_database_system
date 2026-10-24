@@ -5,7 +5,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
                         <a href="{{ route('backend.user-login-retention.filter', request()->query()) }}" class="link-lime-text">
@@ -17,7 +17,7 @@
                                 <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                             @endforeach
                             <label for="perPage" class="block text-sm font-medium text-gray-700">Show</label>
-                            <select name="per_page" id="perPage" onchange="document.getElementById('perPageForm').submit()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
+                            <select name="per_page" id="perPage" onchange="document.getElementById('perPageForm').submit()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-gray-500 focus:border-gray-500 sm:text-sm">
                                 @foreach ([10, 25, 50, 100] as $option)
                                     <option value="{{ $option }}" {{ $perPage === $option ? 'selected' : '' }}>{{ $option }}</option>
                                 @endforeach

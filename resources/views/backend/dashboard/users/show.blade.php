@@ -5,18 +5,18 @@
   
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- User Details Header -->
           <div class="mb-6 flex justify-between items-center">
             <h2 class="text-xl font-semibold text-gray-800">User Details</h2>
             <div class="flex space-x-2">
               @role('super_admin|admin')
-              <a href="{{ route('users.edit', $user->id) }}" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition">
+              <a href="{{ route('users.edit', $user->id) }}" class="px-4 py-2 bg-yellow-600 text-white rounded-sm hover:bg-yellow-700 transition">
                 <i class="fas fa-edit mr-2"></i>Edit User
               </a>
               @endrole
-              <a href="{{ route('users.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+              <a href="{{ route('users.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition">
                 <i class="fas fa-arrow-left mr-2"></i>Back to Users
               </a>
             </div>
@@ -25,7 +25,7 @@
           <!-- User Profile Information -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Personal Information -->
-            <div class="bg-gray-50 rounded-lg shadow p-6">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
               <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Personal Information</h3>
               
               <div class="space-y-4">
@@ -76,7 +76,7 @@
             </div>
             
             <!-- Organization Information -->
-            <div class="bg-gray-50 rounded-lg shadow p-6">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
               <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Organization Information</h3>
               
               <div class="space-y-4">
@@ -113,7 +113,7 @@
             </div>
             
             <!-- API & System Information -->
-            <div class="bg-gray-50 rounded-lg shadow p-6">
+            <div class="bg-gray-50 rounded-lg shadow-sm p-6">
               <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">System Information</h3>
               
               <div class="space-y-4">
@@ -152,7 +152,7 @@
           </div>
           
           <!-- Projects Section -->
-          <div class="mt-8 bg-gray-50 rounded-lg shadow p-6">
+          <div class="mt-8 bg-gray-50 rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">
               Assigned Projects
             </h3>
@@ -193,7 +193,7 @@
           
           <!-- Recent Activity Section (Optional) -->
           @if(isset($recentActivity) && count($recentActivity) > 0)
-          <div class="mt-8 bg-gray-50 rounded-lg shadow p-6">
+          <div class="mt-8 bg-gray-50 rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">
               Recent Activity
             </h3>

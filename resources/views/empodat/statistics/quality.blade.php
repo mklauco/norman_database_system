@@ -89,7 +89,7 @@
     <div class="mb-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
         <label for="entriesSelect" class="text-sm text-gray-700">Show</label>
-        <select id="entriesSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
+        <select id="entriesSelect" class="border border-gray-300 rounded-sm px-2 py-1 text-sm">
           <option value="25">25</option>
           <option value="50">50</option>
           <option value="100" selected>100</option>
@@ -104,7 +104,7 @@
           <input 
             type="text" 
             id="searchInput" 
-            class="border border-gray-300 rounded px-3 py-1 text-sm w-64"
+            class="border border-gray-300 rounded-sm px-3 py-1 text-sm w-64"
             placeholder="Filter quality categories..."
           >
         </div>
@@ -112,7 +112,7 @@
         <button 
           type="button" 
           id="downloadCsv"
-          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2"
+          class="px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -176,7 +176,7 @@
                 <div class="font-medium text-gray-900">{{ $quality['category_name'] }}</div>
               </td>
               <td class="border border-gray-300 px-4 py-2 text-center">
-                <span class="px-2 py-1 bg-gray-100 rounded text-sm font-mono">
+                <span class="px-2 py-1 bg-gray-100 rounded-sm text-sm font-mono">
                   {{ $quality['rating_range'] }}
                 </span>
               </td>
@@ -190,15 +190,15 @@
               </td>
               <td class="border border-gray-300 px-4 py-2 text-center">
                 @if(is_null($quality['min_rating']))
-                  <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium">N/A</span>
+                  <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded-sm text-xs font-medium">N/A</span>
                 @elseif($quality['min_rating'] >= 68)
-                  <span class="px-2 py-1 bg-green-200 text-green-800 rounded text-xs font-medium">High</span>
+                  <span class="px-2 py-1 bg-green-200 text-green-800 rounded-sm text-xs font-medium">High</span>
                 @elseif($quality['min_rating'] >= 52)
-                  <span class="px-2 py-1 bg-yellow-200 text-yellow-800 rounded text-xs font-medium">Medium</span>
+                  <span class="px-2 py-1 bg-yellow-200 text-yellow-800 rounded-sm text-xs font-medium">Medium</span>
                 @elseif($quality['min_rating'] >= 22)
-                  <span class="px-2 py-1 bg-orange-200 text-orange-800 rounded text-xs font-medium">Low</span>
+                  <span class="px-2 py-1 bg-orange-200 text-orange-800 rounded-sm text-xs font-medium">Low</span>
                 @else
-                  <span class="px-2 py-1 bg-red-200 text-red-800 rounded text-xs font-medium">Very Low</span>
+                  <span class="px-2 py-1 bg-red-200 text-red-800 rounded-sm text-xs font-medium">Very Low</span>
                 @endif
               </td>
             </tr>

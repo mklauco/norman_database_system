@@ -5,7 +5,7 @@
 
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           
           <!-- Header with Actions -->
@@ -14,11 +14,11 @@
               SLE Source Details
             </h1>
             <div class="flex space-x-2">
-              <a href="{{ route('sle.sources.edit', $sleSource) }}" class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition">
+              <a href="{{ route('sle.sources.edit', $sleSource) }}" class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 focus:outline-hidden focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition">
                 <i class="fa fa-edit mr-2"></i>
                 Edit
               </a>
-              <a href="{{ route('sle.sources.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition">
+              <a href="{{ route('sle.sources.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:outline-hidden focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition">
                 <i class="fa fa-list mr-2"></i>
                 Back to List
               </a>
@@ -154,11 +154,11 @@
 
           <!-- Action Buttons -->
           <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-            <a href="{{ route('sle.sources.index') }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+            <a href="{{ route('sle.sources.index') }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-xs text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
               <i class="fa fa-arrow-left mr-2"></i>
               Back to List
             </a>
-            <a href="{{ route('sle.sources.edit', $sleSource) }}" class="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition">
+            <a href="{{ route('sle.sources.edit', $sleSource) }}" class="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition">
               <i class="fa fa-edit mr-2"></i>
               Edit Source
             </a>

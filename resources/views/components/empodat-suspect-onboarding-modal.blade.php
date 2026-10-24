@@ -7,7 +7,7 @@
 
   <button type="button"
           @click="open = true"
-          class="inline-flex items-center gap-2 px-4 py-2 border border-lime-600 rounded-md text-sm font-medium text-lime-700 bg-white hover:bg-lime-50 focus:outline-none focus:ring-2 focus:ring-lime-500">
+          class="inline-flex items-center gap-2 px-4 py-2 border border-lime-600 rounded-md text-sm font-medium text-lime-700 bg-white hover:bg-lime-50 focus:outline-hidden focus:ring-2 focus:ring-lime-500">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -36,7 +36,7 @@
           <p class="mt-1 text-sm text-gray-500">High-level overview. The full procedure lives in the internal documentation.</p>
         </div>
         <button type="button" @click="open = false"
-                class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Close">
+                class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-hidden" aria-label="Close">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>

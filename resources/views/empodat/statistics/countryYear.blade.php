@@ -33,7 +33,7 @@
           <select 
             id="minYear" 
             name="min_year" 
-            class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="border border-gray-300 rounded-sm px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             @for($year = $minYear; $year <= $maxYear; $year++)
               <option value="{{ $year }}" {{ ($displayMinYear == $year) ? 'selected' : '' }}>
@@ -48,7 +48,7 @@
           <select 
             id="maxYear" 
             name="max_year" 
-            class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="border border-gray-300 rounded-sm px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             @for($year = $minYear; $year <= $maxYear; $year++)
               <option value="{{ $year }}" {{ ($displayMaxYear == $year) ? 'selected' : '' }}>
@@ -60,7 +60,7 @@
         
         <button 
           type="submit" 
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+          class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors text-sm font-medium"
         >
           Update View
         </button>
@@ -68,7 +68,7 @@
         <button 
           type="button" 
           id="resetRange"
-          class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors text-sm font-medium"
+          class="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition-colors text-sm font-medium"
         >
           Reset to Default
         </button>
@@ -79,7 +79,7 @@
     <div class="mb-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
         <label for="entriesSelect" class="text-sm text-gray-700">Show</label>
-        <select id="entriesSelect" class="border border-gray-300 rounded px-2 py-1 text-sm">
+        <select id="entriesSelect" class="border border-gray-300 rounded-sm px-2 py-1 text-sm">
           <option value="25">25</option>
           <option value="50">50</option>
           <option value="100" selected>100</option>
@@ -94,7 +94,7 @@
           <input 
             type="text" 
             id="searchInput" 
-            class="border border-gray-300 rounded px-3 py-1 text-sm w-64"
+            class="border border-gray-300 rounded-sm px-3 py-1 text-sm w-64"
             placeholder="Filter countries..."
           >
         </div>
@@ -102,7 +102,7 @@
         <button 
           type="button" 
           id="downloadCsv"
-          class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2"
+          class="px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-colors text-sm font-medium flex items-center gap-2"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -117,7 +117,7 @@
   <table id="statisticsTable" class="w-full table-fixed border-collapse">
     <thead>
       <tr class="bg-gray-600 text-white">
-        <th class="border border-gray-300 px-4 py-2 text-left sticky left-0 bg-gray-600 z-20 w-48 min-w-[12rem]">
+        <th class="border border-gray-300 px-4 py-2 text-left sticky left-0 bg-gray-600 z-20 w-48 min-w-48">
           <button type="button" class="flex items-center gap-1 font-medium hover:text-gray-200">
             Country
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -129,7 +129,7 @@
           $displayYears = range($displayMinYear, $displayMaxYear);
         @endphp
         @foreach($displayYears as $year)
-          <th class="year-column border border-gray-300 px-4 py-2 text-center w-24 min-w-[6rem]" data-year="{{ $year }}">
+          <th class="year-column border border-gray-300 px-4 py-2 text-center w-24 min-w-24" data-year="{{ $year }}">
             <button type="button" class="flex items-center gap-1 font-medium hover:text-gray-200 mx-auto whitespace-nowrap">
               {{ $year }}
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -143,11 +143,11 @@
     <tbody id="statisticsTableBody">
       @foreach($countryStats as $country => $yearData)
         <tr class="country-row hover:bg-gray-50 transition-colors" data-country="{{ strtolower($country) }}">
-          <td class="border border-gray-300 px-4 py-2 font-medium sticky left-0 bg-white z-10 w-48 min-w-[12rem]">
+          <td class="border border-gray-300 px-4 py-2 font-medium sticky left-0 bg-white z-10 w-48 min-w-48">
             <div class="truncate" title="{{ $country }}">{{ $country }}</div>
           </td>
           @foreach($displayYears as $year)
-            <td class="year-column border border-gray-300 px-4 py-2 text-right w-24 min-w-[6rem]" data-year="{{ $year }}">
+            <td class="year-column border border-gray-300 px-4 py-2 text-right w-24 min-w-24" data-year="{{ $year }}">
               @if(isset($yearData[$year]))
                 <span class="font-medium text-blue-600">{{ number_format($yearData[$year]) }}</span>
               @else
@@ -179,7 +179,7 @@
     <button 
       type="button" 
       onclick="setYearRange(2020, 2024)"
-      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition-colors text-sm"
+      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded-sm hover:bg-blue-200 transition-colors text-sm"
     >
       Last 5 Years (2020-2024)
     </button>
@@ -187,7 +187,7 @@
     <button 
       type="button" 
       onclick="setYearRange(2015, 2024)"
-      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition-colors text-sm"
+      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded-sm hover:bg-blue-200 transition-colors text-sm"
     >
       Last 10 Years (2015-2024)
     </button>
@@ -195,7 +195,7 @@
     <button 
       type="button" 
       onclick="setYearRange(2000, 2024)"
-      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition-colors text-sm"
+      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded-sm hover:bg-blue-200 transition-colors text-sm"
     >
       Since 2000
     </button>

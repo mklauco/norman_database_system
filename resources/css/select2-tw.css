@@ -1,10 +1,12 @@
+@reference "./app.css";
+
 .select2-container {
 	/* The container where the selectbox is housing*/
 	@apply relative box-border align-middle inline-block m-0 mb-2;
 }
 .select2-container .select2-selection--single {
 	/* Selection box itself */
-	@apply box-border cursor-pointer block select-none shadow border rounded;
+	@apply box-border cursor-pointer block select-none shadow-sm border rounded-sm;
 }
 
 .select2-container .select2-selection--single .select2-selection__rendered {
@@ -66,12 +68,12 @@
 
 .select2-container--open .select2-dropdown--above {
 	/* The left and right borders of the option rows */
-	@apply rounded border-gray-400  shadow;
+	@apply rounded-sm border-gray-400  shadow-sm;
 }
 
 .select2-container--open .select2-dropdown--below {
 	/* The left and right borders of the option rows */
-	@apply rounded border-gray-400  shadow;
+	@apply rounded-sm border-gray-400  shadow-sm;
 }
 
 .select2-search--dropdown {
@@ -80,7 +82,7 @@
 }
 .select2-search--dropdown .select2-search__field {
 	/* Search box itself where you can enter text*/
-	@apply h-10 p-1 bg-white  box-border rounded border-2 border-blue-300  text-black outline-none;
+	@apply h-10 p-1 bg-white  box-border rounded-sm border-2 border-blue-300  text-black outline-hidden;
 	width: 100%;
 }
 .select2-search--dropdown .select2-search__field::-webkit-search-cancel-button {
@@ -180,7 +182,7 @@
 	}
 	
 	.select2-container--default .select2-selection--multiple {
-		@apply p-1 min-h-full h-full border border-solid  rounded shadow bg-white ; 
+		@apply p-1 min-h-full h-full border border-solid  rounded-sm shadow-sm bg-white ; 
 	}
 	
 	.select2-container--default .select2-selection--multiple .select2-selection__rendered {
@@ -193,7 +195,7 @@
 		@apply float-right cursor-pointer mt-1 mr-2 p-1;
 	}
 	.select2-container--default .select2-selection--multiple .select2-selection__choice {
-		@apply bg-white  text-black border border-black cursor-default rounded my-1 mr-1 px-2 float-left;
+		@apply bg-white  text-black border border-black cursor-default rounded-sm my-1 mr-1 px-2 float-left;
 	}
 	.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
 		@apply text-gray-700 text-black cursor-pointer inline-block mr-1;
@@ -202,14 +204,14 @@
 		@apply text-gray-700 text-black;
 	}
 	.select2-container--default.select2-container--focus .select2-selection--multiple {
-		@apply border-2 outline-none;
+		@apply border-2 outline-hidden;
 	}
 	
 	.select2-container--default.select2-container--disabled .select2-selection__choice__remove {
 		@apply hidden;
 	}
 	.select2-container--classic .select2-selection--multiple .select2-selection__choice {
-		@apply bg-gray-300 border-2  shadow rounded float-left cursor-default mt-1 mr-1 px-1;
+		@apply bg-gray-300 border-2  shadow-sm rounded-sm float-left cursor-default mt-1 mr-1 px-1;
 	}
 	.select2-container--default .select2-search--dropdown .select2-search__field {
 		/* The border of the search textbox */
@@ -218,7 +220,7 @@
 	
 	.select2-container--default .select2-search--inline .select2-search__field {
 		/* Search textbox */
-		@apply border-solid border-black bg-transparent outline-none shadow-none select-text w-32;
+		@apply border-solid border-black bg-transparent outline-hidden shadow-none select-text w-32;
 	}
 	
 	.select2-container--default .select2-results > .select2-results__options {

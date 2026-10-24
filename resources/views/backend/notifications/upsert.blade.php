@@ -5,7 +5,7 @@
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     
                     <!-- Back Link -->
@@ -20,7 +20,7 @@
 
                     <!-- Validation Errors -->
                     @if ($errors->any())
-                        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        <div class="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-sm relative">
                             <strong>Please fix the following errors:</strong>
                             <ul class="mt-2 list-disc list-inside">
                                 @foreach ($errors->all() as $error)
@@ -46,7 +46,7 @@
                                    name="title" 
                                    id="title" 
                                    value="{{ old('title', $notification->title ?? '') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('title') border-red-500 @enderror"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('title') border-red-500 @enderror"
                                    required>
                             @error('title')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -61,7 +61,7 @@
                             <textarea name="message" 
                                       id="message" 
                                       rows="4"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('message') border-red-500 @enderror"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('message') border-red-500 @enderror"
                                       required>{{ old('message', $notification->message ?? '') }}</textarea>
                             @error('message')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -79,7 +79,7 @@
                                        name="start_datetime" 
                                        id="start_datetime" 
                                        value="{{ old('start_datetime', isset($notification) ? $notification->start_datetime_cet : '') }}"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('start_datetime') border-red-500 @enderror"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('start_datetime') border-red-500 @enderror"
                                        required>
                                 <p class="mt-1 text-xs text-gray-500">Time in Central European Time (CET/CEST)</p>
                                 @error('start_datetime')
@@ -96,7 +96,7 @@
                                        name="end_datetime" 
                                        id="end_datetime" 
                                        value="{{ old('end_datetime', isset($notification) ? $notification->end_datetime_cet : '') }}"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-slate-500 focus:border-slate-500 @error('end_datetime') border-red-500 @enderror"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 @error('end_datetime') border-red-500 @enderror"
                                        required>
                                 <p class="mt-1 text-xs text-gray-500">Time in Central European Time (CET/CEST)</p>
                                 @error('end_datetime')
@@ -114,7 +114,7 @@
                                        id="is_active" 
                                        value="1"
                                        {{ old('is_active', $notification->is_active ?? true) ? 'checked' : '' }}
-                                       class="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded">
+                                       class="h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded-sm">
                                 <label for="is_active" class="ml-2 block text-sm text-gray-700">
                                     Active (uncheck to disable the notification)
                                 </label>
@@ -151,11 +151,11 @@
                         <!-- Submit Buttons -->
                         <div class="flex items-center justify-end space-x-4">
                             <a href="{{ route('backend.notifications.index') }}" 
-                               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                               class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                                 Cancel
                             </a>
                             <button type="submit" 
-                                    class="btn-submit px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    class="btn-submit px-4 py-2 bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-slate-700 focus:bg-slate-700 active:bg-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 {{ isset($notification) ? 'Update Notification' : 'Create Notification' }}
                             </button>
                         </div>
