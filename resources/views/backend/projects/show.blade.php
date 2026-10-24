@@ -5,16 +5,16 @@
   
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- Project Header -->
           <div class="mb-6 flex justify-between items-center">
             <h2 class="text-xl font-semibold text-gray-800">{{ $project->name }}</h2>
             <div class="flex space-x-2">
-              <a href="{{ route('projects.edit', $project->id) }}" class="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition">
+              <a href="{{ route('projects.edit', $project->id) }}" class="px-4 py-2 bg-yellow-600 text-white rounded-sm hover:bg-yellow-700 transition">
                 Edit Project
               </a>
-              <a href="{{ route('projects.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+              <a href="{{ route('projects.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition">
                 Back to Projects
               </a>
             </div>
@@ -47,13 +47,13 @@
             <h3 class="text-lg font-medium text-gray-900 mb-4">Team Members</h3>
             
             @if($project->users->count() > 0)
-              <div class="bg-white shadow overflow-hidden sm:rounded-md">
+              <div class="bg-white shadow-sm overflow-hidden sm:rounded-md">
                 <ul role="list" class="divide-y divide-gray-200">
                   @foreach($project->users as $user)
                     <li class="px-4 py-4 sm:px-6">
                       <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                          <div class="flex-shrink-0 h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                          <div class="shrink-0 h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
                             <span class="text-lg font-medium text-gray-600">
                               {{ strtoupper(substr($user->first_name, 0, 1) . substr($user->last_name, 0, 1)) }}
                             </span>
@@ -73,7 +73,7 @@
                 </ul>
               </div>
             @else
-              <div class="bg-gray-100 p-4 rounded text-center">
+              <div class="bg-gray-100 p-4 rounded-sm text-center">
                 <p>No team members assigned to this project yet.</p>
               </div>
             @endif

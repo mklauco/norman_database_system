@@ -69,7 +69,7 @@
           @if (!empty(request()->get('returnUrl')))
             <div class="mb-4">
               <a href="{{ request()->get('returnUrl') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                 ← Go Back to Search Results
               </a>
             </div>
@@ -91,7 +91,7 @@
         </div>
         <div class="col-span-2">
           @if ($record)
-            <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
               <h2 class="text-lg font-semibold text-gray-900 mb-4">Record Information</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -127,7 +127,7 @@
 
       <!-- Table Content -->
       @if ($record && !empty($tableRows))
-        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-white border border-gray-200 rounded-lg shadow-xs overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full border border-gray-300 text-sm">
               <thead>
@@ -203,15 +203,15 @@
                             @if ($row['inputType'] === 'text')
                               <input type="text" 
                                      value="{{ $row['edited'] ?? '' }}"
-                                     class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                     class="w-full px-2 py-1 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-2 focus:ring-slate-500"
                                      placeholder="Enter text">
                             @elseif ($row['inputType'] === 'numeric')
                               <input type="number" 
                                      value="{{ $row['edited'] ?? '' }}"
-                                     class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                     class="w-full px-2 py-1 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-2 focus:ring-slate-500"
                                      placeholder="Enter number">
                             @elseif ($row['inputType'] === 'dropdown')
-                              <select class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-slate-500">
+                              <select class="w-full px-2 py-1 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-2 focus:ring-slate-500">
                                 <option value="">Select option</option>
                                 @foreach($row['dropdownOptions'] as $option)
                                   <option value="{{ $option }}" {{ $row['edited'] == $option ? 'selected' : '' }}>
@@ -249,7 +249,7 @@
     @if ($returnUrl)
       <div class="mt-6 flex justify-center">
         <a href="{{ $returnUrl }}" 
-           class="inline-flex items-center px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+           class="inline-flex items-center px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
           ← Go Back to Search Results
         </a>
       </div>
@@ -261,7 +261,7 @@
          @keydown.escape.window="closeChangesModal()"
          class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
 
-      <div class="bg-white w-11/12 md:w-3/4 lg:w-3/4 xl:w-2/3 rounded shadow-lg relative">
+      <div class="bg-white w-11/12 md:w-3/4 lg:w-3/4 xl:w-2/3 rounded-sm shadow-lg relative">
 
         <!-- Modal Header -->
         <div class="flex justify-between items-center border-b px-4 py-2 bg-lime-600 text-white">
@@ -328,7 +328,7 @@
         <!-- Modal Footer -->
         <div class="flex justify-between border-t px-4 py-2">
           <button @click="closeChangesModal()" 
-                  class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                  class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600">
             Close
           </button>
         </div>

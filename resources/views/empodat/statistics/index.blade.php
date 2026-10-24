@@ -4,7 +4,7 @@
 
 @section('main-content')
   <!-- Database Overview Card -->
-  <div class="bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg p-6 mb-6">
+  <div class="bg-linear-to-r from-slate-600 to-slate-700 text-white rounded-lg p-6 mb-6">
     <div class="flex justify-between items-center">
       <div>
         <h3 class="text-2xl font-bold mb-2">EMPODAT Database</h3>

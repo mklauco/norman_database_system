@@ -5,7 +5,7 @@
 
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- SLE Source Actions -->
           <div class="mb-6 flex justify-between items-center">
@@ -46,7 +46,7 @@
                       name="code" 
                       id="code" 
                       value="{{ old('code', $sleSource->code) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('code') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('code') border-red-500 @enderror"
                       placeholder="Enter source code"
                     >
                     @error('code')
@@ -62,7 +62,7 @@
                       name="name" 
                       id="name" 
                       value="{{ old('name', $sleSource->name) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('name') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('name') border-red-500 @enderror"
                       placeholder="Enter source name"
                     >
                     @error('name')
@@ -77,7 +77,7 @@
                       name="description" 
                       id="description" 
                       rows="4" 
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('description') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('description') border-red-500 @enderror"
                       placeholder="Describe the source..."
                     >{{ old('description', $sleSource->description) }}</textarea>
                     @error('description')
@@ -94,7 +94,7 @@
                       id="order" 
                       value="{{ old('order', $sleSource->order) }}"
                       min="0"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('order') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('order') border-red-500 @enderror"
                       placeholder="Enter display order"
                     >
                     @error('order')
@@ -110,7 +110,7 @@
                       id="show" 
                       value="1"
                       {{ old('show', $sleSource->show) ? 'checked' : '' }}
-                      class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-sm"
                     >
                     <label for="show" class="ml-2 block text-sm text-gray-900">
                       Show this source
@@ -133,7 +133,7 @@
                       name="link_full_list" 
                       id="link_full_list" 
                       rows="6" 
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('link_full_list') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('link_full_list') border-red-500 @enderror"
                       placeholder="Enter HTML content for the full list link..."
                     >{{ old('link_full_list', $sleSource->link_full_list) }}</textarea>
                     <p class="mt-1 text-xs text-gray-500">This field accepts HTML content for links</p>
@@ -155,7 +155,7 @@
                       name="link_inchikey_list" 
                       id="link_inchikey_list" 
                       rows="6" 
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('link_inchikey_list') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('link_inchikey_list') border-red-500 @enderror"
                       placeholder="Enter HTML content for the InChI key list link..."
                     >{{ old('link_inchikey_list', $sleSource->link_inchikey_list) }}</textarea>
                     <p class="mt-1 text-xs text-gray-500">This field accepts HTML content for links</p>
@@ -177,7 +177,7 @@
                       name="link_references" 
                       id="link_references" 
                       rows="6" 
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('link_references') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('link_references') border-red-500 @enderror"
                       placeholder="Enter HTML content for the references link..."
                     >{{ old('link_references', $sleSource->link_references) }}</textarea>
                     <p class="mt-1 text-xs text-gray-500">This field accepts HTML content for links</p>
@@ -229,14 +229,14 @@
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <a 
                 href="{{ route('sle.sources.index') }}" 
-                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-xs text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
               >
                 <i class="fa fa-times mr-2"></i>
                 Cancel
               </a>
               <button 
                 type="submit" 
-                class="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+                class="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
               >
                 @if(isset($isCreate) && $isCreate)
                   <i class="fa fa-plus mr-2"></i>

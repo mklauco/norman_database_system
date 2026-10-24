@@ -1,7 +1,7 @@
 <div>
   <!-- Selected Files Section -->
   @if(count($selectedFiles) > 0)
-    <div id="selectedFilesSection" class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded">
+    <div id="selectedFilesSection" class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-sm">
       <div class="flex items-center justify-between mb-2">
         <h4 class="text-sm font-semibold text-gray-700">
           <i class="fas fa-check-circle text-green-600 mr-1"></i>
@@ -17,7 +17,7 @@
       </div>
       <div class="space-y-1">
         @foreach ($selectedFiles as $file)
-          <div class="flex items-center justify-between px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50">
+          <div class="flex items-center justify-between px-3 py-2 bg-white border border-gray-200 rounded-sm hover:bg-gray-50">
             <!-- Hidden input for form submission -->
             <input type="hidden" name="fileSearch[]" value="{{ $file['id'] }}">
 
@@ -54,7 +54,7 @@
       name="searchFileString"
       id="searchFileString"
       placeholder="Search files by name or original name... (min 3 characters)"
-      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
     >
     @if(strlen($search) > 0 && strlen($search) <= 2)
       <div class="absolute right-3 top-3 text-xs text-orange-600">
@@ -81,13 +81,13 @@
   <div class="mt-3">
     @if($resultsAvailable)
       @if($results->count() > 0)
-        <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-3">
+        <div class="bg-blue-50 border border-blue-200 rounded-sm p-3 mb-3">
           <div class="text-sm text-gray-700 mb-2">
             <strong>{{ $results->count() }}</strong> file(s) found. Select files to include in your search:
           </div>
         </div>
 
-        <div class="max-h-60 overflow-y-auto border border-gray-200 rounded">
+        <div class="max-h-60 overflow-y-auto border border-gray-200 rounded-sm">
           @foreach ($results as $result)
             <div class="block p-2 border-b border-gray-100 hover:bg-gray-50">
               <label class="flex items-center space-x-3 cursor-pointer">
@@ -95,7 +95,7 @@
                   wire:model="selectedFileIds"
                   type="checkbox"
                   value="{{ $result->id }}"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-sm"
                 >
                 <div class="flex-1">
                   <div class="flex items-center">
@@ -113,7 +113,7 @@
           <button
             type="button"
             wire:click="selectAllDisplayed"
-            class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center"
+            class="px-4 py-2 bg-green-600 text-white rounded-sm hover:bg-green-700 transition-colors flex items-center"
           >
             <i class="fas fa-check-double mr-2"></i>
             Select All Displayed
@@ -123,7 +123,7 @@
             <button
               type="button"
               wire:click="applyFileFilter"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center"
+              class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors flex items-center"
             >
               <i class="fas fa-plus-circle mr-2"></i>
               Add Selected Files
@@ -132,7 +132,7 @@
             <button
               type="button"
               wire:click="clearFilters"
-              class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+              class="px-4 py-2 bg-gray-200 text-gray-800 rounded-sm hover:bg-gray-300 transition-colors"
             >
               <i class="fas fa-times mr-2"></i>
               Clear All
@@ -140,7 +140,7 @@
           </div>
         </div>
       @else
-        <div class="text-sm text-red-600 mt-2 p-2 bg-red-50 border border-red-200 rounded">
+        <div class="text-sm text-red-600 mt-2 p-2 bg-red-50 border border-red-200 rounded-sm">
           <i class="fas fa-exclamation-circle mr-1"></i>
           No files found matching your search criteria
         </div>

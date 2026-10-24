@@ -46,14 +46,14 @@
                 <div class="mb-4 space-y-2">
                   <div class="flex flex-wrap gap-2">
                     <a href="{{ route('factsheets.search.filter') }}"
-                      class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                      class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                       ← New Search
                     </a>
                     
                     @if(isset($hasStatistics) && $hasStatistics)
                       @auth
                         <a href="{{ route('factsheets.statistics.raw-json', $substance->id) }}" target="_blank"
-                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                           <i class="fas fa-code mr-1"></i>
                           View Raw Statistics JSON
                         </a>
@@ -71,7 +71,7 @@
                             <form action="{{ route('factsheets.statistics.generate-for-substance') }}" method="POST" class="inline">
                               @csrf
                               <input type="hidden" name="substance_id" value="{{ $substance->id }}">
-                              <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                              <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                                 <i class="fas fa-sync-alt mr-1"></i>
                                 Re-generate Statistics
                               </button>
@@ -88,7 +88,7 @@
                           <form action="{{ route('factsheets.statistics.generate-for-substance') }}" method="POST" class="inline">
                             @csrf
                             <input type="hidden" name="substance_id" value="{{ $substance->id }}">
-                            <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                               <i class="fas fa-chart-bar mr-1"></i>
                               Generate Statistics
                             </button>
@@ -110,7 +110,7 @@
                 </div>
               </div>
               <div class="col-span-2">
-                <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
                   <h2 class="text-lg font-semibold text-gray-900 mb-4">Substance Information at Glance</h2>
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
@@ -199,7 +199,7 @@
           @if(isset($factsheetEntities) && $factsheetEntities->count() > 0)
             <div class="space-y-6">
               @foreach($factsheetEntities as $entity)
-                <div class="bg-white border border-gray-200 rounded-lg shadow-sm" x-data="{ open: false }">
+                <div class="bg-white border border-gray-200 rounded-lg shadow-xs" x-data="{ open: false }">
                   <!-- Section Header (Always Visible) -->
                   <div class="p-6 border-b border-gray-200">
                     <div class="flex justify-between items-center">
@@ -507,7 +507,7 @@
                                               $count = $row['years'][$year] ?? 0;
                                             @endphp
                                             @if($count > 0)
-                                              <span class="inline-block px-2 py-1 text-xs bg-slate-100 rounded">{{ $count }}</span>
+                                              <span class="inline-block px-2 py-1 text-xs bg-slate-100 rounded-sm">{{ $count }}</span>
                                             @else
                                               <span class="text-gray-400">-</span>
                                             @endif
@@ -578,7 +578,7 @@
                                         <span class="font-mono text-xs">{{ $matrix['hierarchy_path'] }}</span>
                                       </td>
                                       <td class="px-4 py-3 text-sm text-center text-gray-700 font-mono">
-                                        <span class="inline-block px-2 py-1 text-xs bg-slate-100 rounded">
+                                        <span class="inline-block px-2 py-1 text-xs bg-slate-100 rounded-sm">
                                           {{ number_format($matrix['record_count']) }}
                                         </span>
                                       </td>

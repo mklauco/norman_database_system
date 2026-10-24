@@ -15,7 +15,7 @@
                 <h1 class="text-2xl font-bold text-gray-900">
                   Duplicate Resolution
                 </h1>
-                <div class="flex items-center space-x-2 px-3 py-1 bg-amber-100 border border-amber-300 rounded">
+                <div class="flex items-center space-x-2 px-3 py-1 bg-amber-100 border border-amber-300 rounded-sm">
                   <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                   </svg>
@@ -38,7 +38,7 @@
             
 
             {{-- Active Selection Section --}}
-            <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded">
+            <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-sm">
               <h4 class="text-md font-medium text-gray-900 mb-2">Select Active Substance</h4>
               <p class="text-sm text-gray-700">
                 Choose which substance should remain active and visible. This substance will be the main record that users see.
@@ -46,14 +46,14 @@
             </div>
 
             {{-- Reason Section --}}
-            <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded">
+            <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-sm">
               <h4 class="text-md font-medium text-gray-900 mb-2">Reason for Deprecating</h4>
               <p class="text-sm text-gray-700 mb-2">
                 Provide a reason for deprecating these duplicates. This will be logged for audit purposes.
               </p>
               <textarea name="merge_reason" 
                         rows="2" 
-                        class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        class="w-full px-2 py-1 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                         placeholder="e.g., Duplicate records with same code, keeping the most complete data"
                         required></textarea>
             </div>
@@ -218,7 +218,7 @@
                 <div class="flex items-center space-x-2">
                   <div class="w-3 h-3 bg-sky-600 rounded-full"></div>
                   <span class="font-semibold text-sky-900">CompTox Dashboard</span>
-                  <span class="text-xs text-sky-700 bg-sky-200 px-2 py-1 rounded">External Source</span>
+                  <span class="text-xs text-sky-700 bg-sky-200 px-2 py-1 rounded-sm">External Source</span>
                 </div>
               </div>
               <div class="p-4">
@@ -232,7 +232,7 @@
                 <div class="flex items-center space-x-2">
                   <div class="w-3 h-3 bg-emerald-600 rounded-full"></div>
                   <span class="font-semibold text-emerald-900">PubChem Database</span>
-                  <span class="text-xs text-emerald-700 bg-emerald-200 px-2 py-1 rounded">External Source</span>
+                  <span class="text-xs text-emerald-700 bg-emerald-200 px-2 py-1 rounded-sm">External Source</span>
                 </div>
               </div>
               <div class="p-4">

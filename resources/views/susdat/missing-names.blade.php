@@ -19,7 +19,7 @@
                     onsubmit="return confirm('This will fetch data from the NORMAN API for {{ $substances->count() }} substances. Continue?')">
                 @csrf
                 <button type="submit"
-                        class="inline-flex items-center px-4 py-2 bg-lime-600 text-white text-sm font-medium rounded-md hover:bg-lime-700 focus:outline-none focus:ring-2 focus:ring-lime-500">
+                        class="inline-flex items-center px-4 py-2 bg-lime-600 text-white text-sm font-medium rounded-md hover:bg-lime-700 focus:outline-hidden focus:ring-2 focus:ring-lime-500">
                   <i class="fas fa-download mr-2"></i>
                   Fetch from NORMAN API
                 </button>

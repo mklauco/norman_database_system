@@ -116,7 +116,7 @@
 
               <!-- Cancel button -->
               <button type="button" @click="cancelRequest"
-                class="mt-6 bg-red-500 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
+                class="mt-6 bg-red-500 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
                 Cancel Search
               </button>
             </div>

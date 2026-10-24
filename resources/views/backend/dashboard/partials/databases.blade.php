@@ -1,4 +1,4 @@
-<div class="bg-white shadow-sm rounded-lg overflow-hidden">
+<div class="bg-white shadow-xs rounded-lg overflow-hidden">
   <div class="p-4 border-b border-gray-200">
     <h3 class="text-lg font-semibold text-gray-800">
       <i class="fas fa-database mr-2 text-gray-600"></i>

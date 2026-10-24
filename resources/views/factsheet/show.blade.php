@@ -21,7 +21,7 @@
 
                         <div class="flex flex-col md:flex-row gap-6 mb-6">
                             @if($substance->structure_image_url)
-                            <div class="flex-shrink-0" x-data="{ open: false }">
+                            <div class="shrink-0" x-data="{ open: false }">
                                 <img src="{{ $substance->structure_image_url }}"
                                      alt="Structure of {{ $substance->name }}"
                                      class="w-40 h-40 object-contain bg-white border border-gray-200 rounded-lg p-2 cursor-pointer hover:border-gray-400 transition-colors"
@@ -45,7 +45,7 @@
                                 </div>
                             </div>
                             @endif
-                            <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="grow grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="bg-slate-50 p-4 rounded-lg">
                                 <h3 class="font-semibold text-slate-700 mb-2">CAS Number</h3>
                                 <p class="text-slate-900 font-mono">{{ $substance->cas_number ?: 'Not available' }}</p>

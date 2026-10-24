@@ -5,7 +5,7 @@
   
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900" x-data="userTable()" x-init="init()">
           
           <div class="mb-6 flex justify-between items-center">
@@ -51,7 +51,7 @@
             <div class="flex space-x-4 flex-1">
               <div class="w-32">
                 <label for="perPage" class="block text-sm font-medium text-gray-700">Show</label>
-                <select id="perPage" x-model="perPage" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                <select id="perPage" x-model="perPage" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
                   <option value="10">10</option>
                   <option value="25">25</option>
                   <option value="50">50</option>
@@ -61,7 +61,7 @@
 
               <div class="w-48">
                 <label for="roleFilter" class="block text-sm font-medium text-gray-700">Role</label>
-                <select id="roleFilter" x-model="roleFilter" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                <select id="roleFilter" x-model="roleFilter" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
                   <option value="">All roles</option>
                   @foreach($roles as $role)
                     <option value="{{ $role }}">{{ $role }}</option>
@@ -76,7 +76,7 @@
                 x-model="search"
                 @input="debounceSearch()"
                 placeholder="Search by name or email..."
-                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-xs py-2 px-3 focus:outline-hidden focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
               </div>
             </div>
 

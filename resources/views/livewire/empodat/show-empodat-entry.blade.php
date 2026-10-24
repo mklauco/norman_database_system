@@ -73,7 +73,7 @@
       
       <!-- Footer -->
       <div class="flex justify-end border-t px-6 py-3">
-        <button wire:click="closeModal" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+        <button wire:click="closeModal" class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600">
           Close
         </button>
       </div>

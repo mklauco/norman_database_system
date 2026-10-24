@@ -54,7 +54,7 @@
                   <!-- Cancel button -->
                   <button type="button" 
                           @click="cancelRequest" 
-                          class="mt-6 bg-red-500 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+                          class="mt-6 bg-red-500 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
                           aria-label="Cancel search request">
                       Cancel Search
                   </button>
@@ -275,7 +275,7 @@
                       <!-- Icon -->
                       <i class="fas fa-hourglass-half text-gray-500" aria-hidden="true"></i>
                       <!-- Tooltip -->
-                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded-sm py-2 px-4 top-0 left-0 transform -translate-y-full w-48 text-center z-50">
                         Including this search option will slow down the search process.
                       </div>
                     </div>
@@ -297,7 +297,7 @@
                       <!-- Icon -->
                       <i class="fas fa-hourglass-half text-gray-500" aria-hidden="true"></i>
                       <!-- Tooltip -->
-                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded-sm py-2 px-4 top-0 left-0 transform -translate-y-full w-48 text-center z-50">
                         Including this search option will slow down the search process.
                       </div>
                     </div>
@@ -321,7 +321,7 @@
                       <!-- Icon -->
                       <i class="fas fa-hourglass-half text-gray-500" aria-hidden="true"></i>
                       <!-- Tooltip -->
-                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded-sm py-2 px-4 top-0 left-0 transform -translate-y-full w-48 text-center z-50">
                         Including this search option will slow down the search process.
                       </div>
                     </div>
@@ -347,7 +347,7 @@
                       <!-- Icon -->
                       <i class="fas fa-hourglass-half text-gray-500" aria-hidden="true"></i>
                       <!-- Tooltip -->
-                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded py-2 px-4 -top-0 left-0 transform -translate-y-full w-48 text-center z-50">
+                      <div class="absolute hidden group-hover:block bg-gray-800 text-white text-sm rounded-sm py-2 px-4 top-0 left-0 transform -translate-y-full w-48 text-center z-50">
                         Including this search option will slow down the search process.
                       </div>
                     </div>

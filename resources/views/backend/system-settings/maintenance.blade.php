@@ -12,7 +12,7 @@
         <p class="text-gray-600">Recount or rebuild data shown across the database modules</p>
       </div>
 
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="overflow-x-auto">
           <table class="table-standard">
             <thead>

@@ -18,7 +18,7 @@
         <!-- Users Card -->
         @hasanyrole('admin|user_manager')
         <a href="{{ route('users.index') }}" class="block">
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
+          <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg hover:shadow-md transition-shadow duration-200">
             <div class="p-4">
               <div class="flex items-center mb-3">
                 <div class="p-2 bg-slate-100 rounded-lg">
@@ -45,7 +45,7 @@
 
           <!-- API Tokens Card -->
           <a href="{{ route('apiresources.index') }}" class="block">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
+            <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg hover:shadow-md transition-shadow duration-200">
               <div class="p-4">
                 <div class="flex items-center mb-3">
                   <div class="p-2 bg-zinc-100 rounded-lg">
@@ -67,7 +67,7 @@
           <!-- User Login Retention Card -->
           @role('super_admin')
           <a href="{{ route('backend.user-login-retention.filter') }}" class="block">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
+            <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg hover:shadow-md transition-shadow duration-200">
               <div class="p-4">
                 <div class="flex items-center mb-3">
                   <div class="p-2 bg-gray-100 rounded-lg">
@@ -94,7 +94,7 @@
 
           <!-- Server Payments Section -->
           @if ($canViewServerPayments)
-          <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+          <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
             <div class="p-4 bg-slate-800 border-b border-slate-700">
               <h3 class="flex items-center gap-2 text-base font-semibold text-white">
                 <i class="fas fa-server text-slate-300"></i>
@@ -159,7 +159,7 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
           <div class="p-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

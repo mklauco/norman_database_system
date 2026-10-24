@@ -9,17 +9,17 @@
         <div class="p-6 text-gray-900">
           <!-- Flash Messages -->
           @if(session('success'))
-            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-sm">
               {{ session('success') }}
             </div>
           @endif
           @if(session('error'))
-            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-sm">
               {{ session('error') }}
             </div>
           @endif
           @if($errors->any())
-            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-sm">
               <ul class="list-disc list-inside">
                 @foreach($errors->all() as $error)
                   <li>{{ $error }}</li>
@@ -33,7 +33,7 @@
             <div>
               @if(!isset($isCreate) || !$isCreate)
                 <div class="mb-2">
-                  <span class="font-mono text-lg font-bold text-gray-900 bg-gray-200 px-3 py-1 rounded">ID: {{ $file->id }}</span>
+                  <span class="font-mono text-lg font-bold text-gray-900 bg-gray-200 px-3 py-1 rounded-sm">ID: {{ $file->id }}</span>
                 </div>
               @endif
               <h2 class="text-xl font-semibold text-gray-800">
@@ -72,7 +72,7 @@
                       name="name"
                       id="name"
                       value="{{ old('name', $file->name) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('name') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('name') border-red-500 @enderror"
                       placeholder="Enter a display name"
                     >
                     @error('name')
@@ -87,7 +87,7 @@
                       name="description"
                       id="description"
                       rows="3"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('description') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('description') border-red-500 @enderror"
                       placeholder="File description..."
                     >{{ old('description', $file->description) }}</textarea>
                     @error('description')
@@ -106,7 +106,7 @@
                       name="doi"
                       id="doi"
                       value="{{ old('doi', $file->doi) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('doi') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('doi') border-red-500 @enderror"
                       placeholder="e.g., 10.60954/empodat.xxxx"
                     >
                     @error('doi')
@@ -121,7 +121,7 @@
                       name="processing_notes"
                       id="processing_notes"
                       rows="3"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('processing_notes') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('processing_notes') border-red-500 @enderror"
                       placeholder="Processing notes..."
                     >{{ old('processing_notes', $file->processing_notes) }}</textarea>
                     @error('processing_notes')
@@ -157,7 +157,7 @@
                   @else
                     <div class="mb-4">
                       <label class="block text-sm font-medium text-gray-700 mb-2">Current File</label>
-                      <div class="bg-white p-3 rounded border border-gray-300">
+                      <div class="bg-white p-3 rounded-sm border border-gray-300">
                         <div class="flex items-center justify-between">
                           <div>
                             <div class="font-medium text-gray-900">{{ $file->original_name }}</div>
@@ -201,7 +201,7 @@
                     name="note"
                     id="note"
                     rows="4"
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('note') border-red-500 @enderror"
+                    class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('note') border-red-500 @enderror"
                     placeholder="Additional notes..."
                   >{{ old('note', $file->note) }}</textarea>
                   @error('note')
@@ -222,7 +222,7 @@
                     <select
                       name="project_id"
                       id="project_id"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('project_id') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('project_id') border-red-500 @enderror"
                     >
                       <option value="">-- No Project --</option>
                       @foreach($projects as $project)
@@ -245,7 +245,7 @@
                     <select
                       name="database_entity_id"
                       id="database_entity_id"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('database_entity_id') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('database_entity_id') border-red-500 @enderror"
                     >
                       <option value="">-- No Database Entity --</option>
                       @foreach($databaseEntities as $databaseEntity)
@@ -265,7 +265,7 @@
                     <select
                       name="template_id"
                       id="template_id"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('template_id') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('template_id') border-red-500 @enderror"
                     >
                       <option value="">-- No Template --</option>
                       @foreach($templates as $template)
@@ -302,7 +302,7 @@
                     <select
                       name="is_protected"
                       id="is_protected"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('is_protected') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('is_protected') border-red-500 @enderror"
                     >
                       <option value="0" {{ (old('is_protected', $file->is_protected) == 0) ? 'selected' : '' }}>Unprotected</option>
                       <option value="1" {{ (old('is_protected', $file->is_protected) == 1) ? 'selected' : '' }}>Protected</option>
@@ -320,7 +320,7 @@
                       name="list_type"
                       id="list_type"
                       value="{{ old('list_type', $file->list_type) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('list_type') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('list_type') border-red-500 @enderror"
                       placeholder="e.g., SW, GW, SEDIMENT"
                     >
                     @error('list_type')
@@ -336,7 +336,7 @@
                       name="matrice_dct"
                       id="matrice_dct"
                       value="{{ old('matrice_dct', $file->matrice_dct) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('matrice_dct') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('matrice_dct') border-red-500 @enderror"
                     >
                     @error('matrice_dct')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -349,7 +349,7 @@
                     <select
                       name="is_deleted"
                       id="is_deleted"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('is_deleted') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('is_deleted') border-red-500 @enderror"
                     >
                       <option value="0" {{ (old('is_deleted', $file->is_deleted) == 0) ? 'selected' : '' }}>Active</option>
                       <option value="1" {{ (old('is_deleted', $file->is_deleted) == 1) ? 'selected' : '' }}>Deleted</option>
@@ -373,7 +373,7 @@
                       id="number_of_records"
                       value="{{ old('number_of_records', $file->number_of_records ?? 0) }}"
                       min="0"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('number_of_records') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('number_of_records') border-red-500 @enderror"
                     >
                     @error('number_of_records')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -388,7 +388,7 @@
                       name="analysis_number"
                       id="analysis_number"
                       value="{{ old('analysis_number', $file->analysis_number) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('analysis_number') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('analysis_number') border-red-500 @enderror"
                     >
                     @error('analysis_number')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -427,7 +427,7 @@
                         name="main_id_from"
                         id="main_id_from"
                         value="{{ old('main_id_from', $file->main_id_from) }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('main_id_from') border-red-500 @enderror"
+                        class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('main_id_from') border-red-500 @enderror"
                       >
                       @error('main_id_from')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -440,7 +440,7 @@
                         name="main_id_to"
                         id="main_id_to"
                         value="{{ old('main_id_to', $file->main_id_to) }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('main_id_to') border-red-500 @enderror"
+                        class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('main_id_to') border-red-500 @enderror"
                       >
                       @error('main_id_to')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -461,7 +461,7 @@
                         name="source_id_from"
                         id="source_id_from"
                         value="{{ old('source_id_from', $file->source_id_from) }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('source_id_from') border-red-500 @enderror"
+                        class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('source_id_from') border-red-500 @enderror"
                       >
                       @error('source_id_from')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -474,7 +474,7 @@
                         name="source_id_to"
                         id="source_id_to"
                         value="{{ old('source_id_to', $file->source_id_to) }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('source_id_to') border-red-500 @enderror"
+                        class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('source_id_to') border-red-500 @enderror"
                       >
                       @error('source_id_to')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -489,7 +489,7 @@
                       name="source_number"
                       id="source_number"
                       value="{{ old('source_number', $file->source_number) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('source_number') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('source_number') border-red-500 @enderror"
                     >
                     @error('source_number')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -509,7 +509,7 @@
                         name="method_id_from"
                         id="method_id_from"
                         value="{{ old('method_id_from', $file->method_id_from) }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('method_id_from') border-red-500 @enderror"
+                        class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('method_id_from') border-red-500 @enderror"
                       >
                       @error('method_id_from')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -522,7 +522,7 @@
                         name="method_id_to"
                         id="method_id_to"
                         value="{{ old('method_id_to', $file->method_id_to) }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('method_id_to') border-red-500 @enderror"
+                        class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('method_id_to') border-red-500 @enderror"
                       >
                       @error('method_id_to')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -537,7 +537,7 @@
                       name="method_number"
                       id="method_number"
                       value="{{ old('method_number', $file->method_number) }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('method_number') border-red-500 @enderror"
+                      class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('method_number') border-red-500 @enderror"
                     >
                     @error('method_number')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -565,17 +565,17 @@
                       <div class="flex justify-between">
                         <span class="text-gray-600">Status:</span>
                         @if($file->is_deleted)
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">Deleted</span>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-gray-200 text-gray-800">Deleted</span>
                         @else
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-green-100 text-green-800">Active</span>
                         @endif
                       </div>
                       <div class="flex justify-between">
                         <span class="text-gray-600">Protected:</span>
                         @if($file->is_protected)
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Yes</span>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-red-100 text-red-800">Yes</span>
                         @else
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">No</span>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-green-100 text-green-800">No</span>
                         @endif
                       </div>
                     </div>
@@ -588,7 +588,7 @@
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <a
                 href="{{ route('files.index') }}"
-                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition"
+                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-xs text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition"
               >
                 Cancel
               </a>
@@ -679,7 +679,7 @@
         </div>
 
         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-          <button type="button" onclick="document.getElementById('doi-info-modal').classList.add('hidden')" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:w-auto sm:text-sm">
+          <button type="button" onclick="document.getElementById('doi-info-modal').classList.add('hidden')" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-xs px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:w-auto sm:text-sm">
             Close
           </button>
         </div>

@@ -39,9 +39,9 @@
                     x-data="{ show: true }"
                     x-show="show"
                     x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
+                    x-init="setTimeout(() => show = false, 10000)"
                     class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                >{{ __('Saved. You have been signed out on all other devices and your API tokens were revoked.') }}</p>
             @endif
         </div>
     </form>

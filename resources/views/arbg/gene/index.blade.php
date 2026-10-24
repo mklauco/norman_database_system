@@ -174,21 +174,21 @@
         
         <div class="flex justify-center space-x-4 mt-4">
           @if ($resultsObjects->onFirstPage())
-          <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
+          <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded-sm cursor-not-allowed">
             Previous
           </span>
           @else
-          <a href="{{ $resultsObjects->previousPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+          <a href="{{ $resultsObjects->previousPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded-sm hover:bg-stone-600">
             Previous
           </a>
           @endif
           
           @if ($resultsObjects->hasMorePages())
-          <a href="{{ $resultsObjects->nextPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded hover:bg-stone-600">
+          <a href="{{ $resultsObjects->nextPageUrl() }}" class="w-32 px-4 py-2 text-center text-white bg-stone-500 rounded-sm hover:bg-stone-600">
             Next
           </a>
           @else
-          <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded cursor-not-allowed">
+          <span class="w-32 px-4 py-2 text-center text-gray-400 bg-gray-200 rounded-sm cursor-not-allowed">
             Next
           </span>
           @endif
@@ -202,7 +202,7 @@
         
         <!-- The Modal (hidden by default) -->
         <div class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50" x-show="showModal"x-transition>
-          <div class="bg-white w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 rounded shadow-lg relative" x-trap.inert="showModal">
+          <div class="bg-white w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 rounded-sm shadow-lg relative" x-trap.inert="showModal">
             <!-- Modal Header -->
             <div class="flex justify-between items-center border-b px-4 py-2">
               <h3 class="text-lg font-semibold">Record ID: <span x-text="record?.id"></span></h3>
@@ -285,7 +285,7 @@
             <!-- Modal Footer -->
             <div class="flex justify-end border-t px-4 py-2">
               <button @click="closeModal()"
-              class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+              class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600">
               Close
             </button>
           </div>

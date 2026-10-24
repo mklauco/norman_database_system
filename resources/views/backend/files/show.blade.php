@@ -11,19 +11,19 @@
           <div class="mb-6 flex justify-between items-start">
             <div>
               <div class="mb-2">
-                <span class="font-mono text-lg font-bold text-gray-900 bg-gray-200 px-3 py-1 rounded">ID: {{ $file->id }}</span>
+                <span class="font-mono text-lg font-bold text-gray-900 bg-gray-200 px-3 py-1 rounded-sm">ID: {{ $file->id }}</span>
                 @if($file->is_deleted)
-                  <span class="ml-2 text-sm text-white bg-red-600 px-2 py-1 rounded">DELETED</span>
+                  <span class="ml-2 text-sm text-white bg-red-600 px-2 py-1 rounded-sm">DELETED</span>
                 @endif
                 @if($file->is_protected)
-                  <span class="ml-2 text-sm text-white bg-red-600 px-2 py-1 rounded">PROTECTED</span>
+                  <span class="ml-2 text-sm text-white bg-red-600 px-2 py-1 rounded-sm">PROTECTED</span>
                 @endif
               </div>
               <h2 class="text-2xl font-semibold text-gray-800">{{ $file->name ?? $file->original_name ?? 'Unnamed File' }}</h2>
             </div>
             <div class="flex space-x-2">
               @if(!$file->is_deleted)
-                <a href="{{ route('files.edit', $file) }}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+                <a href="{{ route('files.edit', $file) }}" class="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition">
                   Edit
                 </a>
                 @if($file->file_path)
@@ -31,7 +31,7 @@
                     Download
                   </a>
                 @else
-                  <span class="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed">
+                  <span class="px-4 py-2 bg-gray-400 text-white rounded-sm cursor-not-allowed">
                     No File Path
                   </span>
                 @endif
@@ -39,14 +39,14 @@
                 <form action="{{ route('files.restore', $file) }}" method="POST" class="inline">
                   @csrf
                   @method('PATCH')
-                  <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+                  <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-sm hover:bg-gray-700 transition">
                     Restore
                   </button>
                 </form>
                 <form action="{{ route('files.forceDestroy', $file) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to permanently delete this file? This action cannot be undone!');">
                   @csrf
                   @method('DELETE')
-                  <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition">
+                  <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded-sm hover:bg-gray-900 transition">
                     Delete Forever
                   </button>
                 </form>
@@ -125,9 +125,9 @@
                     <div>
                       <span class="text-sm font-medium text-gray-500 block">File Exists on Disk:</span>
                       @if($file->existsOnDisk())
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Yes</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-green-100 text-green-800">Yes</span>
                       @else
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">No</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-red-100 text-red-800">No</span>
                       @endif
                     </div>
 
@@ -169,7 +169,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <!-- Main ID Range -->
-                  <div class="bg-white p-3 rounded border border-gray-200">
+                  <div class="bg-white p-3 rounded-sm border border-gray-200">
                     <h4 class="text-sm font-semibold text-gray-700 mb-2">Main ID Range</h4>
                     <div class="space-y-2">
                       <div class="flex justify-between">
@@ -184,7 +184,7 @@
                   </div>
 
                   <!-- Source ID Range -->
-                  <div class="bg-white p-3 rounded border border-gray-200">
+                  <div class="bg-white p-3 rounded-sm border border-gray-200">
                     <h4 class="text-sm font-semibold text-gray-700 mb-2">Source ID Range</h4>
                     <div class="space-y-2">
                       <div class="flex justify-between">
@@ -203,7 +203,7 @@
                   </div>
 
                   <!-- Method ID Range -->
-                  <div class="bg-white p-3 rounded border border-gray-200">
+                  <div class="bg-white p-3 rounded-sm border border-gray-200">
                     <h4 class="text-sm font-semibold text-gray-700 mb-2">Method ID Range</h4>
                     <div class="space-y-2">
                       <div class="flex justify-between">
@@ -251,27 +251,27 @@
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">Status:</span>
                     @if($file->is_deleted)
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-red-600 text-white">Deleted</span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-red-600 text-white">Deleted</span>
                     @else
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Active</span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-green-100 text-green-800">Active</span>
                     @endif
                   </div>
 
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">Protected:</span>
                     @if($file->is_protected)
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Yes</span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-red-100 text-red-800">Yes</span>
                     @else
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">No</span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-green-100 text-green-800">No</span>
                     @endif
                   </div>
 
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">File Path:</span>
                     @if($file->file_path)
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Set</span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-green-100 text-green-800">Set</span>
                     @else
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">Missing</span>
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-gray-200 text-gray-800">Missing</span>
                     @endif
                   </div>
                 </div>
@@ -281,7 +281,7 @@
               <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 class="font-semibold text-lg text-gray-800 mb-3">Project</h3>
                 @if($file->project)
-                  <div class="bg-white p-3 rounded border">
+                  <div class="bg-white p-3 rounded-sm border">
                     <div class="font-medium text-gray-900">{{ $file->project->name }}</div>
                     @if($file->project->abbreviation)
                       <div class="text-sm text-gray-600">{{ $file->project->abbreviation }}</div>
@@ -299,7 +299,7 @@
               <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 class="font-semibold text-lg text-gray-800 mb-3">Database Entity</h3>
                 @if($file->databaseEntity)
-                  <div class="bg-white p-3 rounded border">
+                  <div class="bg-white p-3 rounded-sm border">
                     <div class="font-medium text-gray-900">{{ $file->databaseEntity->name }}</div>
                     @if($file->databaseEntity->code)
                       <div class="text-sm text-gray-600 mt-1">Code: {{ $file->databaseEntity->code }}</div>
@@ -317,7 +317,7 @@
               <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 class="font-semibold text-lg text-gray-800 mb-3">Template</h3>
                 @if($file->template)
-                  <div class="bg-white p-3 rounded border">
+                  <div class="bg-white p-3 rounded-sm border">
                     <div class="font-medium text-gray-900">{{ $file->template->name }}</div>
                     @if($file->template->description)
                       <div class="text-sm text-gray-600 mt-1">{{ $file->template->description }}</div>
@@ -381,7 +381,7 @@
                 <div class="space-y-2">
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">Empodat Records:</span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800 font-mono">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-sm text-xs font-medium bg-gray-200 text-gray-800 font-mono">
                       {{ number_format($file->empodat_records_count ?? 0, 0, '.', ' ') }}
                     </span>
                   </div>

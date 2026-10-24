@@ -6,7 +6,7 @@
      @keydown.escape.window="closeModalCredEvaluation()"
      class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
 
-    <div class="bg-white w-11/12 md:w-4/5 lg:w-4/5 xl:w-3/4 rounded shadow-lg relative" 
+    <div class="bg-white w-11/12 md:w-4/5 lg:w-4/5 xl:w-3/4 rounded-sm shadow-lg relative" 
          x-transition>
 
         <!-- Modal Header -->
@@ -22,7 +22,7 @@
             <div class="flex items-center space-x-2">
                 <!-- Debug button -->
                 <button @click="console.log('Modal state:', { showCredEvaluationModal, credQuestions: credQuestions?.length || 0, record: credEvaluationRecord })" 
-                        class="px-2 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700">
+                        class="px-2 py-1 bg-yellow-600 text-white text-xs rounded-sm hover:bg-yellow-700">
                     Debug
                 </button>
                 <button @click="closeModalCredEvaluation()" class="text-white hover:text-gray-200 text-xl">
@@ -167,7 +167,7 @@
                         <h4 class="font-semibold text-gray-800 mb-3">Previous Evaluations</h4>
                         <div class="space-y-2">
                             <template x-for="evaluation in credEvaluationHistory" :key="evaluation.id">
-                                <div class="bg-white p-3 rounded border border-gray-200">
+                                <div class="bg-white p-3 rounded-sm border border-gray-200">
                                     <div class="flex justify-between items-start">
                                         <div class="text-sm">
                                             <span class="font-medium">Reliability:</span>
@@ -189,11 +189,11 @@
         <!-- Modal Footer -->
         <div class="flex justify-between border-t px-4 py-2">
             <button @click="saveCredEvaluation()" 
-                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                    class="px-4 py-2 bg-green-500 text-white rounded-sm hover:bg-green-600">
                 Save Evaluation
             </button>
             <button @click="closeModalCredEvaluation()" 
-                    class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                    class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600">
                 Close
             </button>
         </div>

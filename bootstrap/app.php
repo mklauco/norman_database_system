@@ -19,7 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->trustProxies(at: '*');
+        // Only the reverse proxy on the private Docker network may set X-Forwarded-* headers.
+        $middleware->trustProxies(at: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '127.0.0.1']);
+        $middleware->authenticateSessions();
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureAuthenticatedUserIsVerified::class);

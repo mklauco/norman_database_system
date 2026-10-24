@@ -27,7 +27,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Search for duplicates by:
                 </label>
-                <select name="pivot_id" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                <select name="pivot_id" class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-indigo-500 focus:border-indigo-500">
                   <option value="">Select a field...</option>
                   @foreach($getPivotableColumns as $column)
                     <option value="{{$column}}" {{ (isset($pivot_id) && $pivot_id == $column) ? 'selected' : '' }}>

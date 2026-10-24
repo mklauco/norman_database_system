@@ -39,12 +39,15 @@ class NewPasswordController extends Controller
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
+            $request->only('email', 'password', 'password_confirmation', 'token') + ['active' => true],
             function ($user) use ($request) {
                 $user->forceFill([
                     'password' => Hash::make($request->password),
                     'remember_token' => Str::random(60),
                 ])->save();
+
+                // Other sessions end through AuthenticateSession once the password hash changes.
+                $user->tokens()->delete();
 
                 event(new PasswordReset($user));
             }
@@ -53,9 +56,12 @@ class NewPasswordController extends Controller
         // If the password was successfully reset, we will redirect the user back to
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
-        return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if ($status === Password::PASSWORD_RESET) {
+            return redirect()->route('login')->with('status', __($status));
+        }
+
+        // An unknown email gets the same answer as a bad token, so registered addresses stay hidden.
+        return back()->withInput($request->only('email'))
+            ->withErrors(['email' => __(Password::INVALID_TOKEN)]);
     }
 }

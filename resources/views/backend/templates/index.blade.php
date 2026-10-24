@@ -5,7 +5,7 @@
   
   <div class="py-4">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- Template Actions -->
           <div class="mb-6 flex justify-between items-center">
@@ -98,7 +98,7 @@
                 </div>
               @endif
             @else
-              <div class="bg-gray-100 p-4 rounded text-center">
+              <div class="bg-gray-100 p-4 rounded-sm text-center">
                 <p>No templates found. Create your first template to get started.</p>
               </div>
             @endif

@@ -5,14 +5,14 @@
 
   <div class="py-4">
     <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900">
           <!-- Header -->
           <div class="mb-6 flex justify-between items-center">
             <div>
               @if(!$isCreate)
                 <div class="mb-2">
-                  <span class="font-mono text-lg font-bold text-gray-900 bg-gray-200 px-3 py-1 rounded">ID: {{ $lifeStage->id }}</span>
+                  <span class="font-mono text-lg font-bold text-gray-900 bg-gray-200 px-3 py-1 rounded-sm">ID: {{ $lifeStage->id }}</span>
                 </div>
               @endif
               <h2 class="text-xl font-semibold text-gray-800">
@@ -44,7 +44,7 @@
                   name="name"
                   id="name"
                   value="{{ old('name', $lifeStage->name) }}"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('name') border-red-500 @enderror"
+                  class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm @error('name') border-red-500 @enderror"
                   placeholder="e.g., adult, juvenile, hatchling, imago, larvae"
                   required
                 >
@@ -59,7 +59,7 @@
             <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
               <a
                 href="{{ route('literature.life_stages.index') }}"
-                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition"
+                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-xs text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition"
               >
                 Cancel
               </a>

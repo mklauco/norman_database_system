@@ -49,7 +49,7 @@
           @if (!empty(request()->get('returnUrl')))
             <div class="mb-4">
               <a href="{{ request()->get('returnUrl') }}"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                 ← Go Back to Search Results
               </a>
             </div>
@@ -72,7 +72,7 @@
         </div>
         <div class="col-span-2">
           @if ($record)
-            <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
               <h2 class="text-lg font-semibold text-gray-900 mb-4">Record Information</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -133,7 +133,7 @@
     <!-- Record Information Section -->
 
 
-    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-xs">
       <div class="px-1 py-2 bg-gray-50 border-b border-gray-200">
         <h2 class="text-lg font-semibold text-gray-900">CRED Evaluation Questions</h2>
         <p class="text-sm text-gray-700 mt-1">Rate each question based on the quality and reliability of the data</p>
@@ -356,7 +356,7 @@
 
     <!-- Summary Section -->
     {{-- @if ($credQuestions && $credQuestions->count() > 0)
-      <div class="mt-6 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+      <div class="mt-6 bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Evaluation Summary</h2>
         
         <!-- Progress Bar -->
@@ -403,11 +403,11 @@
       <div class="mt-6 flex justify-between items-center">
         <!-- Left side - Go Back button -->
         @if ($returnUrl)
-          <a href="{{ $returnUrl }}" class="px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+          <a href="{{ $returnUrl }}" class="px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
             ← Go Back to Search Results
           </a>
         @else
-          <a href="{{ route('ecotox.credevaluation.home.index') }}" class="px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+          <a href="{{ route('ecotox.credevaluation.home.index') }}" class="px-6 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
             ← Back to Home
           </a>
         @endif
@@ -415,11 +415,11 @@
         <!-- Right side - Action buttons -->
         <div class="flex space-x-4">
           @if ($recordId)
-            <button type="button" class="btn-submit px-6 py-2 text-sm font-medium text-white bg-slate-600 border border-transparent rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+            <button type="button" class="btn-submit px-6 py-2 text-sm font-medium text-white bg-slate-600 border border-transparent rounded-md hover:bg-slate-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
               Save Evaluation
             </button>
           @else
-            <button type="button" class="btn-submit px-6 py-2 text-sm font-medium text-white bg-slate-600 border border-transparent rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+            <button type="button" class="btn-submit px-6 py-2 text-sm font-medium text-white bg-slate-600 border border-transparent rounded-md hover:bg-slate-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
               Export Scores
             </button>
           @endif
@@ -434,7 +434,7 @@
        @keydown.escape.window="closeChangesModal()"
        class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
 
-    <div class="bg-white w-11/12 md:w-3/4 lg:w-3/4 xl:w-2/3 rounded shadow-lg relative">
+    <div class="bg-white w-11/12 md:w-3/4 lg:w-3/4 xl:w-2/3 rounded-sm shadow-lg relative">
 
       <!-- Modal Header -->
       <div class="flex justify-between items-center border-b px-4 py-2 bg-lime-600 text-white">
@@ -501,7 +501,7 @@
       <!-- Modal Footer -->
       <div class="flex justify-between border-t px-4 py-2">
         <button @click="closeChangesModal()" 
-                class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600">
           Close
         </button>
       </div>

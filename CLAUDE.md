@@ -1,14 +1,15 @@
 # Laravel Project
 
 ## Tech Stack
-- Laravel 11
-- PHP 8.2+
+- Laravel 12
+- PHP 8.4 (production image, CI and the locked Symfony 8 components require it)
 - PostgreSQL 16+
-- Tailwind CSS 3.x
+- Tailwind CSS 4.x
 - Livewire 3.x
 - Spatie/Permission
 
 ## Commands
+- This project does NOT use Sail. Run `php`, `php artisan`, `composer` and `npm` directly, without prefixes.
 - `php artisan migrate` - User runs migration manually
 - `php artisan migrate:fresh --seed` - User runs seeders manually
 
@@ -31,7 +32,9 @@
 
 ## Tailwind CSS
 - Use Tailwind utilities, avoid custom CSS
-- Component classes in `resources/css/app.css` only for repeated patterns
+- Component classes in `resources/css/app.css` only for repeated patterns; in v4 they are declared with `@utility`, not `@layer components`
+- The JS config `tailwind.config.js` is still used (loaded via `@config` in `app.css`): it holds the safelist for display classes stored in the database, the Figtree font and the forms plugin
+- Any other stylesheet that uses `@apply` needs `@reference "./app.css";` at the top (see `select2-tw.css`)
 - Always keep in mind the mobile view, but desktop is primary and preferred. `md:`, `lg:` prefixes
 - Use Tailwind's color palette, don't define custom colors unless necessary
 - Prefer Tailwind forms plugin for form styling
@@ -152,7 +155,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 - php - 8.4.13
 - laravel/breeze (BREEZE) - v2
-- laravel/framework (LARAVEL) - v11
+- laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
 - laravel/sanctum (SANCTUM) - v4
 - laravel/telescope (TELESCOPE) - v5
@@ -162,7 +165,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/sail (SAIL) - v1
 - phpunit/phpunit (PHPUNIT) - v11
 - alpinejs (ALPINEJS) - v3
-- tailwindcss (TAILWINDCSS) - v3
+- tailwindcss (TAILWINDCSS) - v4
 
 ## Conventions
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, naming.
@@ -255,16 +258,6 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
 
 
-=== sail rules ===
-
-## Laravel Sail
-
-- This project does NOT use Sail. Run commands directly without prefixes.
-- Run Artisan Commands: `php artisan migrate`
-- Install Composer packages: `composer install`
-- Execute node commands: `npm run dev`
-
-
 === tests rules ===
 
 ## Test Enforcement
@@ -319,14 +312,14 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
 
 
-=== laravel/v11 rules ===
+=== laravel/v12 rules ===
 
-## Laravel 11
+## Laravel 12
 
 - Use the `search-docs` tool to get version specific documentation.
-- Laravel 11 brought a new streamlined file structure which this project now uses.
+- Since Laravel 11, Laravel has a new streamlined file structure which this project uses.
 
-### Laravel 11 Structure
+### Laravel 12 Structure
 - No middleware files in `app/Http/Middleware/`.
 - `bootstrap/app.php` is the file to register middleware, exceptions, and routing files.
 - `bootstrap/providers.php` contains application specific service providers.
@@ -339,12 +332,6 @@ protected function isAccessible(User $user, ?string $path = null): bool
 
 ### Models
 - Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
-
-### New Artisan Commands
-- List Artisan commands using Boost's MCP tool, if available. New commands available in Laravel 11:
-    - `php artisan make:enum`
-    - `php artisan make:class`
-    - `php artisan make:interface`
 
 
 === livewire/core rules ===
@@ -434,8 +421,8 @@ document.addEventListener('livewire:init', function () {
 
 ## Laravel Pint Code Formatter
 
-- You must run `./vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `./vendor/bin/pint --test`, simply run `./vendor/bin/pint` to fix any formatting issues.
+- You must run `vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
+- Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
 
 
 === phpunit/core rules ===
@@ -481,9 +468,44 @@ document.addEventListener('livewire:init', function () {
 - If existing pages and components support dark mode, new pages and components must support dark mode in a similar way, typically using `dark:`.
 
 
-=== tailwindcss/v3 rules ===
+=== tailwindcss/v4 rules ===
 
-## Tailwind 3
+## Tailwind 4
 
-- Always use Tailwind CSS v3 - verify you're using only classes supported by this version.
+- Always use Tailwind CSS v4 - do not use the deprecated utilities.
+- `corePlugins` is not supported in Tailwind v4.
+- In Tailwind v4, configuration is CSS-first using the `@theme` directive — no separate `tailwind.config.js` file is needed.
+<code-snippet name="Extending Theme in CSS" lang="css">
+@theme {
+  --color-brand: oklch(0.72 0.11 178);
+}
+</code-snippet>
+
+- In Tailwind v4, you import Tailwind using a regular CSS `@import` statement, not using the `@tailwind` directives used in v3:
+
+<code-snippet name="Tailwind v4 Import Tailwind Diff" lang="diff">
+   - @tailwind base;
+   - @tailwind components;
+   - @tailwind utilities;
+   + @import "tailwindcss";
+</code-snippet>
+
+
+### Replaced Utilities
+- Tailwind v4 removed deprecated utilities. Do not use the deprecated option - use the replacement.
+- Opacity values are still numeric.
+
+| Deprecated |	Replacement |
+|------------+--------------|
+| bg-opacity-* | bg-black/* |
+| text-opacity-* | text-black/* |
+| border-opacity-* | border-black/* |
+| divide-opacity-* | divide-black/* |
+| ring-opacity-* | ring-black/* |
+| placeholder-opacity-* | placeholder-black/* |
+| flex-shrink-* | shrink-* |
+| flex-grow-* | grow-* |
+| overflow-ellipsis | text-ellipsis |
+| decoration-slice | box-decoration-slice |
+| decoration-clone | box-decoration-clone |
 </laravel-boost-guidelines>
