@@ -18,8 +18,9 @@ abstract class TestCase extends BaseTestCase
      * any migration touches the connection.
      *
      * Allowed connections:
-     *   - sqlite with :memory: database (the phpunit.xml default)
+     *   - sqlite with :memory: database
      *   - any pgsql/mariadb DB whose name starts with "norman_test" or "ci_"
+     *     (phpunit.xml defaults to pgsql "norman_test")
      *     (use these prefixes for CI service containers and local test DBs)
      */
     protected function setUp(): void
