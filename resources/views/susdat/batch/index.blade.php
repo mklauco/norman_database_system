@@ -102,9 +102,9 @@
               </li>
             </ul>
             
-            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <h4 class="text-sm font-medium text-blue-900 mb-2">Note about Susdat ID:</h4>
-              <p class="text-sm text-blue-700">
+            <div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-md">
+              <h4 class="text-sm font-medium text-sky-900 mb-2">Note about Susdat ID:</h4>
+              <p class="text-sm text-sky-700">
                 When using "Susdat ID" as input type, you can enter IDs with or without the "NS" prefix. 
                 The system will automatically handle both formats and search in the code column.
               </p>

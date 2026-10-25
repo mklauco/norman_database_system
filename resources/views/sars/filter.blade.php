@@ -20,7 +20,7 @@
                   <label class="inline-flex items-center">
                     <input 
                     type="radio" 
-                    class="form-radio text-indigo-600" 
+                    class="form-radio text-sky-600" 
                     name="displayOption" 
                     value="1" 
                     @if (request('displayOption', '1') == 1) checked @endif
@@ -30,7 +30,7 @@
                   <label class="inline-flex items-center">
                     <input 
                     type="radio" 
-                    class="form-radio text-indigo-600" 
+                    class="form-radio text-sky-600" 
                     name="displayOption" 
                     value="0" 
                     @if (request('displayOption', '1') === '0') checked @endif

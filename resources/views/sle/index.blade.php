@@ -60,13 +60,13 @@
           @endif
 
           <!-- Data Source Info -->
-          <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+          <div class="bg-sky-50 border-l-4 border-sky-400 p-4 mb-4">
             <div class="flex">
               <div class="shrink-0">
-                <i class="fa fa-info-circle text-blue-400"></i>
+                <i class="fa fa-info-circle text-sky-400"></i>
               </div>
               <div class="ml-3">
-                <p class="text-sm text-blue-700">
+                <p class="text-sm text-sky-700">
                   <strong>Live Data:</strong> This page displays data directly from the online source in real-time. 
                   Data is fetched from <a href="https://www.norman-network.com/nds/SLE/index_body.php" class="link-lime-text" target="_blank">https://www.norman-network.com/nds/SLE/index_body.php</a> on each page load. <strong>Last Updated:</strong> {{ now()->format('Y-m-d H:i:s') }} (UTC)
                 </p>

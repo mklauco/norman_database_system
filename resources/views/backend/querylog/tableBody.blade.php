@@ -197,7 +197,7 @@
                             'dataSourceOrganisationSearch' => data_get($request, 'dataSourceOrganisationSearch', null),
                             'qualityAnalyticalMethodsSearch' => data_get($request, 'qualityAnalyticalMethodsSearch', null),
                         ]) }}"
-                          class="text-blue-500 hover:underline">
+                          class="text-sky-500 hover:underline">
                           View
                         </a>
 

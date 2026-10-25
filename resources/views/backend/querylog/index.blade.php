@@ -15,7 +15,7 @@
                   <option value="{{ $key }}" @selected(($activeModule ?? '') === $key)>{{ $label }}</option>
                 @endforeach
               </select>
-              <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded-sm text-sm">Apply</button>
+              <button type="submit" class="px-3 py-1 bg-sky-600 text-white rounded-sm text-sm">Apply</button>
               @if (!empty($activeModule))
                 <a href="{{ route('querylog.index') }}" class="px-3 py-1 bg-gray-200 rounded-sm text-sm">Reset</a>
               @endif
@@ -236,7 +236,7 @@
                             'dataSourceOrganisationSearch' => data_get($request, 'dataSourceOrganisationSearch'),
                             'qualityAnalyticalMethodsSearch' => data_get($request, 'qualityAnalyticalMethodsSearch'),
                         ]) }}"
-                          class="text-blue-500 hover:underline">
+                          class="text-sky-500 hover:underline">
                           View
                         </a>
                       @else

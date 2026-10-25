@@ -2,7 +2,7 @@
   <!-- Selected Files -->
   <div id="searchResults" class="mb-4">
     @foreach ($selectedFiles as $file)
-      <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700 mb-1 mr-2">
+      <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-sky-100 text-sky-700 mb-1 mr-2">
         <input type="hidden" name="fileSearch[]" value="{{ $file['id'] }}">
         <span class="text-sm">{{ $file['name'] }} ({{ $file['uploaded_at'] }})</span>
         <button type="button" wire:click="removeFile({{ $file['id'] }})" class="ml-2 text-red-500 hover:text-red-700">x</button>
@@ -19,7 +19,7 @@
     name="searchFileString"
     id="searchFileString"
     placeholder="Search files by name (Literature module only)..."
-    class="w-full px-4 py-2 border border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200 ease-in-out"
+    class="w-full px-4 py-2 border border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out"
   >
 
   <!-- Info -->
@@ -54,7 +54,7 @@
           <button
             type="button"
             wire:click="applyFileFilter"
-            class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700"
+            class="px-4 py-2 bg-sky-600 text-white rounded-sm hover:bg-sky-700"
           >
             Add Selected Files to Search
           </button>

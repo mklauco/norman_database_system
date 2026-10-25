@@ -9,13 +9,13 @@
         <div class="p-6 text-gray-900">
 
           {{-- Notification Banner --}}
-          <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <div class="mb-6 bg-sky-50 border-l-4 border-sky-500 p-4 rounded-r-lg">
             <div class="flex items-center">
               <div class="shrink-0">
-                <i class="fas fa-info-circle text-blue-500 text-lg"></i>
+                <i class="fas fa-info-circle text-sky-500 text-lg"></i>
               </div>
               <div class="ml-3">
-                <p class="text-sm text-blue-700">
+                <p class="text-sm text-sky-700">
                   <strong>Note:</strong> This record is displayed in a new browser tab.
                   To return to your search results, please switch to the previous tab instead of using the "Search" link in the navigation bar. You may use keystroke <span class="font-mono">CTRL+SHIFT+TAB</span>.
                 </p>
@@ -193,7 +193,7 @@
                     'Author' => $ds->author ?: null,
                   ];
                 @endphp
-                <tr class="bg-indigo-600 text-white">
+                <tr class="bg-sky-600 text-white">
                   <td colspan="2" class="p-2 font-bold text-center">Data Source</td>
                 </tr>
                 @php $rowIndex = 0; @endphp
@@ -201,9 +201,9 @@
                   @if (is_null($value) || $value === '')
                     @continue
                   @endif
-                  <tr class="@if ($rowIndex % 2 === 0) bg-indigo-50 @else bg-indigo-100 @endif">
-                    <td class="p-1 font-bold text-indigo-900" style="width: 20%; min-width: 120px;">{{ $label }}</td>
-                    <td class="p-1 text-indigo-800" style="width: 80%;">{{ $value }}</td>
+                  <tr class="@if ($rowIndex % 2 === 0) bg-sky-50 @else bg-sky-100 @endif">
+                    <td class="p-1 font-bold text-sky-900" style="width: 20%; min-width: 120px;">{{ $label }}</td>
+                    <td class="p-1 text-sky-800" style="width: 80%;">{{ $value }}</td>
                   </tr>
                   @php $rowIndex++; @endphp
                 @endforeach

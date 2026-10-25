@@ -27,7 +27,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Search for duplicates by:
                 </label>
-                <select name="pivot_id" class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-indigo-500 focus:border-indigo-500">
+                <select name="pivot_id" class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-sky-500 focus:border-sky-500">
                   <option value="">Select a field...</option>
                   @foreach($getPivotableColumns as $column)
                     <option value="{{$column}}" {{ (isset($pivot_id) && $pivot_id == $column) ? 'selected' : '' }}>
@@ -45,8 +45,8 @@
           {{-- Results Section --}}
           @if (isset($duplicates) && $duplicates->count() > 0)
             {{-- Summary --}}
-            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <span class="font-medium text-blue-800">
+            <div class="mb-4 p-3 bg-sky-50 border border-sky-200 rounded-lg">
+              <span class="font-medium text-sky-800">
                 Found {{ $totalDuplicateGroups }} duplicate groups ({{ $totalDuplicateRecords }} total records) for "{{ $columnLabels[$pivot] ?? ucfirst(str_replace('_', ' ', $pivot)) }}"
               </span>
             </div>

@@ -33,7 +33,7 @@
                            name="first_name" 
                            id="first_name" 
                            value="{{ old('first_name', $user->first_name ?? '') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('first_name') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm @error('first_name') border-red-500 @enderror">
                     @error('first_name')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -46,7 +46,7 @@
                            name="last_name" 
                            id="last_name" 
                            value="{{ old('last_name', $user->last_name ?? '') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('last_name') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm @error('last_name') border-red-500 @enderror">
                     @error('last_name')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -59,7 +59,7 @@
                            name="email" 
                            id="email" 
                            value="{{ old('email', $user->email ?? '') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('email') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm @error('email') border-red-500 @enderror">
                     @error('email')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -72,7 +72,7 @@
                     <input type="password" 
                            name="password" 
                            id="password" 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('password') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm @error('password') border-red-500 @enderror">
                     @error('password')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -83,7 +83,7 @@
                     <input type="password" 
                            name="password_confirmation" 
                            id="password_confirmation" 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm">
                   </div>
                   @endif
                   
@@ -92,7 +92,7 @@
                     <label for="salutation" class="block text-sm font-medium text-gray-700">Salutation</label>
                     <select name="salutation" 
                             id="salutation" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm">
                       <option value="">None</option>
                       <option value="Dr." {{ old('salutation', $user->salutation ?? '') == 'Dr.' ? 'selected' : '' }}>Dr.</option>
                       <option value="Prof." {{ old('salutation', $user->salutation ?? '') == 'Prof.' ? 'selected' : '' }}>Prof.</option>
@@ -109,7 +109,7 @@
                            name="username" 
                            id="username" 
                            value="{{ old('username', $user->username ?? '') }}" 
-                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('username') border-red-500 @enderror">
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm @error('username') border-red-500 @enderror">
                     @error('username')
                       <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -122,7 +122,7 @@
                            id="active" 
                            value="1" 
                            {{ old('active', $user->active ?? true) ? 'checked' : '' }}
-                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-sm">
+                           class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded-sm">
                     <label for="active" class="ml-2 block text-sm text-gray-700">Active Account</label>
                   </div>
                 </div>
@@ -137,7 +137,7 @@
                   <label for="country_id" class="block text-sm font-medium text-gray-700">Country</label>
                   <select name="country_id"
                           id="country_id"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm">
                     <option value="">Select a country</option>
                     @foreach ($countries as $country)
                       <option value="{{ $country->id }}"
@@ -156,7 +156,7 @@
                   <label for="organisation_id" class="block text-sm font-medium text-gray-700">Organization</label>
                   <select name="organisation_id"
                           id="organisation_id"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-sky-500 focus:ring-sky-500 sm:text-sm">
                     <option value="">Select an organization</option>
                     @foreach ($organisations as $organisation)
                       <option value="{{ $organisation->id }}"
@@ -222,7 +222,7 @@
                   <input type="checkbox" 
                          name="projects[]" 
                          value="{{ $project->id }}" 
-                         class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded-sm"
+                         class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded-sm"
                          @if(isset($user) && $user->projects->contains($project->id)) checked @endif>
                   <span class="pl-2 text-sm">{{ $project->name }}</span>
                 </label>
@@ -235,10 +235,10 @@
             
             <!-- Form Actions -->
             <div class="mt-6 flex justify-end space-x-3">
-              <a href="{{ route('users.index') }}" class="px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <a href="{{ route('users.index') }}" class="px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
                 Cancel
               </a>
-              <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-xs text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-xs text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-sky-500">
                 {{ $edit ? 'Update User' : 'Create User' }}
               </button>
             </div>

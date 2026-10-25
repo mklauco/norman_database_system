@@ -12,14 +12,14 @@
           <div class="mb-6">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center space-x-3">
-                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 <h2 class="text-xl font-semibold text-gray-900">
                   Merge History
                 </h2>
               </div>
-              <a href="{{ route('duplicates.index') }}" class="text-blue-600 hover:text-blue-800 text-sm">
+              <a href="{{ route('duplicates.index') }}" class="text-sky-600 hover:text-sky-800 text-sm">
                 ← Back to Duplicates
               </a>
             </div>
@@ -48,26 +48,26 @@
             @endif
             
             @if(session('info'))
-              <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="mb-4 p-4 bg-sky-50 border border-sky-200 rounded-lg">
                 <div class="flex items-center space-x-3">
-                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  <div class="text-blue-800">{{ session('info') }}</div>
+                  <div class="text-sky-800">{{ session('info') }}</div>
                 </div>
               </div>
             @endif
             
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="bg-sky-50 border border-sky-200 rounded-lg p-4">
               <div class="flex items-start space-x-3">
-                <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 text-sky-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div>
-                  <h3 class="font-medium text-blue-800">
+                  <h3 class="font-medium text-sky-800">
                     Canonical Reference System Merge History
                   </h3>
-                  <p class="text-blue-700 mt-1">
+                  <p class="text-sky-700 mt-1">
                     View all substance merge operations and audit trail. Merged substances are preserved but hidden from normal searches. 
                     Use the <span class="font-medium">Restore</span> button to reactivate merged substances if needed.
                   </p>
@@ -86,7 +86,7 @@
                        id="date_from" 
                        name="date_from" 
                        value="{{ $filters['date_from'] ?? '' }}"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent">
               </div>
               
               <div>
@@ -95,14 +95,14 @@
                        id="date_to" 
                        name="date_to" 
                        value="{{ $filters['date_to'] ?? '' }}"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent">
               </div>
               
               <div>
                 <label for="merged_by" class="block text-sm font-medium text-gray-700 mb-1">Merged By</label>
                 <select id="merged_by" 
                         name="merged_by" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent">
                   <option value="">All Users</option>
                   @foreach($users as $user)
                     <option value="{{ $user->id }}" {{ ($filters['merged_by'] ?? '') == $user->id ? 'selected' : '' }}>
@@ -121,7 +121,7 @@
             
             @if(!empty(array_filter($filters)))
               <div class="mt-4 pt-4 border-t border-gray-200">
-                <a href="{{ route('duplicates.mergeHistory') }}" class="text-sm text-blue-600 hover:text-blue-800">
+                <a href="{{ route('duplicates.mergeHistory') }}" class="text-sm text-sky-600 hover:text-sky-800">
                   Clear All Filters
                 </a>
               </div>
@@ -280,9 +280,9 @@
           </p>
         </div>
         
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <h5 class="font-medium text-blue-800 text-sm mb-2">This restoration will:</h5>
-          <ul class="text-blue-700 text-sm space-y-1">
+        <div class="bg-sky-50 border border-sky-200 rounded-lg p-3">
+          <h5 class="font-medium text-sky-800 text-sm mb-2">This restoration will:</h5>
+          <ul class="text-sky-700 text-sm space-y-1">
             <li>• Make the substance active again</li>
             <li>• Remove it from the merge history</li>
             <li>• Allow it to appear in searches again</li>

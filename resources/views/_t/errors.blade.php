@@ -5,7 +5,7 @@
   
 
   @if (session()->has('info'))
-  <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-sm relative" role="alert">
+  <div class="bg-sky-100 border border-sky-400 text-sky-700 px-4 py-3 rounded-sm relative" role="alert">
       {!! session()->get('info') !!}
   </div>
   @endif
