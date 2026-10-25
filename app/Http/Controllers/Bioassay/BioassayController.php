@@ -125,14 +125,11 @@ class BioassayController extends Controller
         END ORIGINAL CODE
         */
         foreach ($searchFields as $field) {
-            ${$field} = is_array($request->input($field))
+            $value = is_array($request->input($field))
             ? $request->input($field)
-            : json_decode($request->input($field), true);
+            : json_decode((string) $request->input($field), true);
 
-            // Ensure we have an array even if json_decode returns null
-            // if (!is_array(${$field})) {
-            //     ${$field} = 'a';
-            // }
+            ${$field} = is_array($value) ? array_values(array_filter($value, 'is_scalar')) : [];
         }
 
         // dd($request->all(), ${$field});
