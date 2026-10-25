@@ -14,10 +14,10 @@
           <div class="flex items-start justify-between">
             {{-- Left: Refine Search --}}
             <a href="{{ route('indoor.search.filter', [
-              'countrySearch'      => $countrySearch,
-              'matrixSearch'       => $matrixSearch,
-              'environmentTypeSearch'     => $environmentTypeSearch,
-              'environmentCategorySearch' => $environmentCategorySearch,
+              'countrySearch'      => $countrySearch ?? [],
+              'matrixSearch'       => $matrixSearch ?? [],
+              'environmentTypeSearch'     => $environmentTypeSearch ?? [],
+              'environmentCategorySearch' => $environmentCategorySearch ?? [],
               'substances'         => $substances ?? [],
               'concentrationIndicatorSearch' => $concentrationIndicatorSearch ?? [],
               'sourceSearch'       => $sourceSearch ?? [],
@@ -63,7 +63,7 @@
 
           {{-- Record count --}}
           <div class="mb-2">
-            @if($displayOption == 1)
+            @if(($displayOption ?? null) == 1)
               {{-- Simple output - use Livewire query counter --}}
               @livewire('backend.query-counter', [
                 'queryId' => $query_log_id ?? null,
@@ -176,7 +176,7 @@
           </tbody>
         </table>
         
-        @if($displayOption == 1)
+        @if(($displayOption ?? null) == 1)
         {{-- use simple output --}}
         
         <div class="flex justify-center space-x-4 mt-4">

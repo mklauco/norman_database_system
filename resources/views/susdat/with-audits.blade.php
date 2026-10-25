@@ -30,7 +30,7 @@
                 <td class="px-4 py-2">NS{{ $substance->code }}</td>
                 <td class="px-4 py-2">{{ $substance->name }}</td>
                 <td class="px-4 py-2 text-center">
-                  <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-sm text-sm">
+                  <span class="px-2 py-1 bg-sky-100 text-sky-800 rounded-sm text-sm">
                     {{ $substance->audits_count }}
                   </span>
                 </td>

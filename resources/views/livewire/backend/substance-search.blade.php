@@ -1,7 +1,7 @@
 <div>
     <div id="searchResults">
         @foreach ($selectedSubstances as $substance)
-        <div  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+        <div  class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-sky-100 text-sky-700">
             <input type="hidden" name="substances[]" value="{{$substance['id']}}">
             <span class="text-sm">{{ $substance['name'] }} ({{ $substance['cas_number'] }})</span>
             <div class="ml-2">

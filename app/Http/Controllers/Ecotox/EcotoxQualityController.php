@@ -9,6 +9,7 @@ use App\Models\Ecotox\LowestPNECMain;
 use App\Models\Ecotox\PNEC3;
 use App\Models\Susdat\Substance;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +21,7 @@ class EcotoxQualityController extends Controller
     public function index(Request $request)
     {
         return view('ecotox.quality.index', [
-            'resultsObjects' => collect(),
+            'resultsObjects' => new LengthAwarePaginator([], 0, 200),
             'derivationObjects' => collect(),
             'lowestPnecObjects' => collect(),
             'matrixHabitatCounts' => collect(),

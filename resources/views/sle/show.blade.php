@@ -30,7 +30,7 @@
             <div class="space-y-6">
               <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                  <i class="fa fa-info-circle mr-2 text-blue-600"></i>
+                  <i class="fa fa-info-circle mr-2 text-sky-600"></i>
                   Basic Information
                 </h3>
                 
@@ -154,7 +154,7 @@
 
           <!-- Action Buttons -->
           <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-            <a href="{{ route('sle.sources.index') }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-xs text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+            <a href="{{ route('sle.sources.index') }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-xs text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition">
               <i class="fa fa-arrow-left mr-2"></i>
               Back to List
             </a>

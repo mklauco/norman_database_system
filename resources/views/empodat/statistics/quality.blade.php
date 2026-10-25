@@ -14,7 +14,7 @@
     <!-- No Data Message -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
       <div class="text-yellow-800">{{ $message }}</div>
-      <a href="{{ route('empodat.statistics.index') }}" class="text-blue-600 hover:text-blue-800 underline text-sm">
+      <a href="{{ route('empodat.statistics.index') }}" class="text-sky-600 hover:text-sky-800 underline text-sm">
         Go back to statistics overview
       </a>
     </div>
@@ -27,10 +27,10 @@
   @else
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 class="font-semibold text-blue-800 mb-2">Quality Categories</h4>
-        <div class="text-2xl font-bold text-blue-900">{{ $totalCategories }}</div>
-        <div class="text-sm text-blue-600">rating categories</div>
+      <div class="bg-sky-50 border border-sky-200 rounded-lg p-4">
+        <h4 class="font-semibold text-sky-800 mb-2">Quality Categories</h4>
+        <div class="text-2xl font-bold text-sky-900">{{ $totalCategories }}</div>
+        <div class="text-sm text-sky-600">rating categories</div>
       </div>
 
       @if(!empty($qualityStats))
@@ -181,7 +181,7 @@
                 </span>
               </td>
               <td class="border border-gray-300 px-4 py-2 text-right">
-                <span class="font-medium text-blue-600">{{ number_format($quality['record_count']) }}</span>
+                <span class="font-medium text-sky-600">{{ number_format($quality['record_count']) }}</span>
               </td>
               <td class="border border-gray-300 px-4 py-2 text-right">
                 <span class="text-gray-600">

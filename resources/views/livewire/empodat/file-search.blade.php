@@ -8,7 +8,7 @@
         placeholder="Search files by name..."
         name="fileSearch"
         id="fileSearch"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-hidden focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
         autocomplete="off"
       >
 

@@ -64,7 +64,7 @@
                   <span class="block text-sm font-medium text-gray-500">Roles</span>
                   <div class="flex flex-wrap gap-1 mt-1">
                     @forelse($user->roles as $role)
-                      <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-medium">
+                      <span class="px-2 py-1 text-xs rounded-full bg-sky-100 text-sky-800 font-medium">
                         {{ $role->name }}
                       </span>
                     @empty
@@ -123,7 +123,7 @@
                   <div class="mt-1">
                     <span class="text-gray-900">{{ $user->tokens->count() }} active token(s)</span>
                     @if($user->id === auth()->id())
-                      <a href="{{ route('apiresources.index') }}" class="block mt-2 text-sm text-indigo-600 hover:text-indigo-500">Manage your API tokens</a>
+                      <a href="{{ route('apiresources.index') }}" class="block mt-2 text-sm text-sky-600 hover:text-sky-500">Manage your API tokens</a>
                     @endif
                   </div>
                 </div>
@@ -175,7 +175,7 @@
                         <td class="py-2 px-4">{{ $project->abbreviation }}</td>
                         <td class="py-2 px-4">{{ Str::limit($project->description, 100) }}</td>
                         <td class="py-2 px-4 text-center">
-                          <a href="{{ route('projects.show', $project->id) }}" class="text-blue-600 hover:text-blue-800">
+                          <a href="{{ route('projects.show', $project->id) }}" class="text-sky-600 hover:text-sky-800">
                             <i class="fas fa-eye"></i>
                           </a>
                         </td>

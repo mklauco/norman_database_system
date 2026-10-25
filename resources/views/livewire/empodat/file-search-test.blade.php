@@ -22,7 +22,7 @@
             <input type="hidden" name="fileSearch[]" value="{{ $file['id'] }}">
 
             <div class="flex-1 flex items-center">
-              <i class="fas fa-file text-blue-500 mr-2"></i>
+              <i class="fas fa-file text-sky-500 mr-2"></i>
               <div>
                 <span class="text-sm font-medium text-gray-800">{{ $file['name'] }}</span>
                 @if($file['uploaded_at'])
@@ -54,7 +54,7 @@
       name="searchFileString"
       id="searchFileString"
       placeholder="Search files by name or original name... (min 3 characters)"
-      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+      class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm shadow-xs focus:outline-hidden focus:ring-2 focus:ring-sky-500 focus:border-transparent transition duration-200 ease-in-out"
     >
     @if(strlen($search) > 0 && strlen($search) <= 2)
       <div class="absolute right-3 top-3 text-xs text-orange-600">
@@ -70,7 +70,7 @@
       Type at least 3 characters to search. You can paste full filenames.
     </span>
     @if(strlen($search) > 2)
-      <span class="ml-2 text-blue-600 text-xs">
+      <span class="ml-2 text-sky-600 text-xs">
         <i class="fas fa-spinner fa-spin mr-1" wire:loading wire:target="search"></i>
         <span wire:loading wire:target="search">Searching...</span>
       </span>
@@ -81,7 +81,7 @@
   <div class="mt-3">
     @if($resultsAvailable)
       @if($results->count() > 0)
-        <div class="bg-blue-50 border border-blue-200 rounded-sm p-3 mb-3">
+        <div class="bg-sky-50 border border-sky-200 rounded-sm p-3 mb-3">
           <div class="text-sm text-gray-700 mb-2">
             <strong>{{ $results->count() }}</strong> file(s) found. Select files to include in your search:
           </div>
@@ -95,7 +95,7 @@
                   wire:model="selectedFileIds"
                   type="checkbox"
                   value="{{ $result->id }}"
-                  class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded-sm"
+                  class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded-sm"
                 >
                 <div class="flex-1">
                   <div class="flex items-center">
@@ -123,7 +123,7 @@
             <button
               type="button"
               wire:click="applyFileFilter"
-              class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors flex items-center"
+              class="px-4 py-2 bg-sky-600 text-white rounded-sm hover:bg-sky-700 transition-colors flex items-center"
             >
               <i class="fas fa-plus-circle mr-2"></i>
               Add Selected Files

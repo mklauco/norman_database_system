@@ -14,7 +14,7 @@
     <!-- No Data Message -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
       <div class="text-yellow-800">{{ $message }}</div>
-      <a href="{{ route('empodat.statistics.index') }}" class="text-blue-600 hover:text-blue-800 underline text-sm">
+      <a href="{{ route('empodat.statistics.index') }}" class="text-sky-600 hover:text-sky-800 underline text-sm">
         Go back to statistics overview
       </a>
     </div>
@@ -27,10 +27,10 @@
   @else
     <!-- Summary Cards -->
     {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 class="font-semibold text-blue-800 mb-2">Total Matrices</h4>
-        <div class="text-2xl font-bold text-blue-900">{{ $totalMatrices }}</div>
-        <div class="text-sm text-blue-600">environmental matrices</div>
+      <div class="bg-sky-50 border border-sky-200 rounded-lg p-4">
+        <h4 class="font-semibold text-sky-800 mb-2">Total Matrices</h4>
+        <div class="text-2xl font-bold text-sky-900">{{ $totalMatrices }}</div>
+        <div class="text-sm text-sky-600">environmental matrices</div>
       </div>
 
       <div class="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -153,12 +153,12 @@
                 </div>
               </td>
               <td class="border border-gray-300 px-4 py-2">
-                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-sm text-sm font-medium">
+                <span class="px-2 py-1 bg-sky-100 text-sky-800 rounded-sm text-sm font-medium">
                   {{ $matrix['matrix_name'] }}
                 </span>
               </td>
               <td class="border border-gray-300 px-4 py-2 text-right">
-                <span class="font-medium text-blue-600">{{ number_format($matrix['record_count']) }}</span>
+                <span class="font-medium text-sky-600">{{ number_format($matrix['record_count']) }}</span>
               </td>
               <td class="border border-gray-300 px-4 py-2 text-right">
                 <span class="text-gray-600">

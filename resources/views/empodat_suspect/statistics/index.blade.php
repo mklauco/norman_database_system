@@ -316,9 +316,9 @@
 
       @auth
         @if(auth()->user()->hasRole('super_admin'))
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
-            <div class="text-sm text-blue-800 font-medium mb-2">Admin Quick Start:</div>
-            <div class="text-sm text-blue-600">
+          <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 max-w-md mx-auto">
+            <div class="text-sm text-sky-800 font-medium mb-2">Admin Quick Start:</div>
+            <div class="text-sm text-sky-600">
               Use the "Generate All Statistics" button above to create your first statistics overview.
             </div>
           </div>

@@ -96,12 +96,12 @@
                                     <!-- Main Questions and Sub-questions -->
                                     <template x-for="question in credQuestions" :key="question.id">
                                         <!-- Main Question Row - Spans all columns -->
-                                        <tr class="border-b border-gray-200 bg-blue-600 text-white">
+                                        <tr class="border-b border-gray-200 bg-sky-600 text-white">
                                             <td colspan="4" class="px-3 py-3">
                                                 <div class="flex items-center justify-between">
                                                     <div class="flex items-center space-x-2">
                                                         <span class="font-semibold text-lg" x-text="question.question_number"></span>
-                                                        <span class="text-blue-100" x-text="question.question_text"></span>
+                                                        <span class="text-sky-100" x-text="question.question_text"></span>
                                                     </div>
                                                     <div class="flex items-center space-x-4 text-sm">
                                                         <span>Screening: <span x-text="question.screening_score || '0.00'"></span></span>

@@ -14,7 +14,7 @@
     <!-- No Data Message -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
       <div class="text-yellow-800">{{ $message }}</div>
-      <a href="{{ route('empodat.statistics.index') }}" class="text-blue-600 hover:text-blue-800 underline text-sm">
+      <a href="{{ route('empodat.statistics.index') }}" class="text-sky-600 hover:text-sky-800 underline text-sm">
         Go back to statistics overview
       </a>
     </div>
@@ -33,7 +33,7 @@
           <select 
             id="minYear" 
             name="min_year" 
-            class="border border-gray-300 rounded-sm px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="border border-gray-300 rounded-sm px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
           >
             @for($year = $minYear; $year <= $maxYear; $year++)
               <option value="{{ $year }}" {{ ($displayMinYear == $year) ? 'selected' : '' }}>
@@ -48,7 +48,7 @@
           <select 
             id="maxYear" 
             name="max_year" 
-            class="border border-gray-300 rounded-sm px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="border border-gray-300 rounded-sm px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
           >
             @for($year = $minYear; $year <= $maxYear; $year++)
               <option value="{{ $year }}" {{ ($displayMaxYear == $year) ? 'selected' : '' }}>
@@ -60,7 +60,7 @@
         
         <button 
           type="submit" 
-          class="px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors text-sm font-medium"
+          class="px-4 py-2 bg-sky-600 text-white rounded-sm hover:bg-sky-700 transition-colors text-sm font-medium"
         >
           Update View
         </button>
@@ -149,7 +149,7 @@
           @foreach($displayYears as $year)
             <td class="year-column border border-gray-300 px-4 py-2 text-right w-24 min-w-24" data-year="{{ $year }}">
               @if(isset($yearData[$year]))
-                <span class="font-medium text-blue-600">{{ number_format($yearData[$year]) }}</span>
+                <span class="font-medium text-sky-600">{{ number_format($yearData[$year]) }}</span>
               @else
                 <span class="text-gray-400">-</span>
               @endif
@@ -179,7 +179,7 @@
     <button 
       type="button" 
       onclick="setYearRange(2020, 2024)"
-      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded-sm hover:bg-blue-200 transition-colors text-sm"
+      class="w-full px-3 py-2 bg-sky-100 text-sky-800 rounded-sm hover:bg-sky-200 transition-colors text-sm"
     >
       Last 5 Years (2020-2024)
     </button>
@@ -187,7 +187,7 @@
     <button 
       type="button" 
       onclick="setYearRange(2015, 2024)"
-      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded-sm hover:bg-blue-200 transition-colors text-sm"
+      class="w-full px-3 py-2 bg-sky-100 text-sky-800 rounded-sm hover:bg-sky-200 transition-colors text-sm"
     >
       Last 10 Years (2015-2024)
     </button>
@@ -195,7 +195,7 @@
     <button 
       type="button" 
       onclick="setYearRange(2000, 2024)"
-      class="w-full px-3 py-2 bg-blue-100 text-blue-800 rounded-sm hover:bg-blue-200 transition-colors text-sm"
+      class="w-full px-3 py-2 bg-sky-100 text-sky-800 rounded-sm hover:bg-sky-200 transition-colors text-sm"
     >
       Since 2000
     </button>

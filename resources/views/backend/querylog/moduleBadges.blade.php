@@ -3,7 +3,7 @@
 @elseif(str_starts_with($moduleKey, 'ecotox'))
 <span class="px-2 py-0.5 bg-green-100 text-green-800 rounded-sm">Ecotox</span>
 @elseif(str_starts_with($moduleKey, 'empodat'))
-<span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-sm">EMPODAT</span>
+<span class="px-2 py-0.5 bg-sky-100 text-sky-800 rounded-sm">EMPODAT</span>
 @elseif(str_starts_with($moduleKey, 'passive'))
 <span class="px-2 py-0.5 bg-teal-100 text-teal-800 rounded-sm">Passive</span>
 @elseif(str_starts_with($moduleKey, 'indoor'))
