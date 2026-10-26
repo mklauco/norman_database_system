@@ -9,13 +9,13 @@
         <div class="p-6 text-gray-900">
 
           {{-- Notification Banner --}}
-          <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <div class="mb-6 bg-sky-50 border-l-4 border-sky-500 p-4 rounded-r-lg">
             <div class="flex items-center">
               <div class="shrink-0">
-                <i class="fas fa-info-circle text-blue-500 text-lg"></i>
+                <i class="fas fa-info-circle text-sky-500 text-lg"></i>
               </div>
               <div class="ml-3">
-                <p class="text-sm text-blue-700">
+                <p class="text-sm text-sky-700">
                   <strong>Note:</strong> This record is displayed in a new browser tab.
                   To return to your search results, please switch to the previous tab instead of using the "Search" link in the navigation bar. You may use keystroke <span class="font-mono">CTRL+SHIFT+TAB</span>.
                 </p>

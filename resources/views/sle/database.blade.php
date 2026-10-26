@@ -111,7 +111,7 @@
                 </td>
                 <td class="p-1 text-center">
                   <div class="flex space-x-2 justify-center">
-                    <a href="{{ route('sle.sources.show', $sle) }}" class="text-blue-600 hover:text-blue-900" title="View">
+                    <a href="{{ route('sle.sources.show', $sle) }}" class="text-sky-600 hover:text-sky-900" title="View">
                       <i class="fa fa-eye"></i>
                     </a>
                     <a href="{{ route('sle.sources.edit', $sle) }}" class="text-yellow-600 hover:text-yellow-900" title="Edit">

@@ -4,7 +4,7 @@
   </x-slot>
   
   <div class="py-4">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900" x-data="userTable()" x-init="init()">
           
@@ -33,13 +33,13 @@
             </div>
 
             <!-- Admins List -->
-            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <h3 class="text-sm font-semibold text-blue-800 mb-2">Admins ({{ $admins->count() }})</h3>
-              <div class="text-sm text-blue-900">
+            <div class="bg-sky-50 border border-sky-200 rounded-md p-4">
+              <h3 class="text-sm font-semibold text-sky-800 mb-2">Admins ({{ $admins->count() }})</h3>
+              <div class="text-sm text-sky-900">
                 @if($admins->count() > 0)
                   {{ $admins->pluck('last_name')->implode('; ') }}
                 @else
-                  <span class="text-blue-600">None</span>
+                  <span class="text-sky-600">None</span>
                 @endif
               </div>
             </div>
@@ -85,7 +85,7 @@
           <div class="overflow-x-auto">
             <!-- Loading overlay -->
             <div x-show="loading" class="absolute inset-0 bg-gray-100 bg-opacity-50 flex items-center justify-center z-10">
-              <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg class="animate-spin h-8 w-8 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -140,21 +140,27 @@
                     <td class="py-2 px-4" x-text="user.last_name"></td>
                     <td class="py-2 px-4" x-text="user.email"></td>
                     <td class="py-2 px-4">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                            :class="user.active ? 'bg-lime-100 text-lime-800' : 'bg-red-100 text-red-800'"
+                            x-text="user.active ? 'active' : 'disabled'"></span>
+                    </td>
+                    <td class="py-2 px-4">
                       <template x-for="(role, roleIndex) in user.roles" :key="roleIndex">
-                        <span class="px-2 mr-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800" x-text="role.name"></span>
+                        <span class="px-2 mr-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800" x-text="role.name"></span>
                       </template>
                     </td>
+                    <td class="py-2 px-4" x-text="user.login_retentions_count"></td>
                     <td class="py-2 px-4" x-text="user.tokens_count"></td>
                     <td class="py-2 px-4">
                       <template x-for="(project, projectIndex) in user.projects" :key="projectIndex">
                         <span class="px-2 mr-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800" x-text="project.abbreviation"></span>
                       </template>
                     </td>
-                    <td class="py-2 px-4 text-sm text-gray-600" x-text="formatDateTime(user.created_at)"></td>
-                    <td class="py-2 px-4 text-sm text-gray-600" x-text="formatDateTime(user.updated_at)"></td>
+                    <td class="py-2 px-4 text-sm text-gray-600 whitespace-nowrap" x-text="formatDateTime(user.created_at)"></td>
+                    <td class="py-2 px-4 text-sm text-gray-600 whitespace-nowrap" x-text="formatDateTime(user.updated_at)"></td>
                     <td class="py-2 px-4 text-center">
                       <div class="flex justify-center space-x-2">
-                        <a :href="'/backend/users/' + user.id" class="text-blue-600 hover:text-blue-800" title="View">
+                        <a :href="'/backend/users/' + user.id" class="text-sky-600 hover:text-sky-800" title="View">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -207,7 +213,7 @@
                   <span class="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white">...</span>
                 </template>
                 <template x-if="page !== '...'">
-                  <button @click="changePage(page)" :class="page === currentPage ? 'bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'" class="px-3 py-2 border rounded-md text-sm font-medium">
+                  <button @click="changePage(page)" :class="page === currentPage ? 'bg-sky-50 border-sky-500 text-sky-600' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'" class="px-3 py-2 border rounded-md text-sm font-medium">
                     <span x-text="page"></span>
                   </button>
                 </template>
@@ -312,13 +318,9 @@
         formatDateTime(dateString) {
           if (!dateString) return '-';
           const date = new Date(dateString);
-          return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+          const pad = (n) => String(n).padStart(2, '0');
+          // YYYY-MM-DD HH:mm, 24h
+          return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
         },
         
         changePage(page) {

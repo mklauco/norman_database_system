@@ -13,7 +13,7 @@
             <p class="text-gray-600">
               Substance: <strong>{{ $substance->name }}</strong> (ID: {{ $substance->id }})
             </p>
-            <a href="{{ route('substances.show', $substance) }}" class="text-blue-600 hover:text-blue-800">
+            <a href="{{ route('substances.show', $substance) }}" class="text-sky-600 hover:text-sky-800">
               ← Back to Substance
             </a>
           </div>
@@ -35,7 +35,7 @@
                   <td class="px-4 py-2">
                     <span class="px-2 py-1 text-xs rounded
                       @if($audit->event == 'created') bg-green-100 text-green-800
-                      @elseif($audit->event == 'updated') bg-blue-100 text-blue-800
+                      @elseif($audit->event == 'updated') bg-sky-100 text-sky-800
                       @elseif($audit->event == 'deleted') bg-red-100 text-red-800
                       @else bg-gray-100 text-gray-800 @endif">
                       {{ ucfirst($audit->event) }}

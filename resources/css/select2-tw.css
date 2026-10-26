@@ -82,7 +82,7 @@
 }
 .select2-search--dropdown .select2-search__field {
 	/* Search box itself where you can enter text*/
-	@apply h-10 p-1 bg-white  box-border rounded-sm border-2 border-blue-300  text-black outline-hidden;
+	@apply h-10 p-1 bg-white  box-border rounded-sm border-2 border-sky-300  text-black outline-hidden;
 	width: 100%;
 }
 .select2-search--dropdown .select2-search__field::-webkit-search-cancel-button {

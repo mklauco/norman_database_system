@@ -582,14 +582,10 @@ Route::prefix('sars')->group(function () {
     Route::get('search/downloadjob/{query_log_id}', [SarsController::class, 'startDownloadJob'])->name('sars.search.download');
     Route::get('search/download/{filename}', [SarsController::class, 'downloadCsv'])
         ->name('sars.csv.download');
-    Route::resource('search', SarsController::class)->names([
-        'index' => 'sars.search.index',
-        'create' => 'sars.search.create',
-        'store' => 'sars.search.store',
+    Route::resource('search', SarsController::class)->only(['show', 'edit', 'update'])->whereNumber('search')->names([
         'show' => 'sars.search.show',
         'edit' => 'sars.search.edit',
         'update' => 'sars.search.update',
-        'destroy' => 'sars.search.destroy',
     ]);
 
     // Public routes
@@ -628,14 +624,10 @@ Route::prefix('literature')->group(function () {
     Route::get('search/downloadjob/{query_log_id}', [LiteratureController::class, 'startDownloadJob'])->name('literature.search.download');
     Route::get('search/download/{filename}', [LiteratureController::class, 'downloadCsv'])
         ->name('literature.csv.download');
-    Route::resource('search', LiteratureController::class)->names([
-        'index' => 'literature.search.index',
-        'create' => 'literature.search.create',
-        'store' => 'literature.search.store',
+    Route::resource('search', LiteratureController::class)->only(['show', 'edit', 'update'])->whereNumber('search')->names([
         'show' => 'literature.search.show',
         'edit' => 'literature.search.edit',
         'update' => 'literature.search.update',
-        'destroy' => 'literature.search.destroy',
     ]);
 
     // Public routes
@@ -774,14 +766,8 @@ Route::prefix('empodat_suspect')->group(function () {
     Route::get('search/downloadjob/{query_log_id}', [EmpodatSuspectController::class, 'startDownloadJob'])->name('empodat_suspect.search.download');
     Route::get('search/download/{filename}', [EmpodatSuspectController::class, 'downloadCsv'])
         ->name('empodat_suspect.csv.download');
-    Route::resource('search', EmpodatSuspectController::class)->names([
-        'index' => 'empodat_suspect.search.index',
-        'create' => 'empodat_suspect.search.create',
-        'store' => 'empodat_suspect.search.store',
+    Route::resource('search', EmpodatSuspectController::class)->only(['show'])->whereNumber('search')->names([
         'show' => 'empodat_suspect.search.show',
-        'edit' => 'empodat_suspect.search.edit',
-        'update' => 'empodat_suspect.search.update',
-        'destroy' => 'empodat_suspect.search.destroy',
     ]);
 
     // Public routes
@@ -826,7 +812,6 @@ Route::prefix('empodat_suspect')->group(function () {
 
 Route::prefix('prioritisation')->group(function () {
     Route::resource('prioritisationhome', PrioritisationHomeController::class)->only(['index']);
-    Route::resource('prioritisationhome', PrioritisationHomeController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
 
     Route::get('/monitoring-scarce', [MonitoringScarceController::class, 'index'])->name('prioritisation.monitoring-scarce.index');
     Route::get('/monitoring-danube', [MonitoringDanubeController::class, 'index'])->name('prioritisation.monitoring-danube.index');
@@ -836,8 +821,7 @@ Route::prefix('prioritisation')->group(function () {
     Route::get('/modelling-danube', [ModellingDanubeController::class, 'index'])->name('prioritisation.modelling-danube.index');
     Route::get('/modelling-danube/{id}', [ModellingDanubeController::class, 'show'])->name('prioritisation.modelling-danube.show');
 
-    Route::get('/monitoring-scarce/filter', [MonitoringScarceController::class, 'filter'])->name('prioritisation.monitoring-scarce.filter');
-    Route::get('/monitoring-scarce/{id}', [MonitoringScarceController::class, 'show'])->name('prioritisation.monitoring-scarce.show');
+    Route::get('/monitoring-scarce/{id}', [MonitoringScarceController::class, 'show'])->whereNumber('id')->name('prioritisation.monitoring-scarce.show');
     Route::get('/monitoring-danube/{id}', [MonitoringDanubeController::class, 'show'])->name('prioritisation.monitoring-danube.show');
 
     // CSV Download routes (require authentication)

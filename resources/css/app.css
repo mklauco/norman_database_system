@@ -60,8 +60,8 @@
   @apply text-rose-600 hover:text-white hover:bg-rose-500 border-b-2 border-transparent hover:border-rose-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-rose-500;
 }
 
-@utility link-indigo {
-  @apply text-indigo-600 hover:text-white hover:bg-indigo-500 border-b-2 border-transparent hover:border-indigo-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-indigo-500;
+@utility link-sky {
+  @apply text-sky-600 hover:text-white hover:bg-sky-500 border-b-2 border-transparent hover:border-sky-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-sky-500;
 }
 
 @utility link-lime {

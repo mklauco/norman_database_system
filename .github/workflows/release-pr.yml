@@ -73,11 +73,14 @@ jobs:
             already serving this exact commit, so it cannot silently migrate
             against a stale release.
 
-          ### Why there are no checks on this PR
+          ### Checks on this PR
 
-          CI runs on every push to `development` and to `main`, so these commits
-          were already built when they landed on `development`, and will be built
-          again on merge. A PR opened by `GITHUB_TOKEN` deliberately does not
-          fire the `pull_request` event, which is why no check appears here.
+          The checks shown here come from the CI run on the push to
+          `development`. It ran on the same commit, so GitHub shows its results
+          here too, and CI runs again on the merge to `main`.
+
+          The Actions tab may also list a CI run for this PR with the status
+          "action required" and no jobs. GitHub holds it because a bot opened
+          this PR. Nothing failed; it can be ignored.
           BODY
           )"

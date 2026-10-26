@@ -129,6 +129,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the recorded logins of the user.
+     */
+    public function loginRetentions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\Backend\UserLoginRetention::class);
+    }
+
+    /**
      * Scope a query to only include active users.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query

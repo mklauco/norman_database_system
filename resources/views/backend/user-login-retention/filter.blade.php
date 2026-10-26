@@ -52,6 +52,18 @@
                     </form>
                 </div>
             </div>
+
+            <div class="mt-6 bg-white shadow-xs sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    <h3 class="mb-4 text-lg font-semibold text-gray-800">Last {{ $latestLogins->count() }} logins</h3>
+
+                    @if($latestLogins->isNotEmpty())
+                        @include('backend.user-login-retention.partials.table', ['logins' => $latestLogins])
+                    @else
+                        <p class="text-gray-500">No logins recorded yet.</p>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 </x-app-layout>

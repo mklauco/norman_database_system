@@ -37,7 +37,7 @@
               <td class="py-2 px-2 text-center">
                 <a class="link-edit" href="{{route('dctitems.edit', $item->id)}}">Edit</a>
                 <a class="link-edit-rose" href="{{route('dctitems.upload_new_template', $item->id)}}">Upload New File</a>
-                <a class="link-indigo" href="{{route('dctitems.index_files', $item->id)}}">View previous templates</a>
+                <a class="link-sky" href="{{route('dctitems.index_files', $item->id)}}">View previous templates</a>
               </td>
               @endrole
             </tr>

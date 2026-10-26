@@ -24,7 +24,7 @@
                   </span>
                 </div>
               </div>
-              <a href="{{ route('duplicates.index') }}" class="text-blue-600 hover:text-blue-800 text-sm">
+              <a href="{{ route('duplicates.index') }}" class="text-sky-600 hover:text-sky-800 text-sm">
                 ← Back to Duplicates
               </a>
             </div>
@@ -53,7 +53,7 @@
               </p>
               <textarea name="merge_reason" 
                         rows="2" 
-                        class="w-full px-2 py-1 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                        class="w-full px-2 py-1 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-1 focus:ring-sky-500"
                         placeholder="e.g., Duplicate records with same code, keeping the most complete data"
                         required></textarea>
             </div>
@@ -109,7 +109,7 @@
                                id="active_{{ $substance->id }}" 
                                name="canonical_id" 
                                value="{{ $substance->id }}"
-                               class="text-blue-600 focus:ring-blue-500"
+                               class="text-sky-600 focus:ring-sky-500"
                                {{ $loop->first ? 'checked' : '' }}
                                required>
                       </td>
@@ -118,7 +118,7 @@
                                id="deprecated_{{ $substance->id }}" 
                                name="duplicateChoice[]" 
                                value="{{ $substance->id }}"
-                               class="text-blue-600 focus:ring-blue-500"
+                               class="text-sky-600 focus:ring-sky-500"
                                {{ $loop->first ? 'disabled' : '' }}>
                       </td>
                     </tr>

@@ -70,11 +70,11 @@ gh pr create --base development --title "..." --body "..."
 ```
 
 Then in the PR:
-- **CI runs automatically.** Two jobs: composer install and frontend build. Both must pass.
+- **CI runs automatically.** Three required checks: `Composer Install`, `Frontend Build` and `Tests` (the full PHPUnit suite against PostgreSQL 16). GitHub blocks the merge until all three pass.
 - **Wait for review.** All PRs are reviewed by **Martin (`@mklauco`)** at this stage. As the team grows we may delegate.
-- **Merge** when CI is green and the review is approved.
+- **Merge with a merge commit** when CI is green and the review is approved (see §3.1).
 
-Your branch gets deleted after merge. Don't keep working on it.
+GitHub does not delete the branch after merge. To keep working on it, first merge `origin/development` into it (§3.2); for unrelated work, start a new branch.
 
 ---
 
@@ -87,7 +87,7 @@ The single-PR flow above covers 80% of cases. Here's what to do for the rest.
 | Topic | Rule |
 |---|---|
 | Sync feature branch with development | **Merge** development into your feature branch. Don't rebase. |
-| Closing a PR | **Squash and merge.** One commit per PR on the target branch. |
+| Closing a PR | **Create a merge commit.** Never squash, never rebase: every commit stays in the history of `development` and `main`, for full auditability. Squash and rebase merging are disabled in the repository settings. |
 | Commit messages | Free-form. No required prefix. Just be descriptive. |
 | Reviewer | `@mklauco` for all PRs at this stage. |
 | Hotfixes | Through `development` like everything else. No fast-path to `main`. |
@@ -178,7 +178,7 @@ For the reviewer (Martin today):
 
 For the author (you):
 - Don't take review comments personally — treat them as design discussion.
-- Push fixup commits in response. Don't force-push to a branch under review — it makes the reviewer lose their place in the diff. The squash-merge will collapse fixups at merge time.
+- Push fixup commits in response. Don't force-push to a branch under review — it makes the reviewer lose their place in the diff. Fixup commits stay in the history after the merge; that is intended.
 - After addressing comments, **re-request review** by clicking the "🔄" icon next to the reviewer's name. Don't expect them to notice silently.
 
 ### 3.8 When CI fails on your PR
@@ -226,12 +226,15 @@ If a PR turns out to be wrong and is already on `development` (or worse, `main`)
 
 ## 4. What CI checks today
 
-`.github/workflows/ci.yml` runs on every push and PR to `development` or `main`:
+`.github/workflows/ci.yml` runs on every push and PR to `development` or `main`, as three jobs:
 
-- `composer validate --strict` and `composer install`
-- `npm ci && npm run build`
+- **Composer Install** — `composer validate --strict` and `composer install`
+- **Frontend Build** — `npm ci && npm run build`
+- **Tests** — `php artisan test` against a PostgreSQL 16 service with an empty `norman_test` database, using `.env.example` as the environment
 
-CI does **not yet** run tests, lint, or static analysis. Don't take this as licence to ship broken code — those are coming. Run tests locally before pushing (`php artisan test`).
+All three are required to merge into `development`. Merging into `main` currently requires `Composer Install` and `Frontend Build`.
+
+CI does **not yet** run lint or static analysis. Run tests locally before pushing (`php artisan test`) — a red `Tests` check blocks your merge anyway.
 
 ---
 
@@ -249,14 +252,16 @@ The release PR (`development → main`) is opened **automatically** by `.github/
 
 ## 6. What happens after merge to `main` (the release)
 
-Automatic deploy. Within ~60 seconds:
+The `Deploy` workflow starts automatically, then **waits for approval**: the `production` environment has a required reviewer. Once approved it usually finishes in 1–3 minutes (up to ~8 with cold Composer/npm caches):
 
 1. GitHub Actions clones the new code into `releases/<timestamp>_<sha>/` on the server.
 2. Installs PHP and JS dependencies inside ephemeral containers.
-3. Puts the site in maintenance mode (`artisan down`, ~10 s of HTTP 503).
+3. Puts the site in maintenance mode (`artisan down`, HTTP 503 while the next steps run).
 4. Atomically swaps `current` symlink to the new release.
-5. Rebuilds Laravel caches; reloads PHP-FPM; restarts queue workers.
-6. Lifts maintenance mode.
+5. Recreates the app, queue-worker, scheduler and web containers against the new release.
+6. Clears and rebuilds Laravel caches, recreates the `public/storage` link and regenerates the API docs.
+7. Lifts maintenance mode and prunes old releases (the last 5 are kept).
+8. Checks that production really serves the merged commit; the workflow fails if it doesn't.
 
 Verification: open https://norman-databases.org/ — should be live.
 
@@ -271,11 +276,12 @@ If anything breaks: see [DEPLOY.md](DEPLOY.md#rollback) for the rollback procedu
 When your change includes a migration:
 
 1. Get the code merged to `main` (deploy lands the migration files on the server but doesn't run them).
-2. Tell Martin (or whoever has migrate rights) to run the `Migrate Production DB` workflow:
-   - GitHub → Actions → Migrate Production DB → Run workflow
+2. Once the deploy has finished, tell Martin (or whoever has migrate rights) to run the `Migrate Production DB` workflow:
+   - GitHub → Actions → Migrate Production DB → Run workflow, on `main` (the default).
    - Type `MIGRATE PRODUCTION` in the confirmation field.
-   - Leave `pretend` set to `true` for the first run — it shows the SQL without executing.
-   - Re-run with `pretend: false` to actually execute.
+   - Tick `pretend` for the first run (it is off by default) — it shows the SQL without executing.
+   - Re-run with `pretend` off to actually execute.
+   - The workflow refuses to run unless production is already serving that exact commit, so it cannot migrate against a stale release.
 
 **Why manual:** migrations on a 50M-row table can lock production. Operator approval is the gate.
 
@@ -287,8 +293,8 @@ When your change includes a migration:
 
 `tests/TestCase.php` aborts any test run that points at a non-test database. The guard allows:
 
-- `sqlite :memory:` (the phpunit.xml default)
-- Database names starting with `norman_test` or `ci_`
+- `sqlite :memory:`
+- Database names starting with `norman_test` or `ci_` (the `phpunit.xml` default is PostgreSQL `norman_test`, see §10)
 
 If you see "Test suite refused to run", you accidentally pointed tests at a real DB. Check your environment or `phpunit.xml`.
 

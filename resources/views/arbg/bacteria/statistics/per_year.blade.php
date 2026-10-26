@@ -14,7 +14,7 @@
     <!-- No Data Message -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
       <div class="text-yellow-800">{{ $message }}</div>
-      <a href="{{ route('arbg.bacteria.statistics.index') }}" class="text-blue-600 hover:text-blue-800 underline text-sm">
+      <a href="{{ route('arbg.bacteria.statistics.index') }}" class="text-sky-600 hover:text-sky-800 underline text-sm">
         Go back to statistics overview
       </a>
     </div>
@@ -90,7 +90,7 @@
 
     <!-- Back Link -->
     <div class="mt-6">
-      <a href="{{ route('arbg.bacteria.statistics.index') }}" class="text-blue-600 hover:text-blue-800 underline text-sm">
+      <a href="{{ route('arbg.bacteria.statistics.index') }}" class="text-sky-600 hover:text-sky-800 underline text-sm">
         &larr; Back to statistics overview
       </a>
     </div>

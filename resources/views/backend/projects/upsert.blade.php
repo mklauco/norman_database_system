@@ -35,7 +35,7 @@
                   name="name" 
                   id="name" 
                   value="{{ old('name', $project->name) }}"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('name') border-red-500 @enderror"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-sky-500 focus:border-sky-500 sm:text-sm @error('name') border-red-500 @enderror"
                   required
                 >
                 @error('name')
@@ -51,7 +51,7 @@
                   name="abbreviation" 
                   id="abbreviation" 
                   value="{{ old('abbreviation', $project->abbreviation) }}"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('abbreviation') border-red-500 @enderror"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-sky-500 focus:border-sky-500 sm:text-sm @error('abbreviation') border-red-500 @enderror"
                   required
                 >
                 @error('abbreviation')
@@ -66,7 +66,7 @@
                   name="description" 
                   id="description" 
                   rows="4"
-                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm @error('description') border-red-500 @enderror"
+                  class="mt-1 block w-full border-gray-300 rounded-md shadow-xs focus:ring-sky-500 focus:border-sky-500 sm:text-sm @error('description') border-red-500 @enderror"
                 >{{ old('description', $project->description) }}</textarea>
                 @error('description')
                   <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -78,13 +78,13 @@
             <div class="flex items-center justify-end space-x-3 pt-5 border-t border-gray-200">
               <a 
                 href="{{ route('projects.index') }}" 
-                class="px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
               >
                 Cancel
               </a>
               <button 
                 type="submit" 
-                class="px-4 py-2 border border-transparent rounded-md shadow-xs text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="px-4 py-2 border border-transparent rounded-md shadow-xs text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
               >
                 {{ isset($isCreate) && $isCreate ? 'Create Project' : 'Update Project' }}
               </button>

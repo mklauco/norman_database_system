@@ -157,9 +157,11 @@ class BacteriaController extends Controller
         See more details at BioassayController.php method search()
         */
         foreach ($searchFields as $field) {
-            ${$field} = is_array($request->input($field))
+            $value = is_array($request->input($field))
             ? $request->input($field)
-            : json_decode($request->input($field), true);
+            : json_decode((string) $request->input($field), true);
+
+            ${$field} = is_array($value) ? array_values(array_filter($value, 'is_scalar')) : [];
         }
 
         $resultsObjects = BacteriaMain::with([

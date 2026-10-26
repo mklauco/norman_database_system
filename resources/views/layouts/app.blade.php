@@ -262,7 +262,7 @@
 
         get filteredItems() {
           return this.allItems.filter((item) =>
-            item.label.toLowerCase().includes(this.search?.toLowerCase())
+            (item.label ?? '').toLowerCase().includes(this.search?.toLowerCase())
           );
         },
 
