@@ -4,7 +4,7 @@
   </x-slot>
   
   <div class="py-4">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-8">
       <div class="bg-white overflow-hidden shadow-xs sm:rounded-lg">
         <div class="p-6 text-gray-900" x-data="userTable()" x-init="init()">
           
@@ -140,18 +140,24 @@
                     <td class="py-2 px-4" x-text="user.last_name"></td>
                     <td class="py-2 px-4" x-text="user.email"></td>
                     <td class="py-2 px-4">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                            :class="user.active ? 'bg-lime-100 text-lime-800' : 'bg-red-100 text-red-800'"
+                            x-text="user.active ? 'active' : 'disabled'"></span>
+                    </td>
+                    <td class="py-2 px-4">
                       <template x-for="(role, roleIndex) in user.roles" :key="roleIndex">
                         <span class="px-2 mr-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-sky-100 text-sky-800" x-text="role.name"></span>
                       </template>
                     </td>
+                    <td class="py-2 px-4" x-text="user.login_retentions_count"></td>
                     <td class="py-2 px-4" x-text="user.tokens_count"></td>
                     <td class="py-2 px-4">
                       <template x-for="(project, projectIndex) in user.projects" :key="projectIndex">
                         <span class="px-2 mr-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800" x-text="project.abbreviation"></span>
                       </template>
                     </td>
-                    <td class="py-2 px-4 text-sm text-gray-600" x-text="formatDateTime(user.created_at)"></td>
-                    <td class="py-2 px-4 text-sm text-gray-600" x-text="formatDateTime(user.updated_at)"></td>
+                    <td class="py-2 px-4 text-sm text-gray-600 whitespace-nowrap" x-text="formatDateTime(user.created_at)"></td>
+                    <td class="py-2 px-4 text-sm text-gray-600 whitespace-nowrap" x-text="formatDateTime(user.updated_at)"></td>
                     <td class="py-2 px-4 text-center">
                       <div class="flex justify-center space-x-2">
                         <a :href="'/backend/users/' + user.id" class="text-sky-600 hover:text-sky-800" title="View">
@@ -312,13 +318,9 @@
         formatDateTime(dateString) {
           if (!dateString) return '-';
           const date = new Date(dateString);
-          return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          });
+          const pad = (n) => String(n).padStart(2, '0');
+          // YYYY-MM-DD HH:mm, 24h
+          return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
         },
         
         changePage(page) {

@@ -26,57 +26,7 @@
                     </div>
 
                     @if($results->count() > 0)
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            User
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Login Date
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            IP Address
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            User Agent
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Country
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($results as $result)
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                <div>{{ $result->user->last_name }}, {{ $result->user->first_name }}</div>
-                                                <div class="text-xs text-gray-500">
-                                                    <span class="font-mono">{{ $result->user->id }}</span>
-                                                    <span class="mx-1">·</span>
-                                                    {{ $result->user->email }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {{ $result->formatted_login_date }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                                                {{ $result->ip_address ?? 'N/A' }}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm text-gray-900">
-                                                <div class="max-w-xs truncate" title="{{ $result->meta_data['user_agent'] ?? 'N/A' }}">
-                                                    {{ $result->meta_data['user_agent'] ?? 'N/A' }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {{ $result->meta_data['country'] ?? 'N/A' }}
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                        @include('backend.user-login-retention.partials.table', ['logins' => $results])
 
                         <div class="mt-6">
                             {{ $results->appends(request()->except('page'))->links('pagination::tailwind') }}

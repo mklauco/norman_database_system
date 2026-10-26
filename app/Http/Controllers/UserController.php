@@ -77,7 +77,7 @@ class UserController extends Controller implements HasMiddleware
         ]);
 
         $query = User::with(['roles', 'projects'])
-            ->withCount('tokens');
+            ->withCount(['tokens', 'loginRetentions']);
 
         // Apply search
         if (! empty($search)) {
@@ -107,12 +107,15 @@ class UserController extends Controller implements HasMiddleware
                     ->where('model_has_roles.model_type', '=', User::class);
             })
                 ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                ->select('users.*')
                 ->groupBy('users.id')
                 ->orderBy(\DB::raw('MIN(roles.name)'), $direction);
         } elseif ($sort === 'number_of_api_tokens') {
             // Handle special case for token count sorting
             $query->orderBy('tokens_count', $direction);
+        } elseif ($sort === 'number_of_logins') {
+            $query->orderBy('login_retentions_count', $direction);
+        } elseif ($sort === 'status') {
+            $query->orderBy('active', $direction);
         } else {
             // Handle all other columns
             if (in_array($sort, ['id', 'first_name', 'last_name', 'email', 'created_at', 'updated_at'])) {
@@ -366,7 +369,9 @@ class UserController extends Controller implements HasMiddleware
             'first_name',
             'last_name',
             'email',
+            'status',
             'roles',
+            'number_of_logins',
             'number_of_api_tokens',
             'projects',
             'created_at',
