@@ -12,7 +12,12 @@ class UserLoginRetentionController extends Controller
 {
     public function filter(Request $request)
     {
-        return view('backend.user-login-retention.filter');
+        $latestLogins = UserLoginRetention::with('user')
+            ->orderByDesc('login_datetime')
+            ->limit(30)
+            ->get();
+
+        return view('backend.user-login-retention.filter', compact('latestLogins'));
     }
 
     public function search(Request $request)
