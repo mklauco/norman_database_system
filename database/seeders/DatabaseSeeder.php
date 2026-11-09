@@ -77,7 +77,6 @@ class DatabaseSeeder extends Seeder
             SusdatSusdatMigrator::class,
             SuspectListExchangeSourceSeeder::class,
             SusdatCategorySeeder::class,
-            SusdatSourceSubstanceJoinSeeder::class,
             SusdatCategorySubstanceJoinSeeder::class,
 
             /*
