@@ -9,8 +9,8 @@
         <div class="p-6 text-gray-900">
           
           {{-- Header with Merge History Link --}}
-          <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Duplicate Management</h1>
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Duplicate Management</h2>
             <a href="{{ route('duplicates.mergeHistory') }}" 
                class="btn-submit flex items-center space-x-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,12 +22,12 @@
           
           {{-- Search Form --}}
           <form action="{{route('duplicates.filter')}}" method="GET" class="mb-6">
-            <div class="flex space-x-4 items-end bg-gray-50 p-4 rounded-lg">
-              <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
+            <div class="flex flex-wrap gap-4 items-end bg-gray-50 p-4 rounded-lg">
+              <div class="flex-1 min-w-48">
+                <label for="pivot_id" class="block text-sm font-medium text-gray-700 mb-2">
                   Search for duplicates by:
                 </label>
-                <select name="pivot_id" class="block w-full border-gray-300 rounded-md shadow-xs focus:ring-sky-500 focus:border-sky-500">
+                <select name="pivot_id" id="pivot_id" class="form-select">
                   <option value="">Select a field...</option>
                   @foreach($getPivotableColumns as $column)
                     <option value="{{$column}}" {{ (isset($pivot_id) && $pivot_id == $column) ? 'selected' : '' }}>
@@ -45,13 +45,14 @@
           {{-- Results Section --}}
           @if (isset($duplicates) && $duplicates->count() > 0)
             {{-- Summary --}}
-            <div class="mb-4 p-3 bg-sky-50 border border-sky-200 rounded-lg">
-              <span class="font-medium text-sky-800">
-                Found {{ $totalDuplicateGroups }} duplicate groups ({{ $totalDuplicateRecords }} total records) for "{{ $columnLabels[$pivot] ?? ucfirst(str_replace('_', ' ', $pivot)) }}"
+            <div class="mb-4 p-3 bg-lime-50 border border-lime-200 text-lime-900 rounded-sm">
+              <span class="font-medium">
+                Found {{ \App\Services\Susdat\SusdatDisplay::count($totalDuplicateGroups) }} duplicate groups ({{ \App\Services\Susdat\SusdatDisplay::count($totalDuplicateRecords) }} total records) for "{{ $columnLabels[$pivot] ?? ucfirst(str_replace('_', ' ', $pivot)) }}"
               </span>
             </div>
 
             {{-- Duplicates Table --}}
+            <div class="overflow-x-auto">
             <table class="table-standard">
               <thead>
                 <tr class="bg-gray-600 text-white">
@@ -71,27 +72,28 @@
                     @endif
                   </td>
                   <td class="px-4 py-2 text-center">
-                    <span class="px-2 py-1 text-xs font-medium rounded-full 
-                      @if($duplicate->count > 5) bg-red-100 text-red-800 
-                      @elseif($duplicate->count > 2) bg-yellow-100 text-yellow-800 
-                      @else bg-gray-100 text-gray-800 @endif">
-                      {{ $duplicate->count }}
+                    <span class="inline-block rounded-sm px-2 py-0.5 text-xs font-medium
+                      @if($duplicate->count > 5) bg-red-100 text-red-800
+                      @elseif($duplicate->count > 2) bg-amber-100 text-amber-800
+                      @else bg-slate-100 text-slate-800 @endif">
+                      {{ \App\Services\Susdat\SusdatDisplay::count($duplicate->count) }}
                     </span>
                   </td>
                   <td class="px-4 py-2 text-center">
                     @if (!empty($duplicate->$pivot))
                       <a href="{{route('duplicates.records', ['pivot' => $pivot, 'pivot_value' => $duplicate->$pivot])}}" 
-                         class="link-edit">
+                         class="link-lime-text">
                         View Records
                       </a>
                     @else
-                      <span class="text-gray-400">-</span>
+                      <span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>
                     @endif
                   </td>
                 </tr>
                 @endforeach
               </tbody>
             </table>
+            </div>
 
           @elseif(isset($duplicates) && $duplicates->count() == 0)
             {{-- No Duplicates Found --}}

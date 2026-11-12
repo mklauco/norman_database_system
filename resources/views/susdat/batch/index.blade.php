@@ -11,7 +11,7 @@
           
           <!-- Page Header -->
           <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">Batch Conversion of Identifiers</h1>
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">Batch Conversion of Identifiers</h2>
             <p class="text-gray-600">Convert multiple identifiers to SUSDAT substance information</p>
           </div>
           
@@ -25,7 +25,7 @@
                 Input Data Type
               </label>
               <select name="input_type" id="input_type" required 
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-lime-500 focus:border-lime-500">
+                      class="form-select rounded-md">
                 <option value="">Select input type...</option>
                 <option value="cas_no" {{ isset($formData['input_type']) && $formData['input_type'] == 'cas_no' ? 'selected' : '' }}>CAS Number</option>
                 <option value="substance_name" {{ isset($formData['input_type']) && $formData['input_type'] == 'substance_name' ? 'selected' : '' }}>Substance Name</option>
@@ -59,18 +59,18 @@
               </label>
               <textarea name="identifiers" id="identifiers" rows="10" required
                         placeholder="Enter identifiers here, one per line&#10;Example:&#10;67-56-1&#10;108-88-3&#10;71-43-2&#10;&#10;For Susdat ID:&#10;NS12345&#10;67890&#10;NS99999"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-xs focus:outline-hidden focus:ring-lime-500 focus:border-lime-500 font-mono text-sm">{{ $formData['identifiers'] ?? '' }}</textarea>
+                        class="form-text rounded-md font-mono text-sm">{{ $formData['identifiers'] ?? '' }}</textarea>
               @error('identifiers')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
               @enderror
               <p class="mt-1 text-sm text-gray-500">
-                Enter each identifier on a separate line. Maximum 10,000 characters allowed.
+                Enter each identifier on a separate line. Maximum {{ \App\Services\Susdat\SusdatDisplay::count(10000) }} characters allowed.
               </p>
             </div>
             
             <!-- Submit Button -->
             <div class="flex justify-end">
-              <button type="submit" class="btn-submit px-6 py-3">
+              <button type="submit" class="btn-submit">
                 {{ isset($formData) ? 'Update Conversion' : 'Convert Identifiers' }}
               </button>
             </div>
@@ -78,7 +78,7 @@
           
           <!-- Instructions -->
           <div class="mt-8 p-4 bg-gray-50 rounded-lg">
-            <h3 class="text-lg font-medium text-gray-900 mb-3">How to use:</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-3">How to use:</h3>
             <ul class="space-y-2 text-sm text-gray-600">
               <li class="flex items-start">
                 <span class="text-lime-600 mr-2">1.</span>
@@ -102,9 +102,9 @@
               </li>
             </ul>
             
-            <div class="mt-4 p-3 bg-sky-50 border border-sky-200 rounded-md">
-              <h4 class="text-sm font-medium text-sky-900 mb-2">Note about Susdat ID:</h4>
-              <p class="text-sm text-sky-700">
+            <div class="mt-4 p-3 bg-lime-50 border border-lime-200 text-lime-900 rounded-sm">
+              <h4 class="text-sm font-medium mb-2">Note about Susdat ID:</h4>
+              <p class="text-sm">
                 When using "Susdat ID" as input type, you can enter IDs with or without the "NS" prefix. 
                 The system will automatically handle both formats and search in the code column.
               </p>

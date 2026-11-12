@@ -235,19 +235,21 @@ Route::prefix('susdat')->group(function () {
     Route::get('substances/search/search/', [SubstanceController::class, 'search'])->name('substances.search.search');
     Route::get('csv/start/{query_log_id}', [SubstanceController::class, 'startDownloadJob'])->name('susdat.csv.start');
     Route::get('csv/download/{filename}', [SubstanceController::class, 'downloadCsv'])->name('susdat.csv.download');
-    Route::get('duplicates/filter/', [DuplicateController::class, 'filter'])->name('duplicates.filter');
-
-    Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->name('duplicates.records');
-    Route::post('duplicates/records/handle', [DuplicateController::class, 'handleDuplicates'])->middleware('auth')->name('duplicates.handleDuplicates');
-    Route::get('duplicates/merge-history', [DuplicateController::class, 'mergeHistory'])->name('duplicates.mergeHistory');
-    Route::post('duplicates/{id}/restore', [DuplicateController::class, 'restore'])->middleware('auth')->name('duplicates.restore');
-
     Route::resource('substances', SubstanceController::class)->only(['index', 'show'])->whereNumber('substance');
-    Route::resource('substances', SubstanceController::class)->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy'])->whereNumber('substance');
-    Route::resource('duplicates', DuplicateController::class)->middleware('auth');
 
-    Route::get('substances-audited', [SubstanceController::class, 'withAudits'])->name('substances.audited');
-    Route::get('substances/{substance}/audits', [SubstanceController::class, 'audits'])->whereNumber('substance')->name('substances.audits');
+    Route::middleware(['auth', 'role:super_admin|admin|susdat'])->group(function () {
+        Route::get('duplicates/filter/', [DuplicateController::class, 'filter'])->name('duplicates.filter');
+        Route::get('duplicates/records/{pivot}/{pivot_value}', [DuplicateController::class, 'records'])->name('duplicates.records');
+        Route::post('duplicates/records/handle', [DuplicateController::class, 'handleDuplicates'])->name('duplicates.handleDuplicates');
+        Route::get('duplicates/merge-history', [DuplicateController::class, 'mergeHistory'])->name('duplicates.mergeHistory');
+        Route::post('duplicates/{id}/restore', [DuplicateController::class, 'restore'])->name('duplicates.restore');
+
+        Route::resource('substances', SubstanceController::class)->only(['create', 'store', 'edit', 'update', 'destroy'])->whereNumber('substance');
+        Route::resource('duplicates', DuplicateController::class);
+
+        Route::get('substances-audited', [SubstanceController::class, 'withAudits'])->name('substances.audited');
+        Route::get('substances/{substance}/audits', [SubstanceController::class, 'audits'])->whereNumber('substance')->name('substances.audits');
+    });
 
     Route::middleware(['auth', 'role:super_admin'])->group(function () {
         Route::get('substances-missing-names', [SubstanceController::class, 'missingNames'])->name('substances.missing-names');

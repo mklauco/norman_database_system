@@ -77,7 +77,7 @@
 }
 
 @utility btn-submit {
-  @apply inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
+  @apply inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition duration-300 ease-in-out;
 }
 
 @utility btn-submit-sky {
@@ -89,11 +89,11 @@
 }
 
 @utility btn-submit-danger {
-  @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
+  @apply bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500 transition duration-300 ease-in-out;
 }
 
 @utility btn-clear {
-  @apply border border-slate-500 text-slate-500 hover:bg-slate-300 hover:text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden transition duration-300 ease-in-out;
+  @apply border border-slate-500 text-slate-500 hover:bg-slate-300 hover:text-white font-bold py-2 px-4 rounded-sm shadow-sm focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition duration-300 ease-in-out;
 }
 
 @utility btn-download {
