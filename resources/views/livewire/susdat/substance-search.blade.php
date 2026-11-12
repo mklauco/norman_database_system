@@ -1,7 +1,7 @@
 <div>
   <form name="searchSpecificSubstanceForm" id="searchSpecificSubstanceForm" action="{{route('substances.search.search')}}" method="GET">
     <input type="hidden" value="1" name="searchSubstance">
-    <input type="text" wire:model.live.debounce.300ms="search" name="searchSubstanceString" id="searchSubstanceString" class="w-full px-4 py-2 border border-gray-300 shadow-xs focus:outline-hidden focus:ring-2 focus:ring-lime-500 focus:border-transparent transition duration-200 ease-in-out">
+    <input type="text" wire:model.live.debounce.300ms="search" name="searchSubstanceString" id="searchSubstanceString" class="form-text w-full" aria-label="Search for a substance" autocomplete="off">
     <div class="mt-4">
       <span class="text-gray-700">Search by:</span>
       <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2">
@@ -31,7 +31,7 @@
       @foreach ($results as $result)
       <div class="block p-1">
         <label class="flex items-center cursor-pointer">
-          <input type="checkbox" name="substancesSearch[]" value="{{$result->id}}" class="text-lime-600 border-gray-300 rounded-sm focus:ring-lime-500 focus:ring-2">
+          <input type="checkbox" name="substancesSearch[]" value="{{$result->id}}" class="text-lime-600 border-gray-400 rounded-sm focus:ring-lime-500 focus:ring-2">
           <div class="ml-2 grow">
             <div class="font-medium">{{$result->name}}</div>
             <div class="text-sm text-gray-500">
@@ -58,7 +58,7 @@
       </div>
       @else
       <div class="flex justify-end m-2">
-        <span class="text-red-500"> No substances found</span>
+        <span class="text-gray-500">No substances found</span>
       </div>
       @endif
       @endif

@@ -8,7 +8,8 @@
       <div class="bg-white overflow-hidden shadow-lg sm:rounded-lg">
         
         <div class="p-6 text-gray-900">
-          
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">Search substances</h2>
+
           <!-- Introductory text -->
           <div class="mb-8 p-4 bg-slate-50 rounded-lg border border-slate-200">
             <p class="text-gray-700 leading-relaxed">
@@ -21,9 +22,9 @@
             
             <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-xs hover:shadow-md transition-all duration-300">
               <div class="p-4">
-                <div class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
                   Search Use category:
-                </div>
+                </h3>
                 <form name="searchAccordingToCategoryForm" id="searchAccordingToCategoryForm" action="{{route('substances.search.search')}}" method="GET" onsubmit="return validateCategorySelection()">
                   <input type="hidden" value="1" name="searchCategory">
                   <input type="hidden" value="1" name="search">
@@ -51,7 +52,7 @@
                         @else
                         <span class="shrink-0 w-5 h-5"></span>
                         @endif
-                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}" id="category_{{$category->id}}" class="w-5 h-5 text-lime-600 border-gray-300 rounded-sm focus:ring-lime-500 focus:ring-2">
+                        <input type="checkbox" name="categoriesSearch[]" value="{{$category->id}}" id="category_{{$category->id}}" class="w-5 h-5 text-lime-600 border-gray-400 rounded-sm focus:ring-lime-500 focus:ring-2">
                         <label for="category_{{$category->id}}" class="text-base text-gray-700 cursor-pointer select-none">
                           {!! preg_replace('/\s*\(/', '&nbsp;(', $category->name_abbreviation, 1) !!}
                         </label>
@@ -71,7 +72,7 @@
                             @else
                             <span class="shrink-0 w-4 h-4"></span>
                             @endif
-                            <input type="checkbox" name="categoriesSearch[]" value="{{$subcategory->id}}" id="category_{{$subcategory->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded-sm focus:ring-lime-500 focus:ring-2">
+                            <input type="checkbox" name="categoriesSearch[]" value="{{$subcategory->id}}" id="category_{{$subcategory->id}}" class="w-4 h-4 text-lime-600 border-gray-400 rounded-sm focus:ring-lime-500 focus:ring-2">
                             <label for="category_{{$subcategory->id}}" class="text-sm text-gray-700 cursor-pointer select-none">{{ $subcategory->name }}</label>
                           </div>
 
@@ -79,7 +80,7 @@
                           <div x-show="openSub" x-collapse class="ml-6 border-l border-gray-200 pl-2 space-y-1">
                             @foreach ($subcategory->children as $leaf)
                             <div class="flex items-center space-x-2 p-0.5 rounded-sm hover:bg-gray-100 transition-colors duration-150">
-                              <input type="checkbox" name="categoriesSearch[]" value="{{$leaf->id}}" id="category_{{$leaf->id}}" class="w-4 h-4 text-lime-600 border-gray-300 rounded-sm focus:ring-lime-500 focus:ring-2">
+                              <input type="checkbox" name="categoriesSearch[]" value="{{$leaf->id}}" id="category_{{$leaf->id}}" class="w-4 h-4 text-lime-600 border-gray-400 rounded-sm focus:ring-lime-500 focus:ring-2">
                               <label for="category_{{$leaf->id}}" class="text-sm text-gray-600 cursor-pointer select-none">{{ $leaf->name }}</label>
                             </div>
                             @endforeach
@@ -102,9 +103,9 @@
             
             <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-xs hover:shadow-md transition-all duration-300">
               <div class="p-4">
-                <div class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
                   Search according to source in SLE:
-                </div>
+                </h3>
                 
                 <form name="searchAccordingToSourceForm" id="searchAccordingToSourceForm" action="{{route('substances.search.search')}}" method="GET">
                   <input type="hidden" value="1" name="searchSource">
@@ -124,9 +125,9 @@
             
             <div class="bg-gray-50 rounded-lg border border-gray-200 shadow-xs hover:shadow-md transition-all duration-300">
               <div class="p-4">
-                <div class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-gray-200">
                   Interactive search for a specific substance:
-                </div>                  
+                </h3>                  
                 <div>
                   @livewire('susdat.substance-search')
                 </div>
