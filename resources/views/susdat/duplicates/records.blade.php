@@ -10,21 +10,21 @@
 
           {{-- Header Section --}}
           <div class="mb-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center space-x-2">
-                <h1 class="text-2xl font-bold text-gray-900">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-xl font-semibold text-gray-800">
                   Duplicate Resolution
-                </h1>
+                </h2>
                 <div class="flex items-center space-x-2 px-3 py-1 bg-amber-100 border border-amber-300 rounded-sm">
                   <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                   </svg>
                   <span class="text-sm font-medium text-amber-800">
-                    {{ ucfirst(str_replace('_', ' ', $pivot)) }}: <span class="font-semibold">{{ $pivot_value }}</span> ({{ $substancesCount }} records)
+                    {{ ucfirst(str_replace('_', ' ', $pivot)) }}: <span class="font-semibold">{{ $pivot_value }}</span> ({{ \App\Services\Susdat\SusdatDisplay::count($substancesCount) }} records)
                   </span>
                 </div>
               </div>
-              <a href="{{ route('duplicates.index') }}" class="text-sky-600 hover:text-sky-800 text-sm">
+              <a href="{{ route('duplicates.index') }}" class="link-lime-text text-sm">
                 ← Back to Duplicates
               </a>
             </div>
@@ -39,7 +39,7 @@
 
             {{-- Active Selection Section --}}
             <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-sm">
-              <h4 class="text-md font-medium text-gray-900 mb-2">Select Active Substance</h4>
+              <h4 class="text-base font-medium text-gray-900 mb-2">Select Active Substance</h4>
               <p class="text-sm text-gray-700">
                 Choose which substance should remain active and visible. This substance will be the main record that users see.
               </p>
@@ -47,19 +47,19 @@
 
             {{-- Reason Section --}}
             <div class="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-sm">
-              <h4 class="text-md font-medium text-gray-900 mb-2">Reason for Deprecating</h4>
+              <h4 class="text-base font-medium text-gray-900 mb-2">Reason for Deprecating</h4>
               <p class="text-sm text-gray-700 mb-2">
                 Provide a reason for deprecating these duplicates. This will be logged for audit purposes.
               </p>
               <textarea name="merge_reason" 
                         rows="2" 
-                        class="w-full px-2 py-1 border border-gray-300 rounded-sm focus:outline-hidden focus:ring-1 focus:ring-sky-500"
+                        class="form-text rounded-sm"
                         placeholder="e.g., Duplicate records with same code, keeping the most complete data"
                         required></textarea>
             </div>
 
             {{-- Substances Table with Selection --}}
-            <div class="mb-4">
+            <div class="mb-4 overflow-x-auto">
               <table class="table-standard">
                 <thead>
                   <tr class="bg-gray-600 text-white">
@@ -79,37 +79,37 @@
                 <tbody>
                   @foreach($substances as $substance)
                     @if($substance->trashed())
-                      <tr class="bg-zinc-100 text-zinc-400">
+                      <tr class="bg-zinc-100 text-zinc-600">
                     @else
                       <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
                     @endif
                       <td class="py-1 px-2">
                         <div class="font-medium">
                           <a href="{{ route('substances.edit', $substance->id) }}" 
-                             class="link-lime" target="_blank">
+                             class="link-lime-text font-mono" target="_blank" rel="noopener">
                             {{ $substance->prefixed_code }}
                           </a>
                         </div>
-                        <div class="text-xs pl-2">Internal ID: {{ $substance->id }}</div>
+                        <div class="text-xs pl-2">Internal ID: <span class="font-mono">{{ $substance->id }}</span></div>
                       </td>
-                      <td class="py-1 px-2">{{ $substance->name ?: '-' }}</td>
-                      <td class="py-1 px-2">{{ $substance->cas_number ?: '-' }}</td>
-                      <td class="py-1 px-2 max-w-xs truncate" title="{{ $substance->smiles }}">
-                        {{ $substance->smiles ?: '-' }}
+                      <td class="py-1 px-2">@if(\App\Services\Susdat\SusdatDisplay::isEmpty($substance->name))<span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>@else{{ $substance->name }}@endif</td>
+                      <td class="py-1 px-2">@if(\App\Services\Susdat\SusdatDisplay::isEmpty($substance->cas_number))<span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>@else{{ $substance->cas_number }}@endif</td>
+                      <td class="py-1 px-2 break-all">
+                        @if(\App\Services\Susdat\SusdatDisplay::isEmpty($substance->smiles))<span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>@else{{ $substance->smiles }}@endif
                       </td>
-                      <td class="py-1 px-2 max-w-xs truncate" title="{{ $substance->stdinchikey }}">
-                        {{ $substance->stdinchikey ?: '-' }}
+                      <td class="py-1 px-2 break-all font-mono">
+                        @if(\App\Services\Susdat\SusdatDisplay::isEmpty($substance->stdinchikey))<span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>@else{{ $substance->stdinchikey }}@endif
                       </td>
-                      <td class="py-1 px-2">{{ $substance->pubchem_cid ?: '-' }}</td>
-                      <td class="py-1 px-2">{{ $substance->dtxid ?: '-' }}</td>
-                      <td class="py-1 px-2">{{ $substance->molecular_formula ?: '-' }}</td>
-                      <td class="py-1 px-2">{{ $substance->mass_iso ?: '-' }}</td>
+                      <td class="py-1 px-2 font-mono">@if(\App\Services\Susdat\SusdatDisplay::isEmpty($substance->pubchem_cid))<span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>@else{{ $substance->pubchem_cid }}@endif</td>
+                      <td class="py-1 px-2 font-mono">@if(\App\Services\Susdat\SusdatDisplay::isEmpty($substance->dtxid))<span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>@else{{ $substance->dtxid }}@endif</td>
+                      <td class="py-1 px-2">@if(\App\Services\Susdat\SusdatDisplay::isEmpty($substance->molecular_formula))<span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>@else{{ $substance->molecular_formula }}@endif</td>
+                      <td class="py-1 px-2">{{ \App\Services\Susdat\SusdatDisplay::number($substance->mass_iso) }}</td>
                       <td class="py-1 px-2">
                         <input type="radio" 
                                id="active_{{ $substance->id }}" 
                                name="canonical_id" 
                                value="{{ $substance->id }}"
-                               class="text-sky-600 focus:ring-sky-500"
+                               class="text-lime-600 focus:ring-lime-500"
                                {{ $loop->first ? 'checked' : '' }}
                                required>
                       </td>
@@ -118,7 +118,7 @@
                                id="deprecated_{{ $substance->id }}" 
                                name="duplicateChoice[]" 
                                value="{{ $substance->id }}"
-                               class="text-sky-600 focus:ring-sky-500"
+                               class="text-lime-600 focus:ring-lime-500"
                                {{ $loop->first ? 'disabled' : '' }}>
                       </td>
                     </tr>
@@ -127,7 +127,7 @@
               </table>
             </div>
             
-            <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+            <div class="flex flex-wrap justify-between items-center gap-3 pt-3 border-t border-gray-200">
               <div class="text-sm text-gray-700">
                 Review your selections above and click submit to apply changes.
               </div>
@@ -201,7 +201,7 @@
           {{-- External Data Sources Section --}}
           <div class="space-y-6">
             <div class="border-t border-gray-200 pt-6">
-              <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center space-x-2">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
                 <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                 </svg>
@@ -213,12 +213,12 @@
             </div>
 
             {{-- Comptox Database Section --}}
-            <div class="bg-sky-50 border border-sky-200 rounded-lg overflow-hidden">
-              <div class="bg-sky-100 px-4 py-3 border-b border-sky-200">
-                <div class="flex items-center space-x-2">
-                  <div class="w-3 h-3 bg-sky-600 rounded-full"></div>
-                  <span class="font-semibold text-sky-900">CompTox Dashboard</span>
-                  <span class="text-xs text-sky-700 bg-sky-200 px-2 py-1 rounded-sm">External Source</span>
+            <div class="bg-lime-50 border border-lime-200 text-lime-900 rounded-sm overflow-hidden">
+              <div class="bg-lime-100 px-4 py-3 border-b border-lime-200">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 bg-lime-600 rounded-full"></div>
+                  <span class="font-semibold text-lime-900">CompTox Dashboard</span>
+                  <span class="inline-block rounded-sm px-2 py-0.5 text-xs font-medium bg-lime-200 text-lime-900">External Source</span>
                 </div>
               </div>
               <div class="p-4">
@@ -232,7 +232,7 @@
                 <div class="flex items-center space-x-2">
                   <div class="w-3 h-3 bg-emerald-600 rounded-full"></div>
                   <span class="font-semibold text-emerald-900">PubChem Database</span>
-                  <span class="text-xs text-emerald-700 bg-emerald-200 px-2 py-1 rounded-sm">External Source</span>
+                  <span class="inline-block rounded-sm px-2 py-0.5 text-xs font-medium bg-emerald-200 text-emerald-900">External Source</span>
                 </div>
               </div>
               <div class="p-4">

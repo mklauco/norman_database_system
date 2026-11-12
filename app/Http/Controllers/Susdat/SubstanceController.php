@@ -429,6 +429,11 @@ class SubstanceController extends Controller
         // Build the optimized query using Eloquent ORM
         $substances = Substance::query()->select(['id', 'code', 'name', 'cas_number', 'smiles', 'stdinchikey', 'dtxid', 'pubchem_cid', 'molecular_formula', 'mass_iso', 'deleted_at']);
 
+        // The query log keeps the full category and source lists for a substance search; the
+        // displayed search parameters only show what the user actually chose.
+        $loggedCategoriesSearch = $categoriesSearch;
+        $loggedSourcesSearch = $sourcesSearch;
+
         // Apply search filters efficiently
         if ($request->input('searchCategory') == 1 && ! empty($categoriesSearch)) {
             $substances->whereHas($usesCategoryTree ? 'useCategories' : 'categories', function ($query) use ($categoriesSearch, $usesCategoryTree) {
@@ -440,8 +445,8 @@ class SubstanceController extends Controller
             });
         } elseif ($request->input('searchSubstance') == 1 && ! empty($substancesSearch)) {
             $substances->whereIn('id', $substancesSearch);
-            $categoriesSearch = $allCategories;
-            $sourcesSearch = $allSources;
+            $loggedCategoriesSearch = $allCategories;
+            $loggedSourcesSearch = $allSources;
         }
 
         // Apply ordering
@@ -474,7 +479,7 @@ class SubstanceController extends Controller
 
         // Log query if not paginating
         if (! $request->has('page')) {
-            $this->logQuery($substances, $request, $substancesCount, $categoriesSearch, $sourcesSearch, $substancesSearch);
+            $this->logQuery($substances, $request, $substancesCount, $loggedCategoriesSearch, $loggedSourcesSearch, $substancesSearch);
         }
 
         // Paginate FIRST, then load relationships

@@ -9,16 +9,17 @@
         <div class="p-6 text-gray-900">
           
           <div class="mb-6">
-            <h2 class="text-xl font-semibold">Audit History</h2>
+            <h2 class="text-xl font-semibold text-gray-800">Audit History</h2>
             <p class="text-gray-600">
-              Substance: <strong>{{ $substance->name }}</strong> (ID: {{ $substance->id }})
+              Substance: <strong>{{ $substance->name }}</strong> (ID: <span class="font-mono">{{ $substance->id }}</span>)
             </p>
-            <a href="{{ route('substances.show', $substance) }}" class="text-sky-600 hover:text-sky-800">
+            <a href="{{ route('substances.show', $substance) }}" class="link-lime-text">
               ← Back to Substance
             </a>
           </div>
 
           @if($audits->count() > 0)
+            <div class="overflow-x-auto">
             <table class="table-standard">
               <thead>
                 <tr class="bg-gray-600 text-white">
@@ -31,11 +32,11 @@
               <tbody>
                 @foreach($audits as $audit)
                 <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
-                  <td class="px-4 py-2">{{ $audit->created_at->format('Y-m-d H:i:s') }}</td>
+                  <td class="px-4 py-2">{{ \App\Services\Susdat\SusdatDisplay::date($audit->created_at) }}</td>
                   <td class="px-4 py-2">
-                    <span class="px-2 py-1 text-xs rounded
+                    <span class="inline-block rounded-sm px-2 py-0.5 text-xs font-medium
                       @if($audit->event == 'created') bg-green-100 text-green-800
-                      @elseif($audit->event == 'updated') bg-sky-100 text-sky-800
+                      @elseif($audit->event == 'updated') bg-amber-100 text-amber-800
                       @elseif($audit->event == 'deleted') bg-red-100 text-red-800
                       @else bg-gray-100 text-gray-800 @endif">
                       {{ ucfirst($audit->event) }}
@@ -47,10 +48,27 @@
                   <td class="px-4 py-2 text-sm">
                     @if($audit->event == 'updated' && $audit->old_values)
                       @foreach($audit->old_values as $field => $oldValue)
-                        <div class="mb-1">
-                          <strong>{{ $field }}:</strong> 
-                          <span class="text-red-600">{{ $oldValue }}</span> → 
-                          <span class="text-green-600">{{ $audit->new_values[$field] ?? 'null' }}</span>
+                        @php
+                          $newValue = $audit->new_values[$field] ?? 'null';
+                          $fmt = function ($v): string {
+                            if (is_array($v)) {
+                              return json_encode($v, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                            }
+                            $v = (string) $v;
+                            if ($v !== '' && in_array($v[0], ['{', '['], true)) {
+                              $d = json_decode($v, true);
+                              if (is_array($d)) {
+                                return json_encode($d, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                              }
+                            }
+                            return $v;
+                          };
+                        @endphp
+                        <div class="mb-2 min-w-0">
+                          <strong>{{ $field }}:</strong>
+                          <pre class="whitespace-pre-wrap break-all font-mono text-xs text-red-600">{{ $fmt($oldValue) }}</pre>
+                          <span aria-hidden="true">→</span>
+                          <pre class="whitespace-pre-wrap break-all font-mono text-xs text-green-600">{{ $fmt($newValue) }}</pre>
                         </div>
                       @endforeach
                     @elseif($audit->event == 'created')
@@ -63,8 +81,9 @@
                 @endforeach
               </tbody>
             </table>
-            
-            {{ $audits->links() }}
+            </div>
+
+            {{ $audits->links('pagination::tailwind') }}
           @else
             <p class="text-gray-500">No audit history found for this substance.</p>
           @endif

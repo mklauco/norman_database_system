@@ -11,7 +11,7 @@
           
           <!-- Page Header -->
           <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">Batch Conversion Results</h1>
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">Batch Conversion Results</h2>
             <p class="text-gray-600">
               Input type: <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $inputType)) }}</span>
             </p>
@@ -19,15 +19,15 @@
               Match mode: <span class="font-medium">{{ $exactMatch ? 'Exact match only' : 'Partial matching allowed' }}</span>
             </p>
             <p class="text-gray-600">
-              Total identifiers processed: <span class="font-medium">{{ count($results) }}</span>
+              Total identifiers processed: <span class="font-medium">{{ \App\Services\Susdat\SusdatDisplay::count(count($results)) }}</span>
             </p>
           </div>
           
           <!-- Back Button -->
           <div class="mb-6">
-            <div class="flex space-x-3">
+            <div class="flex flex-wrap gap-3">
               <a href="{{ route('susdat.batch.index') }}" 
-                 class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-lime-500">
+                 class="btn-clear inline-flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -35,7 +35,7 @@
               </a>
               
               <a href="{{ route('susdat.batch.update') }}" 
-                 class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-lime-500">
+                 class="btn-clear inline-flex items-center">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                 </svg>
@@ -60,7 +60,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-gray-700">Found</p>
-                  <p class="text-2xl font-bold text-gray-900">{{ $foundCount }}</p>
+                  <p class="text-2xl font-bold text-gray-900">{{ \App\Services\Susdat\SusdatDisplay::count($foundCount) }}</p>
                 </div>
               </div>
             </div>
@@ -74,7 +74,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-gray-700">Not Found</p>
-                  <p class="text-2xl font-bold text-gray-900">{{ $notFoundCount }}</p>
+                  <p class="text-2xl font-bold text-gray-900">{{ \App\Services\Susdat\SusdatDisplay::count($notFoundCount) }}</p>
                 </div>
               </div>
             </div>
@@ -96,18 +96,18 @@
           
           <!-- Download Buttons -->
           <div class="mb-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-medium text-gray-900">Export Results</h3>
-              <div class="flex space-x-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <h3 class="text-lg font-semibold text-gray-800">Export Results</h3>
+              <div class="flex flex-wrap gap-3">
                 <a href="{{ route('susdat.batch.download.csv') }}"
-                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-lime-500">
+                   class="btn-clear inline-flex items-center">
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                   </svg>
                   Download CSV
                 </a>
                 <a href="{{ route('susdat.batch.download.xlsx') }}"
-                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-lime-500">
+                   class="btn-clear inline-flex items-center">
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                   </svg>
@@ -122,69 +122,56 @@
           
           <!-- Results Table -->
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Input Identifier
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    SUSDAT ID
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Substance Name
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CAS No.
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    StdInChIKey
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
+            <table class="table-standard">
+              <thead>
+                <tr class="bg-gray-600 text-white">
+                  <th class="py-1 px-2 text-left">Input Identifier</th>
+                  <th class="py-1 px-2 text-left">SUSDAT ID</th>
+                  <th class="py-1 px-2 text-left">Substance Name</th>
+                  <th class="py-1 px-2 text-left">CAS No.</th>
+                  <th class="py-1 px-2 text-left">StdInChIKey</th>
+                  <th class="py-1 px-2 text-left">Status</th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody>
                 @foreach($results as $result)
-                <tr class="{{ $result['found'] ? 'bg-white' : 'bg-gray-50' }}">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
+                  <td class="py-1 px-2 font-medium font-mono break-all">
                     {{ $result['input'] }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="py-1 px-2 font-mono">
                     @if($result['found'])
-                      <a href="{{ route('substances.show', $result['substance_id']) }}" 
-                         class="text-lime-600 hover:text-lime-900 font-medium">
-                        <code class="bg-gray-100 px-2 py-1 rounded-sm text-xs">NS{{ $result['susdat_id'] }}</code>
-                      </a>
+                      <a href="{{ route('substances.show', $result['substance_id']) }}" class="link-lime-text">NS{{ $result['susdat_id'] }}</a>
                     @else
-                      <span class="text-gray-400">-</span>
+                      <span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>
                     @endif
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ $result['substance_name'] ?? '-' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                    {{ $result['cas_no'] ?? '-' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                    {{ $result['std_inchikey'] ?? '-' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    @if($result['found'])
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        Found
-                      </span>
+                  <td class="py-1 px-2 break-words">
+                    @if(\App\Services\Susdat\SusdatDisplay::isEmpty($result['substance_name'] ?? null))
+                      <span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>
                     @else
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                        Not Found
-                      </span>
+                      {{ $result['substance_name'] }}
+                    @endif
+                  </td>
+                  <td class="py-1 px-2 font-mono">
+                    @if(\App\Services\Susdat\SusdatDisplay::isEmpty($result['cas_no'] ?? null))
+                      <span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>
+                    @else
+                      {{ $result['cas_no'] }}
+                    @endif
+                  </td>
+                  <td class="py-1 px-2 font-mono break-all">
+                    @if(\App\Services\Susdat\SusdatDisplay::isEmpty($result['std_inchikey'] ?? null))
+                      <span class="text-gray-500">{{ \App\Services\Susdat\SusdatDisplay::EMPTY }}</span>
+                    @else
+                      {{ $result['std_inchikey'] }}
+                    @endif
+                  </td>
+                  <td class="py-1 px-2">
+                    @if($result['found'])
+                      <span class="inline-block rounded-sm px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800">Found</span>
+                    @else
+                      <span class="inline-block rounded-sm px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800">Not Found</span>
                     @endif
                   </td>
                 </tr>
@@ -192,7 +179,7 @@
               </tbody>
             </table>
           </div>
-          
+
         </div>
       </div>
     </div>

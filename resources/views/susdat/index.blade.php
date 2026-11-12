@@ -8,30 +8,28 @@
       <div class="bg-white shadow-lg sm:rounded-lg">
         <div class="p-6 text-gray-900">
           
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            {{ $request->routeIs('substances.search.search') ? 'Substance search results' : 'List of substances' }}
+          </h2>
+
           {{-- Results Summary --}}
-          <div class="text-gray-600 flex border-l-2 border-white mb-4">
-            <div class="py-2">
-              Number of matched records:
-            </div>
-            <div class="py-2 mx-1 font-bold">
-              {{ number_format($substances->total(), 0, ".", " ") }}
-            </div>
-            <div class="py-2">
-              of <span>{{ number_format($substancesCount, 0, " ", " ") }}
-                @if (is_numeric($substances->total()))
-                  @if ($substances->total()/$substancesCount*100 < 0.01)
-                    which is &le; 0.01% of total records.
-                  @else
-                    which is {{ number_format($substances->total()/$substancesCount*100, 3, ".", " ") }}% of total records.
-                  @endif
-                @endif
-              </span>
-            </div>
-          </div>
-          
+          @php($matchedTotal = $substances->total())
+          <p class="text-gray-600 mb-4">
+            Number of matched records:
+            <span class="font-bold">{{ \App\Services\Susdat\SusdatDisplay::count($matchedTotal) }}</span>
+            of {{ \App\Services\Susdat\SusdatDisplay::count($substancesCount) }}
+            @if ($substancesCount > 0)
+              @if ($matchedTotal / $substancesCount * 100 < 0.01)
+                which is &le; 0.01% of total records.
+              @else
+                which is {{ number_format($matchedTotal / $substancesCount * 100, 3, '.', ' ') }}% of total records.
+              @endif
+            @endif
+          </p>
+
           {{-- Search Parameters Display --}}
           @if(!empty($searchParameters))
-            <div class="text-gray-600 border-l-2 border-white mb-4 p-3 bg-gray-50 rounded-r-lg">
+            <div class="text-gray-600 mb-4 p-3 bg-gray-50 rounded-lg">
               <div class="font-medium text-gray-700 mb-2">Search parameters:</div>
               <div class="space-y-2">
                 @foreach ($searchParameters as $key => $value)
@@ -130,7 +128,7 @@
                       </button>
                       
                       @if(isset($query_log_id) && Auth::check())
-                        <a href="{{ route('susdat.csv.start', ['query_log_id' => $query_log_id]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('susdat.csv.start', ['query_log_id' => $query_log_id]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lime-500">
                           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                           </svg>
@@ -138,7 +136,7 @@
                         </a>
                       @endif
                       
-                      <a href="{{route('substances.search.filter')}}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                      <a href="{{route('substances.search.filter')}}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lime-500">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -192,7 +190,7 @@
                       </button>
 
                       @if(isset($query_log_id) && Auth::check())
-                        <a href="{{ route('susdat.csv.start', ['query_log_id' => $query_log_id]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        <a href="{{ route('susdat.csv.start', ['query_log_id' => $query_log_id]) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-xs text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lime-500">
                           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                           </svg>
