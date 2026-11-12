@@ -1,0 +1,1 @@
+SELECT row_to_json(t) FROM (SELECT id, auditable_id, event, old_values::text AS old_values, new_values::text AS new_values, user_id, created_at FROM audits WHERE auditable_type = 'App\Models\Susdat\Substance' ORDER BY id) t;
