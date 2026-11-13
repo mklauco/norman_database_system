@@ -13,9 +13,16 @@
       <div class="text-right">
         <div class="text-3xl font-bold">{{ number_format($totalRecords) }}</div>
         <div class="text-slate-200">Total Records</div>
-        @if($empodatEntity && $empodatEntity->last_update)
+        @php
+          $generatedAt = collect($allStats)->pluck('generated_at')->filter()->first();
+        @endphp
+        @if($generatedAt)
           <div class="text-xs text-slate-300 mt-1">
-            Updated: {{ \Carbon\Carbon::parse($empodatEntity->last_update)->format('Y-m-d') }}
+            Updated: {{ \Carbon\Carbon::parse($generatedAt)->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
+          </div>
+        @elseif($empodatEntity && $empodatEntity->last_update)
+          <div class="text-xs text-slate-300 mt-1">
+            Updated: {{ \Carbon\Carbon::parse($empodatEntity->last_update)->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
           </div>
         @endif
       </div>
@@ -50,6 +57,11 @@
             <div class="text-xs text-slate-500 mt-2">
               {{ $allStats['country_year']['year_range']['min_year'] }} - {{ $allStats['country_year']['year_range']['max_year'] }}
             </div>
+            @if(!empty($allStats['country_year']['generated_at']))
+              <div class="text-xs text-slate-500">
+                Updated: {{ \Carbon\Carbon::parse($allStats['country_year']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
+              </div>
+            @endif
           </div>
         </div>
       @endif
@@ -76,6 +88,11 @@
               <div class="text-xs text-stone-500 mt-2">
                 Most common: {{ $topMatrix['hierarchy_path'] ?? $topMatrix['title'] ?? 'Unknown' }}
                 <br>{{ number_format($topMatrix['record_count']) }} records
+              </div>
+            @endif
+            @if(!empty($allStats['matrix']['generated_at']))
+              <div class="text-xs text-stone-500">
+                Updated: {{ \Carbon\Carbon::parse($allStats['matrix']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
               </div>
             @endif
           </div>
@@ -106,6 +123,11 @@
               <div class="text-xs text-zinc-500 mt-2">
                 Most monitored: {{ Str::limit($topSubstance['substance_name'], 20) }}
                 <br>Avg: {{ $avgRecordsPerSubstance }} records/substance
+              </div>
+            @endif
+            @if(!empty($allStats['substance']['generated_at']))
+              <div class="text-xs text-zinc-500">
+                Updated: {{ \Carbon\Carbon::parse($allStats['substance']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
               </div>
             @endif
           </div>
@@ -150,6 +172,11 @@
             <div class="text-xs text-gray-500 mt-2">
               {{ $allStats['quality']['total_categories'] }} quality categories
             </div>
+            @if(!empty($allStats['quality']['generated_at']))
+              <div class="text-xs text-gray-500">
+                Updated: {{ \Carbon\Carbon::parse($allStats['quality']['generated_at'])->setTimezone('Europe/Prague')->format('Y-m-d H:i:s') }}
+              </div>
+            @endif
           </div>
         </div>
       @endif
