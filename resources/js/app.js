@@ -26,6 +26,9 @@ import './alpine-components/cred-evaluation-modal.js';
 import './alpine-components/empodat-modal.js';
 
 // Import the search parameters collapse component
+// Import the multiselect combobox component
+import './alpine-components/multiselect.js';
+
 import './search-parameters-collapse.js';
 
 // Register the components when Livewire starts Alpine
@@ -33,4 +36,5 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('ecotoxModal', window.ecotoxModal);
     Alpine.data('credEvaluationModal', window.credEvaluationModal);
     Alpine.data('empodatModal', window.empodatModal);
+    Alpine.data('multiselect', window.multiselect);
 });

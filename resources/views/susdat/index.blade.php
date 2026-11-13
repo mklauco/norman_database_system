@@ -66,13 +66,12 @@
                           Search by Category:
                         </label>
                         <input type="hidden" value="1" name="searchCategory">
-                        @include('_t.form-apline-multiselect', [
-                          'tag' => 'categoriesSearch', 
-                          'list' => $categoriesList, 
-                          'active_ids' => $activeCategoryids, 
-                          'label' => 'Category', 
-                          'space' => 'request'
-                        ])
+                        <x-multiselect
+                          name="categoriesSearch"
+                          :options="$categoriesList"
+                          :selected="$activeCategoryids"
+                          label="Category"
+                        />
                       </div>
                       
                     @elseif($request->input('searchSource') == 1)
@@ -81,13 +80,12 @@
                           Search by Source:
                         </label>
                         <input type="hidden" value="1" name="searchSource">
-                        @include('_t.form-apline-multiselect', [
-                          'tag' => 'sourcesSearch', 
-                          'list' => $sourceList, 
-                          'active_ids' => $activeSourceids, 
-                          'label' => 'Source', 
-                          'space' => 'request'
-                        ])
+                        <x-multiselect
+                          name="sourcesSearch"
+                          :options="$sourceList"
+                          :selected="$activeSourceids"
+                          label="Source"
+                        />
                       </div>
                     @endif
                     

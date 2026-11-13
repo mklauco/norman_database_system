@@ -51,19 +51,21 @@
                     <div class="font-bold mb-2">
                       Country:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'countrySearch', 'list' => $countryList,
-                    'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
-                    ])
+                    <x-multiselect
+                      name="countrySearch"
+                      :options="$countryList"
+                      :selected="isset($request->countrySearch) ? $request->countrySearch : []"
+                    />
                   </div>
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Matrix:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'matrixSearch', 'list' => $matrixList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
-                    ])
+                    <x-multiselect
+                      name="matrixSearch"
+                      :options="$matrixList"
+                      :selected="isset($request->matrixSearch) ? $request->matrixSearch : []"
+                    />
                   </div>
                 </div>
               </div>
@@ -77,19 +79,21 @@
                     <div class="font-bold mb-2">
                       Gene name:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'geneNameSearch', 'list' => $geneNameList,
-                    'active_ids' => isset($request->geneNameSearch) ? $request->geneNameSearch : [],
-                    ])
+                    <x-multiselect
+                      name="geneNameSearch"
+                      :options="$geneNameList"
+                      :selected="isset($request->geneNameSearch) ? $request->geneNameSearch : []"
+                    />
                   </div>
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Organisation:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'organisationSearch', 'list' => $organisationList,
-                    'active_ids' => isset($request->organisationSearch) ? $request->organisationSearch : [],
-                    ])
+                    <x-multiselect
+                      name="organisationSearch"
+                      :options="$organisationList"
+                      :selected="isset($request->organisationSearch) ? $request->organisationSearch : []"
+                    />
                   </div>
                 </div>
               </div>

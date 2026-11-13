@@ -49,20 +49,22 @@
                     <div class="font-bold mb-2">
                       Country:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'countrySearch', 'list' => $countryList,
-                    'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
-                    ])
+                    <x-multiselect
+                      name="countrySearch"
+                      :options="$countryList"
+                      :selected="isset($request->countrySearch) ? $request->countrySearch : []"
+                    />
                   </div>
                   
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Sample matrix:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'matrixSearch', 'list' => $matrixList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
-                    ])
+                    <x-multiselect
+                      name="matrixSearch"
+                      :options="$matrixList"
+                      :selected="isset($request->matrixSearch) ? $request->matrixSearch : []"
+                    />
                   </div>
                 </div>
               </div>
@@ -92,10 +94,11 @@
                     <div class="font-bold mb-2">
                       Laboratory:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'laboratorySearch', 'list' => $laboratoryList,
-                    'active_ids' => isset($request->laboratorySearch) ? $request->laboratorySearch : [],
-                    ])
+                    <x-multiselect
+                      name="laboratorySearch"
+                      :options="$laboratoryList"
+                      :selected="isset($request->laboratorySearch) ? $request->laboratorySearch : []"
+                    />
                   </div>
                   
                 {{-- </div> --}}
