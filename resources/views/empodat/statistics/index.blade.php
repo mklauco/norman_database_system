@@ -74,7 +74,7 @@
             @endphp
             @if($topMatrix)
               <div class="text-xs text-stone-500 mt-2">
-                Most common: {{ $topMatrix['title'] ?? 'Unknown' }}
+                Most common: {{ $topMatrix['hierarchy_path'] ?? $topMatrix['title'] ?? 'Unknown' }}
                 <br>{{ number_format($topMatrix['record_count']) }} records
               </div>
             @endif
