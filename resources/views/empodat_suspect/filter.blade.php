@@ -101,11 +101,11 @@
                   Source File:
                 </div>
                 <div class="w-full" aria-describedby="file-help">
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'fileSearch',
-                    'list' => $fileList,
-                    'active_ids' => isset($request->fileSearch) ? $request->fileSearch : [],
-                  ])
+                  <x-multiselect
+                    name="fileSearch"
+                    :options="$fileList"
+                    :selected="isset($request->fileSearch) ? $request->fileSearch : []"
+                  />
                 </div>
                 <div id="file-help" class="sr-only">Select source files to filter results (admin only)</div>
               </div>
@@ -120,10 +120,11 @@
                       Country:
                     </div>
                     <div aria-describedby="country-help">
-                      @include('_t.form-apline-multiselect', [
-                        'tag' => 'countrySearch', 'list' => $countryList,
-                        'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
-                      ])
+                      <x-multiselect
+                        name="countrySearch"
+                        :options="$countryList"
+                        :selected="isset($request->countrySearch) ? $request->countrySearch : []"
+                      />
                     </div>
                     <div id="country-help" class="sr-only">Select one or more countries to filter results</div>
                   </div>
@@ -133,10 +134,11 @@
                       Ecosystems/matrices:
                     </div>
                     <div aria-describedby="matrix-help">
-                      @include('_t.form-apline-multiselect', [
-                        'tag' => 'matrixSearch', 'list' => $matrixList,
-                        'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
-                      ])
+                      <x-multiselect
+                        name="matrixSearch"
+                        :options="$matrixList"
+                        :selected="isset($request->matrixSearch) ? $request->matrixSearch : []"
+                      />
                     </div>
                     <div id="matrix-help" class="sr-only">Select ecosystem types to filter environmental matrices</div>
                   </div>
@@ -162,10 +164,11 @@
                   SLE Source:
                 </div>
                 <div class="w-full" aria-describedby="source-help">
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'sourceSearch', 'list' => $sourceList,
-                    'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
-                  ])
+                  <x-multiselect
+                    name="sourceSearch"
+                    :options="$sourceList"
+                    :selected="isset($request->sourceSearch) ? $request->sourceSearch : []"
+                  />
                 </div>
                 <div id="source-help" class="sr-only">Select Suspect List Exchange sources to filter data</div>
               </div>
@@ -238,11 +241,11 @@
                   Confidence Level:
                 </div>
                 <div aria-describedby="confidence-help">
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'confidenceLevelSearch',
-                    'list' => $confidenceLevelList,
-                    'active_ids' => isset($request->confidenceLevelSearch) ? $request->confidenceLevelSearch : [],
-                  ])
+                  <x-multiselect
+                    name="confidenceLevelSearch"
+                    :options="$confidenceLevelList"
+                    :selected="isset($request->confidenceLevelSearch) ? $request->confidenceLevelSearch : []"
+                  />
                 </div>
                 <div id="confidence-help" class="sr-only">Filter results by IP_max confidence level ranges</div>
               </div>
@@ -257,10 +260,11 @@
                     Concentration Indicators:
                   </div>
                   <div aria-describedby="concentration-help">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'concentrationIndicatorSearch', 'list' => $concentrationIndicatorList,
-                      'active_ids' => isset($request->concentrationIndicatorSearch) ? $request->concentrationIndicatorSearch : [],
-                    ])
+                    <x-multiselect
+                      name="concentrationIndicatorSearch"
+                      :options="$concentrationIndicatorList"
+                      :selected="isset($request->concentrationIndicatorSearch) ? $request->concentrationIndicatorSearch : []"
+                    />
                   </div>
                   <div id="concentration-help" class="sr-only">Select concentration measurement indicators</div>
                 </div>
@@ -280,10 +284,11 @@
                     <span>Type of Data Source:</span>
                   </div>
                   <div aria-describedby="type-sources-help">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'typeDataSourcesSearch', 'list' => $typeDataSourcesList,
-                      'active_ids' => isset($request->typeDataSourcesSearch) ? $request->typeDataSourcesSearch : [],
-                    ])
+                    <x-multiselect
+                      name="typeDataSourcesSearch"
+                      :options="$typeDataSourcesList"
+                      :selected="isset($request->typeDataSourcesSearch) ? $request->typeDataSourcesSearch : []"
+                    />
                   </div>
                   <div id="type-sources-help" class="sr-only">Select data source types - this may slow down search performance</div>
                 </div>
@@ -299,10 +304,11 @@
                     <span>Organisation:</span>
                   </div>
                   <div aria-describedby="org-sources-help">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'dataSourceOrganisationSearch', 'list' => $dataSourceOrganisationList,
-                      'active_ids' => isset($request->dataSourceOrganisationSearch) ? $request->dataSourceOrganisationSearch : [],
-                    ])
+                    <x-multiselect
+                      name="dataSourceOrganisationSearch"
+                      :options="$dataSourceOrganisationList"
+                      :selected="isset($request->dataSourceOrganisationSearch) ? $request->dataSourceOrganisationSearch : []"
+                    />
                   </div>
                   <div id="org-sources-help" class="sr-only">Select organisations - this may slow down search performance</div>
                 </div>
@@ -320,10 +326,11 @@
                     <span>Laboratory:</span>
                   </div>
                   <div aria-describedby="lab-sources-help">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'dataSourceLaboratorySearch', 'list' => $dataSourceLaboratoryList,
-                      'active_ids' => isset($request->dataSourceLaboratorySearch) ? $request->dataSourceLaboratorySearch : [],
-                    ])
+                    <x-multiselect
+                      name="dataSourceLaboratorySearch"
+                      :options="$dataSourceLaboratoryList"
+                      :selected="isset($request->dataSourceLaboratorySearch) ? $request->dataSourceLaboratorySearch : []"
+                    />
                   </div>
                   <div id="lab-sources-help" class="sr-only">Select laboratories - this may slow down search performance</div>
                 </div>
@@ -343,10 +350,11 @@
                     <span>Analytical Method:</span>
                   </div>
                   <div aria-describedby="analytical-method-help">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'analyticalMethodSearch', 'list' => $analyticalMethodsList,
-                      'active_ids' => isset($request->analyticalMethodSearch) ? $request->analyticalMethodSearch : [],
-                    ])
+                    <x-multiselect
+                      name="analyticalMethodSearch"
+                      :options="$analyticalMethodsList"
+                      :selected="isset($request->analyticalMethodSearch) ? $request->analyticalMethodSearch : []"
+                    />
                   </div>
                   <div id="analytical-method-help" class="sr-only">Select Analytical Methods - this may slow down search performance</div>
                 </div>
@@ -360,10 +368,11 @@
                     Quality information category:
                   </div>
                   <div aria-describedby="quality-help">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'qualityAnalyticalMethodsSearch', 'list' => $qualityAnalyticalMethodsList,
-                      'active_ids' => isset($request->qualityAnalyticalMethodsSearch) ? $request->qualityAnalyticalMethodsSearch : [],
-                    ])
+                    <x-multiselect
+                      name="qualityAnalyticalMethodsSearch"
+                      :options="$qualityAnalyticalMethodsList"
+                      :selected="isset($request->qualityAnalyticalMethodsSearch) ? $request->qualityAnalyticalMethodsSearch : []"
+                    />
                   </div>
                   <div id="quality-help" class="sr-only">Select quality information categories for Analytical Methods</div>
                 </div>

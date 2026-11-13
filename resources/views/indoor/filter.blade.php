@@ -51,19 +51,21 @@
                     <div class="font-bold mb-2">
                       Country:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'countrySearch', 'list' => $countryList,
-                    'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
-                    ])
+                    <x-multiselect
+                      name="countrySearch"
+                      :options="$countryList"
+                      :selected="isset($request->countrySearch) ? $request->countrySearch : []"
+                    />
                   </div>
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Matrix:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'matrixSearch', 'list' => $matrixList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
-                    ])
+                    <x-multiselect
+                      name="matrixSearch"
+                      :options="$matrixList"
+                      :selected="isset($request->matrixSearch) ? $request->matrixSearch : []"
+                    />
                   </div>
                 </div>
               </div>
@@ -76,10 +78,11 @@
                     <div class="font-bold mb-2">
                       Environment Type:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'environmentTypeSearch', 'list' => $environmentTypeList,
-                    'active_ids' => isset($request->environmentTypeSearch) ? $request->environmentTypeSearch : [],
-                    ])
+                    <x-multiselect
+                      name="environmentTypeSearch"
+                      :options="$environmentTypeList"
+                      :selected="isset($request->environmentTypeSearch) ? $request->environmentTypeSearch : []"
+                    />
                   </div>
                 
 
@@ -88,10 +91,11 @@
                     <div class="font-bold mb-2">
                       Environment Category:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'environmentCategorySearch', 'list' => $environmentCategoryList,
-                    'active_ids' => isset($request->environmentCategorySearch) ? $request->environmentCategorySearch : [],
-                    ])
+                    <x-multiselect
+                      name="environmentCategorySearch"
+                      :options="$environmentCategoryList"
+                      :selected="isset($request->environmentCategorySearch) ? $request->environmentCategorySearch : []"
+                    />
                   </div>
                 </div>
               </div>
@@ -111,10 +115,11 @@
                 <div class="font-bold mb-2">
                   Concentration Indicator:
                 </div>
-                @include('_t.form-apline-multiselect', [
-                'tag' => 'concentrationIndicatorSearch', 'list' => $concentrationIndicatorList,
-                'active_ids' => isset($request->concentrationIndicatorSearch) ? $request->concentrationIndicatorSearch : [],
-                ])
+                <x-multiselect
+                  name="concentrationIndicatorSearch"
+                  :options="$concentrationIndicatorList"
+                  :selected="isset($request->concentrationIndicatorSearch) ? $request->concentrationIndicatorSearch : []"
+                />
               </div>
             </div>
 
@@ -124,10 +129,11 @@
                   SLE Source:
                 </div>
                 <div class="w-full">
-                  @include('_t.form-apline-multiselect', [
-                  'tag' => 'sourceSearch', 'list' => $sourceList,
-                  'active_ids' => isset($request->sourceSearch) ? $request->sourceSearch : [],
-                  ])
+                  <x-multiselect
+                    name="sourceSearch"
+                    :options="$sourceList"
+                    :selected="isset($request->sourceSearch) ? $request->sourceSearch : []"
+                  />
                 </div>
               </div>
             </div>
@@ -164,30 +170,33 @@
                     <div class="font-bold mb-2">
                       Bioassay name:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'bioassayNameSearch', 'list' => $bioassayNameList,
-                    'active_ids' => isset($request->bioassayNameSearch) ? $request->bioassayNameSearch : [],
-                    ])
+                    <x-multiselect
+                      name="bioassayNameSearch"
+                      :options="$bioassayNameList"
+                      :selected="isset($request->bioassayNameSearch) ? $request->bioassayNameSearch : []"
+                    />
                   </div>
 
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Endpoint name:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'endpointSearch', 'list' => $endpointList,
-                    'active_ids' => isset($request->endpointSearch) ? $request->endpointSearch : [],
-                    ])
+                    <x-multiselect
+                      name="endpointSearch"
+                      :options="$endpointList"
+                      :selected="isset($request->endpointSearch) ? $request->endpointSearch : []"
+                    />
                   </div>
 
                   <div class="w-full">
                     <div class="font-bold mb-2">
                       Main determinant name:
                     </div>
-                    @include('_t.form-apline-multiselect', [
-                    'tag' => 'determinandSearch', 'list' => $determinandList,
-                    'active_ids' => isset($request->determinandSearch) ? $request->determinandSearch : [],
-                    ])
+                    <x-multiselect
+                      name="determinandSearch"
+                      :options="$determinandList"
+                      :selected="isset($request->determinandSearch) ? $request->determinandSearch : []"
+                    />
                   </div>
                 </div>
 
