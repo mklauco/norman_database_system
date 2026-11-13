@@ -4,7 +4,7 @@
 <div x-show="showCredEvaluationModal" 
      x-cloak 
      @keydown.escape.window="closeModalCredEvaluation()"
-     class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+     class="fixed inset-0 flex items-center justify-center bg-gray-800/50 z-50">
 
     <div class="bg-white w-11/12 md:w-4/5 lg:w-4/5 xl:w-3/4 rounded-sm shadow-lg relative" 
          x-transition>

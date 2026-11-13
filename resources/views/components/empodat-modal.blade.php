@@ -5,7 +5,7 @@
      x-cloak
      @keydown.escape.window="closeModal()"
      @open-empodat-modal.window="openModal($event.detail)"
-     class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50"
+     class="fixed inset-0 flex items-center justify-center bg-gray-800/50 z-50"
      style="display: none;"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"

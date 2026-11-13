@@ -432,7 +432,7 @@
   <div x-show="showChangesModal" 
        x-cloak 
        @keydown.escape.window="closeChangesModal()"
-       class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+       class="fixed inset-0 flex items-center justify-center bg-gray-800/50 z-50">
 
     <div class="bg-white w-11/12 md:w-3/4 lg:w-3/4 xl:w-2/3 rounded-sm shadow-lg relative">
 
