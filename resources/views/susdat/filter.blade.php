@@ -110,10 +110,11 @@
                 <form name="searchAccordingToSourceForm" id="searchAccordingToSourceForm" action="{{route('substances.search.search')}}" method="GET">
                   <input type="hidden" value="1" name="searchSource">
                   <div class="w-full">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'sourcesSearch', 'list' => $sourceList,
-                      'active_ids' => isset($request->sourcesSearch) ? $request->sourcesSearch : [],
-                      ])
+                    <x-multiselect
+                      name="sourcesSearch"
+                      :options="$sourceList"
+                      :selected="isset($request->sourcesSearch) ? $request->sourcesSearch : []"
+                    />
                   </div>
                   
                   <div class="mt-4 pt-3 border-t border-gray-200">

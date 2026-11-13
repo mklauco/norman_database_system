@@ -63,10 +63,11 @@
                   Project:
                 </div>
                 <div aria-describedby="project-help">
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'projectSearch', 'list' => $projectList,
-                    'active_ids' => isset($request->projectSearch) ? $request->projectSearch : [],
-                  ])
+                  <x-multiselect
+                    name="projectSearch"
+                    :options="$projectList"
+                    :selected="isset($request->projectSearch) ? $request->projectSearch : []"
+                  />
                 </div>
                 <div id="project-help" class="sr-only">Select projects to filter records associated with specific projects</div>
               </div>
@@ -82,10 +83,11 @@
                       Country:
                     </div>
                     <div>
-                      @include('_t.form-apline-multiselect', [
-                        'tag' => 'countrySearch', 'list' => $countryList,
-                        'active_ids' => isset($request->countrySearch) ? $request->countrySearch : [],
-                      ])
+                      <x-multiselect
+                        name="countrySearch"
+                        :options="$countryList"
+                        :selected="isset($request->countrySearch) ? $request->countrySearch : []"
+                      />
                     </div>
                   </div>
                 </div>
@@ -98,10 +100,11 @@
                   Class:
                 </div>
                 <div>
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'classSearch', 'list' => $classList,
-                    'active_ids' => isset($request->classSearch) ? $request->classSearch : [],
-                  ])
+                  <x-multiselect
+                    name="classSearch"
+                    :options="$classList"
+                    :selected="isset($request->classSearch) ? $request->classSearch : []"
+                  />
                 </div>
               </div>
             </div>
@@ -113,11 +116,11 @@
                 </div>
                 <div x-data="speciesFilter()" x-init="init()">
                   <div :key="speciesKey">
-                    @include('_t.form-apline-multiselect', [
-                      'tag' => 'speciesSearch',
-                      'list' => $speciesList,
-                      'active_ids' => isset($request->speciesSearch) ? $request->speciesSearch : [],
-                    ])
+                    <x-multiselect
+                      name="speciesSearch"
+                      :options="$speciesList"
+                      :selected="isset($request->speciesSearch) ? $request->speciesSearch : []"
+                    />
                   </div>
                 </div>
               </div>
@@ -136,10 +139,7 @@
                       // Watch for class selection changes
                       const classInput = document.querySelector('input[name="classSearch"]');
                       if (classInput) {
-                        const observer = new MutationObserver(() => {
-                          this.updateSpeciesList();
-                        });
-                        observer.observe(classInput, { attributes: true, attributeFilter: ['value'] });
+                        classInput.addEventListener('change', () => this.updateSpeciesList());
 
                         // Initial update after a short delay to ensure Alpine is ready
                         setTimeout(() => {
@@ -178,29 +178,9 @@
 
                     // Get the Alpine component instance
                     const alpineData = Alpine.$data(container);
-                    if (!alpineData) return;
+                    if (!alpineData || typeof alpineData.setItems !== 'function') return;
 
-                    // Ensure selectedItems exists (might not be initialized yet)
-                    if (!alpineData.selectedItems) {
-                      alpineData.selectedItems = [];
-                    }
-
-                    // Update the items in the multiselect
-                    alpineData.items = filteredSpecies.map(s => ({
-                      label: s.label,
-                      value: s.id,
-                      selected: alpineData.selectedItems && alpineData.selectedItems.some(item => item.value == s.id)
-                    }));
-
-                    // Reset allItems
-                    alpineData.allItems = [...alpineData.items];
-
-                    // Filter out selected items that are no longer in the list
-                    if (alpineData.selectedItems && Array.isArray(alpineData.selectedItems)) {
-                      alpineData.selectedItems = alpineData.selectedItems.filter(selected =>
-                        alpineData.items.some(item => item.value == selected.value)
-                      );
-                    }
+                    alpineData.setItems(filteredSpecies.map(s => ({ label: s.label, value: s.id })));
                   }
                 }
               }
@@ -212,10 +192,11 @@
                   Tissue:
                 </div>
                 <div>
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'tissueSearch', 'list' => $tissueList,
-                    'active_ids' => isset($request->tissueSearch) ? $request->tissueSearch : [],
-                  ])
+                  <x-multiselect
+                    name="tissueSearch"
+                    :options="$tissueList"
+                    :selected="isset($request->tissueSearch) ? $request->tissueSearch : []"
+                  />
                 </div>
               </div>
             </div>
@@ -226,10 +207,11 @@
                   Sample matrix:
                 </div>
                 <div aria-describedby="matrix-help">
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'matrixSearch', 'list' => $matrixList,
-                    'active_ids' => isset($request->matrixSearch) ? $request->matrixSearch : [],
-                  ])
+                  <x-multiselect
+                    name="matrixSearch"
+                    :options="$matrixList"
+                    :selected="isset($request->matrixSearch) ? $request->matrixSearch : []"
+                  />
                 </div>
                 <div id="matrix-help" class="sr-only">Select ecosystem types to filter environmental matrices</div>
               </div>
@@ -241,10 +223,11 @@
                   Type of numeric quantity:
                 </div>
                 <div>
-                  @include('_t.form-apline-multiselect', [
-                    'tag' => 'typeOfNumericQuantitySearch', 'list' => $typeOfNumericQuantityList,
-                    'active_ids' => isset($request->typeOfNumericQuantitySearch) ? $request->typeOfNumericQuantitySearch : [],
-                  ])
+                  <x-multiselect
+                    name="typeOfNumericQuantitySearch"
+                    :options="$typeOfNumericQuantityList"
+                    :selected="isset($request->typeOfNumericQuantitySearch) ? $request->typeOfNumericQuantitySearch : []"
+                  />
                 </div>
               </div>
             </div>
