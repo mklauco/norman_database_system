@@ -171,89 +171,14 @@
                     Generate Statistics (Admin Only)
                   </h3>
 
-                  <!-- Public Statistics Generation -->
-                  <div class="mb-4">
-                    <h4 class="text-sm font-medium text-amber-700 mb-2">Public Statistics (unprotected data only)</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                      <form action="{{ route('empodat.statistics.generateCountry') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="public">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-sky-600 text-white rounded-sm hover:bg-sky-700 transition-colors text-sm">
-                          Country Statistics
-                        </button>
-                      </form>
-
-                      <form action="{{ route('empodat.statistics.generateMatrix') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="public">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-sky-600 text-white rounded-sm hover:bg-sky-700 transition-colors text-sm">
-                          Matrix Statistics
-                        </button>
-                      </form>
-
-                      <form action="{{ route('empodat.statistics.generateSubstance') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="public">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-sky-600 text-white rounded-sm hover:bg-sky-700 transition-colors text-sm">
-                          Substance Statistics
-                        </button>
-                      </form>
-
-                      <form action="{{ route('empodat.statistics.generateQuality') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="public">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-sky-600 text-white rounded-sm hover:bg-sky-700 transition-colors text-sm">
-                          QA/QC Statistics
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-
-                  <!-- Admin Statistics Generation -->
-                  <div>
-                    <h4 class="text-sm font-medium text-amber-700 mb-2">Admin Statistics (all data except deleted)</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                      <form action="{{ route('empodat.statistics.generateCountry') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="all">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-amber-600 text-white rounded-sm hover:bg-amber-700 transition-colors text-sm">
-                          Country Statistics
-                        </button>
-                      </form>
-
-                      <form action="{{ route('empodat.statistics.generateMatrix') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="all">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-amber-600 text-white rounded-sm hover:bg-amber-700 transition-colors text-sm">
-                          Matrix Statistics
-                        </button>
-                      </form>
-
-                      <form action="{{ route('empodat.statistics.generateSubstance') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="all">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-amber-600 text-white rounded-sm hover:bg-amber-700 transition-colors text-sm">
-                          Substance Statistics
-                        </button>
-                      </form>
-
-                      <form action="{{ route('empodat.statistics.generateQuality') }}" method="POST">
-                        @csrf
-                        <input type="hidden" name="scope" value="all">
-                        <button type="submit"
-                                class="w-full px-4 py-2 bg-amber-600 text-white rounded-sm hover:bg-amber-700 transition-colors text-sm">
-                          QA/QC Statistics
-                        </button>
-                      </form>
-                    </div>
-                  </div>
+                  <form action="{{ route('empodat.statistics.generate') }}" method="POST" class="flex flex-col md:flex-row md:items-center gap-3">
+                    @csrf
+                    <button type="submit"
+                            class="px-4 py-2 bg-amber-600 text-white rounded-sm hover:bg-amber-700 transition-colors text-sm">
+                      Generate all statistics
+                    </button>
+                    <span class="text-sm text-amber-700">One queued run: public (unprotected, not deleted files) and admin (not deleted files), all four views.</span>
+                  </form>
 
                 </div>
               </div>
