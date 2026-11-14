@@ -48,18 +48,20 @@ class SubstanceSearch extends Component
                         ->whereNull('hazards_comptox_substance_data.withdrawn_at');
                 });
 
+            $term = $this->escapeLike((string) $this->search);
+
             if ($this->searchType === 'cas_number') {
-                $query->where('cas_number', 'ilike', '%'.$this->search.'%');
+                $query->where('cas_number', 'ilike', '%'.$term.'%');
             } elseif ($this->searchType === 'name') {
-                $query->where('name', 'ilike', '%'.$this->search.'%');
+                $query->where('name', 'ilike', '%'.$term.'%');
             } elseif ($this->searchType === 'stdinchikey') {
-                $query->where('stdinchikey', 'ilike', $this->search);
+                $query->where('stdinchikey', 'ilike', $term);
             } elseif ($this->searchType === 'norman_susdat_id') {
-                $searchCode = $this->search;
+                $searchCode = (string) $this->search;
                 if (strtoupper(substr($searchCode, 0, 2)) === 'NS') {
                     $searchCode = substr($searchCode, 2);
                 }
-                $query->where('code', 'ilike', '%'.$searchCode.'%');
+                $query->where('code', 'ilike', '%'.$this->escapeLike($searchCode).'%');
             }
 
             $results = $query->orderBy('name')->limit(30)->get();
@@ -89,6 +91,14 @@ class SubstanceSearch extends Component
             'selectedSubstances' => $this->selectedSubstances,
             'formId' => $this->formId,
         ]);
+    }
+
+    /**
+     * Escapes the LIKE wildcards so the user's text is matched literally.
+     */
+    private function escapeLike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 
     public function applySubstanceFilter()

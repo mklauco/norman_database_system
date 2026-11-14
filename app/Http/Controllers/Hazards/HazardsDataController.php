@@ -128,12 +128,12 @@ class HazardsDataController extends Controller
 
         $resultsQuery = ComptoxSubstanceData::query()
             ->active()
-            ->with(['substance', 'editorUser']);
+            ->with(['substance', 'editorUser:id,first_name,last_name']);
 
         $substances = array_slice(
             array_values(array_filter(
                 $this->normalizeArrayInput($request->input('substances')),
-                static fn ($id) => is_numeric($id)
+                static fn ($id) => is_int($id) || (is_string($id) && ctype_digit($id))
             )),
             0,
             self::MAX_SELECTED_SUBSTANCES
@@ -209,7 +209,7 @@ class HazardsDataController extends Controller
 
         $mainRequest = $request->all();
         $databaseKey = 'hazards';
-        $resultsObjectsCount = ComptoxSubstanceData::query()->active()->count();
+        $resultsObjectsCount = Cache::remember('hazards.count.active', self::FILTER_CACHE_SECONDS, static fn (): int => ComptoxSubstanceData::query()->active()->count());
         $filteredRecordsCount = (clone $resultsQuery)->count();
         $queryLogId = QueryLog::query()->latest('id')->value('id') ?? 0;
 
@@ -625,6 +625,11 @@ class HazardsDataController extends Controller
 
     private function summaryTotalCount(): int
     {
+        return Cache::remember('hazards.count.summary_scope', self::FILTER_CACHE_SECONDS, fn (): int => $this->computeSummaryTotalCount());
+    }
+
+    private function computeSummaryTotalCount(): int
+    {
         return ComptoxSubstanceData::query()
             ->active()
             ->where(function (Builder $builder) {
@@ -641,9 +646,9 @@ class HazardsDataController extends Controller
             ->count();
     }
 
-    public function show(string $id)
+    public function show(int $id)
     {
-        $record = ComptoxSubstanceData::with(['substance', 'editorUser'])->find($id);
+        $record = ComptoxSubstanceData::with(['substance', 'editorUser:id,first_name,last_name'])->find($id);
         if (! $record) {
             return response()->json(['error' => 'Record not found'], 404);
         }
@@ -651,9 +656,9 @@ class HazardsDataController extends Controller
         return response()->json($record);
     }
 
-    public function showForm(string $id)
+    public function showForm(int $id)
     {
-        $record = ComptoxSubstanceData::with(['substance', 'editorUser'])->find($id);
+        $record = ComptoxSubstanceData::with(['substance', 'editorUser:id,first_name,last_name'])->find($id);
         if (! $record) {
             abort(404, 'Record not found');
         }
@@ -687,7 +692,7 @@ class HazardsDataController extends Controller
         }
 
         return array_values(array_filter($input, static function ($value) {
-            return ! is_null($value) && $value !== '';
+            return is_scalar($value) && $value !== '';
         }));
     }
 }

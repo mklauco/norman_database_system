@@ -44,9 +44,15 @@ class HazardsVoteRemovalTest extends HazardsTestCase
         return (bool) DB::table('hazards_derivation_selections')->where('id', $this->selectionId)->value('is_current');
     }
 
-    private function remove(User $user): void
+    private function remove(User $user, bool $expectForbidden = false): void
     {
-        $this->actingAs($user)->post(route('hazards.derivation.vote.remove'), ['selection_id' => $this->selectionId])->assertRedirect();
+        $response = $this->actingAs($user)->post(route('hazards.derivation.vote.remove'), ['selection_id' => $this->selectionId]);
+
+        if ($expectForbidden) {
+            $response->assertForbidden();
+        } else {
+            $response->assertRedirect();
+        }
     }
 
     public function test_another_hazards_user_cannot_remove_the_vote(): void
@@ -54,7 +60,7 @@ class HazardsVoteRemovalTest extends HazardsTestCase
         $other = User::factory()->create();
         $other->assignRole('hazards');
 
-        $this->remove($other);
+        $this->remove($other, true);
 
         $this->assertTrue($this->isCurrent());
     }

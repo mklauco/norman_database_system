@@ -104,7 +104,7 @@
               <div class="mt-6 border border-gray-200 rounded-lg shadow-xs p-4">
                 <div class="mb-3">
                   <h2 class="text-lg font-semibold text-gray-900">
-                    {{ $substance?->display_name ?? $substance?->name ?? ('Substance #'.$substanceData['substance_id']) }}
+                    {{ $substance?->display_name ?? $substance?->name ?? 'Unknown substance' }}
                   </h2>
                   <div class="text-sm text-gray-600">
                     CAS: {{ $substance?->formatted_cas ?? 'N/A' }}

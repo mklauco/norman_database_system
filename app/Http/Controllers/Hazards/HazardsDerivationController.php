@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hazards;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Hazards\HazardsDerivationVoteRequest;
+use App\Http\Requests\Hazards\HazardsRemoveVoteRequest;
 use App\Models\Hazards\ComptoxSubstanceData;
 use App\Models\Hazards\DerivationSelection;
 use App\Models\Susdat\Substance;
@@ -13,7 +15,7 @@ use App\Services\Hazards\HazardsDerivationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class HazardsDerivationController extends Controller
 {
@@ -83,32 +85,18 @@ class HazardsDerivationController extends Controller
         ]);
     }
 
-    public function vote(Request $request): RedirectResponse
+    public function vote(HazardsDerivationVoteRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'susdat_substance_id' => ['required', 'integer', 'exists:susdat_substances,id'],
-            'bucket' => ['required', 'string', 'max:12'],
-            'hazards_substance_data_id' => [
-                'required',
-                'integer',
-                Rule::exists('hazards_comptox_substance_data', 'id')->whereNull('withdrawn_at'),
-            ],
-        ], [
-            'hazards_substance_data_id.exists' => 'This record was withdrawn from the source and can no longer be voted for.',
-        ]);
-
-        $dataRow = ComptoxSubstanceData::query()->find((int) $data['hazards_substance_data_id']);
-        if (! $dataRow || (int) $dataRow->susdat_substance_id !== (int) $data['susdat_substance_id']) {
-            return back()->with('error', 'The selected record does not belong to this substance.');
-        }
+        $data = $request->validated();
 
         $selection = $this->derivationService->storeVote(
             susdatSubstanceId: (int) $data['susdat_substance_id'],
             bucket: (string) $data['bucket'],
             hazardsSubstanceDataId: (int) $data['hazards_substance_data_id'],
-            userId: (int) ($request->user()?->id ?? 0),
-            metadataOverrides: $request->all(),
-            userName: null
+            userId: (int) $request->user()->id,
+            metadataOverrides: $request->metadataOverrides(),
+            userName: $request->editorName(),
+            dataRow: $request->dataRow()
         );
 
         $this->classificationService->run((int) $selection->susdat_substance_id);
@@ -116,18 +104,25 @@ class HazardsDerivationController extends Controller
         return back()->with('success', 'Derivation vote stored.');
     }
 
-    public function removeVote(Request $request): RedirectResponse
+    public function removeVote(HazardsRemoveVoteRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'selection_id' => ['required', 'integer', 'exists:hazards_derivation_selections,id'],
-        ]);
-
         $user = $request->user();
-        $selection = DerivationSelection::find((int) $data['selection_id']);
-        $this->derivationService->removeVote(
-            (int) $data['selection_id'],
-            $user->hasAnyRole(['super_admin', 'admin']) ? null : (int) $user->id
-        );
+        $selectionId = (int) $request->validated('selection_id');
+        $isAdmin = $user->hasAnyRole(['super_admin', 'admin']);
+
+        $selection = DerivationSelection::query()->find($selectionId);
+        $removed = $this->derivationService->removeVote($selectionId, $isAdmin ? null : (int) $user->id);
+
+        if (! $removed) {
+            abort(403, 'You can only remove your own votes.');
+        }
+
+        if ($isAdmin) {
+            Log::info('Hazards derivation vote removed by an administrator', [
+                'actor_user_id' => $user->id,
+                'selection_id' => $selectionId,
+            ]);
+        }
 
         if ($selection) {
             $this->classificationService->run((int) $selection->susdat_substance_id);
@@ -138,7 +133,7 @@ class HazardsDerivationController extends Controller
 
     public function substanceDataJson(int $id): JsonResponse
     {
-        $row = ComptoxSubstanceData::with(['substance', 'editorUser'])->find($id);
+        $row = ComptoxSubstanceData::with(['substance', 'editorUser:id,first_name,last_name'])->find($id);
         if (! $row) {
             return response()->json(['error' => 'Record not found'], 404);
         }
@@ -182,15 +177,5 @@ class HazardsDerivationController extends Controller
         }
 
         return response()->json($metadata);
-    }
-
-    public function selectionJson(int $selectionId): JsonResponse
-    {
-        $selection = DerivationSelection::with(['hazardsSubstanceData', 'user'])->find($selectionId);
-        if (! $selection) {
-            return response()->json(['error' => 'Selection not found'], 404);
-        }
-
-        return response()->json($selection);
     }
 }

@@ -66,11 +66,11 @@ return new class extends Migration
             WHERE is_current = true AND editor_user_id IS NOT NULL
         ');
 
-        DB::statement('
+        DB::statement("
             CREATE UNIQUE INDEX hazards_substance_classifications_current_system_unique
             ON hazards_substance_classifications (susdat_substance_id, kind)
-            WHERE is_current = true AND editor_user_id IS NULL
-        ');
+            WHERE is_current = true AND kind IN ('auto_baseline', 'derivation')
+        ");
     }
 
     /**

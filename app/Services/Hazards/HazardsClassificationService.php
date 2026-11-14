@@ -252,6 +252,7 @@ class HazardsClassificationService
         }
 
         DB::transaction(function () use ($substanceId, $userId, $votes) {
+            DB::select('select pg_advisory_xact_lock(?, ?)', [$userId, $substanceId]);
             $touchedPairs = [];
 
             foreach ($votes as $vote) {
@@ -278,6 +279,7 @@ class HazardsClassificationService
                     ->where('criterion', $criterion)
                     ->where('is_current', true)
                     ->latest('id')
+                    ->lockForUpdate()
                     ->first();
 
                 if ($voteValue === null || $voteValue < 1 || $voteValue > 3) {

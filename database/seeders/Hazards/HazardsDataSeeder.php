@@ -28,6 +28,8 @@ class HazardsDataSeeder extends Seeder
 {
     public function run(): void
     {
+        ini_set('memory_limit', '1G');
+
         if (app()->bound('debugbar')) {
             app('debugbar')->disable();
         }

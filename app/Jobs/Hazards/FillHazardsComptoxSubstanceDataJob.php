@@ -46,6 +46,8 @@ class FillHazardsComptoxSubstanceDataJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(HazardsReseedService $reseedService): void
     {
+        ini_set('memory_limit', '1G');
+
         $lock = $this->acquireLock();
         if (! $lock) {
             Log::warning('Hazards substance data fill skipped because another run is already in progress.');

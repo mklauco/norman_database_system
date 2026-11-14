@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class HazardsDerivationService
 {
-    private const BUCKETS = [
+    public const BUCKETS = [
         'P_pred',
         'P_exp',
         'B_pred',
@@ -184,24 +184,35 @@ class HazardsDerivationService
         ];
     }
 
+    /**
+     * Stores the user's vote for one bucket: the user's current vote rows of that bucket are
+     * locked, deactivated and replaced in one transaction, so a double click cannot violate the
+     * partial unique index.
+     *
+     * @param  array<string, mixed>  $metadataOverrides
+     */
     public function storeVote(
         int|string $susdatSubstanceId,
         string $bucket,
         int $hazardsSubstanceDataId,
         int $userId,
         array $metadataOverrides = [],
-        ?string $userName = null
+        ?string $userName = null,
+        ?ComptoxSubstanceData $dataRow = null
     ): DerivationSelection {
         $substanceId = (int) $susdatSubstanceId;
 
-        return DB::transaction(function () use ($substanceId, $bucket, $hazardsSubstanceDataId, $userId, $metadataOverrides, $userName) {
+        return DB::transaction(function () use ($substanceId, $bucket, $hazardsSubstanceDataId, $userId, $metadataOverrides, $userName, $dataRow) {
+            DB::select('select pg_advisory_xact_lock(?, ?)', [$userId, $substanceId]);
             DerivationSelection::query()
                 ->where('susdat_substance_id', $substanceId)
                 ->where('bucket', $bucket)
                 ->where('kind', 'vote')
                 ->where('user_id', $userId)
                 ->where('is_current', true)
-                ->update(['is_current' => false]);
+                ->lockForUpdate()
+                ->get(['id'])
+                ->each(fn (DerivationSelection $current) => $current->update(['is_current' => false]));
 
             $selection = DerivationSelection::create([
                 'susdat_substance_id' => $substanceId,
@@ -213,13 +224,21 @@ class HazardsDerivationService
                 'is_current' => true,
             ]);
 
+            if ($dataRow !== null && (int) $dataRow->id === $hazardsSubstanceDataId) {
+                $selection->setRelation('hazardsSubstanceData', $dataRow);
+            }
+
             $this->createMetadataSnapshot($selection, $metadataOverrides, $userName);
 
             return $selection->fresh(['hazardsSubstanceData', 'user']);
         });
     }
 
-    public function removeVote(int $selectionId, ?int $userId = null): void
+    /**
+     * Deactivates a vote. Returns false when no matching vote exists (or it belongs to
+     * someone else while $userId restricts the owner).
+     */
+    public function removeVote(int $selectionId, ?int $userId = null): bool
     {
         $selection = DerivationSelection::query()
             ->where('id', $selectionId)
@@ -231,10 +250,12 @@ class HazardsDerivationService
             ->first();
 
         if (! $selection) {
-            return;
+            return false;
         }
 
         $selection->update(['is_current' => false]);
+
+        return true;
     }
 
     public function createMetadataSnapshot(
@@ -242,7 +263,9 @@ class HazardsDerivationService
         array $metadataOverrides = [],
         ?string $userName = null
     ): ?DerivationMetadata {
-        $row = $selection->hazardsSubstanceData()->first();
+        $row = $selection->relationLoaded('hazardsSubstanceData') && $selection->hazardsSubstanceData !== null
+            ? $selection->hazardsSubstanceData
+            : $selection->hazardsSubstanceData()->first();
         if (! $row) {
             return null;
         }
@@ -378,6 +401,7 @@ class HazardsDerivationService
             'is_current' => true,
         ]);
 
+        $selection->setRelation('hazardsSubstanceData', $pick);
         $this->createMetadataSnapshot($selection);
     }
 
@@ -416,7 +440,7 @@ class HazardsDerivationService
         return $row->data_source === 'CompTox Dashboard' && (string) $row->test_type === '3';
     }
 
-    private function resolveBucket(ComptoxSubstanceData $row): ?string
+    public function resolveBucket(ComptoxSubstanceData $row): ?string
     {
         $parameter = (string) ($row->norman_parameter_name ?? '');
         $testType = (string) ($row->test_type ?? '');

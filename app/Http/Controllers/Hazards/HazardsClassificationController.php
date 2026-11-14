@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hazards;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Hazards\HazardsClassificationVoteRequest;
 use App\Models\Hazards\ClassificationVote;
 use App\Models\Hazards\ComptoxSubstanceData;
 use App\Models\Hazards\DerivationSelection;
@@ -15,6 +16,7 @@ use App\Services\Hazards\HazardsClassificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 class HazardsClassificationController extends Controller
 {
@@ -146,25 +148,56 @@ class HazardsClassificationController extends Controller
         ]);
     }
 
-    public function vote(Request $request): RedirectResponse
+    public function vote(HazardsClassificationVoteRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'susdat_substance_id' => ['required', 'integer', 'exists:susdat_substances,id'],
-            'votes' => ['nullable', 'array'],
-            'votes.*.classification_type' => ['nullable', 'string', 'max:50'],
-            'votes.*.criterion' => ['nullable', 'string', 'max:1'],
-            'votes.*.classification_code' => ['nullable', 'string', 'max:50'],
-            'votes.*.vote_value' => ['nullable'],
-        ]);
+        $data = $request->validated();
+        $substanceId = (int) $data['susdat_substance_id'];
+        $votes = $data['votes'] ?? [];
 
-        $this->classificationService->run((int) $data['susdat_substance_id']);
+        $allowed = $this->allowedVoteCells($substanceId);
+        foreach ($votes as $vote) {
+            $key = trim((string) ($vote['classification_type'] ?? '')).'|'.($vote['criterion'] ?? '').'|'.trim((string) ($vote['classification_code'] ?? ''));
+            if (! isset($allowed[$key])) {
+                throw ValidationException::withMessages([
+                    'votes' => 'The classification table changed since you opened it. Reload the page and vote again.',
+                ]);
+            }
+        }
+
+        $this->classificationService->run($substanceId);
         $this->classificationService->storeVotes(
-            susdatSubstanceId: (int) $data['susdat_substance_id'],
-            userId: (int) (auth()->id() ?? 0),
-            votes: $data['votes'] ?? []
+            susdatSubstanceId: $substanceId,
+            userId: (int) $request->user()->id,
+            votes: $votes
         );
 
         return back()->with('success', 'Classification vote stored.');
+    }
+
+    /**
+     * The (type, criterion, code) cells the classification page offers a vote field for.
+     *
+     * @return array<string, true>
+     */
+    private function allowedVoteCells(int $substanceId): array
+    {
+        $selections = DerivationSelection::query()
+            ->with(['hazardsSubstanceData', 'user'])
+            ->where('susdat_substance_id', $substanceId)
+            ->where('is_current', true)
+            ->get();
+
+        $allowed = [];
+        foreach ($this->buildClassificationRows($selections, collect(), 0) as $row) {
+            foreach (['P', 'B', 'M', 'T'] as $criterion) {
+                $code = trim((string) ($row[$criterion]['classification'] ?? ''));
+                if ($code !== '') {
+                    $allowed[$row['type'].'|'.$criterion.'|'.$code] = true;
+                }
+            }
+        }
+
+        return $allowed;
     }
 
     private function buildClassificationRows(Collection $selections, Collection $currentUserVotes, int $currentUserId): array

@@ -11,6 +11,7 @@ use App\Models\Hazards\ComptoxSubstanceData;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Rebuilds the derived hazards data (hazards_comptox_substance_data and the automatic
@@ -49,7 +50,7 @@ class HazardsReseedService
     /**
      * @return array{
      *     inserted: int, updated: int, unchanged: int, withdrawn: int, restored: int,
-     *     deleted: int, kept_withdrawn: int, skipped_unresolved: int, substances_recomputed: int,
+     *     deleted: int, kept_withdrawn: int, skipped_unresolved: int, moved_to_other_substance: int, substances_recomputed: int,
      *     by_source: array<string, array<string, int>>
      * }
      */
@@ -98,6 +99,7 @@ class HazardsReseedService
             'deleted' => 0,
             'kept_withdrawn' => 0,
             'skipped_unresolved' => 0,
+            'moved_to_other_substance' => 0,
             'substances_recomputed' => 0,
         ];
 
@@ -378,6 +380,16 @@ class HazardsReseedService
                     continue;
                 }
 
+                if ($previousSubstanceId !== null && (int) $previousSubstanceId !== (int) $row->susdat_substance_id) {
+                    $this->totals['moved_to_other_substance']++;
+                    Log::warning('Hazards rebuild: source row now resolves to another substance', [
+                        'hazards_substance_data_id' => $row->id,
+                        'source_key' => $row->source_key,
+                        'previous_susdat_substance_id' => $previousSubstanceId,
+                        'susdat_substance_id' => $row->susdat_substance_id,
+                    ]);
+                }
+
                 $row->save();
                 $this->count($type, $wasWithdrawn ? 'restored' : 'updated');
                 $this->markAffected($row->susdat_substance_id);
@@ -444,7 +456,7 @@ class HazardsReseedService
     }
 
     /**
-     * @param  array<int, array{0: string, 1: string}>  $parts  row id => [entity, parameter or record id]
+     * @param  array<int, array{0: string, 1: string}>  $parts  row id => [entity, parameter or fate_id/property_id]
      * @return array<int, true> row ids whose source record still exists
      */
     private function presentSourceEntities(string $type, array $parts): array
@@ -467,11 +479,16 @@ class HazardsReseedService
         }
 
         $model = $type === 'fate' ? ComptoxFateRecord::class : ComptoxPropertyRecord::class;
-        $recordIds = array_values(array_unique(array_filter(array_column($parts, 1), 'is_numeric')));
-        $dtxidByRecord = $model::query()->whereIn('id', $recordIds)->pluck('dtxid', 'id')->all();
+        $naturalKey = $type === 'fate' ? 'fate_id' : 'property_id';
+        $existing = [];
+        foreach (array_chunk($entities, self::LOOKUP_BATCH) as $dtxids) {
+            foreach ($model::query()->whereIn('dtxid', $dtxids)->get(['dtxid', $naturalKey]) as $record) {
+                $existing[$record->dtxid.'|'.$record->{$naturalKey}] = true;
+            }
+        }
 
-        foreach ($parts as $rowId => [$dtxid, $recordId]) {
-            if (isset($dtxidByRecord[(int) $recordId]) && (string) $dtxidByRecord[(int) $recordId] === $dtxid) {
+        foreach ($parts as $rowId => [$dtxid, $naturalId]) {
+            if (isset($existing[$dtxid.'|'.$naturalId])) {
                 $present[$rowId] = true;
             }
         }

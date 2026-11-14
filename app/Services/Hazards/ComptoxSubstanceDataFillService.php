@@ -104,7 +104,7 @@ class ComptoxSubstanceDataFillService
         );
 
         return $this->entry(
-            sourceKey: 'fate:'.$record->dtxid.':'.$record->id,
+            sourceKey: 'fate:'.$record->dtxid.':'.$record->fate_id,
             dataDomain: $this->resolveDataDomain($record->endpoint_name, 'fate_transport'),
             attributes: $identity + [
                 'source_record_type' => 'fate',
@@ -158,7 +158,7 @@ class ComptoxSubstanceDataFillService
         );
 
         return $this->entry(
-            sourceKey: 'property:'.$record->dtxid.':'.$record->id,
+            sourceKey: 'property:'.$record->dtxid.':'.$record->property_id,
             dataDomain: $this->resolveDataDomain($record->name, 'physchem'),
             attributes: $identity + [
                 'source_record_type' => 'property',
@@ -196,7 +196,8 @@ class ComptoxSubstanceDataFillService
     }
 
     /**
-     * All Janus parameters of one hazards_janus row; the set of keys is fixed.
+     * Janus parameters of one hazards_janus row. Keys are fixed names; a parameter without
+     * any value is not produced, so a reseed withdraws a row whose values disappeared.
      *
      * @param  array<string, mixed>  $identity  See buildIdentity()
      * @return list<Entry>
@@ -206,6 +207,10 @@ class ComptoxSubstanceDataFillService
         $entries = [];
 
         foreach ($this->getJanusParameters($row) as $parameter) {
+            if ($this->isEmptyJanusParameter($parameter)) {
+                continue;
+            }
+
             $entries[] = $this->entry(
                 sourceKey: 'janus:'.$row->norman_id.':'.$parameter['key'],
                 dataDomain: 'physchem',
@@ -595,6 +600,20 @@ class ComptoxSubstanceDataFillService
             'Water Solubility' => 'water',
             default => null,
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $parameter  One entry of getJanusParameters()
+     */
+    private function isEmptyJanusParameter(array $parameter): bool
+    {
+        foreach (['original_value', 'assessment_value', 'score', 'reliability', 'assessment_class'] as $field) {
+            if (($parameter[$field] ?? null) !== null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function getJanusParameters(object $row): array
