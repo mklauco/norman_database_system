@@ -131,6 +131,7 @@ class HazardsClassificationController extends Controller
             'susdatSubstanceId' => $substanceId,
             'substance' => (object) [
                 'susdat_substance_id' => $substanceId,
+                'prefixed_code' => $substance?->prefixed_code,
                 'substance_name' => $substance?->display_name ?? $substance?->name,
                 'cas_no' => $substance?->formatted_cas,
                 'inchikey' => $substance?->stdinchikey,

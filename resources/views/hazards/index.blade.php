@@ -134,12 +134,12 @@
               <tbody id="hazards-detailed-table-body">
                 @foreach ($resultsObjects as $row)
                   <tr class="hazards-detailed-row @if ($loop->odd) bg-slate-100 @else bg-slate-200 @endif" data-domain="{{ $row->data_domain }}">
-                    <td class="p-1 text-center">{{ $row->id }}</td>
+                    <td class="p-1 text-center font-mono">{{ $row->id }}</td>
                     <td class="p-1">
                       <div class="font-medium">{{ $row->substance_name ?? ($row->substance->name ?? 'N/A') }}</div>
                       @if ($row->susdat_substance_id)
                         <div class="text-xs text-gray-500">
-                          <a class="link-lime-text" href="{{ route('substances.show', $row->susdat_substance_id) }}" target="_blank">NS substance</a>
+                          <a class="link-lime-text font-mono" href="{{ route('substances.show', $row->susdat_substance_id) }}" target="_blank">{{ $row->substance?->prefixed_code ?? 'SusDat record' }}</a>
                         </div>
                       @endif
                     </td>

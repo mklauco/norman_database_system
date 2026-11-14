@@ -158,7 +158,7 @@
         |
         CAS: {{ $substance->cas_no ?? 'N/A' }}
         |
-        NORMAN SusDat ID: {{ $selection->susdat_substance_id ? 'NS' . str_pad((string) $selection->susdat_substance_id, 8, '0', STR_PAD_LEFT) : 'N/A' }}
+        NORMAN SusDat ID: {{ $substance->prefixed_code ?? 'N/A' }}
         |
         {{ $substance->inchikey ?? 'N/A' }}
       </div>

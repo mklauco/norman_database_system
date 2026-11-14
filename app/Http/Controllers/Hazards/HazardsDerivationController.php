@@ -166,6 +166,7 @@ class HazardsDerivationController extends Controller
             'metadata' => $metadata,
             'withdrawn' => $row?->withdrawn_at !== null,
             'substance' => (object) [
+                'prefixed_code' => $substance?->prefixed_code,
                 'substance_name' => $substance?->display_name ?? $substance?->name ?? $metadata->substance_name ?? $row?->substance_name,
                 'cas_no' => $substance?->formatted_cas ?? $metadata->cas_number ?? $row?->cas_no,
                 'inchikey' => $substance?->stdinchikey ?? $row?->inchikey,

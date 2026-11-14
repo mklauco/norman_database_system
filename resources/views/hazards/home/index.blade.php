@@ -17,14 +17,14 @@
 
           <p class="text-gray-700 leading-relaxed mb-4">
             Search and review of Hazards records is available under <span class="font-semibold">Search Data</span>.
-            The derivation workspace for P, B, M, and T buckets is available under <span class="font-semibold">Derivation</span> for admin users.
+            Expert votes for the P, B, M and T criteria are recorded under <span class="font-semibold">Derivation</span> and <span class="font-semibold">Classification</span>.
           </p>
 
           <h2 class="text-lg font-bold text-gray-800 mb-2">Current status</h2>
           <ul class="list-disc list-inside text-gray-700">
-            <li>Hazards API fetch, parse, and fill pipeline is available.</li>
+            <li>Experimental module, under expert review; not public.</li>
             <li>JANUS and PIKME data are included in Hazards substance data.</li>
-            <li>Derivation buckets are available through the Hazards navigation.</li>
+            <li>CompTox data are not loaded yet.</li>
           </ul>
         </div>
       </div>

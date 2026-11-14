@@ -171,6 +171,7 @@ class HazardsDerivationService
         return [
             'substance' => (object) [
                 'susdat_substance_id' => $substanceId,
+                'prefixed_code' => $substance?->prefixed_code,
                 'substance_name' => $substance?->display_name ?? $substance?->name ?? $firstRow?->substance_name,
                 'cas_no' => $substance?->formatted_cas ?? $firstRow?->cas_no,
                 'inchikey' => $substance?->stdinchikey ?? $firstRow?->inchikey,
