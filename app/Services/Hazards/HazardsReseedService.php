@@ -363,6 +363,7 @@ class HazardsReseedService
                     unset($attributes['date']);
                 }
 
+                $attributes = $this->withoutEquivalentFloats($row, $attributes);
                 $previousSubstanceId = $row->susdat_substance_id;
                 $wasWithdrawn = $row->withdrawn_at !== null;
 
@@ -540,6 +541,37 @@ class HazardsReseedService
             });
 
         $this->totals['kept_withdrawn'] = $kept;
+    }
+
+    /**
+     * Drops float attributes that equal the stored value within a relative tolerance.
+     *
+     * Floats reach PostgreSQL with PHP's 14-digit precision, so a freshly computed value
+     * (for example pow(10, x)) never compares exactly equal to what was stored; without
+     * this every rebuild would rewrite those rows.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    private function withoutEquivalentFloats(ComptoxSubstanceData $row, array $attributes): array
+    {
+        foreach ($attributes as $column => $value) {
+            if (! is_float($value)) {
+                continue;
+            }
+
+            $stored = $row->getAttribute($column);
+            if (! is_numeric($stored)) {
+                continue;
+            }
+
+            $stored = (float) $stored;
+            if (abs($value - $stored) <= 1e-12 * max(1.0, abs($value), abs($stored))) {
+                unset($attributes[$column]);
+            }
+        }
+
+        return $attributes;
     }
 
     private function count(string $type, string $key, int $by = 1): void
