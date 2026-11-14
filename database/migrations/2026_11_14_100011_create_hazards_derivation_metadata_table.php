@@ -19,63 +19,63 @@ return new class extends Migration
             $table->unsignedBigInteger('hazards_substance_data_id')->index();
             $table->unsignedBigInteger('user_id')->nullable()->index();
 
-            $table->string('data_source')->nullable();
-            $table->string('editor')->nullable();
+            $table->text('data_source')->nullable();
+            $table->text('editor')->nullable();
             $table->dateTime('record_date')->nullable();
 
-            $table->string('reference_type')->nullable();
+            $table->text('reference_type')->nullable();
             $table->text('title')->nullable();
             $table->text('authors')->nullable();
             $table->smallInteger('year')->nullable();
             $table->text('bibliographic_source')->nullable();
-            $table->string('hazards_file_doi')->nullable();
+            $table->text('hazards_file_doi')->nullable();
 
-            $table->string('test_type')->nullable();
-            $table->string('performed_under_glp')->nullable();
-            $table->string('standard_test')->nullable();
+            $table->text('test_type')->nullable();
+            $table->text('performed_under_glp')->nullable();
+            $table->text('standard_test')->nullable();
 
-            $table->string('substance_name')->nullable();
-            $table->string('cas_number')->nullable();
-            $table->string('radio_labeled_substance')->nullable();
+            $table->text('substance_name')->nullable();
+            $table->text('cas_number')->nullable();
+            $table->text('radio_labeled_substance')->nullable();
 
-            $table->string('standard_qualifier')->nullable();
-            $table->string('standard_used')->nullable();
-            $table->string('test_matrix')->nullable();
-            $table->string('test_species')->nullable();
+            $table->text('standard_qualifier')->nullable();
+            $table->text('standard_used')->nullable();
+            $table->text('test_matrix')->nullable();
+            $table->text('test_species')->nullable();
             $table->double('duration_days')->nullable();
             $table->double('exposure_concentration')->nullable();
             $table->double('ph')->nullable();
             $table->double('temperature_c')->nullable();
             $table->double('total_organic_carbon')->nullable();
 
-            $table->string('original_parameter_name')->nullable();
-            $table->string('original_qualifier')->nullable();
+            $table->text('original_parameter_name')->nullable();
+            $table->text('original_qualifier')->nullable();
             $table->double('original_value')->nullable();
-            $table->string('original_value_range')->nullable();
-            $table->string('original_unit')->nullable();
+            $table->text('original_value_range')->nullable();
+            $table->text('original_unit')->nullable();
 
-            $table->string('assessment_parameter_name')->nullable();
-            $table->string('assessment_qualifier')->nullable();
+            $table->text('assessment_parameter_name')->nullable();
+            $table->text('assessment_qualifier')->nullable();
             $table->double('assessment_value')->nullable();
-            $table->string('assessment_unit')->nullable();
+            $table->text('assessment_unit')->nullable();
 
             $table->string('hazard_criterion', 10)->nullable();
-            $table->string('original_classification')->nullable();
+            $table->text('original_classification')->nullable();
             $table->double('classification_score')->nullable();
 
             $table->text('general_comment')->nullable();
             $table->text('applicability_domain')->nullable();
             $table->double('applicability_domain_score')->nullable();
             $table->double('reliability_score')->nullable();
-            $table->string('reliability_score_system')->nullable();
+            $table->text('reliability_score_system')->nullable();
             $table->text('reliability_rational')->nullable();
-            $table->string('institution_of_reliability_score')->nullable();
-            $table->string('regulatory_context')->nullable();
-            $table->string('institution_original_classification')->nullable();
+            $table->text('institution_of_reliability_score')->nullable();
+            $table->text('regulatory_context')->nullable();
+            $table->text('institution_original_classification')->nullable();
 
-            $table->string('norman_classification')->nullable();
+            $table->text('norman_classification')->nullable();
             $table->tinyInteger('norman_vote')->nullable();
-            $table->string('automated_expert_vote')->nullable();
+            $table->text('automated_expert_vote')->nullable();
 
             $table->timestamps();
 

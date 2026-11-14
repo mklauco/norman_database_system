@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('date')->nullable();
             $table->string('reference_type')->nullable();
             $table->text('title')->nullable();
-            $table->string('authors')->nullable();
+            $table->text('authors')->nullable();
             $table->string('year')->nullable();
             $table->text('bibliographic_source')->nullable();
             $table->string('physico_chemical_source_doi')->nullable();
@@ -40,9 +40,9 @@ return new class extends Migration
 
             $table->unsignedBigInteger('susdat_substance_id')->nullable()->index();
             $table->string('dtxid', 64)->nullable()->index();
-            $table->string('substance_name')->nullable();
-            $table->string('cas_no')->nullable();
-            $table->string('inchikey')->nullable();
+            $table->text('substance_name')->nullable();
+            $table->text('cas_no')->nullable();
+            $table->text('inchikey')->nullable();
             $table->text('smiles')->nullable();
 
             $table->boolean('radio_labeled_substance')->nullable();
