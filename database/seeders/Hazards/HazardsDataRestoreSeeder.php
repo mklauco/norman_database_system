@@ -38,6 +38,10 @@ class HazardsDataRestoreSeeder extends Seeder
 
     public function run(): void
     {
+        if (class_exists(\Laravel\Telescope\Telescope::class)) {
+            \Laravel\Telescope\Telescope::stopRecording();
+        }
+
         if (! $this->command->confirm('Empty ALL '.count(self::TABLES).' hazards tables, including expert votes? This cannot be undone.', false)) {
             $this->command->info('Cancelled, nothing changed.');
 

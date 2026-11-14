@@ -21,6 +21,10 @@ class HazardsSetupRestoreSeeder extends Seeder
 {
     public function run(): void
     {
+        if (class_exists(\Laravel\Telescope\Telescope::class)) {
+            \Laravel\Telescope\Telescope::stopRecording();
+        }
+
         DB::transaction(function (): void {
             $roles = Role::query()->where('name', 'hazards')->where('guard_name', 'web')->delete();
             $entities = DB::table('database_entities')->where('code', 'hazards')->delete();

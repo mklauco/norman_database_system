@@ -25,6 +25,10 @@ class HazardsSetupSeeder extends Seeder
 {
     public function run(): void
     {
+        if (class_exists(\Laravel\Telescope\Telescope::class)) {
+            \Laravel\Telescope\Telescope::stopRecording();
+        }
+
         DB::transaction(function (): void {
             $role = Role::firstOrCreate(['name' => 'hazards', 'guard_name' => 'web']);
             $this->command->info($role->wasRecentlyCreated ? "Role 'hazards' created." : "Role 'hazards' already exists.");
