@@ -39,7 +39,7 @@
           </a>
 
           <div class="text-gray-600 flex border-l-2 border-white">
-            <div class="flex flex-wrap items-center bg-gray-50 p-3 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex flex-wrap items-center bg-gray-50 p-3 rounded-lg shadow-xs border border-gray-200">
               <div class="flex items-center mr-4">
                 <span class="text-gray-700">Number of matched records:</span>
                 <span class="font-bold text-lg ml-2 text-sky-700">{{ number_format($resultsObjects->total(), 0, '.', ' ') }}</span>

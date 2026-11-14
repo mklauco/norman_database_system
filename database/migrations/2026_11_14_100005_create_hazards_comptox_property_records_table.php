@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('comptox_payload_id')->nullable()->index();
             $table->unsignedBigInteger('susdat_substance_id')->nullable()->index();
 
-            // Core ARB_ARG-equivalent fields.
             $table->string('property_id', 128);
             $table->string('dtxid', 64)->index();
             $table->string('name');
@@ -27,7 +26,6 @@ return new class extends Migration
             $table->string('source')->nullable();
             $table->string('property_string_id')->nullable();
 
-            // Extra safety/debug context.
             $table->json('source_json')->nullable();
 
             $table->timestamps();
@@ -45,7 +43,8 @@ return new class extends Migration
             $table->foreign('susdat_substance_id')
                 ->references('id')
                 ->on('susdat_substances')
-                ->nullOnDelete();
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
         });
     }
 
@@ -57,4 +56,3 @@ return new class extends Migration
         Schema::dropIfExists('hazards_comptox_property_records');
     }
 };
-

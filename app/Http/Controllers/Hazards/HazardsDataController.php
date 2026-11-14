@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Hazards;
 
 use App\Http\Controllers\Controller;
@@ -9,9 +11,16 @@ use App\Models\Susdat\Substance;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class HazardsDataController extends Controller
 {
+    private const MAX_SELECTED_SUBSTANCES = 50;
+
+    private const MAX_SUMMARY_ROWS = 5000;
+
+    private const FILTER_CACHE_SECONDS = 600;
+
     private const WANTED_FATE_ENDPOINTS = [
         'ReadyBiodeg',
         'Biodeg. Half-Life',
@@ -61,29 +70,32 @@ class HazardsDataController extends Controller
 
     public function filter(Request $request)
     {
-        $dataDomains = ComptoxSubstanceData::query()
+        $dataDomains = Cache::remember('hazards.filter.data_domain', self::FILTER_CACHE_SECONDS, static fn () => ComptoxSubstanceData::query()
+            ->active()
             ->whereNotNull('data_domain')
             ->where('data_domain', '!=', '')
             ->select('data_domain')
             ->distinct()
             ->orderBy('data_domain')
-            ->pluck('data_domain');
+            ->pluck('data_domain'));
 
-        $referenceTypes = ComptoxSubstanceData::query()
+        $referenceTypes = Cache::remember('hazards.filter.reference_type', self::FILTER_CACHE_SECONDS, static fn () => ComptoxSubstanceData::query()
+            ->active()
             ->whereNotNull('reference_type')
             ->where('reference_type', '!=', '')
             ->select('reference_type')
             ->distinct()
             ->orderBy('reference_type')
-            ->pluck('reference_type');
+            ->pluck('reference_type'));
 
-        $availableAssessmentClasses = ComptoxSubstanceData::query()
+        $availableAssessmentClasses = Cache::remember('hazards.filter.assessment_class', self::FILTER_CACHE_SECONDS, static fn () => ComptoxSubstanceData::query()
+            ->active()
             ->whereNotNull('assessment_class')
             ->where('assessment_class', '!=', '')
             ->select('assessment_class')
             ->distinct()
             ->orderBy('assessment_class')
-            ->pluck('assessment_class');
+            ->pluck('assessment_class'));
 
         $assessmentClasses = collect(self::PBMT_ASSESSMENT_CLASSES)
             ->filter(static fn (string $assessmentClass) => $availableAssessmentClasses->contains($assessmentClass))
@@ -115,17 +127,27 @@ class HazardsDataController extends Controller
         ];
 
         $resultsQuery = ComptoxSubstanceData::query()
+            ->active()
             ->with(['substance', 'editorUser']);
 
-        $substances = $this->normalizeArrayInput($request->input('substances'));
+        $substances = array_slice(
+            array_values(array_filter(
+                $this->normalizeArrayInput($request->input('substances')),
+                static fn ($id) => is_numeric($id)
+            )),
+            0,
+            self::MAX_SELECTED_SUBSTANCES
+        );
         if (! empty($substances)) {
             $resultsQuery->whereIn('susdat_substance_id', $substances);
             $selectedSubstances = Substance::whereIn('id', $substances)
                 ->orderBy('name')
+                ->limit(self::MAX_SELECTED_SUBSTANCES)
                 ->get();
             $searchParameters['substances'] = $selectedSubstances->pluck('name');
         } else {
             session()->flash('info', 'Please select at least one substance to search.');
+
             return redirect()->route('hazards.data.search.filter');
         }
 
@@ -139,6 +161,7 @@ class HazardsDataController extends Controller
                 if ($domain === 'physchem') {
                     return 'Phys-Chemical';
                 }
+
                 return ucwords(str_replace('_', ' ', (string) $domain));
             }, $dataDomains);
         }
@@ -186,7 +209,7 @@ class HazardsDataController extends Controller
 
         $mainRequest = $request->all();
         $databaseKey = 'hazards';
-        $resultsObjectsCount = ComptoxSubstanceData::count();
+        $resultsObjectsCount = ComptoxSubstanceData::query()->active()->count();
         $filteredRecordsCount = (clone $resultsQuery)->count();
         $queryLogId = QueryLog::query()->latest('id')->value('id') ?? 0;
 
@@ -273,6 +296,7 @@ class HazardsDataController extends Controller
             ->orderBy('susdat_substance_id')
             ->orderBy('data_domain')
             ->orderBy('norman_parameter_name')
+            ->limit(self::MAX_SUMMARY_ROWS)
             ->get();
 
         $filteredRecordsCount = (clone $summaryScopeQuery)->count();
@@ -602,6 +626,7 @@ class HazardsDataController extends Controller
     private function summaryTotalCount(): int
     {
         return ComptoxSubstanceData::query()
+            ->active()
             ->where(function (Builder $builder) {
                 $builder
                     ->where(function (Builder $inner) {

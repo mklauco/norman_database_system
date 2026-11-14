@@ -27,11 +27,16 @@ return new class extends Migration
 
             $table->timestamps();
 
+            $table->foreign('api_run_id')
+                ->references('id')
+                ->on('hazards_api_runs')
+                ->nullOnDelete();
+
             $table->foreign('susdat_substance_id')
                 ->references('id')
                 ->on('susdat_substances')
-                ->nullOnDelete();
-
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
         });
     }
 

@@ -251,6 +251,27 @@ class SystemSettingsController extends Controller
                 ],
             ],
             [
+                'database' => 'Hazards',
+                'operations' => [
+                    [
+                        'label' => 'Rebuild hazards derived data',
+                        'description' => 'Rebuild the derived hazards substance data from the Janus, PIKME and CompTox source tables.',
+                        'touches' => 'hazards_* tables only',
+                        'route' => 'hazards.substance_data.fill',
+                        'method' => 'POST',
+                        'warning' => 'Can run for several minutes on the full data set.',
+                    ],
+                    [
+                        'label' => 'Recount Hazards',
+                        'description' => 'Recount the records shown for the Hazards module.',
+                        'touches' => 'database entity count for Hazards',
+                        'route' => 'hazards.countAll',
+                        'method' => 'GET',
+                        'warning' => null,
+                    ],
+                ],
+            ],
+            [
                 'database' => 'Factsheets',
                 'operations' => [
                     [

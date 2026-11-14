@@ -1,24 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Hazards;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hazards\ComptoxSubstanceData;
 use App\Models\Hazards\DerivationSelection;
+use App\Models\Susdat\Substance;
 use App\Services\Hazards\HazardsClassificationService;
 use App\Services\Hazards\HazardsDerivationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Models\Susdat\Substance;
+use Illuminate\Validation\Rule;
 
 class HazardsDerivationController extends Controller
 {
     public function __construct(
         private readonly HazardsDerivationService $derivationService,
         private readonly HazardsClassificationService $classificationService
-    ) {
-    }
+    ) {}
 
     public function filter(Request $request)
     {
@@ -66,7 +68,6 @@ class HazardsDerivationController extends Controller
     {
         $substanceId = (int) $susdatSubstanceId;
 
-        $this->classificationService->run($substanceId);
         $data = $this->derivationService->getDerivationPageData(
             $substanceId,
             (int) ($request->user()?->id ?? 0)
@@ -87,8 +88,19 @@ class HazardsDerivationController extends Controller
         $data = $request->validate([
             'susdat_substance_id' => ['required', 'integer', 'exists:susdat_substances,id'],
             'bucket' => ['required', 'string', 'max:12'],
-            'hazards_substance_data_id' => ['required', 'integer', 'exists:hazards_comptox_substance_data,id'],
+            'hazards_substance_data_id' => [
+                'required',
+                'integer',
+                Rule::exists('hazards_comptox_substance_data', 'id')->whereNull('withdrawn_at'),
+            ],
+        ], [
+            'hazards_substance_data_id.exists' => 'This record was withdrawn from the source and can no longer be voted for.',
         ]);
+
+        $dataRow = ComptoxSubstanceData::query()->find((int) $data['hazards_substance_data_id']);
+        if (! $dataRow || (int) $dataRow->susdat_substance_id !== (int) $data['susdat_substance_id']) {
+            return back()->with('error', 'The selected record does not belong to this substance.');
+        }
 
         $selection = $this->derivationService->storeVote(
             susdatSubstanceId: (int) $data['susdat_substance_id'],
@@ -99,10 +111,7 @@ class HazardsDerivationController extends Controller
             userName: null
         );
 
-        $this->classificationService->syncDerivationSnapshot(
-            (int) $selection->susdat_substance_id,
-            (int) ($request->user()?->id ?? 0)
-        );
+        $this->classificationService->run((int) $selection->susdat_substance_id);
 
         return back()->with('success', 'Derivation vote stored.');
     }
@@ -113,16 +122,15 @@ class HazardsDerivationController extends Controller
             'selection_id' => ['required', 'integer', 'exists:hazards_derivation_selections,id'],
         ]);
 
+        $user = $request->user();
         $selection = DerivationSelection::find((int) $data['selection_id']);
         $this->derivationService->removeVote(
-            (int) $data['selection_id']
+            (int) $data['selection_id'],
+            $user->hasAnyRole(['super_admin', 'admin']) ? null : (int) $user->id
         );
 
         if ($selection) {
-            $this->classificationService->syncDerivationSnapshot(
-                (int) $selection->susdat_substance_id,
-                (int) ($request->user()?->id ?? 0)
-            );
+            $this->classificationService->run((int) $selection->susdat_substance_id);
         }
 
         return back()->with('success', 'Derivation vote removed.');
@@ -156,6 +164,7 @@ class HazardsDerivationController extends Controller
         return view('hazards.derivation.metadata', [
             'selection' => $selection,
             'metadata' => $metadata,
+            'withdrawn' => $row?->withdrawn_at !== null,
             'substance' => (object) [
                 'substance_name' => $substance?->display_name ?? $substance?->name ?? $metadata->substance_name ?? $row?->substance_name,
                 'cas_no' => $substance?->formatted_cas ?? $metadata->cas_number ?? $row?->cas_no,

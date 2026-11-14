@@ -85,18 +85,16 @@ return new class extends Migration
                 ->references('id')
                 ->on('hazards_derivation_selections')
                 ->nullOnDelete();
-
             $table->foreign('susdat_substance_id')
                 ->references('id')
                 ->on('susdat_substances')
-                ->nullOnDelete();
-
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->foreign('hazards_substance_data_id')
                 ->references('id')
                 ->on('hazards_comptox_substance_data')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')

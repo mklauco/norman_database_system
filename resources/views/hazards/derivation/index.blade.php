@@ -160,11 +160,18 @@
                               @php
                                 $activeVotesForRow = $bucketActiveVotesByRow->get($row['hazards_substance_data_id'], collect());
                               @endphp
-                              <tr class="@if ($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
+                              <tr class="@if (! empty($row['withdrawn'])) bg-amber-100 @elseif ($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
                                 <td class="p-1 text-center">
                                   <a href="{{ route('hazards.data.form', $row['hazards_substance_data_id']) }}" class="link-lime-text" target="_blank">
                                     {{ $row['hazards_substance_data_id'] }}
                                   </a>
+                                  @if (! empty($row['withdrawn']))
+                                    <div class="mt-1">
+                                      <span class="inline-flex items-center px-2 py-0.5 bg-amber-200 text-amber-900 text-xs font-medium rounded-full" title="This record is no longer produced by the source data. Existing votes are kept.">
+                                        Withdrawn from source
+                                      </span>
+                                    </div>
+                                  @endif
                                 </td>
                                 <td class="p-1 text-center">{{ $row['data_source'] }}</td>
                                 <td class="p-1 text-center">{{ $row['test_type'] }}</td>
@@ -185,18 +192,22 @@
                                         <div class="flex flex-col items-center gap-1">
                                           @foreach ($activeVotesForRow as $activeVote)
                                             <div class="flex items-center gap-1 flex-wrap justify-center">
-                                              <form method="POST" action="{{ route('hazards.derivation.vote.remove') }}">
-                                                @csrf
-                                                <input type="hidden" name="selection_id" value="{{ $activeVote['selection_id'] }}">
-                                                <button type="submit" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded">Remove vote</button>
-                                              </form>
+                                              @if (auth()->user()?->hasAnyRole(['super_admin', 'admin']) || ($activeVote['user_id'] ?? null) === auth()->id())
+                                                <form method="POST" action="{{ route('hazards.derivation.vote.remove') }}">
+                                                  @csrf
+                                                  <input type="hidden" name="selection_id" value="{{ $activeVote['selection_id'] }}">
+                                                  <button type="submit" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-sm">Remove vote</button>
+                                                </form>
+                                              @else
+                                                <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600">Voted by {{ $activeVote['expert'] ?? 'another expert' }}</span>
+                                              @endif
                                             </div>
                                           @endforeach
                                         </div>
-                                      @else
+                                      @elseif (empty($row['withdrawn']))
                                         <button
                                           type="button"
-                                          class="text-xs px-2 py-1 bg-lime-100 text-lime-800 rounded"
+                                          class="text-xs px-2 py-1 bg-lime-100 text-lime-800 rounded-sm"
                                           data-susdat-substance-id="{{ $susdatSubstanceId }}"
                                           data-bucket="{{ $bucket }}"
                                           data-hazard-criterion="{{ $criterion }}"
@@ -283,7 +294,7 @@
                             @endif
 
                             @forelse ($bucketVotes as $vote)
-                              <tr class="@if ($vote['active']) bg-green-50 @elseif ($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
+                              <tr class="@if (! empty($vote['withdrawn'])) bg-amber-100 @elseif ($vote['active']) bg-green-50 @elseif ($loop->odd) bg-slate-100 @else bg-slate-200 @endif">
                                 <td class="p-1 text-center">
                                   <a href="{{ route('hazards.derivation.metadata.show', $vote['selection_id']) }}" class="link-lime-text" target="_blank">
                                     {{ $vote['selection_id'] }}
@@ -299,6 +310,13 @@
                                 <td class="p-1 text-center">{{ $vote['assessment_class'] }}</td>
                                 <td class="p-1 text-center">
                                   <div>{{ $vote['classification_type'] }}</div>
+                                  @if (! empty($vote['withdrawn']))
+                                    <div class="mt-1">
+                                      <span class="inline-flex items-center px-2 py-0.5 bg-amber-200 text-amber-900 text-xs font-medium rounded-full" title="The source record of this vote is no longer produced by the source data.">
+                                        Withdrawn from source
+                                      </span>
+                                    </div>
+                                  @endif
                                   @if ($vote['active'])
                                     <div class="mt-1">
                                       <span class="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
@@ -330,7 +348,7 @@
         </div>
       </div>
       <div id="hazards-vote-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="fixed inset-0 bg-gray-800 bg-opacity-50" onclick="closeHazardsVoteModal()"></div>
+        <div class="fixed inset-0 bg-gray-800/50" onclick="closeHazardsVoteModal()"></div>
         <div class="relative min-h-full px-4 py-6">
           <div class="bg-white w-full md:w-3/4 lg:w-2/3 max-w-4xl rounded-lg shadow-xl mx-auto overflow-hidden">
             <div class="flex justify-between items-center border-b px-4 py-3 bg-stone-600 text-white">

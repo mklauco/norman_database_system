@@ -12,7 +12,7 @@
           </a>
 
           <div class="text-gray-600 flex border-l-2 border-white">
-            <div class="flex flex-wrap items-center bg-gray-50 p-3 rounded-lg shadow-sm border border-gray-200">
+            <div class="flex flex-wrap items-center bg-gray-50 p-3 rounded-lg shadow-xs border border-gray-200">
               <div class="flex items-center mr-4">
                 <span class="text-gray-700">Number of matched records:</span>
                 <span class="font-bold text-lg ml-2 text-sky-700">{{ number_format($filteredRecordsCount, 0, '.', ' ') }}</span>
@@ -36,7 +36,7 @@
           </div>
 
           @if ($otherTestTypeRowsCount > 0)
-            <div class="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+            <div class="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-sm p-2">
               {{ number_format($otherTestTypeRowsCount, 0, '.', ' ') }} rows with non-standard test type were excluded from Exp/Pred summary.
             </div>
           @endif
@@ -101,7 +101,7 @@
               @php
                 $substance = $substanceData['substance'] ?? null;
               @endphp
-              <div class="mt-6 border border-gray-200 rounded-lg shadow-sm p-4">
+              <div class="mt-6 border border-gray-200 rounded-lg shadow-xs p-4">
                 <div class="mb-3">
                   <h2 class="text-lg font-semibold text-gray-900">
                     {{ $substance?->display_name ?? $substance?->name ?? ('Substance #'.$substanceData['substance_id']) }}

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use App\Models\Susdat\Substance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DerivationMetadata extends Model
 {
@@ -86,22 +89,22 @@ class DerivationMetadata extends Model
         'record_date' => 'datetime',
     ];
 
-    public function selection()
+    public function selection(): BelongsTo
     {
         return $this->belongsTo(DerivationSelection::class, 'selection_id');
     }
 
-    public function substance()
+    public function substance(): BelongsTo
     {
         return $this->belongsTo(Substance::class, 'susdat_substance_id');
     }
 
-    public function hazardsSubstanceData()
+    public function hazardsSubstanceData(): BelongsTo
     {
         return $this->belongsTo(ComptoxSubstanceData::class, 'hazards_substance_data_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use App\Models\Susdat\Substance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ClassificationSupport extends Model
 {
@@ -34,27 +37,27 @@ class ClassificationSupport extends Model
         'is_winner' => 'boolean',
     ];
 
-    public function classification()
+    public function classification(): BelongsTo
     {
         return $this->belongsTo(SubstanceClassification::class, 'substance_classification_id');
     }
 
-    public function substance()
+    public function substance(): BelongsTo
     {
         return $this->belongsTo(Substance::class, 'susdat_substance_id');
     }
 
-    public function originUser()
+    public function originUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'origin_user_id');
     }
 
-    public function derivationSelection()
+    public function derivationSelection(): BelongsTo
     {
         return $this->belongsTo(DerivationSelection::class, 'derivation_selection_id');
     }
 
-    public function classificationVote()
+    public function classificationVote(): BelongsTo
     {
         return $this->belongsTo(ClassificationVote::class, 'classification_vote_id');
     }

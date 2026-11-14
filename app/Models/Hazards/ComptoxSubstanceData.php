@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use App\Models\Susdat\Substance;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ComptoxSubstanceData extends Model
 {
@@ -16,6 +20,8 @@ class ComptoxSubstanceData extends Model
         'source_record_type',
         'source_record_id',
         'data_domain',
+        'source_key',
+        'withdrawn_at',
         'data_source',
         'editor',
         'date',
@@ -86,26 +92,48 @@ class ComptoxSubstanceData extends Model
         'value_standardised_score' => 'float',
         'applicability_domain_score' => 'float',
         'reliability_score' => 'float',
+        'withdrawn_at' => 'datetime',
     ];
 
-    public function parseRun()
+    public function parseRun(): BelongsTo
     {
         return $this->belongsTo(ParseRun::class, 'parse_run_id');
     }
 
-    public function payload()
+    public function payload(): BelongsTo
     {
         return $this->belongsTo(ComptoxPayload::class, 'comptox_payload_id');
     }
 
-    public function substance()
+    public function substance(): BelongsTo
     {
         return $this->belongsTo(Substance::class, 'susdat_substance_id');
     }
 
-    public function editorUser()
+    public function editorUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'editor');
     }
-}
 
+    /**
+     * Rows whose source value is still produced by the rebuild.
+     *
+     * @param  Builder<ComptoxSubstanceData>  $query
+     * @return Builder<ComptoxSubstanceData>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNull($this->qualifyColumn('withdrawn_at'));
+    }
+
+    /**
+     * Rows whose source value is no longer produced by the rebuild.
+     *
+     * @param  Builder<ComptoxSubstanceData>  $query
+     * @return Builder<ComptoxSubstanceData>
+     */
+    public function scopeWithdrawn(Builder $query): Builder
+    {
+        return $query->whereNotNull($this->qualifyColumn('withdrawn_at'));
+    }
+}

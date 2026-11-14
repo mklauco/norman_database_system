@@ -143,15 +143,15 @@
         ->filter(static fn ($rows) => count($rows) > 0);
     @endphp
 
-    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
       <h1 class="text-2xl font-bold text-gray-900 mb-4">Hazards Record Details</h1>
 
       <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
         @if ($domainLabel)
-          <span class="px-2 py-1 rounded bg-blue-100 text-blue-800">{{ $domainLabel }}</span>
+          <span class="px-2 py-1 rounded-sm bg-sky-100 text-sky-800">{{ $domainLabel }}</span>
         @endif
         @if ($resultTypeLabel)
-          <span class="px-2 py-1 rounded bg-emerald-100 text-emerald-800">{{ $resultTypeLabel }}</span>
+          <span class="px-2 py-1 rounded-sm bg-emerald-100 text-emerald-800">{{ $resultTypeLabel }}</span>
         @endif
       </div>
 

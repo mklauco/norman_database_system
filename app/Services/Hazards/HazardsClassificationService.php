@@ -12,14 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class HazardsClassificationService
 {
-    private const AUTO_USER_ID = 3;
-
     private const CRITERIA = ['P', 'B', 'M', 'T'];
 
     public function __construct(
         private readonly HazardsDerivationService $derivationService
-    ) {
-    }
+    ) {}
 
     public function run(int|string $susdatSubstanceId): void
     {
@@ -33,10 +30,47 @@ class HazardsClassificationService
         $this->syncDerivationSnapshot($substanceId);
     }
 
-    public function syncDerivationSnapshot(int|string $susdatSubstanceId, ?int $actorUserId = null): ?SubstanceClassification
+    /**
+     * Recomputes the automatic selections, the auto baseline and the derivation conclusion
+     * of many substances. Candidate rows and current autos are loaded once per call; every
+     * substance is written in its own short transaction.
+     *
+     * @param  list<int>  $substanceIds
+     */
+    public function runMany(array $substanceIds): int
+    {
+        $substanceIds = array_values(array_unique(array_filter(array_map('intval', $substanceIds), static fn (int $id): bool => $id > 0)));
+        if ($substanceIds === []) {
+            return 0;
+        }
+
+        $rowsBySubstance = $this->derivationService->loadCandidateRowsForMany($substanceIds);
+        $autosBySubstance = DerivationSelection::query()
+            ->with('hazardsSubstanceData')
+            ->whereIn('susdat_substance_id', $substanceIds)
+            ->where('kind', 'auto')
+            ->where('is_current', true)
+            ->get()
+            ->groupBy('susdat_substance_id');
+
+        foreach ($substanceIds as $substanceId) {
+            DB::transaction(function () use ($substanceId, $rowsBySubstance, $autosBySubstance): void {
+                $this->derivationService->runAutoSelections(
+                    $substanceId,
+                    $rowsBySubstance->get($substanceId, collect()),
+                    $autosBySubstance->get($substanceId, collect())
+                );
+                $this->syncAutoBaseline($substanceId);
+                $this->syncDerivationSnapshot($substanceId);
+            });
+        }
+
+        return count($substanceIds);
+    }
+
+    public function syncDerivationSnapshot(int|string $susdatSubstanceId): ?SubstanceClassification
     {
         $substanceId = (int) $susdatSubstanceId;
-        $actorUserId = $actorUserId !== null ? (int) $actorUserId : null;
 
         if ($substanceId <= 0) {
             return null;
@@ -81,8 +115,6 @@ class HazardsClassificationService
             && $this->snapshotMatches($current, $payload)
             && $this->supportsMatch($current, $supports)
         ) {
-            $current->touch();
-
             return $current;
         }
 
@@ -92,12 +124,9 @@ class HazardsClassificationService
             ->where('is_current', true)
             ->update(['is_current' => false]);
 
-        $editorUserId = $actorUserId
-            ?: ((int) ($votes->sortByDesc('updated_at')->first()?->user_id ?? 0) ?: null);
-
         $row = SubstanceClassification::create($payload + [
             'susdat_substance_id' => $substanceId,
-            'editor_user_id' => $editorUserId,
+            'editor_user_id' => null,
             'kind' => 'derivation',
             'is_current' => true,
         ]);
@@ -120,36 +149,43 @@ class HazardsClassificationService
             ->where('is_current', true)
             ->get();
 
+        $current = SubstanceClassification::query()
+            ->with('supports')
+            ->where('susdat_substance_id', $substanceId)
+            ->whereNull('editor_user_id')
+            ->where('kind', 'auto_baseline')
+            ->where('is_current', true)
+            ->latest('id')
+            ->first();
+
         if ($autos->isEmpty()) {
+            if ($current) {
+                $current->update(['is_current' => false]);
+            }
+
             return null;
         }
 
         $payload = $this->buildDerivationConclusionPayload($autos, collect());
         $supports = $this->buildDerivationSupportRows($autos, collect(), $payload);
 
-        return DB::transaction(function () use ($substanceId, $payload, $supports) {
-            $row = SubstanceClassification::firstOrNew([
+        if (
+            $current
+            && $this->snapshotMatches($current, $payload)
+            && $this->supportsMatch($current, $supports)
+        ) {
+            return $current;
+        }
+
+        return DB::transaction(function () use ($current, $substanceId, $payload, $supports) {
+            $row = $current ?? new SubstanceClassification([
                 'susdat_substance_id' => $substanceId,
-                'editor_user_id' => self::AUTO_USER_ID,
+                'editor_user_id' => null,
                 'kind' => 'auto_baseline',
             ]);
 
-            $row->fill($payload + [
-                'is_current' => true,
-            ]);
+            $row->fill($payload + ['is_current' => true]);
             $row->save();
-
-            if (! $row->wasRecentlyCreated && ! $row->wasChanged()) {
-                $row->touch();
-            }
-
-            SubstanceClassification::query()
-                ->where('susdat_substance_id', $substanceId)
-                ->where('editor_user_id', self::AUTO_USER_ID)
-                ->where('kind', 'auto_baseline')
-                ->where('id', '!=', $row->id)
-                ->where('is_current', true)
-                ->update(['is_current' => false]);
 
             $this->syncSupports($row, $supports);
 
@@ -233,7 +269,7 @@ class HazardsClassificationService
                     continue;
                 }
 
-                $touchedPairs[] = $classificationType . '|' . $criterion;
+                $touchedPairs[] = $classificationType.'|'.$criterion;
 
                 $current = ClassificationVote::query()
                     ->where('susdat_substance_id', $substanceId)
@@ -248,6 +284,7 @@ class HazardsClassificationService
                     if ($current) {
                         $current->update(['is_current' => false]);
                     }
+
                     continue;
                 }
 
@@ -404,10 +441,11 @@ class HazardsClassificationService
 
             if (empty($totals)) {
                 $payload[$criterion] = null;
-                $payload[strtolower($criterion) . '_auto_points'] = null;
-                $payload[strtolower($criterion) . '_vote_points'] = null;
-                $payload[strtolower($criterion) . '_total_points'] = null;
-                $payload[strtolower($criterion) . '_all_points'] = null;
+                $payload[strtolower($criterion).'_auto_points'] = null;
+                $payload[strtolower($criterion).'_vote_points'] = null;
+                $payload[strtolower($criterion).'_total_points'] = null;
+                $payload[strtolower($criterion).'_all_points'] = null;
+
                 continue;
             }
 
@@ -418,10 +456,10 @@ class HazardsClassificationService
             $allPoints = array_sum($totals);
 
             $payload[$criterion] = $winnerCode;
-            $payload[strtolower($criterion) . '_auto_points'] = $autoPoints ?: null;
-            $payload[strtolower($criterion) . '_vote_points'] = $votePoints ?: null;
-            $payload[strtolower($criterion) . '_total_points'] = $totalPoints ?: null;
-            $payload[strtolower($criterion) . '_all_points'] = $allPoints ?: null;
+            $payload[strtolower($criterion).'_auto_points'] = $autoPoints ?: null;
+            $payload[strtolower($criterion).'_vote_points'] = $votePoints ?: null;
+            $payload[strtolower($criterion).'_total_points'] = $totalPoints ?: null;
+            $payload[strtolower($criterion).'_all_points'] = $allPoints ?: null;
         }
 
         return $payload;
@@ -558,39 +596,6 @@ class HazardsClassificationService
         return $types->count() === 1 ? (string) $types->first() : null;
     }
 
-    private function syncSnapshot(int $substanceId, int $userId, string $kind, array $payload, array $supports): SubstanceClassification
-    {
-        $current = SubstanceClassification::query()
-            ->where('susdat_substance_id', $substanceId)
-            ->where('editor_user_id', $userId)
-            ->where('kind', $kind)
-            ->where('is_current', true)
-            ->latest('id')
-            ->first();
-
-        if ($current && $this->snapshotMatches($current, $payload)) {
-            $this->syncSupports($current, $supports);
-            $current->touch();
-
-            return $current;
-        }
-
-        if ($current) {
-            $current->update(['is_current' => false]);
-        }
-
-        $row = SubstanceClassification::create($payload + [
-            'susdat_substance_id' => $substanceId,
-            'editor_user_id' => $userId,
-            'kind' => $kind,
-            'is_current' => true,
-        ]);
-
-        $this->syncSupports($row, $supports);
-
-        return $row;
-    }
-
     private function syncSupports(SubstanceClassification $row, array $supports): void
     {
         ClassificationSupport::query()
@@ -710,30 +715,11 @@ class HazardsClassificationService
 
     private function resolveSelectionUserDisplayName(DerivationSelection $selection): string
     {
-        $user = $selection->user;
-        if ((int) $selection->user_id === self::AUTO_USER_ID && $user) {
-            $formattedName = trim((string) ($user->formatted_name ?? ''));
-            if ($formattedName !== '') {
-                return $formattedName;
-            }
-
-            $fullName = trim((string) ($user->full_name ?? ''));
-            if ($fullName !== '') {
-                return $fullName;
-            }
-
-            $username = trim((string) ($user->username ?? ''));
-            if ($username !== '') {
-                return $username;
-            }
-
-            return (string) ($user->email ?? 'NDS EXPERT');
-        }
-
-        if ((int) $selection->user_id === self::AUTO_USER_ID) {
+        if ($selection->kind === 'auto') {
             return 'NDS EXPERT';
         }
 
+        $user = $selection->user;
         if (! $user) {
             return 'Expert derivation';
         }
@@ -781,4 +767,3 @@ class HazardsClassificationService
             ->keyBy('selection_id');
     }
 }
-

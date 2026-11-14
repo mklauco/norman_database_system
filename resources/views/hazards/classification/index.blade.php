@@ -98,7 +98,16 @@
                             $sumKey = 'sum_' . $criterion;
                             $voteFieldKey = $loop->parent->index . '_' . $criterion;
                           @endphp
-                          <td class="p-2 text-center">{{ $cell['classification'] ?? '-' }}</td>
+                          <td class="p-2 text-center">
+                            {{ $cell['classification'] ?? '-' }}
+                            @if (! empty($cell['withdrawn']))
+                              <div class="mt-1">
+                                <span class="inline-flex items-center px-2 py-0.5 bg-amber-200 text-amber-900 text-xs font-medium rounded-full" title="The source record behind this value is no longer produced by the source data.">
+                                  Withdrawn from source
+                                </span>
+                              </div>
+                            @endif
+                          </td>
                           <td class="p-2 text-center">
                             @if (! empty($cell['classification']))
                               <input type="hidden" name="votes[{{ $voteFieldKey }}][classification_type]" value="{{ $row['type'] }}">

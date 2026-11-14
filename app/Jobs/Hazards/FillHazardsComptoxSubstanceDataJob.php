@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Hazards;
 
-use App\Services\Hazards\ComptoxSubstanceDataFillService;
+use App\Services\Hazards\HazardsReseedService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -13,26 +15,28 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class FillHazardsComptoxSubstanceDataJob implements ShouldQueue, ShouldBeUnique
+class FillHazardsComptoxSubstanceDataJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public const REQUEST_TOKEN_CACHE_KEY = 'hazards:substance-data:fill:request-token';
+
     public const REQUEST_TOKEN_TTL_SECONDS = 7200;
 
     public int $timeout = 3600;
+
     public int $tries = 1;
+
     public int $uniqueFor = 7200;
 
     public string $trigger;
-    public ?string $requestToken;
-    public ?int $editorUserId;
 
-    public function __construct(string $trigger = 'manual', ?string $requestToken = null, ?int $editorUserId = null)
+    public ?string $requestToken;
+
+    public function __construct(string $trigger = 'manual', ?string $requestToken = null)
     {
         $this->trigger = $trigger;
         $this->requestToken = $requestToken;
-        $this->editorUserId = $editorUserId;
     }
 
     public function uniqueId(): string
@@ -40,21 +44,21 @@ class FillHazardsComptoxSubstanceDataJob implements ShouldQueue, ShouldBeUnique
         return 'hazards-substance-data-fill';
     }
 
-    public function handle(ComptoxSubstanceDataFillService $fillService): void
+    public function handle(HazardsReseedService $reseedService): void
     {
         $lock = $this->acquireLock();
         if (! $lock) {
             Log::warning('Hazards substance data fill skipped because another run is already in progress.');
             $this->releaseRequestToken();
+
             return;
         }
 
         try {
-            $summary = $fillService->fillFromParsedData($this->editorUserId);
+            $summary = $reseedService->rebuild();
 
             Log::info('Hazards substance data fill completed.', [
                 'trigger' => $this->trigger,
-                'editor_user_id' => $this->editorUserId,
                 'summary' => $summary,
             ]);
         } catch (\Throwable $e) {
@@ -62,6 +66,8 @@ class FillHazardsComptoxSubstanceDataJob implements ShouldQueue, ShouldBeUnique
                 'exception' => get_class($e),
                 'trigger' => $this->trigger,
             ]);
+
+            throw $e;
         } finally {
             optional($lock)->release();
             $this->releaseRequestToken();

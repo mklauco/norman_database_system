@@ -4,7 +4,6 @@ namespace App\Jobs\Hazards;
 
 use App\Mail\Hazards\ApiFetchEnd;
 use App\Mail\Hazards\ApiFetchStart;
-use App\Jobs\Hazards\ParseHazardsComptoxDataJob;
 use App\Models\Hazards\ApiRun;
 use App\Models\Hazards\ComptoxPayload;
 use App\Models\Susdat\Substance;
@@ -14,31 +13,40 @@ use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 
-class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
+class FetchHazardsDataJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public const REQUEST_TOKEN_CACHE_KEY = 'hazards:fetch:request-token';
+
     public const REQUEST_TOKEN_TTL_SECONDS = 7200;
 
     public int $timeout = 3600;
+
     public int $tries = 1;
+
     public int $uniqueFor = 7200;
+
     private const BATCH_SIZE = 25;
+
     private const HTTP_TIMEOUT_SECONDS = 60;
+
     private const HTTP_RETRY_TIMES = 2;
+
     private const HTTP_RETRY_SLEEP_MS = 500;
 
     // Testing limit: set to null for full run.
     private const FETCH_LIMIT = 120;
+
     public string $trigger;
+
     public ?string $requestToken;
 
     public function __construct(string $trigger = 'manual', ?string $requestToken = null)
@@ -58,6 +66,7 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
         if (! $lock) {
             Log::warning('Hazards fetch skipped because another run is already in progress.');
             $this->releaseRequestToken();
+
             return;
         }
 
@@ -103,6 +112,7 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
                 ]);
 
                 $this->sendMailSafely($notifyTo, new ApiFetchEnd($run->fresh()), 'end', $run->id);
+
                 return;
             }
 
@@ -217,6 +227,7 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
                     // This preserves existing data and avoids false "updated" counts.
                     if ($allEndpointsFailed) {
                         $failed++;
+
                         continue;
                     }
 
@@ -224,7 +235,7 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
                     $isNew = $payload === null;
 
                     if ($isNew) {
-                        $payload = new ComptoxPayload();
+                        $payload = new ComptoxPayload;
                         $payload->dtxid = $dtxid;
                         $payload->susdat_substance_id = $substance->id;
                     } else {
@@ -447,6 +458,7 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             try {
                 Mail::to($notifyTo)->send($mailable);
+
                 return;
             } catch (\Throwable $e) {
                 if ($attempt >= $maxAttempts) {
@@ -455,6 +467,7 @@ class FetchHazardsDataJob implements ShouldQueue, ShouldBeUnique
                         'phase' => $phase,
                         'attempt' => $attempt,
                     ]);
+
                     return;
                 }
 

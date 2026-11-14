@@ -22,6 +22,7 @@ return new class extends Migration
 
             // Explicit domain classification for later display/filtering.
             $table->string('data_domain', 32)->index(); // physchem|fate_transport
+            $table->string('source_key');
 
             // Core columns aligned with ARB_ARG pbmt_phys_chem.
             $table->string('data_source')->nullable();
@@ -80,13 +81,11 @@ return new class extends Migration
             $table->text('regulatory_purpose')->nullable();
             $table->string('use_of_study')->nullable();
 
+            $table->timestamp('withdrawn_at')->nullable()->index();
+
             $table->timestamps();
 
-            // Idempotent upsert support for fill job.
-            $table->unique(
-                ['source_record_type', 'source_record_id', 'data_domain'],
-                'hazards_comptox_substance_data_source_unique'
-            );
+            $table->unique(['source_key', 'data_domain'], 'hazards_comptox_substance_data_source_key_unique');
 
             $table->foreign('parse_run_id')
                 ->references('id')
@@ -99,7 +98,8 @@ return new class extends Migration
             $table->foreign('susdat_substance_id')
                 ->references('id')
                 ->on('susdat_substances')
-                ->nullOnDelete();
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
             $table->foreign('editor')
                 ->references('id')
                 ->on('users')
@@ -115,4 +115,3 @@ return new class extends Migration
         Schema::dropIfExists('hazards_comptox_substance_data');
     }
 };
-

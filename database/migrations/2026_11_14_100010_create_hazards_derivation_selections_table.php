@@ -37,7 +37,6 @@ return new class extends Migration
                 ->on('hazards_comptox_substance_data')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
@@ -51,8 +50,8 @@ return new class extends Migration
         ");
 
         DB::statement("
-            CREATE UNIQUE INDEX hazards_derivation_selections_unique_current_vote
-            ON hazards_derivation_selections (susdat_substance_id, bucket)
+            CREATE UNIQUE INDEX hazards_derivation_selections_unique_current_vote_per_user
+            ON hazards_derivation_selections (susdat_substance_id, bucket, user_id)
             WHERE is_current = TRUE AND kind = 'vote'
         ");
     }
@@ -62,9 +61,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('DROP INDEX IF EXISTS hazards_derivation_selections_unique_current_auto');
-        DB::statement('DROP INDEX IF EXISTS hazards_derivation_selections_unique_current_vote');
-
         Schema::dropIfExists('hazards_derivation_selections');
     }
 };

@@ -17,14 +17,12 @@ return new class extends Migration
             $table->unsignedBigInteger('comptox_payload_id')->nullable()->index();
             $table->unsignedBigInteger('susdat_substance_id')->nullable()->index();
 
-            // Core ARB_ARG-equivalent fields.
             $table->string('dtxid', 64)->unique();
             $table->string('preferred_name')->nullable();
             $table->string('casrn')->nullable();
             $table->string('inchikey')->nullable();
             $table->text('smiles')->nullable();
 
-            // Extra safety/debug context.
             $table->json('source_json')->nullable();
 
             $table->timestamps();
@@ -40,7 +38,8 @@ return new class extends Migration
             $table->foreign('susdat_substance_id')
                 ->references('id')
                 ->on('susdat_substances')
-                ->nullOnDelete();
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
         });
     }
 
@@ -52,4 +51,3 @@ return new class extends Migration
         Schema::dropIfExists('hazards_comptox_detail_records');
     }
 };
-

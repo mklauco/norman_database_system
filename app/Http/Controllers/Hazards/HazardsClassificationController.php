@@ -1,26 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Hazards;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hazards\ClassificationVote;
+use App\Models\Hazards\ComptoxSubstanceData;
 use App\Models\Hazards\DerivationSelection;
 use App\Models\Hazards\SubstanceClassification;
-use App\Models\Hazards\ComptoxSubstanceData;
 use App\Models\Susdat\Substance;
+use App\Models\User;
 use App\Services\Hazards\HazardsClassificationService;
-use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class HazardsClassificationController extends Controller
 {
-    private const AUTO_USER_ID = 3;
-
     public function __construct(
         private readonly HazardsClassificationService $classificationService
-    ) {
-    }
+    ) {}
 
     public function filter(Request $request)
     {
@@ -71,8 +71,6 @@ class HazardsClassificationController extends Controller
         $substanceId = (int) $susdatSubstanceId;
         $currentUserId = (int) (auth()->id() ?? 0);
 
-        $this->classificationService->run($substanceId);
-
         $substance = Substance::find($substanceId);
 
         $selections = DerivationSelection::query()
@@ -94,12 +92,12 @@ class HazardsClassificationController extends Controller
         $currentUserVotes = $classificationVotes
             ->where('user_id', $currentUserId)
             ->where('is_current', true)
-            ->keyBy(fn (ClassificationVote $vote) => $vote->classification_type . '|' . $vote->criterion);
+            ->keyBy(fn (ClassificationVote $vote) => $vote->classification_type.'|'.$vote->criterion);
 
         $conclusions = SubstanceClassification::query()
             ->with(['editor', 'supports'])
             ->where('susdat_substance_id', $substanceId)
-            ->orderByRaw('editor_user_id = ' . self::AUTO_USER_ID . ' ASC')
+            ->orderByRaw('editor_user_id IS NULL ASC')
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get()
@@ -116,14 +114,14 @@ class HazardsClassificationController extends Controller
             ->first(fn (SubstanceClassification $row) => $row->kind === 'derivation' && $row->is_current);
 
         $classificationRows = $this->buildClassificationRows($selections, $currentUserVotes, $currentUserId);
-        $activeEditorId = self::AUTO_USER_ID;
         $activeConclusionId = $activeAutoBaseline?->id;
 
         if ($currentUserVotes->isNotEmpty()) {
-            $activeEditorId = $currentUserId;
             $activeConclusionId = $conclusions
-                ->first(function (SubstanceClassification $row) use ($activeEditorId) {
-                    return $row->is_current && (int) $row->editor_user_id === $activeEditorId;
+                ->first(function (SubstanceClassification $row) use ($currentUserId) {
+                    return $row->is_current
+                        && $row->kind === 'classification'
+                        && (int) $row->editor_user_id === $currentUserId;
                 })?->id;
         } elseif ($activeDerivationConclusion) {
             $activeConclusionId = $activeDerivationConclusion->id;
@@ -158,6 +156,7 @@ class HazardsClassificationController extends Controller
             'votes.*.vote_value' => ['nullable'],
         ]);
 
+        $this->classificationService->run((int) $data['susdat_substance_id']);
         $this->classificationService->storeVotes(
             susdatSubstanceId: (int) $data['susdat_substance_id'],
             userId: (int) (auth()->id() ?? 0),
@@ -204,7 +203,7 @@ class HazardsClassificationController extends Controller
                 ?? ($selection->kind === 'vote'
                     ? 3
                     : $this->defaultNormanVoteForSelection($selection));
-            $voteKey = $type . '|' . $criterion;
+            $voteKey = $type.'|'.$criterion;
             $currentUserVote = $currentUserVotes->get($voteKey);
 
             $prefillVote = $currentUserVote?->vote_value;
@@ -215,6 +214,7 @@ class HazardsClassificationController extends Controller
             $rows[$type][$criterion] = [
                 'selection_id' => (int) $selection->id,
                 'hazards_substance_data_id' => (int) $selection->hazards_substance_data_id,
+                'withdrawn' => $selection->hazardsSubstanceData?->withdrawn_at !== null,
                 'classification' => $metadata?->norman_classification ?: $selection->hazardsSubstanceData?->assessment_class,
                 'points' => $defaultVote,
                 'kind' => $selection->kind,
@@ -223,7 +223,7 @@ class HazardsClassificationController extends Controller
                 'parameter_name' => $selection->hazardsSubstanceData?->norman_parameter_name,
                 'prefill_vote' => $prefillVote,
             ];
-            $rows[$type]['sum_' . $criterion] = $defaultVote;
+            $rows[$type]['sum_'.$criterion] = $defaultVote;
         }
 
         return array_values($rows);
@@ -254,98 +254,40 @@ class HazardsClassificationController extends Controller
 
     private function resolveSelectionUserDisplayName(DerivationSelection $selection): string
     {
-        $user = $selection->user;
-        if ((int) $selection->user_id === self::AUTO_USER_ID && $user) {
-            $formattedName = trim((string) ($user->formatted_name ?? ''));
-            if ($formattedName !== '') {
-                return $formattedName;
-            }
-
-            $fullName = trim((string) ($user->full_name ?? ''));
-            if ($fullName !== '') {
-                return $fullName;
-            }
-
-            $username = trim((string) ($user->username ?? ''));
-            if ($username !== '') {
-                return $username;
-            }
-
-            return (string) ($user->email ?? 'NDS EXPERT');
-        }
-
-        if ((int) $selection->user_id === self::AUTO_USER_ID) {
+        if ($selection->kind === 'auto') {
             return 'NDS EXPERT';
         }
 
-        if (! $user) {
-            return 'Expert derivation';
-        }
-
-        $formattedName = trim((string) ($user->formatted_name ?? ''));
-        if ($formattedName !== '') {
-            return $formattedName;
-        }
-
-        $fullName = trim((string) ($user->full_name ?? ''));
-        if ($fullName !== '') {
-            return $fullName;
-        }
-
-        $username = trim((string) ($user->username ?? ''));
-        if ($username !== '') {
-            return $username;
-        }
-
-        return (string) ($user->email ?? 'Expert derivation');
+        return $this->displayNameOf($selection->user, 'Expert derivation');
     }
 
     private function resolveEditorDisplayName(SubstanceClassification $row): string
     {
-        $user = $row->editor;
-        if ((int) $row->editor_user_id === self::AUTO_USER_ID && $user) {
-            $formattedName = trim((string) ($user->formatted_name ?? ''));
-            if ($formattedName !== '') {
-                return $formattedName;
-            }
-
-            $fullName = trim((string) ($user->full_name ?? ''));
-            if ($fullName !== '') {
-                return $fullName;
-            }
-
-            $username = trim((string) ($user->username ?? ''));
-            if ($username !== '') {
-                return $username;
-            }
-
-            return (string) ($user->email ?? 'NDS EXPERT');
-        }
-
-        if ((int) $row->editor_user_id === self::AUTO_USER_ID) {
+        if ($row->kind === 'auto_baseline') {
             return 'NDS EXPERT';
         }
 
+        if ($row->kind === 'derivation' && $row->editor === null) {
+            return 'Expert derivation';
+        }
+
+        return $this->displayNameOf($row->editor, 'N/A');
+    }
+
+    private function displayNameOf(?User $user, string $fallback): string
+    {
         if (! $user) {
-            return 'N/A';
+            return $fallback;
         }
 
-        $formattedName = trim((string) ($user->formatted_name ?? ''));
-        if ($formattedName !== '') {
-            return $formattedName;
+        foreach (['formatted_name', 'full_name', 'username'] as $attribute) {
+            $value = trim((string) ($user->{$attribute} ?? ''));
+            if ($value !== '') {
+                return $value;
+            }
         }
 
-        $fullName = trim((string) ($user->full_name ?? ''));
-        if ($fullName !== '') {
-            return $fullName;
-        }
-
-        $username = trim((string) ($user->username ?? ''));
-        if ($username !== '') {
-            return $username;
-        }
-
-        return (string) ($user->email ?? 'N/A');
+        return (string) ($user->email ?? $fallback);
     }
 
     private function defaultNormanVoteForSelection(DerivationSelection $selection): int

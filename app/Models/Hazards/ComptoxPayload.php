@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ComptoxPayload extends Model
 {
@@ -31,22 +35,22 @@ class ComptoxPayload extends Model
         'endpoint_status' => 'array',
     ];
 
-    public function apiRun()
+    public function apiRun(): BelongsTo
     {
         return $this->belongsTo(ApiRun::class, 'api_run_id');
     }
 
-    public function fateRecords()
+    public function fateRecords(): HasMany
     {
         return $this->hasMany(ComptoxFateRecord::class, 'comptox_payload_id');
     }
 
-    public function propertyRecords()
+    public function propertyRecords(): HasMany
     {
         return $this->hasMany(ComptoxPropertyRecord::class, 'comptox_payload_id');
     }
 
-    public function detailRecords()
+    public function detailRecords(): HasMany
     {
         return $this->hasMany(ComptoxDetailRecord::class, 'comptox_payload_id');
     }

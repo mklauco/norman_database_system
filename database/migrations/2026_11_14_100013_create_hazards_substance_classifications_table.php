@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('hazards_substance_classifications', function (Blueprint $table) {
@@ -18,18 +21,22 @@ return new class extends Migration
             $table->integer('p_auto_points')->nullable();
             $table->integer('p_vote_points')->nullable();
             $table->integer('p_total_points')->nullable();
+            $table->integer('p_all_points')->nullable();
             $table->string('B', 50)->nullable();
             $table->integer('b_auto_points')->nullable();
             $table->integer('b_vote_points')->nullable();
             $table->integer('b_total_points')->nullable();
+            $table->integer('b_all_points')->nullable();
             $table->string('M', 50)->nullable();
             $table->integer('m_auto_points')->nullable();
             $table->integer('m_vote_points')->nullable();
             $table->integer('m_total_points')->nullable();
+            $table->integer('m_all_points')->nullable();
             $table->string('T', 50)->nullable();
             $table->integer('t_auto_points')->nullable();
             $table->integer('t_vote_points')->nullable();
             $table->integer('t_total_points')->nullable();
+            $table->integer('t_all_points')->nullable();
 
             $table->string('source_type', 50)->nullable();
 
@@ -47,23 +54,30 @@ return new class extends Migration
                 ->on('susdat_substances')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
             $table->foreign('editor_user_id')
                 ->references('id')
                 ->on('users')
                 ->nullOnDelete();
         });
 
-        DB::statement("
-            CREATE UNIQUE INDEX hazards_substance_classifications_current_unique
+        DB::statement('
+            CREATE UNIQUE INDEX hazards_substance_classifications_current_user_unique
             ON hazards_substance_classifications (susdat_substance_id, editor_user_id, kind)
-            WHERE is_current = true
-        ");
+            WHERE is_current = true AND editor_user_id IS NOT NULL
+        ');
+
+        DB::statement('
+            CREATE UNIQUE INDEX hazards_substance_classifications_current_system_unique
+            ON hazards_substance_classifications (susdat_substance_id, kind)
+            WHERE is_current = true AND editor_user_id IS NULL
+        ');
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        DB::statement('DROP INDEX IF EXISTS hazards_substance_classifications_current_unique');
         Schema::dropIfExists('hazards_substance_classifications');
     }
 };

@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use App\Models\Susdat\Substance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubstanceClassification extends Model
 {
@@ -60,17 +64,17 @@ class SubstanceClassification extends Model
         'is_current' => 'boolean',
     ];
 
-    public function substance()
+    public function substance(): BelongsTo
     {
         return $this->belongsTo(Substance::class, 'susdat_substance_id');
     }
 
-    public function editor()
+    public function editor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'editor_user_id');
     }
 
-    public function supports()
+    public function supports(): HasMany
     {
         return $this->hasMany(ClassificationSupport::class, 'substance_classification_id');
     }

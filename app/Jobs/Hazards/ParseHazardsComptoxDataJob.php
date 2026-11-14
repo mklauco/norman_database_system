@@ -21,14 +21,18 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
+class ParseHazardsComptoxDataJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 3600;
+
     public int $tries = 1;
+
     public int $uniqueFor = 7200;
+
     public ?int $sourceApiRunId;
+
     public string $trigger;
 
     private const WANTED_FATE_ENDPOINTS = [
@@ -66,6 +70,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
         $lock = $this->acquireLock();
         if (! $lock) {
             Log::warning('Hazards parse skipped because another parse run is already in progress.');
+
             return;
         }
 
@@ -126,6 +131,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
                 ]);
 
                 $this->sendMailSafely($notifyTo, new ParseComptoxEnd($run->fresh()), 'parse-end', $run->id);
+
                 return;
             }
 
@@ -303,6 +309,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
 
         if (! $existing) {
             ComptoxFateRecord::create($data);
+
             return ['action' => 'new', 'record_type' => 'fate'];
         }
 
@@ -315,6 +322,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
             'source_json',
         ])) {
             $existing->update($data);
+
             return ['action' => 'updated', 'record_type' => 'fate'];
         }
 
@@ -359,6 +367,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
 
         if (! $existing) {
             ComptoxPropertyRecord::create($data);
+
             return ['action' => 'new', 'record_type' => 'property'];
         }
 
@@ -372,6 +381,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
             'source_json',
         ])) {
             $existing->update($data);
+
             return ['action' => 'updated', 'record_type' => 'property'];
         }
 
@@ -416,6 +426,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
 
         if (! $existing) {
             ComptoxDetailRecord::create($data);
+
             return ['action' => 'new', 'record_type' => 'detail'];
         }
 
@@ -427,6 +438,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
             'source_json',
         ])) {
             $existing->update($data);
+
             return ['action' => 'updated', 'record_type' => 'detail'];
         }
 
@@ -771,6 +783,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             try {
                 Mail::to($notifyTo)->send($mailable);
+
                 return;
             } catch (\Throwable $e) {
                 if ($attempt >= $maxAttempts) {
@@ -779,6 +792,7 @@ class ParseHazardsComptoxDataJob implements ShouldQueue, ShouldBeUnique
                         'phase' => $phase,
                         'attempt' => $attempt,
                     ]);
+
                     return;
                 }
 

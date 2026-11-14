@@ -141,13 +141,16 @@
         ->filter(static fn ($rows) => count($rows) > 0);
     @endphp
 
-    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+    <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-xs">
       <h1 class="text-2xl font-bold text-gray-900 mb-4">Hazards Derivation Metadata</h1>
 
       <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="px-2 py-1 rounded bg-blue-100 text-blue-800">{{ $bucketLabel }}</span>
-        <span class="px-2 py-1 rounded bg-emerald-100 text-emerald-800">{{ $modeLabel }}</span>
-        <span class="px-2 py-1 rounded bg-slate-100 text-slate-800">{{ $selectionTypeLabel }}</span>
+        <span class="px-2 py-1 rounded-sm bg-sky-100 text-sky-800">{{ $bucketLabel }}</span>
+        <span class="px-2 py-1 rounded-sm bg-emerald-100 text-emerald-800">{{ $modeLabel }}</span>
+        <span class="px-2 py-1 rounded-sm bg-slate-100 text-slate-800">{{ $selectionTypeLabel }}</span>
+        @if (! empty($withdrawn))
+          <span class="px-2 py-1 rounded-sm bg-amber-200 text-amber-900">Withdrawn from source</span>
+        @endif
       </div>
 
       <div class="mb-6 text-sm text-gray-600">

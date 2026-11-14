@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class HazardsDerivationService
 {
-    private const AUTO_USER_ID = 3;
-
     private const BUCKETS = [
         'P_pred',
         'P_exp',
@@ -31,32 +29,63 @@ class HazardsDerivationService
         'Bioconcentration factor (BCF)',
     ];
 
-    public function runAutoSelections(int|string $susdatSubstanceId): void
+    /**
+     * Recomputes the automatic selection of every bucket of one substance. Only called by
+     * rebuilds and vote handlers, never by a page view.
+     *
+     * @param  Collection<int, ComptoxSubstanceData>|null  $rows  preloaded active candidate rows
+     * @param  Collection<int, DerivationSelection>|null  $currentAutos  preloaded current auto selections
+     */
+    public function runAutoSelections(int|string $susdatSubstanceId, ?Collection $rows = null, ?Collection $currentAutos = null): void
     {
         $substanceId = (int) $susdatSubstanceId;
         if ($substanceId <= 0) {
             return;
         }
 
-        $rows = $this->loadCandidateRows($substanceId);
-        if ($rows->isEmpty()) {
-            return;
-        }
+        $rows ??= $this->loadCandidateRows($substanceId);
+        $currentAutos ??= DerivationSelection::query()
+            ->with('hazardsSubstanceData')
+            ->where('susdat_substance_id', $substanceId)
+            ->where('kind', 'auto')
+            ->where('is_current', true)
+            ->get();
 
+        $currentByBucket = $currentAutos->sortBy('id')->keyBy('bucket');
         $buckets = $this->buildBuckets($rows);
 
         foreach (self::BUCKETS as $bucket) {
             $items = $buckets[$bucket] ?? collect();
             $pick = $this->pickAutoCandidate($items, $bucket);
-            $this->syncAutoSelection($substanceId, $bucket, $pick);
+            $this->syncAutoSelection($substanceId, $bucket, $pick, $currentByBucket->get($bucket));
         }
+    }
+
+    /**
+     * Active candidate rows of many substances in one query.
+     *
+     * @param  list<int>  $substanceIds
+     * @return Collection<int, Collection<int, ComptoxSubstanceData>> keyed by susdat_substance_id
+     */
+    public function loadCandidateRowsForMany(array $substanceIds): Collection
+    {
+        if ($substanceIds === []) {
+            return collect();
+        }
+
+        return ComptoxSubstanceData::query()
+            ->active()
+            ->whereIn('susdat_substance_id', $substanceIds)
+            ->orderByDesc('id')
+            ->get()
+            ->reject(fn (ComptoxSubstanceData $row) => $this->shouldSkipDerivationCandidate($row))
+            ->groupBy('susdat_substance_id');
     }
 
     public function getDerivationPageData(int|string $susdatSubstanceId, ?int $currentUserId = null): array
     {
         $substanceId = (int) $susdatSubstanceId;
         $currentUserId = $currentUserId !== null ? (int) $currentUserId : null;
-        $this->runAutoSelections($substanceId);
 
         $rows = $this->loadCandidateRows($substanceId);
         $buckets = $this->buildBuckets($rows);
@@ -78,23 +107,34 @@ class HazardsDerivationService
             ->get()
             ->groupBy('bucket');
 
+        foreach ($voteHistory as $bucket => $bucketVotes) {
+            foreach ($bucketVotes as $vote) {
+                $voteRow = $vote->hazardsSubstanceData;
+                if ($vote->is_current && $voteRow && $voteRow->withdrawn_at !== null && isset($buckets[$bucket])) {
+                    $buckets[$bucket]->push($voteRow);
+                }
+            }
+            if (isset($buckets[$bucket])) {
+                $buckets[$bucket] = $buckets[$bucket]->unique('id')->values();
+            }
+        }
+
         $votedMap = [];
         foreach (self::BUCKETS as $bucket) {
+            $votedMap[$bucket] = [];
+        }
+
+        if ($currentUserId !== null && $currentUserId > 0) {
             $currentUserVotes = DerivationSelection::query()
                 ->where('susdat_substance_id', $substanceId)
-                ->where('bucket', $bucket)
                 ->where('kind', 'vote')
                 ->where('is_current', true)
-                ->when(
-                    $currentUserId !== null && $currentUserId > 0,
-                    fn ($query) => $query->where('user_id', $currentUserId),
-                    fn ($query) => $query->whereRaw('1 = 0')
-                )
-                ->get();
+                ->where('user_id', $currentUserId)
+                ->get(['id', 'bucket', 'hazards_substance_data_id']);
 
-            $votedMap[$bucket] = $currentUserVotes
-                ->pluck('id', 'hazards_substance_data_id')
-                ->toArray();
+            foreach ($currentUserVotes as $userVote) {
+                $votedMap[$userVote->bucket][$userVote->hazards_substance_data_id] = $userVote->id;
+            }
         }
 
         $bucketCandidates = [];
@@ -307,17 +347,8 @@ class HazardsDerivationService
             ->first();
     }
 
-    private function syncAutoSelection(int $substanceId, string $bucket, ?ComptoxSubstanceData $pick): void
+    private function syncAutoSelection(int $substanceId, string $bucket, ?ComptoxSubstanceData $pick, ?DerivationSelection $current): void
     {
-        $current = DerivationSelection::query()
-            ->with(['hazardsSubstanceData', 'user'])
-            ->where('susdat_substance_id', $substanceId)
-            ->where('bucket', $bucket)
-            ->where('kind', 'auto')
-            ->where('is_current', true)
-            ->latest('id')
-            ->first();
-
         if (! $pick) {
             if ($current) {
                 $current->update(['is_current' => false]);
@@ -327,7 +358,7 @@ class HazardsDerivationService
         }
 
         if ($current && (int) $current->hazards_substance_data_id === (int) $pick->id) {
-            $this->ensureMetadataSnapshot($current);
+            $this->refreshAutoMetadataSnapshot($current, $pick);
 
             return;
         }
@@ -342,7 +373,7 @@ class HazardsDerivationService
             'hazards_substance_data_id' => (int) $pick->id,
             'source_label' => $this->autoSourceLabel($pick),
             'kind' => 'auto',
-            'user_id' => self::AUTO_USER_ID,
+            'user_id' => null,
             'is_current' => true,
         ]);
 
@@ -352,6 +383,7 @@ class HazardsDerivationService
     private function loadCandidateRows(int $susdatSubstanceId): Collection
     {
         return ComptoxSubstanceData::query()
+            ->active()
             ->where('susdat_substance_id', $susdatSubstanceId)
             ->orderByDesc('id')
             ->get()
@@ -531,6 +563,7 @@ class HazardsDerivationService
     {
         return [
             'hazards_substance_data_id' => (int) $row->id,
+            'withdrawn' => $row->withdrawn_at !== null,
             'data_source' => $row->data_source ?? 'N/A',
             'test_type' => $this->resolveTestTypeLabel($row->test_type),
             'norman_parameter_name' => $row->norman_parameter_name ?? 'N/A',
@@ -557,6 +590,7 @@ class HazardsDerivationService
             'selection_id' => (int) $selection->id,
             'user_id' => $selection->user_id ? (int) $selection->user_id : null,
             'hazards_substance_data_id' => (int) ($selection->hazards_substance_data_id),
+            'withdrawn' => $row?->withdrawn_at !== null,
             'data_source' => $metadata?->data_source ?? $row?->data_source ?? 'N/A',
             'test_type' => $metadata?->test_type ?? $this->resolveTestTypeLabel($row?->test_type),
             'norman_parameter_name' => $metadata?->assessment_parameter_name ?? $row?->norman_parameter_name ?? 'N/A',
@@ -573,43 +607,48 @@ class HazardsDerivationService
         ];
     }
 
-    private function ensureMetadataSnapshot(DerivationSelection $selection): void
+    /**
+     * An auto selection keeps pointing at the same source row after a reseed, so its
+     * snapshot follows the row. Vote snapshots are never rewritten.
+     */
+    private function refreshAutoMetadataSnapshot(DerivationSelection $selection, ComptoxSubstanceData $row): void
     {
-        $existingMetadata = DerivationMetadata::query()
+        $metadata = DerivationMetadata::query()
             ->where('selection_id', $selection->id)
-            ->exists();
+            ->latest('id')
+            ->first();
 
-        if (! $existingMetadata) {
+        if (! $metadata) {
             $this->createMetadataSnapshot($selection);
+
+            return;
         }
+
+        $matches = (string) $metadata->norman_classification === (string) $row->assessment_class
+            && $this->toNullableFloat($metadata->original_value) === $this->toNullableFloat($row->original_value)
+            && $this->toNullableFloat($metadata->assessment_value) === $this->toNullableFloat($row->value_assessment_index)
+            && (string) $metadata->data_source === (string) $row->data_source
+            && $this->toNullableFloat($metadata->reliability_score) === $this->toNullableFloat($row->reliability_score);
+
+        if ($matches) {
+            return;
+        }
+
+        $selection->setRelation('hazardsSubstanceData', $row);
+        $this->createMetadataSnapshot($selection);
+        DerivationMetadata::query()
+            ->where('selection_id', $selection->id)
+            ->where('id', '<', DerivationMetadata::query()->where('selection_id', $selection->id)->max('id'))
+            ->delete();
     }
 
     private function resolveUserDisplayName(DerivationSelection $selection): string
     {
-        $user = $selection->user;
-        if ((int) $selection->user_id === self::AUTO_USER_ID && $user) {
-            $formattedName = trim((string) ($user->formatted_name ?? ''));
-            if ($formattedName !== '') {
-                return $formattedName;
-            }
-
-            $fullName = trim((string) ($user->full_name ?? ''));
-            if ($fullName !== '') {
-                return $fullName;
-            }
-
-            $username = trim((string) ($user->username ?? ''));
-            if ($username !== '') {
-                return $username;
-            }
-
-            return (string) ($user->email ?? 'NDS EXPERT');
-        }
-
-        if ((int) $selection->user_id === self::AUTO_USER_ID) {
+        if ($selection->kind === 'auto') {
             return 'NDS EXPERT';
         }
 
+        $user = $selection->user;
         if (! $user) {
             return 'N/A';
         }

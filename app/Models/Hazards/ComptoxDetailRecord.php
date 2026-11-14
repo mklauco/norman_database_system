@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ComptoxDetailRecord extends Model
 {
@@ -27,14 +30,13 @@ class ComptoxDetailRecord extends Model
         'source_json' => 'array',
     ];
 
-    public function parseRun()
+    public function parseRun(): BelongsTo
     {
         return $this->belongsTo(ParseRun::class, 'parse_run_id');
     }
 
-    public function payload()
+    public function payload(): BelongsTo
     {
         return $this->belongsTo(ComptoxPayload::class, 'comptox_payload_id');
     }
 }
-

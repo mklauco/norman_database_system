@@ -10,10 +10,15 @@ use Livewire\Component;
 class SubstanceSearch extends Component
 {
     public $search = '';
+
     public $searchType = 'name';
+
     public $selectedSubstanceIds = [];
+
     public $selectedSubstances = [];
+
     public $existingSubstances = [];
+
     public $formId = 'searchHazards';
 
     public function mount($existingSubstances = [], $formId = 'searchHazards')
@@ -35,39 +40,46 @@ class SubstanceSearch extends Component
         $resultsAvailable = false;
 
         if (strlen($this->search) > 2) {
-            $hazardsSubstanceIds = ComptoxSubstanceData::query()
-                ->whereNotNull('susdat_substance_id')
-                ->distinct()
-                ->pluck('susdat_substance_id')
-                ->toArray();
+            $query = Substance::query()
+                ->whereExists(static function ($exists): void {
+                    $exists->select(DB::raw('1'))
+                        ->from('hazards_comptox_substance_data')
+                        ->whereColumn('hazards_comptox_substance_data.susdat_substance_id', 'susdat_substances.id')
+                        ->whereNull('hazards_comptox_substance_data.withdrawn_at');
+                });
 
-            if (! empty($hazardsSubstanceIds)) {
-                $query = Substance::whereIn('id', $hazardsSubstanceIds);
+            if ($this->searchType === 'cas_number') {
+                $query->where('cas_number', 'ilike', '%'.$this->search.'%');
+            } elseif ($this->searchType === 'name') {
+                $query->where('name', 'ilike', '%'.$this->search.'%');
+            } elseif ($this->searchType === 'stdinchikey') {
+                $query->where('stdinchikey', 'ilike', $this->search);
+            } elseif ($this->searchType === 'norman_susdat_id') {
+                $searchCode = $this->search;
+                if (strtoupper(substr($searchCode, 0, 2)) === 'NS') {
+                    $searchCode = substr($searchCode, 2);
+                }
+                $query->where('code', 'ilike', '%'.$searchCode.'%');
+            }
 
-                if ($this->searchType === 'cas_number') {
-                    $query->where('cas_number', 'ilike', '%'.$this->search.'%');
-                } elseif ($this->searchType === 'name') {
-                    $query->where('name', 'ilike', '%'.$this->search.'%');
-                } elseif ($this->searchType === 'stdinchikey') {
-                    $query->where('stdinchikey', 'ilike', $this->search);
-                } elseif ($this->searchType === 'norman_susdat_id') {
-                    $searchCode = $this->search;
-                    if (strtoupper(substr($searchCode, 0, 2)) === 'NS') {
-                        $searchCode = substr($searchCode, 2);
-                    }
-                    $query->where('code', 'ilike', '%'.$searchCode.'%');
+            $results = $query->orderBy('name')->limit(30)->get();
+
+            if ($results->isNotEmpty()) {
+                $counts = ComptoxSubstanceData::query()
+                    ->active()
+                    ->whereIn('susdat_substance_id', $results->pluck('id'))
+                    ->selectRaw('susdat_substance_id, COUNT(*) as records_count')
+                    ->groupBy('susdat_substance_id')
+                    ->pluck('records_count', 'susdat_substance_id');
+
+                foreach ($results as $result) {
+                    $result->hazards_record_count = (int) ($counts[$result->id] ?? 0);
                 }
 
-                $results = $query->select([
-                    'susdat_substances.*',
-                    DB::raw('(SELECT COUNT(*) FROM hazards_comptox_substance_data WHERE susdat_substance_id = susdat_substances.id) as hazards_record_count'),
-                ])
-                    ->orderBy('hazards_record_count', 'desc')
-                    ->limit(30)
-                    ->get();
-
-                $resultsAvailable = count($results) > 0;
+                $results = $results->sortByDesc('hazards_record_count')->values();
             }
+
+            $resultsAvailable = $results->isNotEmpty();
         }
 
         return view('livewire.hazards.substance-search', [
@@ -92,6 +104,7 @@ class SubstanceSearch extends Component
             $substance = Substance::find($substanceId);
             if ($substance) {
                 $recordCount = ComptoxSubstanceData::query()
+                    ->active()
                     ->where('susdat_substance_id', $substance->id)
                     ->count();
 

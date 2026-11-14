@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('comptox_payload_id')->nullable()->index();
             $table->unsignedBigInteger('susdat_substance_id')->nullable()->index();
 
-            // Core ARB_ARG-equivalent fields.
             $table->string('fate_id', 128);
             $table->string('dtxid', 64)->index();
             $table->string('endpoint_name');
@@ -26,7 +25,6 @@ return new class extends Migration
             $table->string('unit', 64)->nullable();
             $table->string('value_type', 64)->nullable();
 
-            // Extra safety/debug context.
             $table->json('source_json')->nullable();
 
             $table->timestamps();
@@ -44,7 +42,8 @@ return new class extends Migration
             $table->foreign('susdat_substance_id')
                 ->references('id')
                 ->on('susdat_substances')
-                ->nullOnDelete();
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
         });
     }
 
@@ -56,4 +55,3 @@ return new class extends Migration
         Schema::dropIfExists('hazards_comptox_fate_records');
     }
 };
-

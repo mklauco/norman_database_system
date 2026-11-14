@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('hazards_classification_votes', function (Blueprint $table) {
@@ -30,23 +33,24 @@ return new class extends Migration
                 ->on('susdat_substances')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users')
                 ->nullOnDelete();
         });
 
-        DB::statement("
+        DB::statement('
             CREATE UNIQUE INDEX hazards_class_votes_current_unique
             ON hazards_classification_votes (susdat_substance_id, user_id, classification_type, criterion)
             WHERE is_current = true
-        ");
+        ');
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        DB::statement('DROP INDEX IF EXISTS hazards_class_votes_current_unique');
         Schema::dropIfExists('hazards_classification_votes');
     }
 };

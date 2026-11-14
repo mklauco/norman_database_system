@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use App\Models\Susdat\Substance;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DerivationSelection extends Model
 {
@@ -27,22 +31,22 @@ class DerivationSelection extends Model
         'is_current' => 'boolean',
     ];
 
-    public function substance()
+    public function substance(): BelongsTo
     {
         return $this->belongsTo(Substance::class, 'susdat_substance_id');
     }
 
-    public function hazardsSubstanceData()
+    public function hazardsSubstanceData(): BelongsTo
     {
         return $this->belongsTo(ComptoxSubstanceData::class, 'hazards_substance_data_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function metadata()
+    public function metadata(): HasMany
     {
         return $this->hasMany(DerivationMetadata::class, 'selection_id');
     }

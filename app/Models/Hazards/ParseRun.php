@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ParseRun extends Model
 {
@@ -41,24 +45,23 @@ class ParseRun extends Model
         'ended_at' => 'datetime',
     ];
 
-    public function sourceApiRun()
+    public function sourceApiRun(): BelongsTo
     {
         return $this->belongsTo(ApiRun::class, 'source_api_run_id');
     }
 
-    public function fateRecords()
+    public function fateRecords(): HasMany
     {
         return $this->hasMany(ComptoxFateRecord::class, 'parse_run_id');
     }
 
-    public function propertyRecords()
+    public function propertyRecords(): HasMany
     {
         return $this->hasMany(ComptoxPropertyRecord::class, 'parse_run_id');
     }
 
-    public function detailRecords()
+    public function detailRecords(): HasMany
     {
         return $this->hasMany(ComptoxDetailRecord::class, 'parse_run_id');
     }
 }
-

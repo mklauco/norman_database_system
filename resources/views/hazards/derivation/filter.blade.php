@@ -67,7 +67,7 @@
         action="{{ route('hazards.derivation.search.search') }}"
         method="GET">
 
-          <div x-show="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900 bg-opacity-80" style="display: none;">
+          <div x-show="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900/80" style="display: none;">
             <div class="text-center p-8 bg-white rounded-lg shadow-xl max-w-md w-full">
               <h2 class="text-xl font-bold text-slate-700 mb-2">Hazards Derivation</h2>
               <svg class="mx-auto animate-spin h-20 w-20 text-slate-500 my-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

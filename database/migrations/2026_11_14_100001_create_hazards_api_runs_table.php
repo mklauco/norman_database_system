@@ -20,6 +20,8 @@ return new class extends Migration
             $table->unsignedInteger('processed_dtxids')->default(0);
             $table->unsignedInteger('successful_dtxids')->default(0);
             $table->unsignedInteger('failed_dtxids')->default(0);
+            $table->unsignedInteger('new_payloads')->default(0);
+            $table->unsignedInteger('updated_payloads')->default(0);
 
             $table->json('failed_endpoints')->nullable();
             $table->integer('duration_seconds')->nullable();
@@ -39,4 +41,3 @@ return new class extends Migration
         Schema::dropIfExists('hazards_api_runs');
     }
 };
-

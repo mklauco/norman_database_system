@@ -26,7 +26,7 @@ class HazardsComptoxSubstanceDataController extends Controller
         }
 
         try {
-            FillHazardsComptoxSubstanceDataJob::dispatch('manual', $token, (int) $request->user()->id);
+            FillHazardsComptoxSubstanceDataJob::dispatch('manual', $token);
         } catch (Throwable $e) {
             $currentToken = Cache::get(FillHazardsComptoxSubstanceDataJob::REQUEST_TOKEN_CACHE_KEY);
             if (is_string($currentToken) && hash_equals($currentToken, $token)) {

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hazards;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ApiRun extends Model
 {
@@ -37,12 +40,12 @@ class ApiRun extends Model
         'ended_at' => 'datetime',
     ];
 
-    public function payloads()
+    public function payloads(): HasMany
     {
         return $this->hasMany(ComptoxPayload::class, 'api_run_id');
     }
 
-    public function parseRuns()
+    public function parseRuns(): HasMany
     {
         return $this->hasMany(ParseRun::class, 'source_api_run_id');
     }
