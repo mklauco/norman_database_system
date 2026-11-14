@@ -14,183 +14,263 @@ class HazardsClassificationService
 {
     private const CRITERIA = ['P', 'B', 'M', 'T'];
 
+    private const GROUP_SIZE = 25;
+
     public function __construct(
         private readonly HazardsDerivationService $derivationService
     ) {}
 
     public function run(int|string $susdatSubstanceId): void
     {
-        $substanceId = (int) $susdatSubstanceId;
-        if ($substanceId <= 0) {
-            return;
-        }
-
-        $this->derivationService->runAutoSelections($substanceId);
-        $this->syncAutoBaseline($substanceId);
-        $this->syncDerivationSnapshot($substanceId);
+        $this->runMany([(int) $susdatSubstanceId]);
     }
 
     /**
      * Recomputes the automatic selections, the auto baseline and the derivation conclusion
-     * of many substances. Candidate rows and current autos are loaded once per call; every
-     * substance is written in its own short transaction.
+     * of many substances. Substances are written in short transactions of GROUP_SIZE; each
+     * group reads what it needs with a handful of whereIn queries and writes in bulk.
      *
-     * @param  list<int>  $substanceIds
+     * @param  list<int|string>  $substanceIds
      */
     public function runMany(array $substanceIds): int
     {
         $substanceIds = array_values(array_unique(array_filter(array_map('intval', $substanceIds), static fn (int $id): bool => $id > 0)));
-        if ($substanceIds === []) {
-            return 0;
-        }
 
-        $rowsBySubstance = $this->derivationService->loadCandidateRowsForMany($substanceIds);
-        $autosBySubstance = DerivationSelection::query()
-            ->with('hazardsSubstanceData')
-            ->whereIn('susdat_substance_id', $substanceIds)
-            ->where('kind', 'auto')
-            ->where('is_current', true)
-            ->get()
-            ->groupBy('susdat_substance_id');
-
-        foreach ($substanceIds as $substanceId) {
-            DB::transaction(function () use ($substanceId, $rowsBySubstance, $autosBySubstance): void {
-                $this->derivationService->runAutoSelections(
-                    $substanceId,
-                    $rowsBySubstance->get($substanceId, collect()),
-                    $autosBySubstance->get($substanceId, collect())
-                );
-                $this->syncAutoBaseline($substanceId);
-                $this->syncDerivationSnapshot($substanceId);
-            });
+        foreach (array_chunk($substanceIds, self::GROUP_SIZE) as $group) {
+            DB::transaction(fn () => $this->recomputeGroup($group));
         }
 
         return count($substanceIds);
     }
 
-    public function syncDerivationSnapshot(int|string $susdatSubstanceId): ?SubstanceClassification
+    /**
+     * @param  list<int>  $ids
+     */
+    private function recomputeGroup(array $ids): void
     {
-        $substanceId = (int) $susdatSubstanceId;
+        $now = now();
+        $rowsBySubstance = $this->derivationService->loadCandidateRowsForMany($ids);
 
-        if ($substanceId <= 0) {
-            return null;
+        $selections = DerivationSelection::query()
+            ->with('hazardsSubstanceData')
+            ->whereIn('susdat_substance_id', $ids)
+            ->where('is_current', true)
+            ->where(function ($query): void {
+                $query->where('kind', 'auto')
+                    ->orWhere(fn ($vote) => $vote->where('kind', 'vote')->whereNotNull('user_id'));
+            })
+            ->get();
+
+        $votes = $selections->where('kind', 'vote');
+        if ($votes->isNotEmpty()) {
+            $votes->load('user');
         }
+        $voteMetadata = $this->getLatestMetadataMapForSelections($votes);
+        $autosBySubstance = $selections->where('kind', 'auto')->groupBy('susdat_substance_id');
+        $votesBySubstance = $votes->groupBy('susdat_substance_id');
 
-        $autos = DerivationSelection::query()
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'auto')
-            ->where('is_current', true)
-            ->get();
-
-        $votes = DerivationSelection::query()
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'vote')
-            ->where('is_current', true)
-            ->whereNotNull('user_id')
-            ->get();
-
-        $current = SubstanceClassification::query()
+        $classifications = SubstanceClassification::query()
             ->with('supports')
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'derivation')
+            ->whereIn('susdat_substance_id', $ids)
             ->where('is_current', true)
-            ->latest('id')
-            ->first();
-
-        if ($votes->isEmpty()) {
-            SubstanceClassification::query()
-                ->where('susdat_substance_id', $substanceId)
-                ->where('kind', 'derivation')
-                ->where('is_current', true)
-                ->update(['is_current' => false]);
-
-            return null;
-        }
-
-        $payload = $this->buildDerivationConclusionPayload($autos, $votes);
-        $supports = $this->buildDerivationSupportRows($autos, $votes, $payload);
-
-        if (
-            $current
-            && $this->snapshotMatches($current, $payload)
-            && $this->supportsMatch($current, $supports)
-        ) {
-            return $current;
-        }
-
-        SubstanceClassification::query()
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'derivation')
-            ->where('is_current', true)
-            ->update(['is_current' => false]);
-
-        $row = SubstanceClassification::create($payload + [
-            'susdat_substance_id' => $substanceId,
-            'editor_user_id' => null,
-            'kind' => 'derivation',
-            'is_current' => true,
-        ]);
-
-        $this->syncSupports($row, $supports);
-
-        return $row;
-    }
-
-    public function syncAutoBaseline(int|string $susdatSubstanceId): ?SubstanceClassification
-    {
-        $substanceId = (int) $susdatSubstanceId;
-        if ($substanceId <= 0) {
-            return null;
-        }
-
-        $autos = DerivationSelection::query()
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'auto')
-            ->where('is_current', true)
+            ->where(function ($query): void {
+                $query->where('kind', 'derivation')
+                    ->orWhere(fn ($baseline) => $baseline->where('kind', 'auto_baseline')->whereNull('editor_user_id'));
+            })
+            ->orderBy('id')
             ->get();
+        $baselineBySubstance = $classifications->where('kind', 'auto_baseline')->keyBy('susdat_substance_id');
+        $derivationBySubstance = $classifications->where('kind', 'derivation')->keyBy('susdat_substance_id');
 
-        $current = SubstanceClassification::query()
-            ->with('supports')
-            ->where('susdat_substance_id', $substanceId)
-            ->whereNull('editor_user_id')
-            ->where('kind', 'auto_baseline')
-            ->where('is_current', true)
-            ->latest('id')
-            ->first();
+        $plans = [];
+        $deactivateSelections = [];
+        $newSelections = [];
+        foreach ($ids as $id) {
+            $plans[$id] = $this->derivationService->planAutoSelections(
+                $rowsBySubstance->get($id, collect()),
+                $autosBySubstance->get($id, collect())
+            );
+            array_push($deactivateSelections, ...$plans[$id]['deactivate']);
+            foreach ($plans[$id]['create'] as $spec) {
+                $newSelections[] = [
+                    'susdat_substance_id' => $id,
+                    'bucket' => $spec['bucket'],
+                    'hazards_substance_data_id' => (int) $spec['row']->id,
+                    'source_label' => $spec['label'],
+                    'kind' => 'auto',
+                    'user_id' => null,
+                    'is_current' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
 
-        if ($autos->isEmpty()) {
-            if ($current) {
-                $current->update(['is_current' => false]);
+        if ($deactivateSelections !== []) {
+            DerivationSelection::query()->whereIn('id', $deactivateSelections)->update(['is_current' => false, 'updated_at' => $now]);
+        }
+
+        $createdIds = [];
+        foreach ($this->bulkInsert('hazards_derivation_selections', $newSelections, ['id', 'susdat_substance_id', 'bucket']) as $returned) {
+            $createdIds[$returned->susdat_substance_id.'|'.$returned->bucket] = (int) $returned->id;
+        }
+
+        $deactivateClassifications = [];
+        $updatedBaselines = [];
+        $newClassifications = [];
+        $supportsOfExisting = [];
+
+        foreach ($ids as $id) {
+            $autos = collect($plans[$id]['keep']);
+            foreach ($plans[$id]['create'] as $spec) {
+                $selection = new DerivationSelection([
+                    'susdat_substance_id' => $id,
+                    'bucket' => $spec['bucket'],
+                    'hazards_substance_data_id' => (int) $spec['row']->id,
+                    'source_label' => $spec['label'],
+                    'kind' => 'auto',
+                    'user_id' => null,
+                    'is_current' => true,
+                ]);
+                $selection->id = $createdIds[$id.'|'.$spec['bucket']];
+                $selection->setRelation('hazardsSubstanceData', $spec['row']);
+                $autos->push($selection);
             }
 
-            return null;
+            $currentVotes = $votesBySubstance->get($id, collect());
+
+            $baseline = $baselineBySubstance->get($id);
+            if ($autos->isEmpty()) {
+                if ($baseline) {
+                    $deactivateClassifications[] = (int) $baseline->id;
+                }
+            } else {
+                $payload = $this->buildDerivationConclusionPayload($autos, collect(), $voteMetadata);
+                $supports = $this->buildDerivationSupportRows($autos, collect(), $payload, $voteMetadata);
+                $payloadMatches = $baseline && $this->snapshotMatches($baseline, $payload);
+
+                if (! ($payloadMatches && $this->supportsMatch($baseline, $supports))) {
+                    if ($baseline) {
+                        if (! $payloadMatches) {
+                            $baseline->fill($payload + ['is_current' => true]);
+                            $updatedBaselines[] = $baseline;
+                        }
+                        $supportsOfExisting[(int) $baseline->id] = $supports;
+                    } else {
+                        $newClassifications[$id.'|auto_baseline'] = [
+                            'row' => $payload + [
+                                'susdat_substance_id' => $id,
+                                'editor_user_id' => null,
+                                'kind' => 'auto_baseline',
+                                'is_current' => true,
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ],
+                            'supports' => $supports,
+                        ];
+                    }
+                }
+            }
+
+            $derivation = $derivationBySubstance->get($id);
+            if ($currentVotes->isEmpty()) {
+                if ($derivation) {
+                    $deactivateClassifications[] = (int) $derivation->id;
+                }
+
+                continue;
+            }
+
+            $payload = $this->buildDerivationConclusionPayload($autos, $currentVotes, $voteMetadata);
+            $supports = $this->buildDerivationSupportRows($autos, $currentVotes, $payload, $voteMetadata);
+
+            if ($derivation && $this->snapshotMatches($derivation, $payload) && $this->supportsMatch($derivation, $supports)) {
+                continue;
+            }
+
+            if ($derivation) {
+                $deactivateClassifications[] = (int) $derivation->id;
+            }
+            $newClassifications[$id.'|derivation'] = [
+                'row' => $payload + [
+                    'susdat_substance_id' => $id,
+                    'editor_user_id' => null,
+                    'kind' => 'derivation',
+                    'is_current' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+                'supports' => $supports,
+            ];
         }
 
-        $payload = $this->buildDerivationConclusionPayload($autos, collect());
-        $supports = $this->buildDerivationSupportRows($autos, collect(), $payload);
-
-        if (
-            $current
-            && $this->snapshotMatches($current, $payload)
-            && $this->supportsMatch($current, $supports)
-        ) {
-            return $current;
+        if ($deactivateClassifications !== []) {
+            SubstanceClassification::query()->whereIn('id', $deactivateClassifications)->update(['is_current' => false, 'updated_at' => $now]);
         }
 
-        return DB::transaction(function () use ($current, $substanceId, $payload, $supports) {
-            $row = $current ?? new SubstanceClassification([
-                'susdat_substance_id' => $substanceId,
-                'editor_user_id' => null,
-                'kind' => 'auto_baseline',
-            ]);
+        foreach ($updatedBaselines as $baseline) {
+            $baseline->save();
+        }
 
-            $row->fill($payload + ['is_current' => true]);
-            $row->save();
+        if ($supportsOfExisting !== []) {
+            ClassificationSupport::query()->whereIn('substance_classification_id', array_keys($supportsOfExisting))->delete();
+        }
 
-            $this->syncSupports($row, $supports);
+        $supportRows = [];
+        foreach ($supportsOfExisting as $classificationId => $supports) {
+            foreach ($supports as $support) {
+                $supportRows[] = $support + ['substance_classification_id' => $classificationId, 'created_at' => $now, 'updated_at' => $now];
+            }
+        }
 
-            return $row->fresh('supports');
-        });
+        $keys = array_keys($newClassifications);
+        $inserted = $this->bulkInsert('hazards_substance_classifications', array_column($newClassifications, 'row'), ['id', 'susdat_substance_id', 'kind']);
+        $classificationIds = [];
+        foreach ($inserted as $returned) {
+            $classificationIds[$returned->susdat_substance_id.'|'.$returned->kind] = (int) $returned->id;
+        }
+        foreach ($keys as $key) {
+            foreach ($newClassifications[$key]['supports'] as $support) {
+                $supportRows[] = $support + ['substance_classification_id' => $classificationIds[$key], 'created_at' => $now, 'updated_at' => $now];
+            }
+        }
+
+        $this->bulkInsert('hazards_classification_supports', $supportRows);
+    }
+
+    /**
+     * Multi-row insert, optionally returning columns of the inserted rows.
+     *
+     * @param  list<array<string, mixed>>  $rows  all with the same keys
+     * @param  list<string>  $returning
+     * @return list<object>
+     */
+    private function bulkInsert(string $table, array $rows, array $returning = []): array
+    {
+        $returned = [];
+
+        foreach (array_chunk($rows, 400) as $chunk) {
+            $columns = array_keys($chunk[0]);
+            $tuple = '('.implode(',', array_fill(0, count($columns), '?')).')';
+            $sql = 'insert into "'.$table.'" ("'.implode('","', $columns).'") values '.implode(',', array_fill(0, count($chunk), $tuple));
+            $bindings = [];
+            foreach ($chunk as $row) {
+                foreach ($columns as $column) {
+                    $bindings[] = $row[$column];
+                }
+            }
+
+            if ($returning === []) {
+                DB::insert($sql, $bindings);
+
+                continue;
+            }
+
+            $sql .= ' returning "'.implode('","', $returning).'"';
+            array_push($returned, ...DB::selectFromWriteConnection($sql, $bindings));
+        }
+
+        return $returned;
     }
 
     public function insertUserConclusionSnapshot(int|string $susdatSubstanceId, int $userId): ?SubstanceClassification
@@ -203,6 +283,7 @@ class HazardsClassificationService
         }
 
         $autos = DerivationSelection::query()
+            ->with('hazardsSubstanceData')
             ->where('susdat_substance_id', $substanceId)
             ->where('kind', 'auto')
             ->where('is_current', true)
@@ -317,10 +398,10 @@ class HazardsClassificationService
         });
     }
 
-    private function buildDerivationConclusionPayload(Collection $autoSelections, Collection $derivationVotes): array
+    private function buildDerivationConclusionPayload(Collection $autoSelections, Collection $derivationVotes, ?Collection $voteMetadata = null): array
     {
-        $autoScores = $this->resolveSelectionCodes($autoSelections);
-        $voteScores = $this->resolveSelectionCodes($derivationVotes);
+        $autoScores = $this->resolveSelectionCodes($autoSelections, $voteMetadata);
+        $voteScores = $this->resolveSelectionCodes($derivationVotes, $voteMetadata);
 
         return $this->buildPayloadFromScores(
             autoScores: $autoScores,
@@ -341,11 +422,11 @@ class HazardsClassificationService
         );
     }
 
-    private function buildDerivationSupportRows(Collection $autoSelections, Collection $derivationVotes, array $payload): array
+    private function buildDerivationSupportRows(Collection $autoSelections, Collection $derivationVotes, array $payload, ?Collection $voteMetadata = null): array
     {
         return array_values(array_merge(
-            $this->buildSelectionSupportRows($autoSelections, 'auto', $payload),
-            $this->buildSelectionSupportRows($derivationVotes, 'derivation_vote', $payload)
+            $this->buildSelectionSupportRows($autoSelections, 'auto', $payload, $voteMetadata),
+            $this->buildSelectionSupportRows($derivationVotes, 'derivation_vote', $payload, $voteMetadata)
         ));
     }
 
@@ -357,13 +438,13 @@ class HazardsClassificationService
         ));
     }
 
-    private function buildSelectionSupportRows(Collection $selections, string $originType, array $payload): array
+    private function buildSelectionSupportRows(Collection $selections, string $originType, array $payload, ?Collection $voteMetadata = null): array
     {
         if ($selections->isEmpty()) {
             return [];
         }
 
-        $metadataBySelection = $this->getLatestMetadataMapForSelections($selections->pluck('id'));
+        $metadataBySelection = $voteMetadata ?? $this->getLatestMetadataMapForSelections($selections);
         $supports = [];
 
         foreach ($selections as $selection) {
@@ -372,7 +453,7 @@ class HazardsClassificationService
                 continue;
             }
 
-            $metadata = $metadataBySelection->get($selection->id);
+            $metadata = $selection->kind === 'vote' ? $metadataBySelection->get($selection->id) : null;
             $code = $this->normalizeCode(
                 $metadata?->norman_classification
                     ?? $selection->hazardsSubstanceData?->assessment_class
@@ -467,13 +548,13 @@ class HazardsClassificationService
         return $payload;
     }
 
-    private function resolveSelectionCodes(Collection $selections): array
+    private function resolveSelectionCodes(Collection $selections, ?Collection $voteMetadata = null): array
     {
         if ($selections->isEmpty()) {
             return [];
         }
 
-        $metadataBySelection = $this->getLatestMetadataMapForSelections($selections->pluck('id'));
+        $metadataBySelection = $voteMetadata ?? $this->getLatestMetadataMapForSelections($selections);
 
         $scores = [];
 
@@ -483,7 +564,7 @@ class HazardsClassificationService
 
         foreach ($selections as $selection) {
             $criterion = strtoupper(substr((string) $selection->bucket, 0, 1));
-            $metadata = $metadataBySelection->get($selection->id);
+            $metadata = $selection->kind === 'vote' ? $metadataBySelection->get($selection->id) : null;
             $code = $this->normalizeCode(
                 $metadata?->norman_classification
                     ?? $selection->hazardsSubstanceData?->assessment_class
@@ -755,14 +836,22 @@ class HazardsClassificationService
         return $testType === '2' ? 2 : 1;
     }
 
-    public function getLatestMetadataMapForSelections(Collection $selectionIds): Collection
+    /**
+     * Latest vote snapshot per selection. Automatic selections have no snapshot; their
+     * values come from the live source row.
+     *
+     * @param  Collection<int, DerivationSelection>  $selections
+     * @return Collection<int, DerivationMetadata> keyed by selection id
+     */
+    public function getLatestMetadataMapForSelections(Collection $selections): Collection
     {
-        if ($selectionIds->isEmpty()) {
+        $voteIds = $selections->where('kind', 'vote')->pluck('id')->all();
+        if ($voteIds === []) {
             return collect();
         }
 
         return DerivationMetadata::query()
-            ->whereIn('selection_id', $selectionIds->all())
+            ->whereIn('selection_id', $voteIds)
             ->orderByDesc('id')
             ->get()
             ->unique('selection_id')

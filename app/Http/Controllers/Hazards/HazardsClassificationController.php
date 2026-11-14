@@ -207,7 +207,7 @@ class HazardsClassificationController extends Controller
         }
 
         $latestMetadata = $this->classificationService
-            ->getLatestMetadataMapForSelections($selections->pluck('id'));
+            ->getLatestMetadataMapForSelections($selections);
 
         $rows = [];
 

@@ -30,35 +30,39 @@ class HazardsDerivationService
     ];
 
     /**
-     * Recomputes the automatic selection of every bucket of one substance. Only called by
-     * rebuilds and vote handlers, never by a page view.
+     * Decides, from preloaded data, what the automatic selections of one substance have to
+     * become. Writes nothing: the caller applies the plan (see HazardsClassificationService).
      *
-     * @param  Collection<int, ComptoxSubstanceData>|null  $rows  preloaded active candidate rows
-     * @param  Collection<int, DerivationSelection>|null  $currentAutos  preloaded current auto selections
+     * @param  Collection<int, ComptoxSubstanceData>  $rows  active candidate rows
+     * @param  Collection<int, DerivationSelection>  $currentAutos  current auto selections (data row loaded)
+     * @return array{keep: list<DerivationSelection>, deactivate: list<int>, create: list<array{bucket: string, row: ComptoxSubstanceData, label: string}>}
      */
-    public function runAutoSelections(int|string $susdatSubstanceId, ?Collection $rows = null, ?Collection $currentAutos = null): void
+    public function planAutoSelections(Collection $rows, Collection $currentAutos): array
     {
-        $substanceId = (int) $susdatSubstanceId;
-        if ($substanceId <= 0) {
-            return;
-        }
-
-        $rows ??= $this->loadCandidateRows($substanceId);
-        $currentAutos ??= DerivationSelection::query()
-            ->with('hazardsSubstanceData')
-            ->where('susdat_substance_id', $substanceId)
-            ->where('kind', 'auto')
-            ->where('is_current', true)
-            ->get();
-
         $currentByBucket = $currentAutos->sortBy('id')->keyBy('bucket');
         $buckets = $this->buildBuckets($rows);
+        $plan = ['keep' => [], 'deactivate' => [], 'create' => []];
 
         foreach (self::BUCKETS as $bucket) {
-            $items = $buckets[$bucket] ?? collect();
-            $pick = $this->pickAutoCandidate($items, $bucket);
-            $this->syncAutoSelection($substanceId, $bucket, $pick, $currentByBucket->get($bucket));
+            $pick = $this->pickAutoCandidate($buckets[$bucket] ?? collect(), $bucket);
+            $current = $currentByBucket->get($bucket);
+
+            if ($current && $pick && (int) $current->hazards_substance_data_id === (int) $pick->id) {
+                $plan['keep'][] = $current;
+
+                continue;
+            }
+
+            if ($current) {
+                $plan['deactivate'][] = (int) $current->id;
+            }
+
+            if ($pick) {
+                $plan['create'][] = ['bucket' => $bucket, 'row' => $pick, 'label' => $this->autoSourceLabel($pick)];
+            }
         }
+
+        return $plan;
     }
 
     /**
@@ -258,11 +262,42 @@ class HazardsDerivationService
         return true;
     }
 
+    /**
+     * Stores the immutable snapshot of a vote. Automatic selections never get one: they read
+     * the live source row (see liveMetadataForSelection).
+     *
+     * @param  array<string, mixed>  $metadataOverrides
+     */
     public function createMetadataSnapshot(
         DerivationSelection $selection,
         array $metadataOverrides = [],
         ?string $userName = null
     ): ?DerivationMetadata {
+        $attributes = $this->buildMetadataAttributes($selection, $metadataOverrides, $userName);
+
+        return $attributes === null ? null : DerivationMetadata::create($attributes);
+    }
+
+    /**
+     * The metadata an automatic selection would have had, built from the live source row and
+     * never stored.
+     */
+    public function liveMetadataForSelection(DerivationSelection $selection): ?DerivationMetadata
+    {
+        $attributes = $this->buildMetadataAttributes($selection);
+
+        return $attributes === null ? null : new DerivationMetadata($attributes);
+    }
+
+    /**
+     * @param  array<string, mixed>  $metadataOverrides
+     * @return array<string, mixed>|null
+     */
+    private function buildMetadataAttributes(
+        DerivationSelection $selection,
+        array $metadataOverrides = [],
+        ?string $userName = null
+    ): ?array {
         $row = $selection->relationLoaded('hazardsSubstanceData') && $selection->hazardsSubstanceData !== null
             ? $selection->hazardsSubstanceData
             : $selection->hazardsSubstanceData()->first();
@@ -282,7 +317,7 @@ class HazardsDerivationService
             $testTypeLabel = (string) $metadataOverrides['meta_test_type'];
         }
 
-        return DerivationMetadata::create([
+        return [
             'selection_id' => $selection->id,
             'susdat_substance_id' => $selection->susdat_substance_id,
             'bucket' => $selection->bucket,
@@ -290,7 +325,8 @@ class HazardsDerivationService
             'user_id' => $selection->user_id,
             'data_source' => $metadataOverrides['meta_pbmt_classification_code'] ?? $row->data_source,
             'editor' => $metadataOverrides['meta_editor'] ?? $editorName,
-            'record_date' => $this->toNullableDateTime($metadataOverrides['meta_date'] ?? null) ?? now(),
+            'record_date' => $this->toNullableDateTime($metadataOverrides['meta_date'] ?? null)
+                ?? ($selection->kind === 'auto' ? ($selection->created_at ?? now()) : now()),
             'reference_type' => $metadataOverrides['meta_reference_type'] ?? $row->reference_type,
             'title' => $metadataOverrides['meta_title'] ?? $row->title,
             'authors' => $metadataOverrides['meta_authors'] ?? $row->authors,
@@ -344,18 +380,27 @@ class HazardsDerivationService
             'norman_classification' => $metadataOverrides['meta_norman_classification'] ?? $row->assessment_class,
             'norman_vote' => $normanVote,
             'automated_expert_vote' => $metadataOverrides['meta_automated_expert_vote'] ?? $editorName,
-        ]);
+        ];
     }
 
     public function getMetadataForSelection(int $selectionId): ?DerivationMetadata
     {
-        $selection = DerivationSelection::find($selectionId);
+        $selection = DerivationSelection::with('hazardsSubstanceData')->find($selectionId);
         if (! $selection) {
             return null;
         }
 
+        return $this->metadataFor($selection);
+    }
+
+    private function metadataFor(DerivationSelection $selection): ?DerivationMetadata
+    {
+        if ($selection->kind === 'auto') {
+            return $this->liveMetadataForSelection($selection);
+        }
+
         $metadata = DerivationMetadata::query()
-            ->where('selection_id', $selectionId)
+            ->where('selection_id', $selection->id)
             ->latest('id')
             ->first();
 
@@ -369,40 +414,6 @@ class HazardsDerivationService
             ->where('hazards_substance_data_id', $selection->hazards_substance_data_id)
             ->latest('id')
             ->first();
-    }
-
-    private function syncAutoSelection(int $substanceId, string $bucket, ?ComptoxSubstanceData $pick, ?DerivationSelection $current): void
-    {
-        if (! $pick) {
-            if ($current) {
-                $current->update(['is_current' => false]);
-            }
-
-            return;
-        }
-
-        if ($current && (int) $current->hazards_substance_data_id === (int) $pick->id) {
-            $this->refreshAutoMetadataSnapshot($current, $pick);
-
-            return;
-        }
-
-        if ($current) {
-            $current->update(['is_current' => false]);
-        }
-
-        $selection = DerivationSelection::create([
-            'susdat_substance_id' => $substanceId,
-            'bucket' => $bucket,
-            'hazards_substance_data_id' => (int) $pick->id,
-            'source_label' => $this->autoSourceLabel($pick),
-            'kind' => 'auto',
-            'user_id' => null,
-            'is_current' => true,
-        ]);
-
-        $selection->setRelation('hazardsSubstanceData', $pick);
-        $this->createMetadataSnapshot($selection);
     }
 
     private function loadCandidateRows(int $susdatSubstanceId): Collection
@@ -606,7 +617,7 @@ class HazardsDerivationService
     private function normalizeSelectionRow(DerivationSelection $selection): array
     {
         $row = $selection->hazardsSubstanceData;
-        $metadata = $this->getMetadataForSelection((int) $selection->id);
+        $metadata = $selection->kind === 'vote' ? $this->metadataFor($selection) : null;
         $classificationType = $selection->kind === 'vote'
             ? $this->resolveSelectionSourceType($row)
             : ($selection->source_label ?: $this->resolveSelectionSourceType($row));
@@ -630,41 +641,6 @@ class HazardsDerivationService
             'date' => $metadata?->record_date ?? $selection->created_at,
             'active' => (bool) $selection->is_current,
         ];
-    }
-
-    /**
-     * An auto selection keeps pointing at the same source row after a reseed, so its
-     * snapshot follows the row. Vote snapshots are never rewritten.
-     */
-    private function refreshAutoMetadataSnapshot(DerivationSelection $selection, ComptoxSubstanceData $row): void
-    {
-        $metadata = DerivationMetadata::query()
-            ->where('selection_id', $selection->id)
-            ->latest('id')
-            ->first();
-
-        if (! $metadata) {
-            $this->createMetadataSnapshot($selection);
-
-            return;
-        }
-
-        $matches = (string) $metadata->norman_classification === (string) $row->assessment_class
-            && $this->toNullableFloat($metadata->original_value) === $this->toNullableFloat($row->original_value)
-            && $this->toNullableFloat($metadata->assessment_value) === $this->toNullableFloat($row->value_assessment_index)
-            && (string) $metadata->data_source === (string) $row->data_source
-            && $this->toNullableFloat($metadata->reliability_score) === $this->toNullableFloat($row->reliability_score);
-
-        if ($matches) {
-            return;
-        }
-
-        $selection->setRelation('hazardsSubstanceData', $row);
-        $this->createMetadataSnapshot($selection);
-        DerivationMetadata::query()
-            ->where('selection_id', $selection->id)
-            ->where('id', '<', DerivationMetadata::query()->where('selection_id', $selection->id)->max('id'))
-            ->delete();
     }
 
     private function resolveUserDisplayName(DerivationSelection $selection): string

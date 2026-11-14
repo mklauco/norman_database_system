@@ -34,6 +34,10 @@ class HazardsDataSeeder extends Seeder
             app('debugbar')->disable();
         }
 
+        if (class_exists(\Laravel\Telescope\Telescope::class)) {
+            \Laravel\Telescope\Telescope::stopRecording();
+        }
+
         DB::disableQueryLog();
 
         $say = function (string $level, string $message): void {

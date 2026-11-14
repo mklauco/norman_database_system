@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Database\Seeders\Hazards;
 
 /**
- * Loads storage/app/hazards/hazards_janus.xlsx (sheet FINAL, else the first sheet) into
- * hazards_janus. susdat_substance_id is resolved from NORMAN_ID ('NS' + susdat_substances.code);
- * any id column in the file is ignored.
+ * Loads storage/app/hazards/hazards_janus.csv into hazards_janus. When only the original
+ * hazards_janus.xlsx is there, it is read instead (sheet FINAL, else the first sheet), which
+ * takes several minutes longer. susdat_substance_id is resolved from NORMAN_ID
+ * ('NS' + susdat_substances.code); any id column in the file is ignored.
  *
  * Helper class of HazardsDataSeeder; not a seeder, nothing to run. Run only
  * Database\Seeders\Hazards\HazardsDataSeeder.
@@ -26,7 +27,9 @@ final class HazardsJanusLoader extends HazardsSourceLoader
 
     protected function path(): string
     {
-        return storage_path('app/hazards/hazards_janus.xlsx');
+        $csv = storage_path('app/hazards/hazards_janus.csv');
+
+        return is_file($csv) ? $csv : storage_path('app/hazards/hazards_janus.xlsx');
     }
 
     protected function keyColumn(): string
@@ -42,6 +45,12 @@ final class HazardsJanusLoader extends HazardsSourceLoader
     protected function openReader(string $path): \Spatie\SimpleExcel\SimpleExcelReader
     {
         $reader = parent::openReader($path);
+
+        if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'xlsx') {
+            return $reader;
+        }
+
+        ($this->say)('warn', 'Janus: reading the xlsx; save it as hazards_janus.csv (UTF-8) to load several minutes faster.');
 
         return $reader->hasSheet('FINAL') ? $reader->fromSheetName('FINAL') : $reader;
     }
