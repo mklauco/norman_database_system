@@ -41,6 +41,12 @@ use App\Http\Controllers\EmpodatSuspect\EmpodatSuspectHomeController;
 use App\Http\Controllers\EmpodatSuspect\StatisticsController as EmpodatSuspectStatisticsController;
 use App\Http\Controllers\Factsheet\FactsheetController;
 use App\Http\Controllers\Factsheet\FactsheetStatisticsController;
+use App\Http\Controllers\Hazards\HazardsClassificationController;
+use App\Http\Controllers\Hazards\HazardsComptoxSubstanceDataController;
+use App\Http\Controllers\Hazards\HazardsController;
+use App\Http\Controllers\Hazards\HazardsDataController;
+use App\Http\Controllers\Hazards\HazardsDerivationController;
+use App\Http\Controllers\Hazards\HazardsHomeController;
 use App\Http\Controllers\Indoor\IndoorController;
 use App\Http\Controllers\Indoor\IndoorHomeController;
 use App\Http\Controllers\Indoor\IndoorStatisticsController;
@@ -829,6 +835,35 @@ Route::prefix('prioritisation')->group(function () {
     Route::get('/monitoring-scarce/download/csv', [MonitoringScarceController::class, 'downloadCsv'])->middleware('auth')->name('prioritisation.monitoring-scarce.csv');
 
     Route::get('prioritisation/countAll', [PrioritisationHomeController::class, 'countAll'])->middleware(['auth', 'role:super_admin'])->name('prioritisation.countAll');
+});
+
+Route::prefix('hazards')->middleware(['auth', 'module.access:hazards,hazards'])->group(function () {
+    Route::get('hazardshome', [HazardsHomeController::class, 'index'])->name('hazardshome.index');
+
+    Route::prefix('data')->group(function () {
+        Route::get('search/filter/', [HazardsDataController::class, 'filter'])->name('hazards.data.search.filter');
+        Route::get('search/search/', [HazardsDataController::class, 'search'])->name('hazards.data.search.search');
+        Route::get('show/{id}', [HazardsDataController::class, 'show'])->name('hazards.data.show')->where('id', '[0-9]{1,18}');
+        Route::get('form/{id}', [HazardsDataController::class, 'showForm'])->name('hazards.data.form')->where('id', '[0-9]{1,18}');
+    });
+
+    Route::get('derivation/search/filter', [HazardsDerivationController::class, 'filter'])->name('hazards.derivation.search.filter');
+    Route::get('derivation/search/search', [HazardsDerivationController::class, 'search'])->name('hazards.derivation.search.search');
+    Route::get('derivation/{susdatSubstanceId}', [HazardsDerivationController::class, 'index'])->name('hazards.derivation.index')->where('susdatSubstanceId', '[0-9]{1,18}');
+    Route::post('derivation/vote', [HazardsDerivationController::class, 'vote'])->middleware('role:super_admin|admin|hazards')->name('hazards.derivation.vote');
+    Route::post('derivation/vote/remove', [HazardsDerivationController::class, 'removeVote'])->middleware('role:super_admin|admin|hazards')->name('hazards.derivation.vote.remove');
+    Route::get('derivation/substance-data/{id}', [HazardsDerivationController::class, 'substanceDataJson'])->name('hazards.derivation.substance-data.show')->where('id', '[0-9]{1,18}');
+    Route::get('derivation/metadata/{selectionId}', [HazardsDerivationController::class, 'metadataShow'])->name('hazards.derivation.metadata.show')->where('selectionId', '[0-9]{1,18}');
+    Route::get('derivation/metadata/{selectionId}/json', [HazardsDerivationController::class, 'metadataJson'])->name('hazards.derivation.metadata.json')->where('selectionId', '[0-9]{1,18}');
+    Route::get('classification/search/filter', [HazardsClassificationController::class, 'filter'])->name('hazards.classification.search.filter');
+    Route::get('classification/search/search', [HazardsClassificationController::class, 'search'])->name('hazards.classification.search.search');
+    Route::get('classification/{susdatSubstanceId}', [HazardsClassificationController::class, 'index'])->name('hazards.classification.index')->where('susdatSubstanceId', '[0-9]{1,18}');
+    Route::post('classification/vote', [HazardsClassificationController::class, 'vote'])->middleware('role:super_admin|admin|hazards')->name('hazards.classification.vote');
+});
+Route::prefix('hazards')->middleware(['auth', 'role:super_admin'])->group(function () {
+    Route::post('fetch', [HazardsController::class, 'fetch'])->name('hazards.fetch');
+    Route::post('substance-data/fill', [HazardsComptoxSubstanceDataController::class, 'fill'])->name('hazards.substance_data.fill');
+    Route::get('countAll', [HazardsHomeController::class, 'countAll'])->name('hazards.countAll');
 });
 
 Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
