@@ -3,6 +3,7 @@
 namespace App\Models\Backend;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,6 +11,8 @@ use Illuminate\Support\Str;
 
 class QueryLog extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['content', 'query', 'user_id', 'total_count', 'database_key', 'query_hash', 'actual_count'];
 
     /**
