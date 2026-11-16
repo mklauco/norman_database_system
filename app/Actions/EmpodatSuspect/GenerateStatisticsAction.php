@@ -79,6 +79,7 @@ class GenerateStatisticsAction
         $entity->update([
             'number_of_records' => $totalRecords,
             'last_update' => $generatedAt,
+            'records_counted_at' => now(),
         ]);
 
         return [

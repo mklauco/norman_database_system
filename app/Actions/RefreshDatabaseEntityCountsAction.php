@@ -77,6 +77,7 @@ class RefreshDatabaseEntityCountsAction
                 $entity->update([
                     'number_of_records' => $count,
                     'last_update' => $lastUpdate,
+                    'records_counted_at' => now(),
                 ]);
 
                 $results[$code] = $count;
