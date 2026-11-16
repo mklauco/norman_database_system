@@ -16,6 +16,7 @@ use App\Http\Controllers\Backend\ServerPaymentController;
 use App\Http\Controllers\Backend\SystemSettingsController;
 use App\Http\Controllers\Backend\TemplateController;
 use App\Http\Controllers\Backend\UsageStatisticsController;
+use App\Http\Controllers\Backend\UserActivityController;
 use App\Http\Controllers\Backend\UserLoginRetentionController;
 use App\Http\Controllers\Bioassay\BioassayController;
 use App\Http\Controllers\Bioassay\BioassayHomeController;
@@ -125,6 +126,13 @@ Route::prefix('backend')->middleware('auth')->group(function () {
         Route::get('export/{table}', [UsageStatisticsController::class, 'export'])
             ->whereIn('table', ['searches', 'downloads', 'users', 'logins-month', 'logins-geo', 'logins-profile'])
             ->name('usage-statistics.export');
+        Route::middleware('role:super_admin')->group(function () {
+            Route::get('activity', [UserActivityController::class, 'index'])->name('usage-statistics.activity');
+            Route::get('activity/users/{user}', [UserActivityController::class, 'show'])->name('usage-statistics.activity.user');
+            Route::get('activity/export/{table}', [UserActivityController::class, 'export'])
+                ->whereIn('table', ['activity-timeline'])
+                ->name('usage-statistics.activity.export');
+        });
     });
 
     // Specific templates for a database entity code
