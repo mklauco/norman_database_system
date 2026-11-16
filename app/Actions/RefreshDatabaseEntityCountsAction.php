@@ -98,6 +98,7 @@ class RefreshDatabaseEntityCountsAction
     {
         return [
             'susdat' => fn (): array => [Substance::count(), Substance::max('updated_at')],
+            'factsheets' => fn (): array => [Substance::count(), Substance::max('updated_at')],
             'ecotox' => fn (): array => [
                 LowestPNEC::count() + EcotoxFinal::count(),
                 LowestPNEC::max('updated_at'),

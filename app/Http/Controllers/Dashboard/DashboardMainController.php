@@ -65,7 +65,8 @@ class DashboardMainController extends Controller
     {
         $query = DatabaseEntity::query()
             ->where('show_in_dashboard', true)
-            ->where('dashboard_route_name', 'not like', '%https%');
+            ->where('dashboard_route_name', 'not like', '%https%')
+            ->where('database_entities.code', '!=', 'factsheets');
 
         if ($withSearchCounts) {
             // GROUP BY the primary key is enough in PostgreSQL: every other

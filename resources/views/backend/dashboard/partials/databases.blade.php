@@ -33,6 +33,7 @@
                 <a href="{{ $link }}" @if ($isExternal) target="_blank" @endif class="font-medium text-gray-800 hover:text-lime-600">
                   {{ $entity->name }}
                 </a>
+                <span class="ml-1 text-sm text-gray-400">({{ $entity->code }})</span>
                 @if (! $entity->is_public)
                   <i class="fas fa-lock ml-1 text-gray-400 text-xs"></i>
                 @endif

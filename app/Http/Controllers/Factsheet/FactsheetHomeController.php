@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Factsheet;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
-use App\Models\Susdat\Substance;
+use Illuminate\Http\RedirectResponse;
 
 class FactsheetHomeController extends Controller
 {
@@ -13,8 +14,11 @@ class FactsheetHomeController extends Controller
         return redirect()->route('factsheets.search.filter');
     }
 
-    public function countAll()
+    public function countAll(): RedirectResponse
     {
-        return 0;
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['factsheets']);
+        session()->flash('success', 'Database counts updated successfully');
+
+        return redirect()->back();
     }
 }
