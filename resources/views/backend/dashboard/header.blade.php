@@ -17,6 +17,11 @@
     Uploaded DCT Files
   </x-nav-link-header>
   @endhasanyrole
+  @hasanyrole('super_admin|admin')
+  <x-nav-link-header :href="route('usage-statistics.index')" :active="request()->routeIs('usage-statistics.*')">
+    Usage Statistics
+  </x-nav-link-header>
+  @endhasanyrole
 
   @role('user_manager')
   <x-nav-link-header :href="route('users.index')" :active="request()->routeIs('users.*')">
