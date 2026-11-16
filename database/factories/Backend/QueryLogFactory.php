@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Database\Factories;
+namespace Database\Factories\Backend;
 
 use App\Models\Backend\QueryLog;
 use Illuminate\Database\Eloquent\Factories\Factory;
