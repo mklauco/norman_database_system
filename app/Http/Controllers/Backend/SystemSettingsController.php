@@ -93,7 +93,7 @@ class SystemSettingsController extends Controller
                     ],
                     [
                         'label' => 'Recount EMPODAT and SUSDAT',
-                        'description' => 'Recount the EMPODAT and SUSDAT records shown on the Main panel.',
+                        'description' => 'Recount the EMPODAT and SUSDAT records shown on the Main panel. EMPODAT runs as the same queued job as the nightly statistics and counts public records.',
                         'touches' => 'database entity counts for Empodat and SusDat',
                         'route' => 'update.dbentities.counts',
                         'method' => 'POST',

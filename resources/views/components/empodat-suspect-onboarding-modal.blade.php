@@ -18,7 +18,7 @@
   <div x-show="open"
        x-cloak
        @keydown.escape.window="open = false"
-       class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-800 bg-opacity-50 p-4 sm:p-8"
+       class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-800/50 p-4 sm:p-8"
        x-transition:enter="transition ease-out duration-200"
        x-transition:enter-start="opacity-0"
        x-transition:enter-end="opacity-100"

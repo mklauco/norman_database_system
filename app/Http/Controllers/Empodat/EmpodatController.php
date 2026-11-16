@@ -236,31 +236,6 @@ class EmpodatController extends Controller
         return back();
     }
 
-    public function startDownloadIdsJob($query_log_id)
-    {
-        if (! Auth::check()) {
-            session()->flash('error', 'You must be logged in to download the CSV file.');
-
-            return back();
-        }
-
-        // Check if user is admin
-        if (! Auth::user()->hasRole('super_admin') && ! Auth::user()->hasRole('admin')) {
-            session()->flash('error', 'You do not have permission to access this feature.');
-
-            return back();
-        }
-
-        $filename = 'empodat_ids_uid_'.Auth::id().'_'.now()->format('YmdHis').'.csv';
-
-        $user = Auth::user();
-        \App\Jobs\Empodat\EmpodatIdsCsvExportJob::dispatch($query_log_id, $user, $filename);
-
-        session()->flash('success', 'The IDs CSV file is being generated. You will receive an email once it is ready for download.');
-
-        return back();
-    }
-
     public function downloadCsv($filename)
     {
         $directory = 'exports/empodat';
@@ -560,8 +535,11 @@ class EmpodatController extends Controller
             // Get total count
             $empodatsCount = $this->getDatabaseEntityCount('empodat');
 
+            $fileIdRanges = File::empodatIdRanges((array) $searchInputs['fileSearch']);
+
             return view('empodat.index', array_merge([
                 'empodats' => $empodats,
+                'fileIdRanges' => $fileIdRanges,
                 'empodatsCount' => $empodatsCount,
                 'query_log_id' => $queryLogId,
                 'searchParameters' => $searchParameters,
