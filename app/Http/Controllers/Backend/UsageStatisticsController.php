@@ -22,6 +22,7 @@ class UsageStatisticsController extends Controller
 
         return view('backend.usage-statistics.index', [
             'year' => $year,
+            'yearLabel' => $request->yearLabel(),
             'years' => $this->service->availableYears(),
             'searches' => $this->service->searchesByMonthAndModule($year),
             'downloads' => $this->service->downloadsByMonthAndModule($year),
@@ -34,6 +35,7 @@ class UsageStatisticsController extends Controller
 
         return view('backend.usage-statistics.users', [
             'year' => $year,
+            'yearLabel' => $request->yearLabel(),
             'years' => $this->service->availableYears(),
             'usage' => $this->service->userUsage($year),
         ]);
@@ -45,6 +47,7 @@ class UsageStatisticsController extends Controller
 
         return view('backend.usage-statistics.subject', [
             'year' => $year,
+            'yearLabel' => $request->yearLabel(),
             'years' => $this->service->availableYears(),
             'subjectName' => trim($user->first_name.' '.$user->last_name),
             'subjectEmail' => $user->email,
@@ -60,6 +63,7 @@ class UsageStatisticsController extends Controller
 
         return view('backend.usage-statistics.subject', [
             'year' => $year,
+            'yearLabel' => $request->yearLabel(),
             'years' => $this->service->availableYears(),
             'subjectName' => 'Guest',
             'subjectEmail' => null,
@@ -75,6 +79,7 @@ class UsageStatisticsController extends Controller
 
         return view('backend.usage-statistics.logins', [
             'year' => $year,
+            'yearLabel' => $request->yearLabel(),
             'years' => $this->service->availableYears(),
             'byMonth' => $this->service->loginsByMonth($year),
             'byGeo' => $this->service->loginsByGeoCountry($year),
@@ -98,7 +103,7 @@ class UsageStatisticsController extends Controller
         };
 
         $suffix = $userId !== null ? '_user_'.$userId : ($guestsOnly ? '_guest' : '');
-        $filename = 'usage_'.str_replace('-', '_', $table).'_'.$year.(in_array($table, ['searches', 'downloads'], true) ? $suffix : '').'.xlsx';
+        $filename = 'usage_'.str_replace('-', '_', $table).'_'.($year ?? 'all').(in_array($table, ['searches', 'downloads'], true) ? $suffix : '').'.xlsx';
 
         if (! is_dir(storage_path('app/temp'))) {
             mkdir(storage_path('app/temp'), 0755, true);
@@ -113,21 +118,21 @@ class UsageStatisticsController extends Controller
     }
 
     /**
-     * @param  array{modules: array<string,string>, months: array<int, array<string,int>>, monthTotals: array<int,int>, moduleTotals: array<string,int>, total: int}  $data
+     * @param  array{modules: array<string,string>, periodName: string, periodLabels: array<int,string>, periods: array<int, array<string,int>>, periodTotals: array<int,int>, moduleTotals: array<string,int>, total: int}  $data
      * @return list<array<string, int|string>>
      */
     private function monthModuleRows(array $data): array
     {
         $rows = [];
-        foreach ($data['months'] as $month => $counts) {
-            $row = ['Month' => date('F', mktime(0, 0, 0, (int) $month, 1))];
+        foreach ($data['periods'] as $period => $counts) {
+            $row = [$data['periodName'] => $data['periodLabels'][$period]];
             foreach ($data['modules'] as $key => $label) {
                 $row[$label] = (int) ($counts[$key] ?? 0);
             }
-            $row['Total'] = (int) ($data['monthTotals'][$month] ?? 0);
+            $row['Total'] = (int) ($data['periodTotals'][$period] ?? 0);
             $rows[] = $row;
         }
-        $total = ['Month' => 'Total'];
+        $total = [$data['periodName'] => 'Total'];
         foreach ($data['modules'] as $key => $label) {
             $total[$label] = (int) ($data['moduleTotals'][$key] ?? 0);
         }
@@ -165,16 +170,16 @@ class UsageStatisticsController extends Controller
     }
 
     /**
-     * @param  array{months: array<int, array{logins:int, users:int}>, total_logins: int, total_users: int}  $data
+     * @param  array{periodName: string, periodLabels: array<int,string>, periods: array<int, array{logins:int, users:int}>, total_logins: int, total_users: int}  $data
      * @return list<array<string, int|string>>
      */
     private function loginMonthRows(array $data): array
     {
         $rows = [];
-        foreach ($data['months'] as $month => $m) {
-            $rows[] = ['Month' => date('F', mktime(0, 0, 0, (int) $month, 1)), 'Logins' => (int) $m['logins'], 'Distinct users' => (int) $m['users']];
+        foreach ($data['periods'] as $period => $m) {
+            $rows[] = [$data['periodName'] => $data['periodLabels'][$period], 'Logins' => (int) $m['logins'], 'Distinct users' => (int) $m['users']];
         }
-        $rows[] = ['Month' => 'Total', 'Logins' => (int) $data['total_logins'], 'Distinct users' => (int) $data['total_users']];
+        $rows[] = [$data['periodName'] => 'Total', 'Logins' => (int) $data['total_logins'], 'Distinct users' => (int) $data['total_users']];
 
         return $rows;
     }

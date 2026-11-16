@@ -1,19 +1,21 @@
 @php
-  $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
+  $valueAxis = $table === 'downloads' ? 'Number of downloads' : 'Number of searches';
   $datasets = [];
   $i = 0;
   foreach ($data['modules'] as $key => $label) {
       $datasets[] = [
           'label' => $label,
-          'data' => array_map(fn ($m) => (int) ($data['months'][$m][$key] ?? 0), array_keys($months)),
+          'data' => array_map(fn ($m) => (int) ($data['periods'][$m][$key] ?? 0), array_keys($data['periodLabels'])),
           'backgroundColor' => '',
       ];
       $i++;
   }
+  $fullTitle = $title.' by '.strtolower($data['periodName']).' – '.$yearLabel;
+  $chartTitle = isset($subjectName) ? $fullTitle.' – '.$subjectName : $fullTitle;
 @endphp
 <section class="mb-10">
   <div class="flex items-center justify-between mb-3">
-    <h2 class="text-lg font-semibold">{{ $title }}</h2>
+    <h2 class="text-lg font-semibold">{{ $fullTitle }}</h2>
     <div class="flex items-center gap-2">
       @include('backend.usage-statistics.partials.png_button', ['chartId' => $chartId])
       @include('backend.usage-statistics.partials.export_button', ['table' => $table, 'year' => $year, 'params' => $params ?? []])
@@ -26,7 +28,7 @@
     <table class="table-standard">
       <thead>
         <tr class="bg-gray-600 text-white">
-          <th class="py-1 px-2 text-left">Month</th>
+          <th class="py-1 px-2 text-left">{{ $data['periodName'] }}</th>
           @foreach ($data['modules'] as $label)
             <th class="py-1 px-2 text-right">{{ $label }}</th>
           @endforeach
@@ -34,13 +36,13 @@
         </tr>
       </thead>
       <tbody>
-        @foreach ($months as $m => $name)
+        @foreach ($data['periodLabels'] as $m => $name)
           <tr class="bg-gray-100">
             <td class="py-1 px-2">{{ $name }}</td>
             @foreach ($data['modules'] as $key => $label)
-              <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($data['months'][$m][$key] ?? 0), 0, '.', ' ') }}</td>
+              <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($data['periods'][$m][$key] ?? 0), 0, '.', ' ') }}</td>
             @endforeach
-            <td class="py-1 px-2 text-right whitespace-nowrap font-semibold">{{ number_format((int) ($data['monthTotals'][$m] ?? 0), 0, '.', ' ') }}</td>
+            <td class="py-1 px-2 text-right whitespace-nowrap font-semibold">{{ number_format((int) ($data['periodTotals'][$m] ?? 0), 0, '.', ' ') }}</td>
           </tr>
         @endforeach
       </tbody>
@@ -63,13 +65,13 @@
       datasets.forEach(function (d, i) { d.backgroundColor = window.usagePalette[i % window.usagePalette.length]; });
       window.usageAddChart(@json($chartId), {
         type: 'bar',
-        data: { labels: {{ Js::from(array_values($months)) }}, datasets: datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } },
-          plugins: { legend: { position: 'bottom' } }
-        }
+        data: { labels: {{ Js::from(array_values($data['periodLabels'])) }}, datasets: datasets },
+        options: window.usageOptions({
+          title: @json($chartTitle),
+          xTitle: @json($data['periodName']),
+          yTitle: @json($valueAxis),
+          stacked: true
+        })
       });
     })();
   </script>
