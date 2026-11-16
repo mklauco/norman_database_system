@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Bioassay;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
-use App\Models\Bioassay\FieldStudy;
-use App\Models\DatabaseEntity;
 use Illuminate\Http\Request;
 
 class BioassayHomeController extends Controller
@@ -69,10 +68,7 @@ class BioassayHomeController extends Controller
 
     public function countAll()
     {
-        DatabaseEntity::where('code', 'bioassay')->update([
-            'last_update' => FieldStudy::max('updated_at'),
-            'number_of_records' => FieldStudy::count(),
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['bioassay']);
         session()->flash('success', 'Database counts updated successfully');
 
         return redirect()->back();

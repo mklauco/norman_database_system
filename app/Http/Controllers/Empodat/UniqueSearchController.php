@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Empodat;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
 use App\Jobs\Empodat\GenerateEmpodatStatisticsJob;
 use App\Models\DatabaseEntity;
-use App\Models\Susdat\Substance;
 use Illuminate\Support\Facades\DB;
 
 class UniqueSearchController extends Controller
@@ -96,10 +96,7 @@ class UniqueSearchController extends Controller
     public function updateDatabaseEntitiesCounts()
     {
         GenerateEmpodatStatisticsJob::dispatch();
-        DatabaseEntity::where('code', 'susdat')->update([
-            'last_update' => Substance::max('updated_at'),
-            'number_of_records' => Substance::count(),
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['susdat']);
         session()->flash('success', 'SUSDAT count updated. EMPODAT recount queued; it takes a few minutes.');
 
         return redirect()->back();

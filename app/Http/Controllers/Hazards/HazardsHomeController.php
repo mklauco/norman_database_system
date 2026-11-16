@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hazards;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
-use App\Models\DatabaseEntity;
-use App\Models\Hazards\ComptoxSubstanceData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -22,12 +21,7 @@ class HazardsHomeController extends Controller
      */
     public function countAll(): RedirectResponse
     {
-        $active = ComptoxSubstanceData::query()->active();
-
-        DatabaseEntity::where('code', 'hazards')->update([
-            'last_update' => (clone $active)->max('updated_at'),
-            'number_of_records' => (clone $active)->count(),
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['hazards']);
 
         session()->flash('success', 'Hazards database counts updated successfully');
 

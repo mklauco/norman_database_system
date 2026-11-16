@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Ecotox;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
-use App\Models\DatabaseEntity;
-use App\Models\Ecotox\EcotoxFinal;
 use App\Models\Ecotox\EcotoxSubstanceDistinct;
 use App\Models\Ecotox\EcotoxSubstanceDistinctPnec3;
-use App\Models\Ecotox\LowestPNEC;
 use Illuminate\Http\Request;
 
 class EcotoxHomeController extends Controller
@@ -88,20 +86,7 @@ class EcotoxHomeController extends Controller
 
     public function countAll()
     {
-        DatabaseEntity::where('code', 'ecotox.ecotox')->update([
-            'last_update' => EcotoxFinal::max('updated_at'),
-            'number_of_records' => EcotoxFinal::count(),
-        ]);
-
-        DatabaseEntity::where('code', 'ecotox.pnec')->update([
-            'last_update' => LowestPNEC::max('updated_at'),
-            'number_of_records' => LowestPNEC::count(),
-        ]);
-
-        DatabaseEntity::where('code', 'ecotox')->update([
-            'last_update' => LowestPNEC::max('updated_at'),
-            'number_of_records' => LowestPNEC::count() + EcotoxFinal::count(),
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['ecotox', 'ecotox.ecotox', 'ecotox.pnec']);
 
         session()->flash('success', 'Database counts updated successfully');
 

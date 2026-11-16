@@ -78,7 +78,7 @@ class DashboardMainController extends Controller
         }
 
         return $query
-            ->orderBy('name')
+            ->orderBy('database_entities.id')
             ->get()
             ->filter(fn (DatabaseEntity $entity): bool => $this->userCanAccessDatabaseEntity($user, $entity))
             ->values();
