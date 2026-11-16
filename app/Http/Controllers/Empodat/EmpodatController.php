@@ -22,6 +22,7 @@ use App\Models\SLE\SuspectListExchangeSource;
 use App\Models\Susdat\Category;
 use App\Models\Susdat\Substance;
 use App\Services\Empodat\EmpodatRecordDisplay;
+use App\Services\Empodat\EmpodatSearchPaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -735,7 +736,7 @@ class EmpodatController extends Controller
             ->value('actual_count');
 
         try {
-            QueryLog::insert([
+            return QueryLog::insertGetId([
                 'content' => json_encode(['request' => $mainRequest, 'bindings' => $bindings]),
                 'query' => $sql,
                 'user_id' => Auth::id(),
@@ -746,9 +747,6 @@ class EmpodatController extends Controller
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
-
-            return QueryLog::orderBy('id', 'desc')->first()->id;
-
         } catch (\Exception $e) {
             Log::error('Query logging failed: '.$e->getMessage(), [
                 'query_hash' => $queryHash,
@@ -766,13 +764,7 @@ class EmpodatController extends Controller
      */
     private function applyPagination($query, Request $request)
     {
-        $orderBy = $query->orderBy('empodat_main.id', 'asc');
-
-        if ($request->input('displayOption') == 1) {
-            return $orderBy->simplePaginate(200)->withQueryString();
-        } else {
-            return $orderBy->paginate(200)->withQueryString();
-        }
+        return app(EmpodatSearchPaginator::class)->paginate($query, $request->input('displayOption') == 1);
     }
 
     /**

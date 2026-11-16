@@ -453,14 +453,21 @@
         loading: false,
         seconds: 0,
         timerInterval: null,
-        controller: null,
+
+        init() {
+          window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+              this.stopTimer();
+              this.loading = false;
+            }
+          });
+        },
         
         startTimer() {
           this.seconds = 0;
           this.timerInterval = setInterval(() => {
             this.seconds++;
           }, 1000);
-          this.controller = new AbortController();
         },
         
         stopTimer() {
@@ -469,9 +476,7 @@
         },
         
         cancelRequest() {
-          if (this.controller) {
-            this.controller.abort();
-          }
+          window.stop();
           this.stopTimer();
           this.loading = false;
           alert('Search request has been cancelled.');
@@ -525,27 +530,7 @@
           const queryString = params.toString();
           const url = form.action + (queryString ? '?' + queryString : '');
           
-          fetch(url, {
-            method: 'GET',
-            signal: this.controller.signal
-          })
-          .then(response => {
-            if (response.ok) {
-              window.location.href = url;
-            } else {
-              throw new Error('Search failed');
-            }
-          })
-          .catch(error => {
-            if (error.name === 'AbortError') {
-              console.log('Search was cancelled');
-            } else {
-              console.error('Error:', error);
-              alert('There was an error processing your search. Please try again.');
-            }
-            this.loading = false;
-            this.stopTimer();
-          });
+          window.location.assign(url);
         }
       }
     }
