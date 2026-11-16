@@ -20,7 +20,10 @@
           <section class="mb-10">
             <div class="flex items-center justify-between mb-3">
               <h2 class="text-lg font-semibold">Logins by month</h2>
-              @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-month', 'year' => $year])
+              <div class="flex items-center gap-2">
+                @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-logins-month'])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-month', 'year' => $year])
+              </div>
             </div>
             <div class="relative h-72 mb-4"><canvas id="chart-logins-month"></canvas></div>
             <div class="overflow-x-auto">
@@ -55,7 +58,10 @@
           <section class="mb-10">
             <div class="flex items-center justify-between mb-3">
               <h2 class="text-lg font-semibold">Logins by IP country</h2>
-              @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-geo', 'year' => $year])
+              <div class="flex items-center gap-2">
+                @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-logins-geo'])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-geo', 'year' => $year])
+              </div>
             </div>
             <div class="relative h-72 mb-4"><canvas id="chart-logins-geo"></canvas></div>
             <div class="overflow-x-auto">
@@ -88,7 +94,10 @@
           <section>
             <div class="flex items-center justify-between mb-3">
               <h2 class="text-lg font-semibold">Users by profile country</h2>
-              @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-profile', 'year' => $year])
+              <div class="flex items-center gap-2">
+                @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-logins-profile'])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-profile', 'year' => $year])
+              </div>
             </div>
             <div class="relative h-72 mb-4"><canvas id="chart-logins-profile"></canvas></div>
             <div class="overflow-x-auto">
