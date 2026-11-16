@@ -106,22 +106,22 @@ class UsageStatisticsService
     }
 
     /**
-     * Searches in $year grouped by month and module. $userId null = everyone; when $guestsOnly is true only user_id IS NULL rows.
+     * Searches in $year (null = all years) grouped by month (or by year when $year is null) and module. $userId null = everyone; when $guestsOnly is true only user_id IS NULL rows.
      *
-     * @return array{modules: array<string,string>, months: array<int, array<string,int>>, monthTotals: array<int,int>, moduleTotals: array<string,int>, total: int}
+     * @return array{modules: array<string,string>, periodName: string, periodLabels: array<int,string>, periods: array<int, array<string,int>>, periodTotals: array<int,int>, moduleTotals: array<string,int>, total: int}
      */
-    public function searchesByMonthAndModule(int $year, ?int $userId = null, bool $guestsOnly = false): array
+    public function searchesByMonthAndModule(?int $year, ?int $userId = null, bool $guestsOnly = false): array
     {
         return $this->byMonthAndModule(QueryLog::query(), $year, $userId, $guestsOnly);
     }
 
     /**
-     * Downloads in $year grouped by month and module. Every export_downloads row is counted except those with status 'failed'
+     * Downloads in $year (null = all years) grouped by month (or by year when $year is null) and module. Every export_downloads row is counted except those with status 'failed'
      * (completed and still processing exports count as usage).
      *
-     * @return array{modules: array<string,string>, months: array<int, array<string,int>>, monthTotals: array<int,int>, moduleTotals: array<string,int>, total: int}
+     * @return array{modules: array<string,string>, periodName: string, periodLabels: array<int,string>, periods: array<int, array<string,int>>, periodTotals: array<int,int>, moduleTotals: array<string,int>, total: int}
      */
-    public function downloadsByMonthAndModule(int $year, ?int $userId = null, bool $guestsOnly = false): array
+    public function downloadsByMonthAndModule(?int $year, ?int $userId = null, bool $guestsOnly = false): array
     {
         return $this->byMonthAndModule($this->downloadsQuery(), $year, $userId, $guestsOnly);
     }
@@ -131,25 +131,23 @@ class UsageStatisticsService
      *
      * @return array{modules: array<string,string>, rows: list<array{user_id: int|null, is_guest: bool, name: string, email: string|null, organisation: string|null, country: string|null, searches: array<string,int>, searches_total: int, downloads_total: int, logins: int, last_login: string|null}>}
      */
-    public function userUsage(int $year): array
+    public function userUsage(?int $year): array
     {
-        [$from, $to] = $this->yearBounds($year);
-
         $searchRows = QueryLog::query()
             ->selectRaw('user_id, database_key, count(*) as c')
-            ->whereBetween('created_at', [$from, $to])
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'created_at', $year))
             ->groupBy('user_id', 'database_key')
             ->get();
 
         $downloadRows = $this->downloadsQuery()
             ->selectRaw('user_id, count(*) as c')
-            ->whereBetween('created_at', [$from, $to])
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'created_at', $year))
             ->groupBy('user_id')
             ->get();
 
         $loginRows = UserLoginRetention::query()
             ->selectRaw('user_id, count(*) as c')
-            ->whereBetween('login_datetime', [$from, $to])
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'login_datetime', $year))
             ->groupBy('user_id')
             ->get();
 
@@ -245,37 +243,45 @@ class UsageStatisticsService
     }
 
     /**
-     * users = distinct user_id in that month; total_users = distinct over the year.
+     * By month for a given $year, by year when $year is null. users = distinct user_id in that period; total_users = distinct over the whole range.
      *
-     * @return array{months: array<int, array{logins:int, users:int}>, total_logins: int, total_users: int}
+     * @return array{periodName: string, periodLabels: array<int,string>, periods: array<int, array{logins:int, users:int}>, total_logins: int, total_users: int}
      */
-    public function loginsByMonth(int $year): array
+    public function loginsByMonth(?int $year): array
     {
-        [$from, $to] = $this->yearBounds($year);
+        $groupExpr = $year === null ? "date_part('year', login_datetime)" : "date_part('month', login_datetime)";
 
         $rows = UserLoginRetention::query()
-            ->selectRaw("date_part('month', login_datetime) as m, count(*) as logins, count(distinct user_id) as users")
-            ->whereBetween('login_datetime', [$from, $to])
-            ->groupByRaw("date_part('month', login_datetime)")
+            ->selectRaw("{$groupExpr} as p, count(*) as logins, count(distinct user_id) as users")
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'login_datetime', $year))
+            ->groupByRaw($groupExpr)
             ->get();
 
-        $months = [];
-        for ($m = 1; $m <= 12; $m++) {
-            $months[$m] = ['logins' => 0, 'users' => 0];
+        [$periodName, $periodLabels] = $this->periodAxis($year, $rows->pluck('p')->map(fn ($p): int => (int) $p)->all());
+
+        $periods = [];
+        foreach (array_keys($periodLabels) as $key) {
+            $periods[$key] = ['logins' => 0, 'users' => 0];
         }
 
         $totalLogins = 0;
         foreach ($rows as $row) {
-            $months[(int) $row->m] = ['logins' => (int) $row->logins, 'users' => (int) $row->users];
+            $periods[(int) $row->p] = ['logins' => (int) $row->logins, 'users' => (int) $row->users];
             $totalLogins += (int) $row->logins;
         }
 
         $totalUsers = (int) UserLoginRetention::query()
-            ->whereBetween('login_datetime', [$from, $to])
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'login_datetime', $year))
             ->distinct()
             ->count('user_id');
 
-        return ['months' => $months, 'total_logins' => $totalLogins, 'total_users' => $totalUsers];
+        return [
+            'periodName' => $periodName,
+            'periodLabels' => $periodLabels,
+            'periods' => $periods,
+            'total_logins' => $totalLogins,
+            'total_users' => $totalUsers,
+        ];
     }
 
     /**
@@ -283,13 +289,11 @@ class UsageStatisticsService
      *
      * @return list<array{country_code: string|null, country: string, logins: int, users: int}>
      */
-    public function loginsByGeoCountry(int $year): array
+    public function loginsByGeoCountry(?int $year): array
     {
-        [$from, $to] = $this->yearBounds($year);
-
         $rows = UserLoginRetention::query()
             ->selectRaw("nullif(upper(trim(meta_data->>'country')), '') as code, count(*) as logins, count(distinct user_id) as users")
-            ->whereBetween('login_datetime', [$from, $to])
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'login_datetime', $year))
             ->groupByRaw("nullif(upper(trim(meta_data->>'country')), '')")
             ->get();
 
@@ -319,15 +323,13 @@ class UsageStatisticsService
      *
      * @return list<array{country: string, users: int, logins: int}>
      */
-    public function loginsByProfileCountry(int $year): array
+    public function loginsByProfileCountry(?int $year): array
     {
-        [$from, $to] = $this->yearBounds($year);
-
         $rows = UserLoginRetention::query()
             ->join('users', 'users.id', '=', 'user_login_retentions.user_id')
             ->leftJoin('list_countries', 'list_countries.id', '=', 'users.country_id')
             ->selectRaw('list_countries.name as country, count(*) as logins, count(distinct user_login_retentions.user_id) as users')
-            ->whereBetween('user_login_retentions.login_datetime', [$from, $to])
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'user_login_retentions.login_datetime', $year))
             ->groupBy('list_countries.name')
             ->get();
 
@@ -354,22 +356,54 @@ class UsageStatisticsService
     }
 
     /**
-     * @return array{0: string, 1: string}
+     * Restricts $query to the calendar year (index-friendly range); no-op when $year is null.
+     *
+     * @param  Builder<*>  $query
      */
-    private function yearBounds(int $year): array
+    private function applyYear(Builder $query, string $column, ?int $year): void
     {
-        return [sprintf('%04d-01-01 00:00:00', $year), sprintf('%04d-12-31 23:59:59', $year)];
+        if ($year === null) {
+            return;
+        }
+
+        $query->whereBetween($column, [sprintf('%04d-01-01 00:00:00', $year), sprintf('%04d-12-31 23:59:59', $year)]);
+    }
+
+    /**
+     * Period axis: months of $year, or every available year (ascending, plus any in $extraYears) when $year is null.
+     *
+     * @param  list<int>  $extraKeys
+     * @return array{0: string, 1: array<int, string>}
+     */
+    private function periodAxis(?int $year, array $extraKeys): array
+    {
+        if ($year !== null) {
+            $labels = [];
+            for ($m = 1; $m <= 12; $m++) {
+                $labels[$m] = date('F', mktime(0, 0, 0, $m, 1));
+            }
+
+            return ['Month', $labels];
+        }
+
+        $years = array_values(array_unique(array_merge($this->availableYears(), $extraKeys)));
+        sort($years);
+
+        $labels = [];
+        foreach ($years as $y) {
+            $labels[$y] = (string) $y;
+        }
+
+        return ['Year', $labels];
     }
 
     /**
      * @param  Builder<QueryLog>|Builder<ExportDownload>  $query
-     * @return array{modules: array<string,string>, months: array<int, array<string,int>>, monthTotals: array<int,int>, moduleTotals: array<string,int>, total: int}
+     * @return array{modules: array<string,string>, periodName: string, periodLabels: array<int,string>, periods: array<int, array<string,int>>, periodTotals: array<int,int>, moduleTotals: array<string,int>, total: int}
      */
-    private function byMonthAndModule(Builder $query, int $year, ?int $userId, bool $guestsOnly): array
+    private function byMonthAndModule(Builder $query, ?int $year, ?int $userId, bool $guestsOnly): array
     {
-        [$from, $to] = $this->yearBounds($year);
-
-        $query->whereBetween('created_at', [$from, $to]);
+        $this->applyYear($query, 'created_at', $year);
 
         if ($guestsOnly) {
             $query->whereNull('user_id');
@@ -377,34 +411,39 @@ class UsageStatisticsService
             $query->where('user_id', $userId);
         }
 
+        $groupExpr = $year === null ? "date_part('year', created_at)" : "date_part('month', created_at)";
+
         $rows = $query
-            ->selectRaw("date_part('month', created_at) as m, database_key, count(*) as c")
-            ->groupByRaw("date_part('month', created_at), database_key")
+            ->selectRaw("{$groupExpr} as p, database_key, count(*) as c")
+            ->groupByRaw("{$groupExpr}, database_key")
             ->get();
 
         $counts = [];
         $moduleKeys = [];
+        $seenPeriods = [];
         foreach ($rows as $row) {
             $module = $this->moduleKeyFor($row->database_key);
             $moduleKeys[$module] = $module;
-            $m = (int) $row->m;
-            $counts[$m][$module] = ($counts[$m][$module] ?? 0) + (int) $row->c;
+            $p = (int) $row->p;
+            $seenPeriods[] = $p;
+            $counts[$p][$module] = ($counts[$p][$module] ?? 0) + (int) $row->c;
         }
 
         $modules = $this->moduleLabels(array_values($moduleKeys));
+        [$periodName, $periodLabels] = $this->periodAxis($year, $seenPeriods);
 
-        $months = [];
-        $monthTotals = [];
+        $periods = [];
+        $periodTotals = [];
         $moduleTotals = array_fill_keys(array_keys($modules), 0);
         $total = 0;
 
-        for ($m = 1; $m <= 12; $m++) {
-            $months[$m] = [];
-            $monthTotals[$m] = 0;
+        foreach (array_keys($periodLabels) as $p) {
+            $periods[$p] = [];
+            $periodTotals[$p] = 0;
             foreach (array_keys($modules) as $module) {
-                $value = $counts[$m][$module] ?? 0;
-                $months[$m][$module] = $value;
-                $monthTotals[$m] += $value;
+                $value = $counts[$p][$module] ?? 0;
+                $periods[$p][$module] = $value;
+                $periodTotals[$p] += $value;
                 $moduleTotals[$module] += $value;
                 $total += $value;
             }
@@ -412,8 +451,10 @@ class UsageStatisticsService
 
         return [
             'modules' => $modules,
-            'months' => $months,
-            'monthTotals' => $monthTotals,
+            'periodName' => $periodName,
+            'periodLabels' => $periodLabels,
+            'periods' => $periods,
+            'periodTotals' => $periodTotals,
             'moduleTotals' => $moduleTotals,
             'total' => $total,
         ];

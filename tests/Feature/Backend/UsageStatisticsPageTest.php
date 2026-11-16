@@ -33,8 +33,8 @@ class UsageStatisticsPageTest extends TestCase
         $admin->assignRole(Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']));
 
         $this->actingAs($admin)
-            ->get(route('usage-statistics.export', ['table' => 'searches', 'year' => 2026]))
+            ->get(route('usage-statistics.export', ['table' => 'searches', 'year' => 'all']))
             ->assertOk()
-            ->assertHeader('content-disposition', 'attachment; filename=usage_searches_2026.xlsx');
+            ->assertHeader('content-disposition', 'attachment; filename=usage_searches_all.xlsx');
     }
 }

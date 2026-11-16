@@ -18,10 +18,10 @@
 
           <section>
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-lg font-semibold">Top 20 users by searches</h2>
+              <h2 class="text-lg font-semibold">Top 20 users by searches – {{ $yearLabel }}</h2>
               <div class="flex items-center gap-2">
                 @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-users'])
-                @include('backend.usage-statistics.partials.export_button', ['table' => 'users', 'year' => $year])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'users', 'year' => $year ?? 'all'])
               </div>
             </div>
             <div class="relative mb-6" style="height: {{ max(200, count($chartLabels) * 26 + 60) }}px">
@@ -49,9 +49,9 @@
                     <tr class="{{ $row['is_guest'] ? 'bg-lime-100 italic' : 'bg-gray-100' }}">
                       <td class="py-1 px-2">
                         @if ($row['is_guest'])
-                          <a href="{{ route('usage-statistics.guest', ['year' => $year]) }}" class="link-lime-text font-semibold">{{ $row['name'] }}</a>
+                          <a href="{{ route('usage-statistics.guest', ['year' => $year ?? 'all']) }}" class="link-lime-text font-semibold">{{ $row['name'] }}</a>
                         @else
-                          <a href="{{ route('usage-statistics.users.show', ['user' => $row['user_id'], 'year' => $year]) }}" class="link-lime-text">{{ $row['name'] }}</a>
+                          <a href="{{ route('usage-statistics.users.show', ['user' => $row['user_id'], 'year' => $year ?? 'all']) }}" class="link-lime-text">{{ $row['name'] }}</a>
                         @endif
                       </td>
                       <td class="py-1 px-2">{{ $row['email'] }}</td>
@@ -89,13 +89,13 @@
               backgroundColor: isGuest.map(function (g) { return g ? '#f59e0b' : '#84cc16'; })
             }]
           },
-          options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
-            plugins: { legend: { display: false } }
-          }
+          options: window.usageOptions({
+            title: @json('Top 20 users by searches – '.$yearLabel),
+            xTitle: 'Number of searches',
+            yTitle: 'User',
+            horizontal: true,
+            legend: false
+          })
         });
       })();
     </script>

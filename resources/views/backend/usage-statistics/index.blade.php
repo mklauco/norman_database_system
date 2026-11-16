@@ -9,8 +9,8 @@
         <div class="p-6 text-gray-900">
           @include('backend.usage-statistics.partials.nav', ['navActive' => 'overview'])
           @include('backend.usage-statistics.partials.chart_scripts')
-          @include('backend.usage-statistics.partials.month_module', ['title' => 'Searches by month', 'data' => $searches, 'table' => 'searches', 'chartId' => 'chart-searches'])
-          @include('backend.usage-statistics.partials.month_module', ['title' => 'Downloads by month', 'data' => $downloads, 'table' => 'downloads', 'chartId' => 'chart-downloads'])
+          @include('backend.usage-statistics.partials.month_module', ['title' => 'Searches', 'data' => $searches, 'table' => 'searches', 'chartId' => 'chart-searches'])
+          @include('backend.usage-statistics.partials.month_module', ['title' => 'Downloads', 'data' => $downloads, 'table' => 'downloads', 'chartId' => 'chart-downloads'])
         </div>
       </div>
     </div>
