@@ -32,14 +32,9 @@
                 @endif
               </div>
             </div>
-            <div>
-              <label for="activity-user" class="block text-sm font-medium mb-1">User</label>
-              <select id="activity-user" name="user" class="border rounded-sm pl-2 pr-8 py-1 text-sm min-w-48">
-                <option value="">All users</option>
-                @foreach ($options['users'] as $id => $label)
-                  <option value="{{ $id }}" @selected((int) ($filters['user'] ?? 0) === $id)>{{ $label }}</option>
-                @endforeach
-              </select>
+            <div class="min-w-72">
+              <span class="block text-sm font-medium mb-1">User <span class="text-gray-400 font-normal">(empty = all users)</span></span>
+              @livewire('backend.user-search', ['selectedUserId' => $filters['user'] ?? null, 'fieldName' => 'user'], key('activity-user-'.($filters['user'] ?? 'all')))
             </div>
             <div>
               <label for="activity-area" class="block text-sm font-medium mb-1">Area</label>
