@@ -9,11 +9,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class File extends Model
 {
     use HasFactory;
+
+    public const EMPODAT_DATABASE_ENTITY_ID = 2;
 
     /**
      * The table associated with the model.
@@ -354,5 +357,36 @@ class File extends Model
         return DB::table('empodat_main_file')
             ->where('file_id', $this->id)
             ->count();
+    }
+
+    /**
+     * ID ranges of EMPODAT records for the given files, read from files.main_id_from / main_id_to
+     * (never counted from empodat_main), ordered by the first ID.
+     *
+     * @param  array<int, int|string>  $fileIds
+     * @return Collection<int, array{id: int, name: string, from: int, to: int}>
+     */
+    public static function empodatIdRanges(array $fileIds): Collection
+    {
+        $fileIds = array_values(array_filter(array_map('intval', $fileIds)));
+
+        if ($fileIds === []) {
+            return collect();
+        }
+
+        return static::query()
+            ->whereIn('id', $fileIds)
+            ->where('database_entity_id', self::EMPODAT_DATABASE_ENTITY_ID)
+            ->whereNotNull('main_id_from')
+            ->whereNotNull('main_id_to')
+            ->orderBy('main_id_from')
+            ->get(['id', 'name', 'original_name', 'main_id_from', 'main_id_to'])
+            ->map(fn (self $file): array => [
+                'id' => $file->id,
+                'name' => $file->original_name ?: $file->name,
+                'from' => (int) $file->main_id_from,
+                'to' => (int) $file->main_id_to,
+            ])
+            ->values();
     }
 }

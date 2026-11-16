@@ -196,7 +196,7 @@
         
         
         <!-- The Modal (hidden by default) -->
-        <div class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50" x-show="showModal"x-transition>
+        <div class="fixed inset-0 flex items-center justify-center bg-gray-800/50 z-50" x-show="showModal"x-transition>
           <div class="bg-white w-11/12 md:w-2/3 lg:w-1/2 xl:w-1/3 rounded-sm shadow-lg relative" x-trap.inert="showModal">
             <!-- Modal Header -->
             <div class="flex justify-between items-center border-b px-4 py-2">

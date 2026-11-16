@@ -52,7 +52,22 @@ class FileSearchTest extends Component
             'results' => $results,
             'resultsAvailable' => $resultsAvailable,
             'selectedFiles' => $this->selectedFiles,
+            'idRangesText' => $this->idRangesText(),
         ]);
+    }
+
+    /**
+     * Legacy-style summary of the chosen files' record ID ranges,
+     * e.g. "ID from 1 to 5 & 10 to 20" (ordered by the lower bound).
+     */
+    private function idRangesText(): string
+    {
+        $ranges = collect($this->selectedFiles)
+            ->filter(fn (array $file): bool => $file['from'] !== null && $file['to'] !== null)
+            ->sortBy('from')
+            ->map(fn (array $file): string => $file['from'].' to '.$file['to']);
+
+        return $ranges->isEmpty() ? '' : 'ID from '.$ranges->implode(' & ');
     }
 
     public function applyFileFilter()
@@ -60,16 +75,20 @@ class FileSearchTest extends Component
         // Remove duplicates
         $this->selectedFileIds = array_unique($this->selectedFileIds);
 
+        $ranges = File::empodatIdRanges($this->selectedFileIds)->keyBy('id');
+
         $this->selectedFiles = File::whereIn('id', $this->selectedFileIds)
             ->where('database_entity_id', 2) // Only empodat files
             ->get()
-            ->map(function ($file) {
+            ->map(function ($file) use ($ranges) {
                 return [
                     'id' => $file->id,
                     'name' => $file->original_name ?: $file->name,
                     'size' => $this->formatFileSize($file->file_size),
                     'type' => $file->mime_type,
                     'uploaded_at' => optional($file->uploaded_at)->format('Y-m-d'),
+                    'from' => $ranges->get($file->id)['from'] ?? null,
+                    'to' => $ranges->get($file->id)['to'] ?? null,
                 ];
             })
             ->toArray();

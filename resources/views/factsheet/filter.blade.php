@@ -106,7 +106,7 @@
         
         <!-- Full-screen overlay with timer and cancel button -->
         <div x-show="loading" 
-        class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900 bg-opacity-80"
+        class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900/80"
         style="display: none;">
         <div class="text-center p-8 bg-white rounded-lg shadow-xl max-w-md w-full">
           <!-- Logo or icon could go here -->
@@ -133,7 +133,7 @@
           <!-- Cancel button -->
           <button type="button" 
           @click="cancelRequest" 
-          class="mt-6 bg-red-500 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full focus:outline-hidden focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
+          class="mt-6 bg-red-500 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-full focus:outline-hidden focus:ring-2 focus:ring-red-500/50 transition duration-150 ease-in-out">
           Cancel Search
         </button>
       </div>

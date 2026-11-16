@@ -12,7 +12,7 @@
   <!-- Modal -->
   @if($showModal)
   <!-- Modal Background -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800/50">
     <!-- Modal Container -->
     <div class="bg-white rounded-lg shadow-lg w-1/3 max-h-[80vh] flex flex-col">
       <!-- Header -->

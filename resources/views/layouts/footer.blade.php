@@ -135,7 +135,7 @@
   </div>
 
   <!-- Issue Reporting Modal -->
-  <div id="issueModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+  <div id="issueModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl max-w-md mx-4 p-6">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-semibold text-gray-900">Report Issues</h3>

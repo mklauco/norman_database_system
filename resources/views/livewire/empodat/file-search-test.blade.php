@@ -28,6 +28,9 @@
                 @if($file['uploaded_at'])
                   <span class="text-xs text-gray-500 ml-2">• {{ $file['uploaded_at'] }}</span>
                 @endif
+                @if(($file['from'] ?? null) !== null)
+                  <span class="font-mono text-xs text-gray-500 ml-2">• IDs {{ $file['from'] }} – {{ $file['to'] }}</span>
+                @endif
               </div>
             </div>
 
@@ -42,6 +45,12 @@
           </div>
         @endforeach
       </div>
+      @if($idRangesText !== '')
+        <div class="mt-2 flex items-center gap-2 text-xs text-gray-600">
+          <span class="font-mono" data-testid="id-ranges">{{ $idRangesText }}</span>
+          <x-copy-button :text="$idRangesText" label="Copy ID ranges" />
+        </div>
+      @endif
     </div>
   @endif
 
