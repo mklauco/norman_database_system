@@ -133,10 +133,6 @@
                 <div class="flex items-center space-x-2">
                   <a href="{{ route('codsearch.download', ['query_log_id' => $query_log_id]) }}"
                     class="btn-download"><i class="fas fa-file-csv mr-1"></i>Download CSV</a>
-                  @role('super_admin|admin')
-                    <a href="{{ route('codsearch.download.ids', ['query_log_id' => $query_log_id]) }}"
-                      class="btn-download"><i class="fas fa-file-code mr-1"></i>Download IDs for R</a>
-                  @endrole
                 </div>
               @else
                 <button type="button" class="btn-download" disabled>
@@ -168,6 +164,29 @@
               <span class="italic text-gray-400 ml-1">no parameters have been chosen</span>
             @endif
           </div>
+
+          {{-- ID ranges of the selected files --}}
+          @if (isset($fileIdRanges) && $fileIdRanges->isNotEmpty())
+            <div class="my-3 rounded-md border border-lime-200 bg-lime-50 p-3 text-sm text-gray-700">
+              <div class="mb-2 font-semibold">ID ranges of the selected files</div>
+              <ul class="flex flex-col gap-1">
+                @foreach ($fileIdRanges as $range)
+                  <li class="flex items-center gap-2">
+                    <span class="truncate">{{ $range['name'] }}</span>
+                    <span class="font-mono">{{ $range['from'] }} – {{ $range['to'] }}</span>
+                    <x-copy-button :text="$range['from'].'-'.$range['to']" label="Copy" />
+                  </li>
+                @endforeach
+              </ul>
+              @php
+                $combinedRanges = 'ID from '.$fileIdRanges->map(fn ($range) => $range['from'].' to '.$range['to'])->implode(' & ');
+              @endphp
+              <div class="mt-2 flex items-center gap-2 border-t border-lime-200 pt-2">
+                <span class="font-mono">{{ $combinedRanges }}</span>
+                <x-copy-button :text="$combinedRanges" label="Copy" />
+              </div>
+            </div>
+          @endif
 
           {{-- Record count --}}
           <div class="mb-2">

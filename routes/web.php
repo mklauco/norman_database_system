@@ -268,7 +268,6 @@ Route::prefix('empodat')->group(function () {
     Route::get('search/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
     Route::get('search/search/', [EmpodatController::class, 'search'])->name('codsearch.search');
     Route::get('search/downloadjob/{query_log_id}', [EmpodatController::class, 'startDownloadJob'])->name('codsearch.download');
-    Route::get('search/downloadidsjob/{query_log_id}', [EmpodatController::class, 'startDownloadIdsJob'])->name('codsearch.download.ids');
     Route::get('search/download/{filename}', [EmpodatController::class, 'downloadCsv'])
         ->name('csv.download');
     Route::resource('search', EmpodatController::class)->names([
