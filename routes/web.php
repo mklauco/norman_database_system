@@ -273,6 +273,7 @@ Route::prefix('susdat')->group(function () {
 Route::prefix('empodat')->group(function () {
     Route::get('search/filter/', [EmpodatController::class, 'filter'])->name('codsearch.filter');
     Route::get('search/search/', [EmpodatController::class, 'search'])->name('codsearch.search');
+    Route::post('search/timing/{queryLog}', App\Http\Controllers\Empodat\SearchTimingController::class)->middleware('throttle:30,1')->name('codsearch.timing');
     Route::get('search/downloadjob/{query_log_id}', [EmpodatController::class, 'startDownloadJob'])->name('codsearch.download');
     Route::get('search/download/{filename}', [EmpodatController::class, 'downloadCsv'])
         ->name('csv.download');
