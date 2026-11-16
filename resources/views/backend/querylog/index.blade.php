@@ -184,11 +184,19 @@
                           @php
                             $loadExecutionTime = data_get($content, 'loadExecutionTime');
                             $countExecutionTime = data_get($content, 'countExecutionTime');
+                            $dataTime = data_get($content, 'dataTime');
+                            $pageTime = data_get($content, 'pageTime');
                           @endphp
 
-                          @if (is_null($loadExecutionTime) && is_null($countExecutionTime))
+                          @if (is_null($loadExecutionTime) && is_null($countExecutionTime) && is_null($dataTime) && is_null($pageTime))
                             n/a
                           @else
+                            @if (!is_null($dataTime))
+                              <div>Results received: {{ $dataTime }}</div>
+                            @endif
+                            @if (!is_null($pageTime))
+                              <div>Page shown: {{ $pageTime }}</div>
+                            @endif
                             @if (!is_null($loadExecutionTime))
                               <div>Load: {{ $loadExecutionTime }}</div>
                             @endif

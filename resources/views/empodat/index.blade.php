@@ -329,6 +329,34 @@
           <x-empodat-modal />
 
         @push('scripts')
+          @if (!empty($query_log_id) && !request()->has('page'))
+            <script>
+              window.addEventListener('load', function () {
+                setTimeout(function () {
+                  try {
+                    var nav = performance.getEntriesByType('navigation')[0];
+                    if (!nav || nav.type !== 'navigate' || !nav.loadEventEnd) {
+                      return;
+                    }
+                    var meta = document.querySelector('meta[name="csrf-token"]');
+                    fetch(@json(route('codsearch.timing', ['queryLog' => $query_log_id])), {
+                      method: 'POST',
+                      keepalive: true,
+                      headers: {
+                        'X-CSRF-TOKEN': meta ? meta.content : '',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({
+                        data_ms: Math.round(nav.responseEnd - nav.startTime),
+                        page_ms: Math.round(nav.loadEventEnd - nav.startTime)
+                      })
+                    }).catch(function () {});
+                  } catch (e) {}
+                }, 0);
+              });
+            </script>
+          @endif
           <script>
             // Make the route available to the empodatModal component
             window.empodatRoutes = {
