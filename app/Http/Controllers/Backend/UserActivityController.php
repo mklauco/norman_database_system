@@ -32,7 +32,7 @@ class UserActivityController extends Controller
         ], fn (mixed $v): bool => $v !== null);
 
         $dayRows = $this->service->describedDay($date);
-        $areas = $this->service->areasOf($dayRows);
+        $areas = $this->service->areasOf($this->filterRows($dayRows, $request->selectedUserId(), null, null));
         $filtered = $this->filterRows($dayRows, $request->selectedUserId(), $request->selectedArea(), $request->selectedAction());
 
         $perPage = 200;

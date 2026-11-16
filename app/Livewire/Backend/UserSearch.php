@@ -19,8 +19,14 @@ class UserSearch extends Component
 
     public int $minimumSearchLength = 2;
 
-    public function mount(?int $selectedUserId = null, string $fieldName = 'uploaded_by', int $minimumSearchLength = 2): void
+    public bool $compact = false;
+
+    public bool $submitOnChange = false;
+
+    public function mount(?int $selectedUserId = null, string $fieldName = 'uploaded_by', int $minimumSearchLength = 2, bool $compact = false, bool $submitOnChange = false): void
     {
+        $this->compact = $compact;
+        $this->submitOnChange = $submitOnChange;
         $this->fieldName = $fieldName;
         $this->minimumSearchLength = $minimumSearchLength;
 
@@ -76,6 +82,7 @@ class UserSearch extends Component
                 'email' => $user->email,
             ];
             $this->search = '';
+            $this->notifyChange();
         }
     }
 
@@ -84,5 +91,13 @@ class UserSearch extends Component
         $this->selectedUserId = null;
         $this->selectedUser = null;
         $this->search = '';
+        $this->notifyChange();
+    }
+
+    private function notifyChange(): void
+    {
+        if ($this->submitOnChange) {
+            $this->dispatch('user-search-changed', field: $this->fieldName, userId: $this->selectedUserId);
+        }
     }
 }
