@@ -19,7 +19,10 @@
           <section>
             <div class="flex items-center justify-between mb-3">
               <h2 class="text-lg font-semibold">Top 20 users by searches</h2>
-              @include('backend.usage-statistics.partials.export_button', ['table' => 'users', 'year' => $year])
+              <div class="flex items-center gap-2">
+                @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-users'])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'users', 'year' => $year])
+              </div>
             </div>
             <div class="relative mb-6" style="height: {{ max(200, count($chartLabels) * 26 + 60) }}px">
               <canvas id="chart-users"></canvas>
