@@ -21,40 +21,50 @@
             </div>
           @endif
 
-          <form method="GET" action="{{ route('usage-statistics.activity') }}" class="flex flex-wrap items-end gap-4 mb-6">
+          <form method="GET" action="{{ route('usage-statistics.activity') }}" id="activity-filters"
+                x-data
+                x-on:user-search-changed.window="if ($event.detail.field === 'user') { $el.querySelector('input[name=user]').value = $event.detail.userId ?? ''; $el.submit(); }"
+                class="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 md:items-end xl:grid-cols-[auto_minmax(16rem,22rem)_minmax(12rem,16rem)_minmax(9rem,11rem)_auto]">
             <div>
               <label for="activity-date" class="block text-sm font-medium mb-1">Date</label>
-              <div class="flex items-center gap-3">
-                <a href="{{ route('usage-statistics.activity', array_merge($filters, ['date' => $previousDate])) }}" class="link-lime-text text-sm whitespace-nowrap">&larr; previous day</a>
-                <input type="date" id="activity-date" name="date" value="{{ $date }}" max="{{ $today }}" class="border rounded-sm px-2 py-1 text-sm">
+              <div class="flex items-center gap-1">
+                <a href="{{ route('usage-statistics.activity', array_merge($filters, ['date' => $previousDate])) }}" title="Previous day"
+                   class="inline-flex items-center justify-center h-9 w-9 border border-gray-300 rounded-sm text-lime-700 hover:bg-lime-50">&larr;</a>
+                <input type="date" id="activity-date" name="date" value="{{ $date }}" max="{{ $today }}" onchange="this.form.submit()"
+                       class="h-9 border border-gray-300 rounded-sm px-2 text-sm">
                 @if ($nextDate !== null)
-                  <a href="{{ route('usage-statistics.activity', array_merge($filters, ['date' => $nextDate])) }}" class="link-lime-text text-sm whitespace-nowrap">next day &rarr;</a>
+                  <a href="{{ route('usage-statistics.activity', array_merge($filters, ['date' => $nextDate])) }}" title="Next day"
+                     class="inline-flex items-center justify-center h-9 w-9 border border-gray-300 rounded-sm text-lime-700 hover:bg-lime-50">&rarr;</a>
+                @else
+                  <span class="inline-flex items-center justify-center h-9 w-9 border border-gray-200 rounded-sm text-gray-300" title="Today is the latest day">&rarr;</span>
                 @endif
               </div>
             </div>
-            <div class="min-w-72">
+            <div class="min-w-0">
               <span class="block text-sm font-medium mb-1">User <span class="text-gray-400 font-normal">(empty = all users)</span></span>
-              @livewire('backend.user-search', ['selectedUserId' => $filters['user'] ?? null, 'fieldName' => 'user'], key('activity-user-'.($filters['user'] ?? 'all')))
+              @livewire('backend.user-search', ['selectedUserId' => $filters['user'] ?? null, 'fieldName' => 'user', 'compact' => true, 'submitOnChange' => true], key('activity-user-'.($filters['user'] ?? 'all')))
             </div>
-            <div>
+            <div class="min-w-0">
               <label for="activity-area" class="block text-sm font-medium mb-1">Area</label>
-              <select id="activity-area" name="area" class="border rounded-sm pl-2 pr-8 py-1 text-sm min-w-40">
+              <select id="activity-area" name="area" onchange="this.form.submit()" class="w-full h-9 border border-gray-300 rounded-sm pl-2 pr-8 text-sm">
                 <option value="">All areas</option>
                 @foreach ($options['areas'] as $label)
                   <option value="{{ $label }}" @selected(($filters['area'] ?? null) === $label)>{{ $label }}</option>
                 @endforeach
               </select>
             </div>
-            <div>
+            <div class="min-w-0">
               <label for="activity-action" class="block text-sm font-medium mb-1">Action</label>
-              <select id="activity-action" name="action" class="border rounded-sm pl-2 pr-8 py-1 text-sm min-w-36">
+              <select id="activity-action" name="action" onchange="this.form.submit()" class="w-full h-9 border border-gray-300 rounded-sm pl-2 pr-8 text-sm">
                 <option value="">All actions</option>
                 @foreach ($options['actions'] as $key => $label)
                   <option value="{{ $key }}" @selected(($filters['action'] ?? null) === $key)>{{ $label }}</option>
                 @endforeach
               </select>
             </div>
-            <button type="submit" class="px-3 py-1 bg-lime-600 text-white rounded-sm text-sm hover:bg-lime-500 transition duration-300">Show</button>
+            <div>
+              <a href="{{ route('usage-statistics.activity', ['date' => $date]) }}" class="inline-flex items-center h-9 px-3 text-sm border border-gray-300 rounded-sm text-gray-700 hover:bg-gray-50">Reset filters</a>
+            </div>
           </form>
 
           <section>

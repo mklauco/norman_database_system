@@ -2,12 +2,12 @@
     <input type="hidden" name="{{ $fieldName }}" value="{{ $selectedUserId }}">
 
     @if($selectedUser)
-        <div class="flex items-center justify-between p-2 bg-gray-100 border border-gray-300 rounded-md">
-            <div>
+        <div class="{{ $compact ? 'flex items-center justify-between gap-2 h-9 px-2 text-sm bg-gray-100 border border-gray-300 rounded-sm' : 'flex items-center justify-between p-2 bg-gray-100 border border-gray-300 rounded-md' }}">
+            <div class="{{ $compact ? 'truncate' : '' }}" title="{{ $selectedUser['name'] }} · {{ $selectedUser['email'] }}">
                 <span class="font-medium text-gray-900">{{ $selectedUser['name'] }}</span>
                 <span class="text-gray-500 text-sm">(<span class="font-mono">{{ $selectedUser['id'] }}</span> · {{ $selectedUser['email'] }})</span>
             </div>
-            <button type="button" wire:click="clearUser" class="text-red-600 hover:text-red-800">
+            <button type="button" wire:click="clearUser" class="shrink-0 text-red-600 hover:text-red-800" title="Clear">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
@@ -18,7 +18,7 @@
             <input
                 type="text"
                 wire:model.live.debounce.300ms="search"
-                class="block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm"
+                class="{{ $compact ? 'block w-full h-9 px-2 text-sm border rounded-sm border-gray-300 focus:border-gray-500 focus:ring-gray-500' : 'block w-full rounded-md border-gray-300 shadow-xs focus:border-gray-500 focus:ring-gray-500 sm:text-sm' }}"
                 placeholder="Search by name, email or ID..."
             >
 
