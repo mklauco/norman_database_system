@@ -14,7 +14,10 @@
 <section class="mb-10">
   <div class="flex items-center justify-between mb-3">
     <h2 class="text-lg font-semibold">{{ $title }}</h2>
-    @include('backend.usage-statistics.partials.export_button', ['table' => $table, 'year' => $year, 'params' => $params ?? []])
+    <div class="flex items-center gap-2">
+      @include('backend.usage-statistics.partials.png_button', ['chartId' => $chartId])
+      @include('backend.usage-statistics.partials.export_button', ['table' => $table, 'year' => $year, 'params' => $params ?? []])
+    </div>
   </div>
   <div class="relative h-72 mb-4">
     <canvas id="{{ $chartId }}"></canvas>
