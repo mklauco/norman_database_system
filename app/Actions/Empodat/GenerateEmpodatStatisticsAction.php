@@ -126,7 +126,7 @@ class GenerateEmpodatStatisticsAction
         $publicTotal = $summary[self::SCOPE_PUBLIC.'_records'];
 
         DB::transaction(function () use ($rows, $entity, $generatedAt, $publicTotal): void {
-            $entity->update(['number_of_records' => $publicTotal]);
+            $entity->update(['number_of_records' => $publicTotal, 'records_counted_at' => now()]);
 
             foreach ($rows as $key => $metaData) {
                 $statistic = new Statistic([

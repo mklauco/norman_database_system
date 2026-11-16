@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\SLE;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
-use App\Models\DatabaseEntity;
-use App\Models\SLE\SuspectListExchangeSource;
 use Illuminate\Http\Request;
 
 class SuspectListExchangeHomeController extends Controller
@@ -69,10 +68,7 @@ class SuspectListExchangeHomeController extends Controller
 
     public function countAll()
     {
-        DatabaseEntity::where('code', 'sle')->update([
-            'last_update' => SuspectListExchangeSource::max('updated_at'),
-            'number_of_records' => SuspectListExchangeSource::count(),
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['sle']);
         session()->flash('success', 'Database counts updated successfully');
 
         return redirect()->back();
