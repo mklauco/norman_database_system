@@ -33,6 +33,7 @@ class DatabaseEntity extends Model
         'dashboard_route_name',
         'last_update',
         'number_of_records',
+        'records_counted_at',
         'parent_id',
         'show_in_dashboard',
         'has_templates',
@@ -46,6 +47,7 @@ class DatabaseEntity extends Model
      */
     protected $casts = [
         'last_update' => 'datetime',
+        'records_counted_at' => 'datetime',
         'number_of_records' => 'integer',
         'parent_id' => 'integer',
         'show_in_dashboard' => 'boolean',

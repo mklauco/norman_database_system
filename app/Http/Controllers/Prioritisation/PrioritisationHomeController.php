@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prioritisation;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Prioritisation\ModellingDanube;
@@ -19,13 +20,7 @@ class PrioritisationHomeController extends Controller
 
     public function countAll()
     {
-        // Get the latest update timestamp from any of the four tables
-        $latestUpdateTime = max([
-            MonitoringDanube::max('updated_at') ?? '1970-01-01',
-            MonitoringScarce::max('updated_at') ?? '1970-01-01',
-            ModellingDanube::max('updated_at') ?? '1970-01-01',
-            ModellingScarce::max('updated_at') ?? '1970-01-01',
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['prioritisation']);
 
         // Count total records from all prioritisation tables
         $totalRecords =

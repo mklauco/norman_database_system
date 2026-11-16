@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Literature;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
-use App\Models\Literature\LiteratureTempMain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,10 +68,7 @@ class LiteratureHomeController extends Controller
      */
     public function countAll()
     {
-        DatabaseEntity::where('code', 'literature')->update([
-            'last_update' => LiteratureTempMain::max('updated_at'),
-            'number_of_records' => LiteratureTempMain::count(),
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['literature']);
         session()->flash('success', 'Literature database counts updated successfully');
 
         return redirect()->back();

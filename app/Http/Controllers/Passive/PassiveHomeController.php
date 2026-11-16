@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Passive;
 
+use App\Actions\RefreshDatabaseEntityCountsAction;
 use App\Http\Controllers\Controller;
-use App\Models\DatabaseEntity;
-use App\Models\Passive\PassiveSamplingMain;
 use Illuminate\Http\Request;
 
 class PassiveHomeController extends Controller
@@ -68,10 +67,7 @@ class PassiveHomeController extends Controller
 
     public function countAll()
     {
-        DatabaseEntity::where('code', 'passive')->update([
-            'last_update' => PassiveSamplingMain::max('updated_at'),
-            'number_of_records' => PassiveSamplingMain::count(),
-        ]);
+        app(RefreshDatabaseEntityCountsAction::class)->handle(['passive']);
         session()->flash('success', 'Database counts updated successfully');
 
         return redirect()->back();
