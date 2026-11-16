@@ -1,7 +1,7 @@
 @php
-  $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
-  $monthLogins = array_map(fn ($m) => (int) ($byMonth['months'][$m]['logins'] ?? 0), array_keys($months));
-  $monthUsers = array_map(fn ($m) => (int) ($byMonth['months'][$m]['users'] ?? 0), array_keys($months));
+  $monthLogins = array_map(fn ($m) => (int) ($byMonth['periods'][$m]['logins'] ?? 0), array_keys($byMonth['periodLabels']));
+  $monthUsers = array_map(fn ($m) => (int) ($byMonth['periods'][$m]['users'] ?? 0), array_keys($byMonth['periodLabels']));
+  $periodLower = strtolower($byMonth['periodName']);
   $geoTop = array_slice($byGeo, 0, 15);
   $profileTop = array_slice($byProfile, 0, 15);
 @endphp
@@ -19,10 +19,10 @@
 
           <section class="mb-10">
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-lg font-semibold">Logins by month</h2>
+              <h2 class="text-lg font-semibold">Logins by {{ strtolower($byMonth['periodName']) }} – {{ $yearLabel }}</h2>
               <div class="flex items-center gap-2">
                 @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-logins-month'])
-                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-month', 'year' => $year])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-month', 'year' => $year ?? 'all'])
               </div>
             </div>
             <div class="relative h-72 mb-4"><canvas id="chart-logins-month"></canvas></div>
@@ -30,17 +30,17 @@
               <table class="table-standard">
                 <thead>
                   <tr class="bg-gray-600 text-white">
-                    <th class="py-1 px-2 text-left">Month</th>
+                    <th class="py-1 px-2 text-left">{{ $byMonth['periodName'] }}</th>
                     <th class="py-1 px-2 text-right whitespace-nowrap">Logins</th>
                     <th class="py-1 px-2 text-right whitespace-nowrap">Distinct users</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @foreach ($months as $m => $name)
+                  @foreach ($byMonth['periodLabels'] as $m => $name)
                     <tr class="bg-gray-100">
                       <td class="py-1 px-2">{{ $name }}</td>
-                      <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($byMonth['months'][$m]['logins'] ?? 0), 0, '.', ' ') }}</td>
-                      <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($byMonth['months'][$m]['users'] ?? 0), 0, '.', ' ') }}</td>
+                      <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($byMonth['periods'][$m]['logins'] ?? 0), 0, '.', ' ') }}</td>
+                      <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($byMonth['periods'][$m]['users'] ?? 0), 0, '.', ' ') }}</td>
                     </tr>
                   @endforeach
                 </tbody>
@@ -57,10 +57,10 @@
 
           <section class="mb-10">
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-lg font-semibold">Logins by IP country</h2>
+              <h2 class="text-lg font-semibold">Logins by IP country – {{ $yearLabel }}</h2>
               <div class="flex items-center gap-2">
                 @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-logins-geo'])
-                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-geo', 'year' => $year])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-geo', 'year' => $year ?? 'all'])
               </div>
             </div>
             <div class="relative h-72 mb-4"><canvas id="chart-logins-geo"></canvas></div>
@@ -93,10 +93,10 @@
 
           <section>
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-lg font-semibold">Users by profile country</h2>
+              <h2 class="text-lg font-semibold">Users by profile country – {{ $yearLabel }}</h2>
               <div class="flex items-center gap-2">
                 @include('backend.usage-statistics.partials.png_button', ['chartId' => 'chart-logins-profile'])
-                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-profile', 'year' => $year])
+                @include('backend.usage-statistics.partials.export_button', ['table' => 'logins-profile', 'year' => $year ?? 'all'])
               </div>
             </div>
             <div class="relative h-72 mb-4"><canvas id="chart-logins-profile"></canvas></div>
@@ -130,17 +130,17 @@
     <script>
       (function () {
         var p = window.usagePalette;
-        var base = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { position: 'bottom' } } };
+        var yl = @json($yearLabel);
         window.usageAddChart('chart-logins-month', {
           type: 'bar',
           data: {
-            labels: {{ Js::from(array_values($months)) }},
+            labels: {{ Js::from(array_values($byMonth['periodLabels'])) }},
             datasets: [
               { label: 'Logins', data: {{ Js::from($monthLogins) }}, backgroundColor: p[0] },
               { label: 'Distinct users', data: {{ Js::from($monthUsers) }}, backgroundColor: p[2] }
             ]
           },
-          options: base
+          options: window.usageOptions({ title: 'Logins by {{ $periodLower }} – ' + yl, xTitle: @json($byMonth['periodName']), yTitle: 'Number of logins / users' })
         });
         window.usageAddChart('chart-logins-geo', {
           type: 'bar',
@@ -148,7 +148,7 @@
             labels: {{ Js::from(array_map(fn ($r) => $r['country'], $geoTop)) }},
             datasets: [{ label: 'Logins', data: {{ Js::from(array_map(fn ($r) => (int) $r['logins'], $geoTop)) }}, backgroundColor: p[1] }]
           },
-          options: base
+          options: window.usageOptions({ title: 'Logins by IP country – ' + yl, xTitle: 'Country', yTitle: 'Number of logins', legend: false })
         });
         window.usageAddChart('chart-logins-profile', {
           type: 'bar',
@@ -156,7 +156,7 @@
             labels: {{ Js::from(array_map(fn ($r) => $r['country'], $profileTop)) }},
             datasets: [{ label: 'Users', data: {{ Js::from(array_map(fn ($r) => (int) $r['users'], $profileTop)) }}, backgroundColor: p[4] }]
           },
-          options: base
+          options: window.usageOptions({ title: 'Users by profile country – ' + yl, xTitle: 'Country', yTitle: 'Number of users', legend: false })
         });
       })();
     </script>

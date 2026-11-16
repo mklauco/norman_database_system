@@ -16,8 +16,8 @@
               <div class="text-sm text-gray-500">{{ $subjectEmail }}</div>
             @endif
           </div>
-          @include('backend.usage-statistics.partials.month_module', ['title' => 'Searches by month', 'data' => $searches, 'table' => 'searches', 'params' => $exportParams, 'chartId' => 'chart-searches'])
-          @include('backend.usage-statistics.partials.month_module', ['title' => 'Downloads by month', 'data' => $downloads, 'table' => 'downloads', 'params' => $exportParams, 'chartId' => 'chart-downloads'])
+          @include('backend.usage-statistics.partials.month_module', ['title' => 'Searches', 'data' => $searches, 'table' => 'searches', 'params' => $exportParams, 'chartId' => 'chart-searches', 'subjectName' => $subjectName])
+          @include('backend.usage-statistics.partials.month_module', ['title' => 'Downloads', 'data' => $downloads, 'table' => 'downloads', 'params' => $exportParams, 'chartId' => 'chart-downloads', 'subjectName' => $subjectName])
         </div>
       </div>
     </div>
