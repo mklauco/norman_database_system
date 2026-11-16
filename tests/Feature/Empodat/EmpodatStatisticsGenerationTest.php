@@ -86,6 +86,7 @@ class EmpodatStatisticsGenerationTest extends TestCase
 
         $this->assertSame(3, $summary['public_records']);
         $this->assertSame(5, $summary['all_records']);
+        $this->assertSame(3, $entity->fresh()->number_of_records);
 
         $stats = Statistic::query()->where('database_entity_id', $entity->id)->pluck('meta_data', 'key');
 

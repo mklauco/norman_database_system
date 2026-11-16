@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Empodat;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\Empodat\GenerateEmpodatStatisticsJob;
 use App\Models\DatabaseEntity;
-use App\Models\Empodat\EmpodatMain;
 use App\Models\Susdat\Substance;
 use Illuminate\Support\Facades\DB;
 
@@ -95,15 +95,12 @@ class UniqueSearchController extends Controller
 
     public function updateDatabaseEntitiesCounts()
     {
-        DatabaseEntity::where('code', 'empodat')->update([
-            // 'last_update' => EmpodatMain::max('updated_at'),
-            'number_of_records' => EmpodatMain::leftjoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')->where('susdat_substances.relevant_to_norman', 1)->count(),
-        ]);
+        GenerateEmpodatStatisticsJob::dispatch();
         DatabaseEntity::where('code', 'susdat')->update([
             'last_update' => Substance::max('updated_at'),
             'number_of_records' => Substance::count(),
         ]);
-        session()->flash('success', 'Database counts updated successfully');
+        session()->flash('success', 'SUSDAT count updated. EMPODAT recount queued; it takes a few minutes.');
 
         return redirect()->back();
     }
