@@ -45,9 +45,12 @@ class QueryCounter extends Component
 
         // 2. If user wants to recount
         if ($this->sqlQuery && $this->count_again) {
-            // See if there's a cached 'actual_count' already stored
-            $actualCount = QueryLog::where('query_hash', hash('sha256', $this->sqlQuery))
+            // Reuse an earlier count only when the database total has not changed since it was taken
+            $actualCount = $q->total_count === null ? null : QueryLog::where('query_hash', hash('sha256', $this->sqlQuery))
+                ->where('total_count', $q->total_count)
                 ->where('actual_count', '>', 0)
+                ->whereNotNull('content->countExecutionTime')
+                ->latest('id')
                 ->value('actual_count');
 
             // Start measuring time
