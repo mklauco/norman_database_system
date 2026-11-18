@@ -132,7 +132,7 @@
                   Substance:
                 </div>
                 <div>
-                  @livewire('ecotox.pnec-substance-search', ['existingSubstances' => $request->substances])
+                  @livewire('shared.substance-picker', ['multiple' => false, 'scope' => 'pnec', 'existingSubstances' => $request->substances])
                 </div>
               </div>
             </div>
