@@ -170,16 +170,16 @@ class UsageStatisticsController extends Controller
     }
 
     /**
-     * @param  array{periodName: string, periodLabels: array<int,string>, periods: array<int, array{logins:int, users:int}>, total_logins: int, total_users: int}  $data
+     * @param  array{periodName: string, periodLabels: array<int,string>, periods: array<int, array{logins:int, users:int, ips:int}>, total_logins: int, total_users: int, total_ips: int}  $data
      * @return list<array<string, int|string>>
      */
     private function loginMonthRows(array $data): array
     {
         $rows = [];
         foreach ($data['periods'] as $period => $m) {
-            $rows[] = [$data['periodName'] => $data['periodLabels'][$period], 'Logins' => (int) $m['logins'], 'Distinct users' => (int) $m['users']];
+            $rows[] = [$data['periodName'] => $data['periodLabels'][$period], 'Logins' => (int) $m['logins'], 'Distinct users' => (int) $m['users'], 'Distinct IPs' => (int) $m['ips']];
         }
-        $rows[] = [$data['periodName'] => 'Total', 'Logins' => (int) $data['total_logins'], 'Distinct users' => (int) $data['total_users']];
+        $rows[] = [$data['periodName'] => 'Total', 'Logins' => (int) $data['total_logins'], 'Distinct users' => (int) $data['total_users'], 'Distinct IPs' => (int) $data['total_ips']];
 
         return $rows;
     }
