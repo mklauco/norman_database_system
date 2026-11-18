@@ -106,7 +106,7 @@
                 <div class="font-bold mb-2">
                   Substance:
                 </div>
-                @livewire('backend.substance-search')
+                @livewire('shared.substance-picker', ['multiple' => true, 'scope' => 'all', 'existingSubstances' => $request->substances])
               </div>
             </div>
 

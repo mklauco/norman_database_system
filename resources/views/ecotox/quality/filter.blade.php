@@ -136,7 +136,7 @@
             Substance:
           </div>
           <div>
-            @livewire('App\Livewire\Ecotox\QualitySubstanceSearch', ['existingSubstances' => $request->substances])
+            @livewire('shared.substance-picker', ['multiple' => false, 'scope' => 'quality', 'existingSubstances' => $request->substances])
           </div>
         </div>
       </div>
