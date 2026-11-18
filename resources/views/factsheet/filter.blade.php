@@ -152,7 +152,7 @@
             Substance:
           </div>
           <div>
-            @livewire('factsheet.substance-search', ['existingSubstances' => $request->substances])
+            @livewire('shared.substance-picker', ['multiple' => false, 'scope' => 'all', 'existingSubstances' => $request->substances])
           </div>
         </div>
       </div>

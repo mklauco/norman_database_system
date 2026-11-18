@@ -1,6 +1,7 @@
 @php
   $monthLogins = array_map(fn ($m) => (int) ($byMonth['periods'][$m]['logins'] ?? 0), array_keys($byMonth['periodLabels']));
   $monthUsers = array_map(fn ($m) => (int) ($byMonth['periods'][$m]['users'] ?? 0), array_keys($byMonth['periodLabels']));
+  $monthIps = array_map(fn ($m) => (int) ($byMonth['periods'][$m]['ips'] ?? 0), array_keys($byMonth['periodLabels']));
   $periodLower = strtolower($byMonth['periodName']);
   $geoTop = array_slice($byGeo, 0, 15);
   $profileTop = array_slice($byProfile, 0, 15);
@@ -33,6 +34,7 @@
                     <th class="py-1 px-2 text-left">{{ $byMonth['periodName'] }}</th>
                     <th class="py-1 px-2 text-right whitespace-nowrap">Logins</th>
                     <th class="py-1 px-2 text-right whitespace-nowrap">Distinct users</th>
+                    <th class="py-1 px-2 text-right whitespace-nowrap">Distinct IPs</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -41,6 +43,7 @@
                       <td class="py-1 px-2">{{ $name }}</td>
                       <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($byMonth['periods'][$m]['logins'] ?? 0), 0, '.', ' ') }}</td>
                       <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($byMonth['periods'][$m]['users'] ?? 0), 0, '.', ' ') }}</td>
+                      <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) ($byMonth['periods'][$m]['ips'] ?? 0), 0, '.', ' ') }}</td>
                     </tr>
                   @endforeach
                 </tbody>
@@ -49,6 +52,7 @@
                     <td class="py-1 px-2">Total</td>
                     <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) $byMonth['total_logins'], 0, '.', ' ') }}</td>
                     <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) $byMonth['total_users'], 0, '.', ' ') }}</td>
+                    <td class="py-1 px-2 text-right whitespace-nowrap">{{ number_format((int) $byMonth['total_ips'], 0, '.', ' ') }}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -137,10 +141,11 @@
             labels: {{ Js::from(array_values($byMonth['periodLabels'])) }},
             datasets: [
               { label: 'Logins', data: {{ Js::from($monthLogins) }}, backgroundColor: p[0] },
-              { label: 'Distinct users', data: {{ Js::from($monthUsers) }}, backgroundColor: p[2] }
+              { label: 'Distinct users', data: {{ Js::from($monthUsers) }}, backgroundColor: p[2] },
+              { label: 'Distinct IPs', data: {{ Js::from($monthIps) }}, backgroundColor: p[4] }
             ]
           },
-          options: window.usageOptions({ title: 'Logins by {{ $periodLower }} – ' + yl, xTitle: @json($byMonth['periodName']), yTitle: 'Number of logins / users' })
+          options: window.usageOptions({ title: 'Logins by {{ $periodLower }} – ' + yl, xTitle: @json($byMonth['periodName']), yTitle: 'Number of logins / users / IPs' })
         });
         window.usageAddChart('chart-logins-geo', {
           type: 'bar',

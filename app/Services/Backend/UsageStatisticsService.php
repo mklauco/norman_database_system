@@ -243,16 +243,16 @@ class UsageStatisticsService
     }
 
     /**
-     * By month for a given $year, by year when $year is null. users = distinct user_id in that period; total_users = distinct over the whole range.
+     * By month for a given $year, by year when $year is null. users = distinct user_id and ips = distinct ip_address in that period; total_users and total_ips = distinct over the whole range.
      *
-     * @return array{periodName: string, periodLabels: array<int,string>, periods: array<int, array{logins:int, users:int}>, total_logins: int, total_users: int}
+     * @return array{periodName: string, periodLabels: array<int,string>, periods: array<int, array{logins:int, users:int, ips:int}>, total_logins: int, total_users: int, total_ips: int}
      */
     public function loginsByMonth(?int $year): array
     {
         $groupExpr = $year === null ? "date_part('year', login_datetime)" : "date_part('month', login_datetime)";
 
         $rows = UserLoginRetention::query()
-            ->selectRaw("{$groupExpr} as p, count(*) as logins, count(distinct user_id) as users")
+            ->selectRaw("{$groupExpr} as p, count(*) as logins, count(distinct user_id) as users, count(distinct ip_address) as ips")
             ->tap(fn (Builder $q) => $this->applyYear($q, 'login_datetime', $year))
             ->groupByRaw($groupExpr)
             ->get();
@@ -261,12 +261,12 @@ class UsageStatisticsService
 
         $periods = [];
         foreach (array_keys($periodLabels) as $key) {
-            $periods[$key] = ['logins' => 0, 'users' => 0];
+            $periods[$key] = ['logins' => 0, 'users' => 0, 'ips' => 0];
         }
 
         $totalLogins = 0;
         foreach ($rows as $row) {
-            $periods[(int) $row->p] = ['logins' => (int) $row->logins, 'users' => (int) $row->users];
+            $periods[(int) $row->p] = ['logins' => (int) $row->logins, 'users' => (int) $row->users, 'ips' => (int) $row->ips];
             $totalLogins += (int) $row->logins;
         }
 
@@ -275,12 +275,18 @@ class UsageStatisticsService
             ->distinct()
             ->count('user_id');
 
+        $totalIps = (int) UserLoginRetention::query()
+            ->tap(fn (Builder $q) => $this->applyYear($q, 'login_datetime', $year))
+            ->distinct()
+            ->count('ip_address');
+
         return [
             'periodName' => $periodName,
             'periodLabels' => $periodLabels,
             'periods' => $periods,
             'total_logins' => $totalLogins,
             'total_users' => $totalUsers,
+            'total_ips' => $totalIps,
         ];
     }
 

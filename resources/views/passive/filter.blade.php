@@ -90,7 +90,7 @@
                   Substance:
                 </div>
                 <div>
-                  @livewire('backend.substance-search', ['existingSubstances' => $request->substances])
+                  @livewire('shared.substance-picker', ['multiple' => true, 'scope' => 'all', 'existingSubstances' => $request->substances])
                 </div>
               </div>
             </div>
