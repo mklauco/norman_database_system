@@ -8,6 +8,9 @@ use App\Jobs\EmpodatSuspect\RunEmpodatSuspectCommandJob;
 use App\Models\Backend\File;
 use App\Models\DatabaseEntity;
 use App\Models\EmpodatSuspect\EmpodatSuspectCommandRun;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Queues one allowlisted `empodat-suspect:*` command and records the run.
@@ -34,7 +37,75 @@ class QueueEmpodatSuspectCommand
      */
     public function hasActiveRun(): bool
     {
+        $this->closeStaleRuns();
+
         return EmpodatSuspectCommandRun::whereIn('status', EmpodatSuspectCommandRun::ACTIVE_STATUSES)->exists();
+    }
+
+    /**
+     * Marks runs that can no longer be alive as failed, so a killed worker
+     * (e.g. a deploy) does not block the UI forever. Healing happens on
+     * demand, whenever the active state is asked for.
+     *
+     * - running: older than the job timeout plus 10 minutes. The worker kills
+     *   every job at the timeout, so it cannot still be running.
+     * - queued: older than 10 minutes while no row of the queue table mentions
+     *   this job at all. "Refresh all" creates every run up front while only
+     *   the head job is in the table, so a queued row is only stale when no
+     *   job exists anywhere to carry it.
+     *
+     * @return int Number of runs closed.
+     */
+    public function closeStaleRuns(): int
+    {
+        $runs = EmpodatSuspectCommandRun::whereIn('status', EmpodatSuspectCommandRun::ACTIVE_STATUSES)->get();
+
+        if ($runs->isEmpty()) {
+            return 0;
+        }
+
+        $runningCutoff = now()->subSeconds(RunEmpodatSuspectCommandJob::TIMEOUT_SECONDS + 600);
+        $queuedCutoff = now()->subMinutes(10);
+
+        $stale = $runs->filter(fn (EmpodatSuspectCommandRun $run): bool => $run->status === EmpodatSuspectCommandRun::STATUS_RUNNING
+            && $run->started_at !== null
+            && $run->started_at->lt($runningCutoff));
+
+        $queuedCandidates = $runs->filter(fn (EmpodatSuspectCommandRun $run): bool => $run->status === EmpodatSuspectCommandRun::STATUS_QUEUED
+            && $run->queued_at !== null
+            && $run->queued_at->lt($queuedCutoff));
+
+        if ($queuedCandidates->isNotEmpty() && ! $this->queueHoldsCommandJob()) {
+            $stale = $stale->merge($queuedCandidates);
+        }
+
+        foreach ($stale as $run) {
+            $reason = $run->status === EmpodatSuspectCommandRun::STATUS_RUNNING
+                ? 'the worker is gone (running for longer than the job timeout)'
+                : 'no job for it is left in the queue';
+
+            $run->update([
+                'status' => EmpodatSuspectCommandRun::STATUS_FAILED,
+                'finished_at' => now(),
+                'output' => trim(($run->output ?? '')."\n\nRun interrupted: the worker stopped before the run finished ({$reason})."),
+            ]);
+
+            Cache::lock(RunEmpodatSuspectCommandJob::lockKeyFor($run->command_key))->forceRelease();
+
+            Log::warning("EmpodatSuspect command run #{$run->id} ({$run->command_key}) closed as stale: {$reason}.");
+        }
+
+        return $stale->count();
+    }
+
+    private function queueHoldsCommandJob(): bool
+    {
+        $table = (string) config('queue.connections.database.table', 'jobs');
+        $database = config('queue.connections.database.connection');
+
+        return DB::connection($database)->table($table)
+            ->where('payload', 'like', '%RunEmpodatSuspectCommandJob%')
+            ->exists();
     }
 
     /**

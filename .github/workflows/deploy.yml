@@ -116,6 +116,33 @@ jobs:
             exit 1
           fi
 
+          # A deploy recreates the queue workers (step 6), which kills an EMPODAT
+          # Suspect command that is queued or running on the exports queue (up to
+          # 2 h) and leaves half-built data behind (issue #129). Check first, while
+          # nothing on the server has changed yet. The command lives in the app
+          # container that is currently live, so it is missing until the first
+          # release that ships it is deployed; skip the check until then.
+          echo "::group::Check for active EMPODAT Suspect runs"
+          artisan_commands="$(docker exec nds-app php artisan list --raw 2>/dev/null || true)"
+          if grep -q '^empodat-suspect:check-active-runs' <<<"$artisan_commands"; then
+            rc=0
+            out="$(docker exec nds-app php artisan empodat-suspect:check-active-runs 2>&1)" || rc=$?
+            if (( rc == 0 )); then
+              echo "No active EMPODAT Suspect runs."
+            elif (( rc == 2 )); then
+              echo "$out"
+              echo "EMPODAT Suspect command run(s) active — deploy refused so they are not killed. Deploy again after they finish."
+              echo "::endgroup::"
+              false
+            else
+              echo "WARNING: empodat-suspect:check-active-runs failed (exit $rc); continuing without the check."
+              echo "$out"
+            fi
+          else
+            echo "empodat-suspect:check-active-runs not available in the live release yet — check skipped."
+          fi
+          echo "::endgroup::"
+
           # ---- 1. clone fresh release ----------------------------------------
           RELEASE_NAME="$(date +%Y%m%d_%H%M%S)_${GIT_SHA:0:7}"
           RELEASE_PATH="releases/$RELEASE_NAME"
