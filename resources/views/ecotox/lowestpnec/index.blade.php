@@ -41,7 +41,7 @@
           
           <!-- Search and Filter Controls -->
           <div class="mb-6 flex justify-between items-start">
-            <div class="flex space-x-4 flex-1">
+            <div class="flex flex-wrap gap-4 flex-1">
               <div class="w-32">
                 <label for="perPage" class="block text-sm font-medium text-gray-700">Show</label>
                 <select id="perPage" x-model="perPage" @change="changePage(1)" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md focus:outline-hidden focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
@@ -52,15 +52,37 @@
                 </select>
               </div>
               
-              <div class="flex-1">
-                <label for="search" class="block text-sm font-medium text-gray-700">Search Substance Name</label>
-                <input type="text" 
-                id="search" 
-                x-model="search" 
-                @input="debounceSearch()" 
-                placeholder="Search by substance name (e.g., Benzene, Atrazine...)" 
+              <div class="w-48">
+                <label for="searchSusId" class="block text-sm font-medium text-gray-700">Norman SusDat ID</label>
+                <input type="text"
+                id="searchSusId"
+                x-model="susId"
+                @input="debounceSearch()"
+                placeholder="NS00XXXXXX or XXXXXX"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-xs py-2 px-3 font-mono focus:outline-hidden focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
+                <div class="text-xs text-gray-600 mt-1">Exact ID</div>
+              </div>
+
+              <div class="flex-1 min-w-64">
+                <label for="searchSusName" class="block text-sm font-medium text-gray-700">Substance name</label>
+                <input type="text"
+                id="searchSusName"
+                x-model="substanceName"
+                @input="debounceSearch()"
+                placeholder="Full or partial substance name (e.g., Benzene, Atrazine...)"
                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-xs py-2 px-3 focus:outline-hidden focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
                 <div class="text-xs text-gray-600 mt-1">Only searches substances with PNEC data</div>
+              </div>
+
+              <div class="w-48">
+                <label for="searchSusCas" class="block text-sm font-medium text-gray-700">CAS No.</label>
+                <input type="text"
+                id="searchSusCas"
+                x-model="casNumber"
+                @input="debounceSearch()"
+                placeholder="xxx-xx-x"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-xs py-2 px-3 focus:outline-hidden focus:ring-stone-500 focus:border-stone-500 sm:text-sm">
+                <div class="text-xs text-gray-600 mt-1">Exact CAS No.</div>
               </div>
               
               <div class="w-48">
@@ -79,7 +101,9 @@
               @auth
               <form method="POST" action="{{ route('ecotox.lowestpnec.csv.export') }}">
                 @csrf
-                <input type="hidden" name="search" x-model="search">
+                <input type="hidden" name="sus_id" x-model="susId">
+                <input type="hidden" name="substance_name" x-model="substanceName">
+                <input type="hidden" name="cas_number" x-model="casNumber">
                 <input type="hidden" name="exp_pred" x-model="expPred">
                 <button type="submit" class="btn-submit inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-slate-600 hover:bg-slate-700 focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -251,7 +275,9 @@
         currentPage: 1,
         totalPnecs: 0,
         totalPages: 1,
-        search: '',
+        susId: '',
+        substanceName: '',
+        casNumber: '',
         expPred: '',
         searchTimeout: null,
         sortColumn: 'id',
@@ -264,7 +290,7 @@
         
         fetchPnecs() {
           this.loading = true;
-          console.log('Fetching PNECs with search:', this.search, 'expPred:', this.expPred);
+          console.log('Fetching PNECs with SusDat ID:', this.susId, 'name:', this.substanceName, 'CAS:', this.casNumber, 'expPred:', this.expPred);
           
           // Build URL with search parameters
           const url = new URL('{{ route("ecotox.lowestpnec.data") }}', window.location.origin);
@@ -273,9 +299,12 @@
           url.searchParams.append('sort', this.sortColumn);
           url.searchParams.append('direction', this.sortDirection);
           
-          // Only append search param if it's not empty
-          if (this.search && this.search.trim() !== '') {
-            url.searchParams.append('search', this.search.trim());
+          // Only append the substance filters that are not empty
+          const filters = { sus_id: this.susId, substance_name: this.substanceName, cas_number: this.casNumber };
+          for (const [param, value] of Object.entries(filters)) {
+            if (value && value.trim() !== '') {
+              url.searchParams.append(param, value.trim());
+            }
           }
           
           // Only append exp_pred param if it's not empty
@@ -309,7 +338,6 @@
         debounceSearch() {
           clearTimeout(this.searchTimeout);
           this.searchTimeout = setTimeout(() => {
-            console.log('Search term:', this.search);
             this.currentPage = 1; // Reset to first page when searching
             this.fetchPnecs();
           }, 500); // 500ms debounce delay
