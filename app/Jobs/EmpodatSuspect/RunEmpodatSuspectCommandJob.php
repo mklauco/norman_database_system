@@ -45,11 +45,13 @@ class RunEmpodatSuspectCommandJob implements ShouldQueue
      * if a command genuinely needs longer than 2 hours, that worker flag has
      * to move too.
      */
-    public int $timeout = 7200;
+    public const TIMEOUT_SECONDS = 7200;
+
+    public int $timeout = self::TIMEOUT_SECONDS;
 
     public int $tries = 1;
 
-    private const LOCK_TTL = 7200;
+    private const LOCK_TTL = self::TIMEOUT_SECONDS;
 
     /**
      * Cap on stored command output. These commands print progress banners
@@ -89,7 +91,7 @@ class RunEmpodatSuspectCommandJob implements ShouldQueue
             return;
         }
 
-        $lock = Cache::lock($this->lockKey(), self::LOCK_TTL);
+        $lock = Cache::lock(self::lockKeyFor($this->commandKey), self::LOCK_TTL);
 
         if (! $lock->get()) {
             $this->refuse($run, 'Another run of this command is already in progress. Refused rather than queued behind it.');
@@ -137,11 +139,33 @@ class RunEmpodatSuspectCommandJob implements ShouldQueue
 
     /**
      * Safety net in case the worker process died before the `finally` block
-     * in handle() ran.
+     * in handle() ran (e.g. a deploy killed the worker). Releases the lock and
+     * closes the run row, unless handle() already recorded a final status.
      */
     public function failed(Throwable $e): void
     {
-        Cache::lock($this->lockKey())->forceRelease();
+        Cache::lock(self::lockKeyFor($this->commandKey))->forceRelease();
+
+        $run = EmpodatSuspectCommandRun::find($this->runId);
+
+        if ($run === null || ! $run->isActive()) {
+            return;
+        }
+
+        $run->update([
+            'status' => EmpodatSuspectCommandRun::STATUS_FAILED,
+            'finished_at' => now(),
+            'output' => $this->truncate(trim(($run->output ?? '')."\n\nRun interrupted: the worker stopped before the run finished (".$e->getMessage().').')),
+        ]);
+    }
+
+    /**
+     * The cache lock key guarding one command; public so stale-run cleanup
+     * can release the same lock.
+     */
+    public static function lockKeyFor(string $commandKey): string
+    {
+        return "empodat_suspect.command.{$commandKey}";
     }
 
     /**
@@ -231,10 +255,5 @@ class RunEmpodatSuspectCommandJob implements ShouldQueue
         return mb_strlen($output) > self::OUTPUT_CHAR_LIMIT
             ? mb_substr($output, 0, self::OUTPUT_CHAR_LIMIT)."\n\n[... output truncated at ".number_format(self::OUTPUT_CHAR_LIMIT, 0, '.', ' ').' characters ...]'
             : $output;
-    }
-
-    private function lockKey(): string
-    {
-        return "empodat_suspect.command.{$this->commandKey}";
     }
 }
