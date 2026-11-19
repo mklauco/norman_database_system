@@ -30,6 +30,13 @@ class LowestPnecIndexTest extends TestCase
         $response->assertSee('id="searchSusId"', false);
         $response->assertSee('id="searchSusName"', false);
         $response->assertSee('id="searchSusCas"', false);
+    }
+
+    public function test_csv_export_form_sends_susdat_id_name_and_cas_for_logged_in_users(): void
+    {
+        $response = $this->actingAs(User::factory()->create())->get(route('ecotox.lowestpnec.index'));
+
+        $response->assertOk();
         $response->assertSee('name="sus_id"', false);
         $response->assertSee('name="substance_name"', false);
         $response->assertSee('name="cas_number"', false);
