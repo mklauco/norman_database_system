@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\ConcentrationUnit;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class ConcentrationUnitController extends Controller
         return view('literature.concentration_units.index', compact('concentrationUnits'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $concentrationUnits = ConcentrationUnit::orderBy('id')->get();
 
         $filename = 'concentration_units_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $concentrationUnits->count(), 'Literature list: concentration units');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",

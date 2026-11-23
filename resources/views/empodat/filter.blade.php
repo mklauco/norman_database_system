@@ -170,7 +170,7 @@
                   Substance:
                 </div>
                 <div aria-describedby="substance-help">
-                  @livewire('empodat.substance-search', ['existingSubstances' => $request->substances])
+                  @livewire('shared.substance-picker', ['multiple' => true, 'scope' => 'all', 'existingSubstances' => $request->substances])
                 </div>
                 <div id="substance-help" class="sr-only">Search and select chemical substances to filter results</div>
               </div>

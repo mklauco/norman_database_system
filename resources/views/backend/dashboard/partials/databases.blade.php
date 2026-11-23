@@ -1,9 +1,15 @@
 <div class="bg-white shadow-xs rounded-lg overflow-hidden">
-  <div class="p-4 border-b border-gray-200">
+  @php
+    $lastCountedAt = $databaseEntities->max('records_counted_at');
+  @endphp
+  <div class="p-4 border-b border-gray-200 flex items-center justify-between gap-4">
     <h3 class="text-lg font-semibold text-gray-800">
       <i class="fas fa-database mr-2 text-gray-600"></i>
       Databases
     </h3>
+    <span class="text-sm text-gray-500">
+      Last counted: {{ $lastCountedAt ? $lastCountedAt->timezone('Europe/Bratislava')->format('Y-m-d H:i') : 'not yet' }}
+    </span>
   </div>
 
   @if ($databaseEntities->isEmpty())
@@ -17,7 +23,7 @@
             <th class="px-4 py-3 text-right">Records</th>
             @if ($canViewSearches)
               <th class="px-4 py-3 text-right">
-                <span class="inline-flex items-center gap-1">Searches <x-role-lock :roles="['super_admin', 'admin']" /></span>
+                <span class="inline-flex items-center gap-1">Number of visits <x-role-lock :roles="['super_admin', 'admin']" /></span>
               </th>
             @endif
           </tr>
@@ -33,6 +39,7 @@
                 <a href="{{ $link }}" @if ($isExternal) target="_blank" @endif class="font-medium text-gray-800 hover:text-lime-600">
                   {{ $entity->name }}
                 </a>
+                <span class="ml-1 text-sm text-gray-400">({{ $entity->code }})</span>
                 @if (! $entity->is_public)
                   <i class="fas fa-lock ml-1 text-gray-400 text-xs"></i>
                 @endif

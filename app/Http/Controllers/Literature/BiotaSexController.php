@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\BiotaSex;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class BiotaSexController extends Controller
         return view('literature.biota_sexs.index', compact('biotaSexs'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $biotaSexs = BiotaSex::orderBy('id')->get();
 
         $filename = 'biota_sexs_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $biotaSexs->count(), 'Literature list: biota sexes');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",

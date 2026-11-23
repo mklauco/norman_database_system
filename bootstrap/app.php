@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureAuthenticatedUserIsVerified::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\LogUserActivity::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\LogUserActivity::class);
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

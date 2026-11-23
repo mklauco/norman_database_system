@@ -90,7 +90,7 @@
             <div id="searchSubstance">
               <div class="bg-gray-100 p-2">
                 <div class="font-bold mb-2">Substance:</div>
-                @livewire('hazards.substance-search', ['existingSubstances' => $request->substances])
+                @livewire('shared.substance-picker', ['multiple' => false, 'scope' => 'hazards', 'existingSubstances' => $request->substances])
               </div>
             </div>
 

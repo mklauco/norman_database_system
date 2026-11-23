@@ -15,6 +15,8 @@ use App\Http\Controllers\Backend\QueryLogController;
 use App\Http\Controllers\Backend\ServerPaymentController;
 use App\Http\Controllers\Backend\SystemSettingsController;
 use App\Http\Controllers\Backend\TemplateController;
+use App\Http\Controllers\Backend\UsageStatisticsController;
+use App\Http\Controllers\Backend\UserActivityController;
 use App\Http\Controllers\Backend\UserLoginRetentionController;
 use App\Http\Controllers\Bioassay\BioassayController;
 use App\Http\Controllers\Bioassay\BioassayHomeController;
@@ -114,6 +116,25 @@ Route::prefix('backend')->middleware('auth')->group(function () {
         Route::resource('files', FileController::class);
         Route::get('/file-data', [FileController::class, 'getFileData'])->middleware('auth');
     });
+    // Usage statistics (admin, super_admin)
+    Route::prefix('usage-statistics')->middleware('role:super_admin|admin')->group(function () {
+        Route::get('/', [UsageStatisticsController::class, 'index'])->name('usage-statistics.index');
+        Route::get('users', [UsageStatisticsController::class, 'users'])->name('usage-statistics.users');
+        Route::get('users/{user}', [UsageStatisticsController::class, 'showUser'])->name('usage-statistics.users.show');
+        Route::get('guest', [UsageStatisticsController::class, 'guest'])->name('usage-statistics.guest');
+        Route::get('logins', [UsageStatisticsController::class, 'logins'])->name('usage-statistics.logins');
+        Route::get('export/{table}', [UsageStatisticsController::class, 'export'])
+            ->whereIn('table', ['searches', 'downloads', 'users', 'logins-month', 'logins-geo', 'logins-profile'])
+            ->name('usage-statistics.export');
+        Route::middleware('role:super_admin')->group(function () {
+            Route::get('activity', [UserActivityController::class, 'index'])->name('usage-statistics.activity');
+            Route::get('activity/users/{user}', [UserActivityController::class, 'show'])->name('usage-statistics.activity.user');
+            Route::get('activity/export/{table}', [UserActivityController::class, 'export'])
+                ->whereIn('table', ['activity-timeline'])
+                ->name('usage-statistics.activity.export');
+        });
+    });
+
     // Specific templates for a database entity code
 
     Route::get('export-downloads', [App\Http\Controllers\Backend\ExportDownloadController::class, 'index'])->name('export_downloads.index');

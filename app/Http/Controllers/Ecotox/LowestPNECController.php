@@ -43,17 +43,13 @@ class LowestPNECController extends Controller
         $perPage = $request->get('per_page', 25);
         $sortColumn = $request->get('sort', 'id');
         $sortDirection = $request->get('direction', 'asc');
-        $search = $request->get('search', '');
         $expPred = $request->get('exp_pred', '');
 
-        $query = LowestPNEC::with('substance');
-
-        // Apply substance name search (only within substances that exist in LowestPNEC table)
-        if (! empty(trim($search))) {
-            $query->whereHas('substance', function ($subQuery) use ($search) {
-                $subQuery->where('name', 'ILIKE', '%'.trim($search).'%');
-            });
-        }
+        $query = LowestPNEC::with('substance')->searchSubstance(
+            $request->string('sus_id')->toString(),
+            $request->string('substance_name')->toString(),
+            $request->string('cas_number')->toString(),
+        );
 
         // Apply exp_pred filter (experimental vs predicted)
         // Database values: 1 = Experimental, 2 = Predicted
@@ -77,15 +73,20 @@ class LowestPNECController extends Controller
     public function search(Request $request)
     {
         $searchParameters = [];
-        $resultsObjects = LowestPNEC::with('substance');
+        $susId = $request->string('sus_id')->trim()->toString();
+        $substanceName = $request->string('substance_name')->trim()->toString();
+        $casNumber = $request->string('cas_number')->trim()->toString();
 
-        // Apply substance name filter
-        if ($request->has('substance_name') && trim($request->substance_name) !== '') {
-            $substanceName = trim($request->substance_name);
-            $resultsObjects = $resultsObjects->whereHas('substance', function ($query) use ($substanceName) {
-                $query->where('name', 'ILIKE', '%'.$substanceName.'%');
-            });
+        $resultsObjects = LowestPNEC::with('substance')->searchSubstance($susId, $substanceName, $casNumber);
+
+        if ($susId !== '') {
+            $searchParameters['Norman SusDat ID'] = $susId;
+        }
+        if ($substanceName !== '') {
             $searchParameters['Substance Name'] = $substanceName;
+        }
+        if ($casNumber !== '') {
+            $searchParameters['CAS No.'] = $casNumber;
         }
 
         // Apply exp_pred filter (experimental vs predicted)
@@ -210,17 +211,13 @@ class LowestPNECController extends Controller
             fputcsv($handle, $headers);
 
             // Build the query with same filters as getData method
-            $baseQuery = LowestPNEC::with('substance');
+            $baseQuery = LowestPNEC::with('substance')->searchSubstance(
+                $request->string('sus_id')->toString(),
+                $request->string('substance_name')->toString(),
+                $request->string('cas_number')->toString(),
+            );
 
-            // Apply search filters from request
-            $search = $request->get('search', '');
             $expPred = $request->get('exp_pred', '');
-
-            if (! empty(trim($search))) {
-                $baseQuery->whereHas('substance', function ($subQuery) use ($search) {
-                    $subQuery->where('name', 'ILIKE', '%'.trim($search).'%');
-                });
-            }
 
             if (! empty($expPred)) {
                 $baseQuery->where('lowest_exp_pred', (int) $expPred);

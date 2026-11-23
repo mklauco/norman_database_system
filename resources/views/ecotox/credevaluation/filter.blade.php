@@ -132,7 +132,7 @@
                   Substance:
                 </div>
                 <div>
-                  @livewire('ecotox.cred-substance-search', ['existingSubstances' => $request->substances])
+                  @livewire('shared.substance-picker', ['multiple' => false, 'scope' => 'ecotox', 'existingSubstances' => $request->substances])
                 </div>
               </div>
             </div>

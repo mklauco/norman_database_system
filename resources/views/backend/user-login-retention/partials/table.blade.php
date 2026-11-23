@@ -23,8 +23,10 @@
             @foreach($logins as $login)
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 text-sm text-gray-900">
-                        <div class="max-w-xs truncate" title="{{ $login->user->last_name }}, {{ $login->user->first_name }}">
-                            {{ $login->user->last_name }}, {{ $login->user->first_name }}
+                        <div class="max-w-xs truncate" title="Show {{ $login->user->first_name }} {{ $login->user->last_name }}'s activity on this day">
+                            <a href="{{ route('usage-statistics.activity', ['date' => $login->login_datetime->copy()->setTimezone('Europe/Bratislava')->format('Y-m-d'), 'user' => $login->user->id]) }}" class="link-lime-text">
+                                {{ $login->user->last_name }}, {{ $login->user->first_name }}
+                            </a>
                         </div>
                         <div class="max-w-xs truncate text-xs text-gray-500" title="{{ $login->user->email }}">
                             <span class="font-mono">{{ $login->user->id }}</span>

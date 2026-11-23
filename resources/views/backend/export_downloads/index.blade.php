@@ -14,7 +14,7 @@
                 <form method="GET" action="{{ route('export_downloads.index') }}" class="flex items-center gap-4">
                   <label for="user_id" class="text-sm font-medium text-gray-700">Filter by User:</label>
                   <select name="user_id" id="user_id" class="rounded-md border-gray-300 shadow-xs focus:border-lime-500 focus:ring-lime-500 text-sm" onchange="this.form.submit()">
-                    <option value="">-- Select User --</option>
+                    <option value="" {{ $allUsers ? 'selected' : '' }}>All users (latest downloads first)</option>
                     @foreach($usersWithExports as $u)
                       <option value="{{ $u->id }}" {{ $userId == $u->id ? 'selected' : '' }}>
                         {{ $u->last_name }}, {{ $u->first_name }} ({{ $u->email }}) - {{ $u->export_downloads_count }} downloads
@@ -22,6 +22,16 @@
                     @endforeach
                   </select>
                 </form>
+              </div>
+            @endif
+
+            @if($allUsers)
+              <div class="mt-3 p-4 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-500 mb-3"><em>All times displayed in Central European Time (CET/CEST)</em></p>
+                <div>
+                  <span class="text-sm font-medium text-gray-600">Downloads of all users:</span>
+                  <span class="text-sm text-gray-800 ml-2 font-mono">{{ number_format($exportDownloads->total(), 0, '.', ' ') }}</span>
+                </div>
               </div>
             @endif
 
@@ -52,6 +62,9 @@
                 <thead>
                   <tr class="bg-gray-600 text-white">
                     <th class="py-2 px-2 text-left">ID</th>
+                    @if($allUsers)
+                      <th class="py-2 px-2 text-left">User</th>
+                    @endif
                     <th class="py-2 px-2 text-left">Filename</th>
                     <th class="py-2 px-2 text-left">Format</th>
                     <th class="py-2 px-2 text-left">Database</th>
@@ -67,6 +80,15 @@
                   @foreach($exportDownloads as $download)
                     <tr class="@if($loop->odd) bg-slate-100 @else bg-slate-200 @endif hover:bg-slate-300 transition">
                       <td class="py-2 px-2 font-mono">{{ $download->id }}</td>
+                      @if($allUsers)
+                        <td class="py-2 px-2">
+                          @if($download->user)
+                            <a href="{{ route('export_downloads.index', ['user_id' => $download->user_id]) }}" class="link-lime-text" title="{{ $download->user->email }}">{{ $download->user->last_name }}, {{ $download->user->first_name }}</a>
+                          @else
+                            <span class="text-gray-500 italic">Guest</span>
+                          @endif
+                        </td>
+                      @endif
                       <td class="py-2 px-2 font-medium">
                         <span class="text-gray-800">{{ $download->filename }}</span>
                       </td>
@@ -76,7 +98,7 @@
                       <td class="py-2 px-2">{{ $download->database_key }}</td>
                       <td class="py-2 px-2">
                         @if($download->record_count)
-                          {{ number_format($download->record_count) }}
+                          {{ number_format($download->record_count, 0, '.', ' ') }}
                         @else
                           <span class="text-gray-400">-</span>
                         @endif
@@ -102,6 +124,8 @@
                           <span class="bg-yellow-100 text-yellow-800 px-1 py-0.5 rounded-sm">Processing</span>
                         @elseif($download->status === 'failed')
                           <span class="bg-red-100 text-red-800 px-1 py-0.5 rounded-sm">Failed</span>
+                        @elseif($download->status === \App\Services\Backend\DirectDownloadRecorder::STATUS)
+                          <span class="bg-lime-100 text-lime-800 px-1 py-0.5 rounded-sm">Downloaded</span>
                         @else
                           <span class="bg-gray-100 text-gray-800 px-1 py-0.5 rounded-sm">{{ ucfirst($download->status) }}</span>
                         @endif
@@ -120,7 +144,11 @@
                         @endif
                       </td>
                       <td class="py-2 px-2 text-center">
-                        @if($download->status === 'completed' && $download->file_size_bytes === null)
+                        @if($download->status === \App\Services\Backend\DirectDownloadRecorder::STATUS)
+                          <span class="text-gray-500 text-xs italic" title="Delivered directly to the browser; no export file is kept.">
+                            Direct download
+                          </span>
+                        @elseif($download->status === 'completed' && $download->file_size_bytes === null)
                           <span class="text-gray-500 text-xs italic" title="Export files are deleted automatically 24 hours after creation.">
                             Expired (auto-deleted after 24h)
                           </span>
@@ -207,9 +235,9 @@
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                @if($isSuperAdmin && !$userId)
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">Select a user</h3>
-                  <p class="mt-1 text-sm text-gray-500">Select a user from the dropdown above to view their downloads.</p>
+                @if($allUsers)
+                  <h3 class="mt-2 text-sm font-medium text-gray-900">No downloads found</h3>
+                  <p class="mt-1 text-sm text-gray-500">No user has downloaded anything yet.</p>
                 @else
                   <h3 class="mt-2 text-sm font-medium text-gray-900">No downloads found</h3>
                   <p class="mt-1 text-sm text-gray-500">No export downloads were found for this user.</p>

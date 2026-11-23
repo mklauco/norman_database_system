@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\HabitatType;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class HabitatTypeController extends Controller
         return view('literature.habitat_types.index', compact('habitatTypes'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $habitatTypes = HabitatType::orderBy('id')->get();
 
         $filename = 'habitat_types_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $habitatTypes->count(), 'Literature list: habitat types');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
