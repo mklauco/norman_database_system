@@ -143,6 +143,31 @@ jobs:
           fi
           echo "::endgroup::"
 
+          # The EMPODAT legacy backfill (EmpodatLegacyBackfillSeeder) runs for hours
+          # inside nds-app via docker exec; recreating the container kills it
+          # mid-run. Same pattern as above: refuse while a run is active, skip the
+          # check until the live release ships the command. A run with no audit
+          # activity for 60 min counts as dead and does not block.
+          echo "::group::Check for active EMPODAT legacy backfill runs"
+          if grep -q '^empodat-legacy:check-active-runs' <<<"$artisan_commands"; then
+            rc=0
+            out="$(docker exec nds-app php artisan empodat-legacy:check-active-runs 2>&1)" || rc=$?
+            if (( rc == 0 )); then
+              echo "No active EMPODAT legacy backfill runs."
+            elif (( rc == 2 )); then
+              echo "$out"
+              echo "EMPODAT legacy backfill run(s) active — deploy refused so they are not killed. Deploy again after they finish."
+              echo "::endgroup::"
+              false
+            else
+              echo "WARNING: empodat-legacy:check-active-runs failed (exit $rc); continuing without the check."
+              echo "$out"
+            fi
+          else
+            echo "empodat-legacy:check-active-runs not available in the live release yet — check skipped."
+          fi
+          echo "::endgroup::"
+
           # ---- 1. clone fresh release ----------------------------------------
           RELEASE_NAME="$(date +%Y%m%d_%H%M%S)_${GIT_SHA:0:7}"
           RELEASE_PATH="releases/$RELEASE_NAME"
