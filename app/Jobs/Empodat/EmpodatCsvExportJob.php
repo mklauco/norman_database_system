@@ -45,6 +45,39 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
     protected int $copyThreshold = 100000;
 
     /**
+     * Matrix tables that hold the river basin name (`basin_name`), each keyed
+     * by `empodat_main.id`. The exported value comes from the first table
+     * that has one.
+     *
+     * @var list<string>
+     */
+    private const BASIN_TABLES = [
+        'empodat_matrix_water_surface',
+        'empodat_matrix_water_ground',
+        'empodat_matrix_water_waste',
+        'empodat_matrix_sediments',
+        'empodat_matrix_suspended_matter',
+        'empodat_matrix_sewage_sludge',
+        'empodat_matrix_soil',
+        'empodat_matrix_biota',
+    ];
+
+    /**
+     * The tables of BASIN_TABLES that also hold the fraction (`df_id`,
+     * resolved against `list_fractions`).
+     *
+     * @var list<string>
+     */
+    private const FRACTION_TABLES = [
+        'empodat_matrix_water_surface',
+        'empodat_matrix_water_ground',
+        'empodat_matrix_water_waste',
+        'empodat_matrix_sediments',
+        'empodat_matrix_suspended_matter',
+        'empodat_matrix_sewage_sludge',
+    ];
+
+    /**
      * Get the database key for this module
      */
     protected function getDatabaseKey(): string
@@ -87,6 +120,10 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             'Data Source ID',
             'Latitude',
             'Longitude',
+
+            // matrix table fields
+            'River Basin',
+            'Fraction',
 
             // empodat_minor fields
             'DPC ID',
@@ -257,7 +294,7 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
 
         // Use a separate optimized query for data retrieval to avoid JOIN conflicts
         // This approach ensures we get all the data we need without interfering with filtering JOINs
-        return DB::table('empodat_main')
+        $query = DB::table('empodat_main')
             ->select(
                 // empodat_main fields
                 'empodat_main.id',
@@ -280,6 +317,10 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
                 'empodat_main.data_source_id',
                 'empodat_stations.latitude',
                 'empodat_stations.longitude',
+
+                // matrix table fields
+                DB::raw(self::basinNameSql().' as basin_name'),
+                'list_fractions.name as fraction_name',
 
                 // empodat_minor fields
                 'empodat_minor.dpc_id',
@@ -327,7 +368,14 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             ->leftJoin('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
             ->leftJoin('list_countries', 'empodat_main.country_id', '=', 'list_countries.id')
             ->leftJoin('list_matrices', 'empodat_main.matrix_id', '=', 'list_matrices.id')
-            ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id')
+            ->leftJoin('susdat_substances', 'empodat_main.substance_id', '=', 'susdat_substances.id');
+
+        foreach (self::BASIN_TABLES as $table) {
+            $query->leftJoin($table, 'empodat_main.id', '=', "{$table}.id");
+        }
+
+        return $query
+            ->leftJoin('list_fractions', DB::raw(self::fractionIdSql()), '=', 'list_fractions.id')
             ->whereIn('empodat_main.id', $orderedIds)
             ->orderBy('empodat_main.id')
             ->cursor(); // Use cursor for memory efficiency with larger datasets
@@ -360,6 +408,10 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             $record->data_source_id ?? '',
             $record->latitude ?? '',
             $record->longitude ?? '',
+
+            // matrix table fields
+            $record->basin_name ?? '',
+            $record->fraction_name ?? '',
 
             // empodat_minor fields
             $record->dpc_id ?? '',
@@ -461,7 +513,7 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
 
         $exportDateLiteral = str_replace("'", "''", $exportDate);
 
-        $selectColumns = "
+        $selectColumns = '
             filtered.id,
             filtered.station_id,
             empodat_stations.name as station_name,
@@ -482,6 +534,8 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             filtered.data_source_id,
             empodat_stations.latitude,
             empodat_stations.longitude,
+            '.self::basinNameSql()." as basin_name,
+            list_fractions.name as fraction_name,
             empodat_minor.dpc_id,
             empodat_minor.altitude,
             empodat_minor.matrix_other,
@@ -534,7 +588,34 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             LEFT JOIN susdat_substances ON filtered.substance_id = susdat_substances.id
         ";
 
+        foreach (self::BASIN_TABLES as $table) {
+            $joins .= " LEFT JOIN {$table} ON filtered.id = {$table}.id";
+        }
+        $joins .= ' LEFT JOIN list_fractions ON '.self::fractionIdSql().' = list_fractions.id';
+
         return "SELECT {$selectColumns} {$joins} ORDER BY filtered.id";
+    }
+
+    /**
+     * SQL expression for the river basin name across the matrix tables.
+     */
+    private static function basinNameSql(): string
+    {
+        return 'COALESCE('.implode(', ', array_map(
+            static fn (string $table): string => "{$table}.basin_name",
+            self::BASIN_TABLES,
+        )).')';
+    }
+
+    /**
+     * SQL expression for the fraction id (`df_id`) across the matrix tables.
+     */
+    private static function fractionIdSql(): string
+    {
+        return 'COALESCE('.implode(', ', array_map(
+            static fn (string $table): string => "{$table}.df_id",
+            self::FRACTION_TABLES,
+        )).')';
     }
 
     /**
