@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\UseCategory;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class UseCategoryController extends Controller
         return view('literature.use_categories.index', compact('useCategories'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $useCategories = UseCategory::orderBy('id')->get();
 
         $filename = 'use_categories_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $useCategories->count(), 'Literature list: use categories');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",

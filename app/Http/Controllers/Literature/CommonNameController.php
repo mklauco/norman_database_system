@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\CommonName;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class CommonNameController extends Controller
         return view('literature.common_names.index', compact('commonNames'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $commonNames = CommonName::orderBy('id')->get();
 
         $filename = 'common_names_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $commonNames->count(), 'Literature list: common names');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
