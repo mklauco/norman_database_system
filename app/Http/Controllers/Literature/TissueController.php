@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\Tissue;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class TissueController extends Controller
         return view('literature.tissues.index', compact('tissues'));
     }
 
-    public function downloadCategories()
+    public function downloadCategories(DirectDownloadRecorder $downloads)
     {
         $tissues = Tissue::orderBy('id')->get();
 
         $filename = 'tissue_categories_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $tissues->count(), 'Literature list: tissue categories');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
@@ -71,11 +73,12 @@ class TissueController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    public function downloadSubcategories()
+    public function downloadSubcategories(DirectDownloadRecorder $downloads)
     {
         $tissues = Tissue::with('subcategories')->orderBy('id')->get();
 
         $filename = 'tissue_subcategories_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $tissues->sum(fn ($tissue): int => $tissue->subcategories->count()), 'Literature list: tissue subcategories');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",

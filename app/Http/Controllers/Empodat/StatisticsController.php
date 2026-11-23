@@ -7,6 +7,7 @@ use App\Jobs\Empodat\GenerateEmpodatStatisticsJob;
 use App\Models\Empodat\EmpodatMain;
 use App\Models\List\Matrix;
 use App\Models\Susdat\Substance;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -497,6 +498,8 @@ class StatisticsController extends Controller
      */
     private function generateCsvResponse($csvData, $filename)
     {
+        app(DirectDownloadRecorder::class)->record('empodat', $filename, 'csv', max(count($csvData) - 1, 0), 'EMPODAT statistics');
+
         $csvContent = '';
         foreach ($csvData as $row) {
             $csvContent .= implode(',', array_map(function ($field) {

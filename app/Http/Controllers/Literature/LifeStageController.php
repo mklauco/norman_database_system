@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\LifeStage;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class LifeStageController extends Controller
         return view('literature.life_stages.index', compact('lifeStages'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $lifeStages = LifeStage::orderBy('id')->get();
 
         $filename = 'life_stages_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $lifeStages->count(), 'Literature list: life stages');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
