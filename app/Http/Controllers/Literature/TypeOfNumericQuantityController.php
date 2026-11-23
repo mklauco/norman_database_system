@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\TypeOfNumericQuantity;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class TypeOfNumericQuantityController extends Controller
         return view('literature.type_of_numeric_quantities.index', compact('typeOfNumericQuantities'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $typeOfNumericQuantities = TypeOfNumericQuantity::orderBy('id')->get();
 
         $filename = 'type_of_numeric_quantities_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $typeOfNumericQuantities->count(), 'Literature list: types of numeric quantity');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",

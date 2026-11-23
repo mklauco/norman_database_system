@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Susdat;
 
 use App\Http\Controllers\Controller;
 use App\Models\Susdat\Substance;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Spatie\SimpleExcel\SimpleExcelWriter;
 
@@ -109,7 +110,7 @@ class BatchConversionController extends Controller
     /**
      * Download results as CSV file
      */
-    public function downloadCsv(Request $request)
+    public function downloadCsv(Request $request, DirectDownloadRecorder $downloads)
     {
         $results = session('batch_conversion_results', []);
 
@@ -118,6 +119,7 @@ class BatchConversionController extends Controller
         }
 
         $filename = 'batch_conversion_results_'.date('Y-m-d_H-i-s').'.csv';
+        $downloads->record('susdat', $filename, 'csv', count($results), 'SUSDAT batch conversion');
 
         return response()->streamDownload(function () use ($results) {
             $output = fopen('php://output', 'w');
@@ -153,7 +155,7 @@ class BatchConversionController extends Controller
     /**
      * Download results as XLSX file
      */
-    public function downloadXlsx(Request $request)
+    public function downloadXlsx(Request $request, DirectDownloadRecorder $downloads)
     {
         $results = session('batch_conversion_results', []);
 
@@ -182,6 +184,8 @@ class BatchConversionController extends Controller
                 ];
             }
         }
+
+        $downloads->record('susdat', $filename, 'xlsx', count($exportData), 'SUSDAT batch conversion');
 
         // Create XLSX file
         $writer = SimpleExcelWriter::create($tempPath);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literature;
 use App\Http\Controllers\Controller;
 use App\Models\DatabaseEntity;
 use App\Models\Literature\Species;
+use App\Services\Backend\DirectDownloadRecorder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,11 +42,12 @@ class SpeciesController extends Controller
         return view('literature.species.index', compact('species'));
     }
 
-    public function download()
+    public function download(DirectDownloadRecorder $downloads)
     {
         $species = Species::orderBy('id')->get();
 
         $filename = 'species_'.date('Y-m-d_His').'.csv';
+        $downloads->record('literature', $filename, 'csv', $species->count(), 'Literature list: species');
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
