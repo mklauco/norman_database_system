@@ -40,6 +40,12 @@ class EmpodatLegacyRollback extends Command
             return self::FAILURE;
         }
 
+        if (str_starts_with((string) $run->notes, 'RECONCILE')) {
+            $this->error("Run #{$runId} is a RECONCILE run; use empodat-reconcile:rollback {$runId}.");
+
+            return self::FAILURE;
+        }
+
         if ($run->status === 'rolled_back') {
             $this->warn("Run #{$runId} is already marked as rolled_back. Nothing to do.");
 
