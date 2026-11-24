@@ -58,7 +58,7 @@ abstract class ReconcileSeeder extends Seeder
             $this->say('id window: '.$this->options->windowLabel());
         }
 
-        $count = $this->plan();
+        $count = $this->options->isExecute() && ! $this->countsBeforeWriting() ? null : $this->plan();
 
         if (! $this->options->isExecute()) {
             $this->say('Planned rows: '.$count.'. Nothing written (dry-run).');
@@ -95,6 +95,15 @@ abstract class ReconcileSeeder extends Seeder
         }
 
         $this->say('Run #'.$audit->runId.' completed. Undo with: php artisan empodat-reconcile:rollback '.$audit->runId);
+    }
+
+    /**
+     * Whether an execute run calls plan() before apply(). A seeder whose
+     * apply() re-reads everything itself can skip the extra pass.
+     */
+    protected function countsBeforeWriting(): bool
+    {
+        return true;
     }
 
     protected function say(string $line): void

@@ -85,6 +85,11 @@ final class ReconcileSamplingDatePartsSeeder extends ReconcileSeeder
         return 'sampling month/day from legacy dct_analysis, window '.$this->options->windowLabel();
     }
 
+    protected function countsBeforeWriting(): bool
+    {
+        return $this->options->expectCount !== null;
+    }
+
     /**
      * @return array{0: int, 1: int}|null
      */
