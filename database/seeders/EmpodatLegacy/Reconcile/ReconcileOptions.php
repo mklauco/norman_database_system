@@ -25,6 +25,7 @@ final readonly class ReconcileOptions
         public ?int $idTo = null,
         public int $chunk = 20000,
         public int $legacyPauseMs = 50,
+        public ?int $closeStaleRunId = null,
     ) {
         if (! in_array($mode, [self::MODE_DRY_RUN, self::MODE_EXECUTE], true)) {
             throw new InvalidArgumentException('RECONCILE_MODE must be dry-run or execute (got "'.$mode.'").');
@@ -67,6 +68,7 @@ final readonly class ReconcileOptions
             idTo: $int('RECONCILE_ID_TO', null),
             chunk: (int) $int('RECONCILE_CHUNK', 20000),
             legacyPauseMs: (int) $int('RECONCILE_LEGACY_PAUSE_MS', 50),
+            closeStaleRunId: $int('RECONCILE_CLOSE_STALE_RUN', null),
         );
     }
 

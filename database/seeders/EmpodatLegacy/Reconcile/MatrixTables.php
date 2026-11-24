@@ -70,10 +70,11 @@ final class MatrixTables
         foreach (array_chunk($ids, self::CHUNK) as $chunk) {
             $pg->transaction(static function () use ($pg, $audit, $step, $table, $chunk): void {
                 $started = hrtime(true);
-                $before = $pg->table($table)->whereIn('id', $chunk)->get()
-                    ->map(static fn (object $row): array => (array) $row)
-                    ->all();
-                $pg->table($table)->whereIn('id', $chunk)->delete();
+                $placeholders = implode(',', array_fill(0, count($chunk), '?'));
+                $before = array_map(
+                    static fn (object $row): array => (array) $row,
+                    $pg->select('DELETE FROM '.$table.' WHERE id IN ('.$placeholders.') RETURNING *', $chunk),
+                );
                 $audit->logDelete($step, $table, $before, (int) ((hrtime(true) - $started) / 1_000_000));
             });
         }

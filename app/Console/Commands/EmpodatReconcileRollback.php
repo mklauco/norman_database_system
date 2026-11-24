@@ -156,9 +156,24 @@ class EmpodatReconcileRollback extends Command
             static fn (mixed $row): array => (array) $row,
             (array) json_decode((string) $log->before_rows, true, 512, JSON_THROW_ON_ERROR),
         );
+        if ($rows === []) {
+            return 0;
+        }
+
         $inserted = 0;
-        foreach (array_chunk($rows, 1000) as $chunk) {
+        $perStatement = max(1, intdiv(60000, count($rows[0])));
+        foreach (array_chunk($rows, $perStatement) as $chunk) {
             $inserted += DB::table($log->table_name)->insertOrIgnore($chunk);
+        }
+
+        if ($inserted !== count($rows)) {
+            throw new RuntimeException(sprintf(
+                'Log row #%d: only %d of %d rows could be re-inserted into %s (some ids exist again); this log row was not undone and is kept.',
+                $log->id,
+                $inserted,
+                count($rows),
+                $log->table_name,
+            ));
         }
 
         return $inserted;

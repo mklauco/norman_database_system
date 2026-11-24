@@ -78,6 +78,11 @@ abstract class ReconcileSeeder extends Seeder
             throw new RuntimeException('Refusing to write: '.implode('; ', $violations));
         }
 
+        if ($this->options->closeStaleRunId !== null) {
+            $closed = ReconcileAudit::closeStaleRun($this->pg, $this->options->closeStaleRunId);
+            $this->say('Closed stale run #'.$this->options->closeStaleRunId.': '.$closed.' row(s) marked failed.');
+        }
+
         $audit = ReconcileAudit::start($this->pg, $name, $this->notes());
 
         try {

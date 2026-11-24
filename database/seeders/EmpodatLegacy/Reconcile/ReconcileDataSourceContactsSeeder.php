@@ -21,9 +21,6 @@ final class ReconcileDataSourceContactsSeeder extends ReconcileSeeder
     /** @var array<int, array<string, string>> data source id => column => new value */
     private array $changes = [];
 
-    /** @var list<array{id: int, email: ?string, author: ?string}> */
-    private array $before = [];
-
     protected function plan(): int
     {
         $pgRows = [];
@@ -34,7 +31,6 @@ final class ReconcileDataSourceContactsSeeder extends ReconcileSeeder
         $cells = ['email' => 0, 'author' => 0];
         $conflicts = 0;
         $this->changes = [];
-        $this->before = [];
 
         foreach ($this->legacy->select('SELECT id_data, email, author FROM dct_data_source') as $legacyRow) {
             $id = (int) $legacyRow->id_data;
@@ -59,11 +55,6 @@ final class ReconcileDataSourceContactsSeeder extends ReconcileSeeder
 
             if ($set !== []) {
                 $this->changes[$id] = $set;
-                $this->before[] = [
-                    'id' => $id,
-                    'email' => $pgRows[$id]->email,
-                    'author' => $pgRows[$id]->author,
-                ];
             }
         }
 
@@ -80,17 +71,42 @@ final class ReconcileDataSourceContactsSeeder extends ReconcileSeeder
         $started = microtime(true);
 
         $this->pg->transaction(function () use ($audit, $started): void {
+            $current = $this->pg->table(self::TABLE)
+                ->whereIn('id', array_keys($this->changes))
+                ->lockForUpdate()
+                ->get(['id', 'email', 'author'])
+                ->keyBy('id');
+
+            $ids = [];
+            $before = [];
             foreach ($this->changes as $id => $set) {
-                $this->pg->table(self::TABLE)->where('id', $id)->update($set);
+                $row = $current->get($id);
+                if ($row === null) {
+                    continue;
+                }
+                $stillEmpty = array_filter(
+                    $set,
+                    fn (string $value, string $column): bool => $this->blankToNull($row->{$column}) === null,
+                    ARRAY_FILTER_USE_BOTH,
+                );
+                if ($stillEmpty === []) {
+                    continue;
+                }
+
+                $this->pg->table(self::TABLE)->where('id', $id)->update($stillEmpty);
+                $ids[] = $id;
+                $before[] = ['id' => $id, 'email' => $row->email, 'author' => $row->author];
             }
+
             $audit->logFill(
                 'Fill email/author from legacy',
                 self::TABLE,
                 self::COLUMNS,
-                array_keys($this->changes),
-                $this->before,
+                $ids,
+                $before,
                 (int) ((microtime(true) - $started) * 1000),
             );
+            $this->say('Rows changed: '.count($ids).' of '.count($this->changes).' planned.');
         });
     }
 

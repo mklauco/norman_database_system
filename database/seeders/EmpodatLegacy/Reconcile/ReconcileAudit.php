@@ -65,6 +65,19 @@ final class ReconcileAudit
         $this->write($step, $table, 'delete', $ids, null, $beforeRows, $durationMs);
     }
 
+    /**
+     * Marks a dead RECONCILE run (killed process) as failed, so a new run may
+     * start and the dead one can be rolled back. Touches only RECONCILE runs.
+     */
+    public static function closeStaleRun(ConnectionInterface $pg, int $runId): int
+    {
+        return $pg->table('empodat_legacy_import_runs')
+            ->where('id', $runId)
+            ->where('status', 'running')
+            ->where('notes', 'like', self::NOTE_PREFIX.'%')
+            ->update(['status' => 'failed', 'finished_at' => now()]);
+    }
+
     public function complete(): void
     {
         $this->pg->table('empodat_legacy_import_runs')->where('id', $this->runId)->update([
@@ -105,7 +118,7 @@ final class ReconcileAudit
             'id_min' => $single ? $ranges[0][0] : null,
             'id_max' => $single ? $ranges[0][1] : null,
             'ids' => $single ? null : json_encode($ranges, JSON_THROW_ON_ERROR),
-            'before_rows' => $beforeRows === null ? null : json_encode($beforeRows, JSON_THROW_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE),
+            'before_rows' => $beforeRows === null ? null : json_encode($beforeRows, JSON_THROW_ON_ERROR),
             'row_count' => count($ids),
             'duration_ms' => $durationMs,
         ]);
