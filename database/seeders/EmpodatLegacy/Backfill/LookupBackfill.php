@@ -304,12 +304,13 @@ final class LookupBackfill
     /**
      * Read-only twin of insertDataSources(): the empodat_data_sources rows the
      * backfill mapping builds for the given legacy ids, without writing anything.
-     * Throws when a row would need a new organisation or laboratory.
+     * With $failOnNew it throws when a row would need a new organisation or
+     * laboratory; without it such an organisation or laboratory stays null.
      *
      * @param  list<int>  $ids
      * @return list<array<string, mixed>>
      */
-    public function dataSourceRowsForIds(array $ids): array
+    public function dataSourceRowsForIds(array $ids, bool $failOnNew = true): array
     {
         $legacyRows = $this->legacySourceRows($ids);
         $orgMap = $this->resolveOrganisations($this->legacyOrganisationIds($legacyRows), false)['map'];
@@ -321,14 +322,40 @@ final class LookupBackfill
             $id = (int) $r->id_data;
 
             if ($r->organisation !== null && ($row['organisation_id'] ?? 0) < 1) {
-                throw new RuntimeException('Data source '.$id.' needs a new organisation (legacy organisation '.$r->organisation.'); not created by this seeder.');
+                if ($failOnNew) {
+                    throw new RuntimeException('Data source '.$id.' needs a new organisation (legacy organisation '.$r->organisation.'); not created by this seeder.');
+                }
+                $row['organisation_id'] = null;
             }
-            foreach (['laboratory1_id' => $r->laboratory_name, 'laboratory2_id' => $r->laboratory_name_2] as $column => $name) {
-                if ($this->blankToNull($name) !== null && $row[$column] === null) {
-                    throw new RuntimeException('Data source '.$id.' needs a new laboratory ('.$column.', "'.trim((string) $name).'"); not created by this seeder.');
+            if ($failOnNew) {
+                foreach (['laboratory1_id' => $r->laboratory_name, 'laboratory2_id' => $r->laboratory_name_2] as $column => $name) {
+                    if ($this->blankToNull($name) !== null && $row[$column] === null) {
+                        throw new RuntimeException('Data source '.$id.' needs a new laboratory ('.$column.', "'.trim((string) $name).'"); not created by this seeder.');
+                    }
                 }
             }
             $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Read-only twin of insertMethods(): the empodat_analytical_methods rows the
+     * backfill mapping builds for the given legacy ids.
+     *
+     * @param  list<int>  $ids
+     * @return list<array<string, mixed>>
+     */
+    public function methodRowsForIds(array $ids): array
+    {
+        $now = now()->toDateTimeString();
+        $rows = [];
+
+        foreach (array_chunk($ids, 2000) as $chunk) {
+            foreach ($this->ctx->legacy->table('dct_analytical_method')->whereIn('id_method', $chunk)->orderBy('id_method')->get() as $r) {
+                $rows[] = $this->methodRow($r, $now);
+            }
         }
 
         return $rows;
