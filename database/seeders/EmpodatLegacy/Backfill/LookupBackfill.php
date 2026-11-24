@@ -302,6 +302,39 @@ final class LookupBackfill
     }
 
     /**
+     * Read-only twin of insertDataSources(): the empodat_data_sources rows the
+     * backfill mapping builds for the given legacy ids, without writing anything.
+     * Throws when a row would need a new organisation or laboratory.
+     *
+     * @param  list<int>  $ids
+     * @return list<array<string, mixed>>
+     */
+    public function dataSourceRowsForIds(array $ids): array
+    {
+        $legacyRows = $this->legacySourceRows($ids);
+        $orgMap = $this->resolveOrganisations($this->legacyOrganisationIds($legacyRows), false)['map'];
+        $now = now()->toDateTimeString();
+
+        $rows = [];
+        foreach ($legacyRows as $r) {
+            $row = $this->dataSourceRow($r, $orgMap, $now, false);
+            $id = (int) $r->id_data;
+
+            if ($r->organisation !== null && ($row['organisation_id'] ?? 0) < 1) {
+                throw new RuntimeException('Data source '.$id.' needs a new organisation (legacy organisation '.$r->organisation.'); not created by this seeder.');
+            }
+            foreach (['laboratory1_id' => $r->laboratory_name, 'laboratory2_id' => $r->laboratory_name_2] as $column => $name) {
+                if ($this->blankToNull($name) !== null && $row[$column] === null) {
+                    throw new RuntimeException('Data source '.$id.' needs a new laboratory ('.$column.', "'.trim((string) $name).'"); not created by this seeder.');
+                }
+            }
+            $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
+    /**
      * @param  list<int>  $ids
      */
     private function insertMatrices(array $ids, Audit $audit): void
