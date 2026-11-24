@@ -89,7 +89,7 @@ final readonly class ReconcileOptions
     /**
      * @return list<string> reasons writing is not allowed (empty = allowed)
      */
-    public function writeViolations(string $connectedDatabase, int $plannedCount): array
+    public function writeViolations(string $connectedDatabase, ?int $plannedCount): array
     {
         $reasons = [];
 
@@ -104,9 +104,7 @@ final readonly class ReconcileOptions
         } elseif ($this->expectDatabase !== $connectedDatabase) {
             $reasons[] = 'RECONCILE_EXPECT_PG_DATABASE="'.$this->expectDatabase.'" but connected to "'.$connectedDatabase.'"';
         }
-        if ($this->expectCount === null) {
-            $reasons[] = 'RECONCILE_EXPECT_COUNT is not set';
-        } elseif ($this->expectCount !== $plannedCount) {
+        if ($this->expectCount !== null && $this->expectCount !== $plannedCount) {
             $reasons[] = 'RECONCILE_EXPECT_COUNT='.$this->expectCount.' but the plan has '.$plannedCount;
         }
 
