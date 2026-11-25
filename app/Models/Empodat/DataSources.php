@@ -3,6 +3,7 @@
 namespace App\Models\Empodat;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DataSources extends Model
 {
@@ -28,4 +29,9 @@ class DataSources extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function groups(): HasMany
+    {
+        return $this->hasMany(EmpodatDataSourceGroup::class, 'data_source_id')->orderBy('position');
+    }
 }
