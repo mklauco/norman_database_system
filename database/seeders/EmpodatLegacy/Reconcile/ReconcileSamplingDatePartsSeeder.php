@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders\EmpodatLegacy\Reconcile;
 
+use RuntimeException;
+
 /**
  * Copies the sampling month and day from legacy dct_analysis
  * (sampling_date_m, sampling_date_d) into empodat_minor.sampling_date_m /
@@ -16,18 +18,20 @@ namespace Database\Seeders\EmpodatLegacy\Reconcile;
  * Only rows where BOTH target columns are NULL are written, so a stopped run
  * can simply be started again with the same or a later window.
  *
- * About 115M rows are in scope, so it runs in staged id windows of roughly
- * 10M ids (RECONCILE_ID_FROM / RECONCILE_ID_TO, inclusive). Each window needs
- * its own dry run: the execute needs RECONCILE_EXPECT_COUNT from that window's
- * dry run. Every updated row becomes a new tuple, so the table can grow
- * towards 2x until vacuumed: run `VACUUM (ANALYZE) empodat_minor` between
- * stages.
+ * About 115M rows are in scope and the run takes many hours. Without
+ * RECONCILE_ID_FROM it resumes after the highest id already logged in
+ * empodat_reconcile_log for this step (runs that were rolled back do not
+ * count) and goes to the end of the table; with no such row it refuses to
+ * start. RECONCILE_ID_FROM / RECONCILE_ID_TO (inclusive) still override. A dead
+ * "running" run of this seeder (no log row for 60 minutes) is closed
+ * automatically. Every updated row becomes a new tuple, so the table can grow
+ * towards 2x until vacuumed: run `VACUUM (ANALYZE) empodat_minor` afterwards.
  *
- * Production, dry run:
- *   docker exec -e RECONCILE_ID_FROM=<a> -e RECONCILE_ID_TO=<b> nds-app php artisan db:seed --class='Database\Seeders\EmpodatLegacy\Reconcile\ReconcileSamplingDatePartsSeeder' --force
+ * Production, dry run (prints the resume id):
+ *   docker exec nds-app php artisan db:seed --class='Database\Seeders\EmpodatLegacy\Reconcile\ReconcileSamplingDatePartsSeeder' --force
  *
- * Production, execute:
- *   docker exec -e RECONCILE_MODE=execute -e RECONCILE_EXECUTE=true -e RECONCILE_EXPECT_PG_DATABASE=nds -e RECONCILE_EXPECT_COUNT=<n> -e RECONCILE_ID_FROM=<a> -e RECONCILE_ID_TO=<b> nds-app php artisan db:seed --class='Database\Seeders\EmpodatLegacy\Reconcile\ReconcileSamplingDatePartsSeeder' --force
+ * Production, execute (start or restart):
+ *   docker exec -e RECONCILE_MODE=execute -e RECONCILE_EXECUTE=true -e RECONCILE_EXPECT_PG_DATABASE=nds nds-app php artisan db:seed --class='Database\Seeders\EmpodatLegacy\Reconcile\ReconcileSamplingDatePartsSeeder' --force
  */
 final class ReconcileSamplingDatePartsSeeder extends ReconcileSeeder
 {
@@ -38,6 +42,11 @@ final class ReconcileSamplingDatePartsSeeder extends ReconcileSeeder
     private const SUB_BATCH_ROWS = 15000;
 
     private const PROGRESS_SECONDS = 10.0;
+
+    /** @var array{0: int, 1: int}|null */
+    private ?array $resolvedWindow = null;
+
+    private bool $windowResolved = false;
 
     private int $legacyRows = 0;
 
@@ -56,9 +65,6 @@ final class ReconcileSamplingDatePartsSeeder extends ReconcileSeeder
             return 0;
         }
 
-        if ($this->options->idFrom === null && $this->options->idTo === null) {
-            $this->say('WARNING: no id window set, the whole table is in scope. Production should use staged windows (RECONCILE_ID_FROM / RECONCILE_ID_TO).');
-        }
         $this->say('Scanning ids '.$window[0].' .. '.$window[1].' in chunks of '.$this->options->chunk.'.');
 
         return $this->walk($window[0], $window[1], null);
@@ -82,7 +88,19 @@ final class ReconcileSamplingDatePartsSeeder extends ReconcileSeeder
 
     protected function notes(): string
     {
-        return 'sampling month/day from legacy dct_analysis, window '.$this->options->windowLabel();
+        $window = $this->window();
+
+        return 'sampling month/day from legacy dct_analysis, ids '.($window === null ? 'none' : $window[0].' .. '.$window[1]);
+    }
+
+    protected function readyToWrite(): bool
+    {
+        return $this->window() !== null;
+    }
+
+    protected function closesOwnStaleRuns(): bool
+    {
+        return true;
     }
 
     protected function countsBeforeWriting(): bool
@@ -95,6 +113,19 @@ final class ReconcileSamplingDatePartsSeeder extends ReconcileSeeder
      */
     private function window(): ?array
     {
+        if (! $this->windowResolved) {
+            $this->resolvedWindow = $this->resolveWindow();
+            $this->windowResolved = true;
+        }
+
+        return $this->resolvedWindow;
+    }
+
+    /**
+     * @return array{0: int, 1: int}|null
+     */
+    private function resolveWindow(): ?array
+    {
         $bounds = $this->pg->selectOne('SELECT MIN(id) AS lo, MAX(id) AS hi FROM '.self::TABLE);
         if ($bounds === null || $bounds->lo === null) {
             $this->say('empodat_minor is empty.');
@@ -102,16 +133,56 @@ final class ReconcileSamplingDatePartsSeeder extends ReconcileSeeder
             return null;
         }
 
-        $from = $this->options->idFrom ?? (int) $bounds->lo;
         $to = $this->options->idTo ?? (int) $bounds->hi;
 
+        if ($this->options->idFrom !== null) {
+            $from = $this->options->idFrom;
+        } else {
+            $from = $this->lastLoggedId() + 1;
+            $this->say('Resuming at id '.$from.' (after the last logged id '.($from - 1).').');
+        }
+
         if ($to < $from) {
-            $this->say('Empty window: id '.$from.' .. '.$to.'.');
+            $this->say($this->options->idFrom === null
+                ? 'Nothing left to do: resume id '.$from.' is above the window end '.$to.'.'
+                : 'Empty window: id '.$from.' .. '.$to.'.');
 
             return null;
         }
 
         return [$from, $to];
+    }
+
+    /**
+     * Highest id of the newest fill log row of a run that was not rolled back
+     * (rollback deletes the log rows and marks the run rolled_back).
+     */
+    private function lastLoggedId(): int
+    {
+        $row = $this->pg->selectOne(
+            'SELECT l.id_max, l.ids FROM empodat_reconcile_log AS l '
+            .'JOIN empodat_legacy_import_runs AS r ON r.id = l.run_id '
+            .'WHERE l.step = ? AND l.table_name = ? AND l.action = ? AND r.status <> ? '
+            .'ORDER BY l.id DESC LIMIT 1',
+            [self::STEP, self::TABLE, 'fill', 'rolled_back'],
+        );
+        if ($row === null) {
+            throw new RuntimeException('No "'.self::STEP.'" log row found in empodat_reconcile_log; refusing to start from the beginning. Set RECONCILE_ID_FROM to start explicitly.');
+        }
+
+        if ($row->id_max !== null) {
+            return (int) $row->id_max;
+        }
+
+        $last = 0;
+        foreach ((array) json_decode((string) $row->ids, true, 512, JSON_THROW_ON_ERROR) as $pair) {
+            $last = max($last, (int) $pair[1]);
+        }
+        if ($last === 0) {
+            throw new RuntimeException('The newest "'.self::STEP.'" log row has no usable id range.');
+        }
+
+        return $last;
     }
 
     /**

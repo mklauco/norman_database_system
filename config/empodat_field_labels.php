@@ -165,6 +165,8 @@ return [
         'dloca_id' => 'Location',
         'dsmo_id' => 'Sampling mode',
         'dscd_id' => 'Sampling collection device',
+        'dproxy_id' => 'Proxy pressure',
+        'dcto_id' => 'Concentration type',
         'dsa_id' => 'Sampling method',
         'dtw_id' => 'Type of waste water',
         'dtp_id' => 'Type of treatment plant',

@@ -70,7 +70,12 @@ class EmpodatController extends Controller
             ->with('substance')
             ->with('matrix')
             ->with('analyticalMethod')
-            ->with('dataSource')
+            ->with([
+                'dataSource.groups.organisation.country',
+                'dataSource.groups.laboratory1.country',
+                'dataSource.groups.laboratory2.country',
+                'dataSource.groups.contact',
+            ])
             ->with('minor')
 
           // Finally, constrain it to a single empodat_main.id
@@ -107,6 +112,7 @@ class EmpodatController extends Controller
         $empodat->station_details = $display->stationFields($empodat->station);
         $empodat->analytical_method_details = $display->analyticalMethodFields($empodat->analyticalMethod, $unit);
         $empodat->data_source_details = $display->dataSourceFields($empodat->dataSource);
+        $empodat->dataSource?->unsetRelation('groups');
         $empodat->additional_details = $display->minorFields($empodat->minor);
 
         if ($matrixMetadata !== null) {

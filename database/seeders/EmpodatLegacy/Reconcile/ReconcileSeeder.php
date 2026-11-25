@@ -7,7 +7,9 @@ namespace Database\Seeders\EmpodatLegacy\Reconcile;
 use Database\Seeders\EmpodatLegacy\Backfill\ReadOnlyGuard;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Laravel\Telescope\Telescope;
 use RuntimeException;
 use Throwable;
 
@@ -32,8 +34,18 @@ abstract class ReconcileSeeder extends Seeder
     /** Short description stored in the run notes. */
     abstract protected function notes(): string;
 
+    /**
+     * Minutes without any write before a "running" run of the same seeder is
+     * treated as dead (killed process).
+     */
+    protected const STALE_RUN_MINUTES = 60;
+
     final public function run(): void
     {
+        if (class_exists(Telescope::class)) {
+            Telescope::stopRecording();
+        }
+
         $this->options = ReconcileOptions::fromEnvironment();
 
         ini_set('memory_limit', '2G');
@@ -78,9 +90,17 @@ abstract class ReconcileSeeder extends Seeder
             throw new RuntimeException('Refusing to write: '.implode('; ', $violations));
         }
 
+        if (! $this->readyToWrite()) {
+            return;
+        }
+
         if ($this->options->closeStaleRunId !== null) {
             $closed = ReconcileAudit::closeStaleRun($this->pg, $this->options->closeStaleRunId);
             $this->say('Closed stale run #'.$this->options->closeStaleRunId.': '.$closed.' row(s) marked failed.');
+        }
+
+        if ($this->closesOwnStaleRuns()) {
+            $this->closeOwnStaleRuns($name);
         }
 
         $audit = ReconcileAudit::start($this->pg, $name, $this->notes());
@@ -106,6 +126,24 @@ abstract class ReconcileSeeder extends Seeder
         return true;
     }
 
+    /**
+     * Called in execute mode after the write checks passed and before any
+     * run is closed or started. Return false to finish normally without writing.
+     */
+    protected function readyToWrite(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Whether a "running" run of this same seeder that has shown no activity
+     * for STALE_RUN_MINUTES is closed automatically before a new run starts.
+     */
+    protected function closesOwnStaleRuns(): bool
+    {
+        return false;
+    }
+
     protected function say(string $line): void
     {
         $this->command?->line($line);
@@ -115,6 +153,39 @@ abstract class ReconcileSeeder extends Seeder
     {
         if ($this->options->legacyPauseMs > 0) {
             usleep($this->options->legacyPauseMs * 1000);
+        }
+    }
+
+    /**
+     * Closes this seeder's dead runs. A run is dead only when its newest log
+     * row (or, without one, its start) is older than STALE_RUN_MINUTES; a
+     * younger one may still be writing, so it stops the seeder instead.
+     * Log rows carry the Postgres session time, started_at the application
+     * time, so each is compared against its own clock.
+     */
+    private function closeOwnStaleRuns(string $seederName): void
+    {
+        $runs = $this->pg->table('empodat_legacy_import_runs')
+            ->where('status', 'running')
+            ->where('notes', 'like', ReconcileAudit::NOTE_PREFIX.' '.$seederName.'%')
+            ->get(['id', 'started_at']);
+
+        foreach ($runs as $run) {
+            $lastLog = $this->pg->selectOne(
+                'SELECT MAX(created_at) AS last_at, MAX(created_at) > LOCALTIMESTAMP - make_interval(mins => ?) AS recent FROM empodat_reconcile_log WHERE run_id = ?',
+                [self::STALE_RUN_MINUTES, $run->id],
+            );
+
+            $isLive = $lastLog->last_at !== null
+                ? (bool) $lastLog->recent
+                : Carbon::parse($run->started_at)->greaterThan(now()->subMinutes(self::STALE_RUN_MINUTES));
+
+            if ($isLive) {
+                throw new RuntimeException('Run #'.$run->id.' of '.$seederName.' is "running" with activity within the last '.self::STALE_RUN_MINUTES.' minutes; it may still be alive, refusing to close it.');
+            }
+
+            $closed = ReconcileAudit::closeStaleRun($this->pg, (int) $run->id);
+            $this->say('Closed stale run #'.$run->id.' of '.$seederName.': '.$closed.' row(s) marked failed.');
         }
     }
 }
