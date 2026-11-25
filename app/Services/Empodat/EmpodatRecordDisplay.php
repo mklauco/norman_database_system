@@ -66,7 +66,7 @@ class EmpodatRecordDisplay
 
         $attributes = $this->stripEnvelope($analyticalMethod->getAttributes());
 
-        unset($attributes['legacy_given_analyte_id'], $attributes['legacy_laboratory_participate_id']);
+        unset($attributes['legacy_given_analyte_id'], $attributes['legacy_laboratory_participate_id'], $attributes['sampling_method_id']);
 
         if ($unit !== null && $unit !== '') {
             foreach (['lod', 'loq'] as $column) {
@@ -571,7 +571,6 @@ class EmpodatRecordDisplay
             'control_charts_id' => 'list_yes_no_questions',
             'internal_standards_id' => 'list_yes_no_questions',
             'authority_id' => 'list_yes_no_questions',
-            'sampling_method_id' => 'list_sampling_methods',
             'sampling_collection_device_id' => 'list_sampling_collection_devices',
         ];
     }
@@ -654,6 +653,8 @@ class EmpodatRecordDisplay
                 'dloca_id' => 'list_air_locations',
                 'dsmo_id' => 'list_air_sampling_modes',
                 'dscd_id' => 'list_sampling_collection_devices',
+                'dproxy_id' => 'list_air_proxy_pressures',
+                'dcto_id' => 'list_air_concentration_types',
             ],
             'biota' => [
                 'dki_id' => 'list_kingdoms',
