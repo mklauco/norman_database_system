@@ -329,9 +329,9 @@ class EmpodatMain extends Model
     }
 
     /**
-     * Scope to filter by data source properties. Matching sources are resolved
-     * first (columns on the source or any of its groups) and the measurements
-     * are semi-joined on data_source_id, so no rows are multiplied.
+     * Scope to filter by data source properties. Matching source ids are
+     * fetched first (columns on the source or any of its groups) and passed as
+     * values, so the planner can use the data_source_id index for rare ones.
      */
     public function scopeByDataSourceFilters($query, array $typeIds = [], array $labIds = [], array $orgIds = [])
     {
@@ -371,7 +371,9 @@ class EmpodatMain extends Model
             });
         }
 
-        return $query->whereIn('empodat_main.data_source_id', $sources);
+        $sourceIds = $sources->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+
+        return $query->whereIn('empodat_main.data_source_id', $sourceIds);
     }
 
     /**

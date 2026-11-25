@@ -80,6 +80,7 @@ final class ReconcileDataSourceGroupsSeeder extends ReconcileSeeder
 
         $this->pg->transaction(function () use ($audit, $started): void {
             $this->work = $this->build(false);
+            $this->alignSequences();
             $now = now()->toDateTimeString();
 
             $organisationIds = [];
@@ -125,6 +126,21 @@ final class ReconcileDataSourceGroupsSeeder extends ReconcileSeeder
                 count($groupIds),
             ));
         });
+    }
+
+    /**
+     * Moves the id sequences of the list tables past the highest existing id,
+     * because earlier imports inserted explicit ids. Never moves one backwards.
+     */
+    private function alignSequences(): void
+    {
+        foreach ([self::ORGANISATIONS, self::LABORATORIES, self::CONTACTS, self::GROUPS] as $table) {
+            $sequence = (string) $this->pg->selectOne("SELECT pg_get_serial_sequence(?, 'id') AS name", [$table])->name;
+            $this->pg->select(
+                'SELECT setval(?::regclass, GREATEST((SELECT COALESCE(MAX(id), 0) FROM '.$table.') + 1, (SELECT last_value + CASE WHEN is_called THEN 1 ELSE 0 END FROM '.$sequence.')), false)',
+                [$sequence],
+            );
+        }
     }
 
     protected function notes(): string
