@@ -1,213 +1,149 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\StoreTemplateRequest;
+use App\Http\Requests\Backend\StoreTemplateVersionRequest;
+use App\Http\Requests\Backend\UpdateTemplateRequest;
 use App\Models\Backend\Template;
 use App\Models\DatabaseEntity;
-use Illuminate\Http\Request;
+use App\Services\Backend\TemplateVersionService;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TemplateController extends Controller
 {
-    /**
-     * Display a listing of the templates.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function index()
-    {
-        $templates = Template::with(['databaseEntity', 'creator', 'updater'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+    public function __construct(private readonly TemplateVersionService $versions) {}
 
-        return view('backend.templates.index', compact('templates'));
+    /**
+     * List the templates with their version history; templates without an active version are listed apart.
+     */
+    public function index(): View
+    {
+        [$activeTemplates, $archivedTemplates] = $this->versions->groups()
+            ->map(function (Collection $versions): Collection {
+                $current = $this->versions->current($versions);
+
+                return $versions->where('id', '!=', $current->id)->prepend($current)->values();
+            })
+            ->partition(fn (Collection $versions): bool => (bool) $versions->first()->is_active)
+            ->all();
+
+        return view('backend.templates.index', compact('activeTemplates', 'archivedTemplates'));
     }
 
-    /**
-     * Show the form for creating a new template.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create()
+    public function create(): View
     {
-        $template = new Template;
-        $databaseEntities = DatabaseEntity::whereNull('parent_id')
-            ->whereNotLike('dashboard_route_name', '%https://%')
-            ->orderBy('name')
-            ->get();
-        $isCreate = true;
-
-        return view('backend.templates.upsert', compact('template', 'databaseEntities', 'isCreate'));
+        return view('backend.templates.upsert', [
+            'template' => new Template,
+            'databaseEntities' => $this->databaseEntities(),
+            'isCreate' => true,
+        ]);
     }
 
-    /**
-     * Store a newly created template in storage.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function store(Request $request)
+    public function store(StoreTemplateRequest $request): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'version' => 'nullable|string|max:20',
-            'valid_from' => 'nullable|date',
-            'database_entity_id' => 'nullable|exists:database_entities,id',
-            'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt,zip,rar|max:10240', // 10MB max
-            'is_active' => 'boolean',
-        ]);
+        $template = $this->versions->create(
+            $request->safe()->except('template_file'),
+            $request->file('template_file'),
+            Auth::id()
+        );
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $template = new Template([
-            'name' => $request->name,
-            'description' => $request->description,
-            'version' => $request->version ?? '1',
-            'valid_from' => $request->valid_from,
-            'database_entity_id' => $request->database_entity_id,
-            'is_active' => $request->has('is_active'),
-            'created_by' => Auth::id(),
-            'updated_by' => Auth::id(),
-        ]);
-
-        // Handle file upload if provided
-        if ($request->hasFile('template_file')) {
-            $file = $request->file('template_file');
-            $fileName = time().'_'.$file->getClientOriginalName();
-            $filePath = $file->storeAs('templates', $fileName, 'public');
-            $template->file_path = $filePath;
-            $template->filesize = $file->getSize();
-        }
-
-        $template->save();
-
-        return redirect()->route('templates.index')
+        return redirect()->route('templates.show', $template)
             ->with('success', 'Template created successfully');
     }
 
-    /**
-     * Display the specified template.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function show(Template $template)
+    public function show(Template $template): View
     {
-        $template->load(['databaseEntity', 'creator', 'updater', 'files']);
+        $template->load(['databaseEntity', 'creator', 'updater']);
+        $versions = $this->versions->history($template);
 
-        return view('backend.templates.show', compact('template'));
+        return view('backend.templates.show', compact('template', 'versions'));
     }
 
-    /**
-     * Show the form for editing the specified template.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function edit(Template $template)
+    public function edit(Template $template): View
     {
-        $databaseEntities = DatabaseEntity::whereNull('parent_id')
-            ->whereNotLike('dashboard_route_name', '%https://%')
-            ->orderBy('name')
-            ->get();
-        $isCreate = false;
-
-        return view('backend.templates.upsert', compact('template', 'databaseEntities', 'isCreate'));
-    }
-
-    /**
-     * Update the specified template in storage.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function update(Request $request, Template $template)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-            'version' => 'nullable|string|max:20',
-            'valid_from' => 'nullable|date',
-            'database_entity_id' => 'nullable|exists:database_entities,id',
-            'template_file' => 'nullable|file|mimes:xlsx,xls,csv,txt,zip,rar|max:10240', // 10MB max
-            'is_active' => 'boolean',
+        return view('backend.templates.upsert', [
+            'template' => $template,
+            'databaseEntities' => $this->databaseEntities(),
+            'isCreate' => false,
         ]);
+    }
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+    /**
+     * Update the details of one version; its file never changes.
+     */
+    public function update(UpdateTemplateRequest $request, Template $template): RedirectResponse
+    {
+        $template->update([...$request->validated(), 'updated_by' => Auth::id()]);
 
-        $template->name = $request->name;
-        $template->description = $request->description;
-        $template->version = $request->version ?? $template->version;
-        $template->valid_from = $request->valid_from;
-        $template->database_entity_id = $request->database_entity_id;
-        $template->is_active = $request->has('is_active');
-        $template->updated_by = Auth::id();
-
-        // Handle file upload if provided
-        if ($request->hasFile('template_file')) {
-            // Delete old file if exists
-            if ($template->file_path && Storage::disk('public')->exists($template->file_path)) {
-                Storage::disk('public')->delete($template->file_path);
-            }
-
-            $file = $request->file('template_file');
-            $fileName = time().'_'.$file->getClientOriginalName();
-            $filePath = $file->storeAs('templates', $fileName, 'public');
-            $template->file_path = $filePath;
-            $template->filesize = $file->getSize();
-        }
-
-        $template->save();
-
-        return redirect()->route('templates.index')
+        return redirect()->route('templates.show', $template)
             ->with('success', 'Template updated successfully');
     }
 
-    /**
-     * Remove the specified template from storage.
-     *
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy(Template $template)
+    public function createVersion(Template $template): View
     {
-        // Check if there are any files using this template
-        if ($template->files()->count() > 0) {
-            return redirect()->route('templates.index')
-                ->with('error', 'Cannot delete this template because it is being used by one or more files');
-        }
+        $versions = $this->versions->history($template);
 
-        // Delete the file if exists
-        if ($template->file_path && Storage::disk('public')->exists($template->file_path)) {
-            Storage::disk('public')->delete($template->file_path);
-        }
+        return view('backend.templates.new_version', [
+            'current' => $this->versions->current($versions),
+            'versions' => $versions,
+            'nextVersion' => $this->versions->suggestNextVersion($versions),
+        ]);
+    }
 
-        $template->delete();
+    public function storeVersion(StoreTemplateVersionRequest $request, Template $template): RedirectResponse
+    {
+        $newVersion = $this->versions->createVersion(
+            $template,
+            $request->safe()->except('template_file'),
+            $request->file('template_file'),
+            Auth::id()
+        );
 
-        return redirect()->route('templates.index')
-            ->with('success', 'Template deleted successfully');
+        return redirect()->route('templates.show', $newVersion)
+            ->with('success', 'New version uploaded, the previous version is archived');
+    }
+
+    public function archive(Template $template): RedirectResponse
+    {
+        $this->versions->archive($template, Auth::id());
+
+        return redirect()->route('templates.show', $template)
+            ->with('success', 'Template archived');
+    }
+
+    public function restore(Template $template): RedirectResponse
+    {
+        $this->versions->restore($template, Auth::id());
+
+        return redirect()->route('templates.show', $template)
+            ->with('success', 'Version restored, it is the active version now');
     }
 
     /**
-     * Download the template file.
-     *
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+     * Download the template file. Archived versions are for admins only.
      */
-    public function download(Template $template)
+    public function download(Template $template): StreamedResponse|RedirectResponse
     {
-        if (! $template->file_path || ! Storage::disk('public')->exists($template->file_path)) {
+        abort_unless($template->is_active || Auth::user()->hasAnyRole(['super_admin', 'admin']), 403);
+
+        $disk = $this->versions->disk($template);
+
+        if ($disk === null) {
             return redirect()->back()
                 ->with('error', 'Template file not found');
         }
 
-        return Storage::disk('public')->download(
+        return Storage::disk($disk)->download(
             $template->file_path,
             $template->name.'_v'.$template->version.'.'.pathinfo($template->file_path, PATHINFO_EXTENSION)
         );
@@ -217,9 +153,8 @@ class TemplateController extends Controller
      * Display a listing of active templates for a specific database entity code.
      *
      * @param  string  $code
-     * @return \Illuminate\View\View
      */
-    public function specificIndex($code)
+    public function specificIndex($code): View
     {
         // Find the database entity by code
         $databaseEntity = DatabaseEntity::where('code', $code)->firstOrFail();
@@ -233,5 +168,16 @@ class TemplateController extends Controller
             ->get();
 
         return view('backend.templates.specific_index', compact('templates', 'databaseEntity'));
+    }
+
+    /**
+     * @return EloquentCollection<int, DatabaseEntity>
+     */
+    private function databaseEntities(): EloquentCollection
+    {
+        return DatabaseEntity::whereNull('parent_id')
+            ->whereNotLike('dashboard_route_name', '%https://%')
+            ->orderBy('name')
+            ->get();
     }
 }

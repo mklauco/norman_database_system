@@ -274,6 +274,9 @@
                           @if(isset($template->version))
                             (v{{ $template->version }})
                           @endif
+                          @unless($template->is_active)
+                            (archived)
+                          @endunless
                         </option>
                       @endforeach
                     </select>
