@@ -139,7 +139,7 @@ class EmpodatRecordDisplay
 
         $fields = $this->build($attributes, $this->dataSourceLookups(), 'data_source');
 
-        return $this->withFullNames($fields, $dataSource);
+        return $this->withGroups($this->withFullNames($fields, $dataSource), $dataSource);
     }
 
     /**
@@ -364,6 +364,48 @@ class EmpodatRecordDisplay
                 }
 
                 $fields[$label] = $row->full_name;
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Sources with several groups (organisation, laboratories, contact
+     * person) append each group in position order under the legacy labels;
+     * with more than one group the labels carry the position, e.g.
+     * "Organisation 2". Sources without groups are left untouched.
+     *
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    private function withGroups(array $fields, Model $dataSource): array
+    {
+        $groups = $dataSource->getRelationValue('groups');
+
+        if ($groups === null || $groups->isEmpty()) {
+            return $fields;
+        }
+
+        $numbered = $groups->count() > 1;
+
+        foreach ($groups as $group) {
+            $suffix = $numbered ? ' '.$group->position : '';
+
+            $values = [
+                $this->label('data_source', 'organisation_id') => $group->organisation?->full_name,
+                $this->label('data_source', 'laboratory1_id') => $group->laboratory1?->full_name,
+                $this->label('data_source', 'laboratory2_id') => $group->laboratory2?->full_name,
+                'Contact person - name' => $group->contact?->full_name,
+                'Contact person - e-mail' => $group->contact?->email,
+            ];
+
+            foreach ($values as $label => $value) {
+                if (! $this->hasValue($value)) {
+                    continue;
+                }
+
+                $fields[$label.$suffix] = $value;
             }
         }
 
