@@ -289,7 +289,11 @@ class FileController extends Controller
      */
     public function edit(File $file)
     {
-        $templates = Template::where('is_active', true)->orderBy('name')->get();
+        $templates = Template::query()
+            ->where('is_active', true)
+            ->orWhere('id', $file->template_id)
+            ->orderBy('name')
+            ->get();
         $databaseEntities = DatabaseEntity::orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
         $isCreate = false;

@@ -69,7 +69,19 @@
 }
 
 @utility link-lime-outline {
-  @apply text-lime-600 hover:text-white hover:bg-lime-500 border-2 border-transparent border-lime-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-lime-500;
+  @apply text-lime-600 hover:text-white hover:bg-lime-500 border-2 border-lime-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-lime-500;
+}
+
+@utility link-slate-outline {
+  @apply text-slate-600 hover:text-white hover:bg-slate-500 border-2 border-slate-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-slate-500;
+}
+
+@utility link-amber-outline {
+  @apply text-amber-600 hover:text-white hover:bg-amber-500 border-2 border-amber-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-amber-500;
+}
+
+@utility link-rose-outline {
+  @apply text-rose-600 hover:text-white hover:bg-rose-500 border-2 border-rose-500 px-2 py-1 rounded-sm transition duration-300 ease-in-out focus:outline-hidden focus:ring-2 focus:ring-rose-500;
 }
 
 @utility link-lime-text {
