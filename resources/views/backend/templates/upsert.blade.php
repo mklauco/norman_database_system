@@ -47,6 +47,7 @@
                       name="name" 
                       id="name" 
                       value="{{ old('name', $template->name) }}"
+                      required
                       class="block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('name') border-red-500 @enderror"
                       placeholder="Enter template name"
                     >
@@ -85,8 +86,9 @@
                       type="text" 
                       name="version" 
                       id="version" 
-                      value="{{ old('version', $template->version) }}"
-                      placeholder="1.0"
+                      value="{{ old('version', $template->version ?? ($isCreate ? '1' : '')) }}"
+                      required
+                      placeholder="1"
                       class="block w-full rounded-md border-gray-300 shadow-xs focus:border-slate-500 focus:ring-slate-500 sm:text-sm @error('version') border-red-500 @enderror"
                     >
                     <p class="mt-1 text-xs text-gray-500">Version identifier for this template</p>
@@ -166,28 +168,10 @@
                       </div>
                     @endif
                     
-                    <!-- New File Upload - only show on edit -->
-                    <div>
-                      <label for="template_file" class="block text-sm font-medium text-gray-700 mb-1">Replace Template File (Optional)</label>
-                      <input 
-                        type="file" 
-                        name="template_file" 
-                        id="template_file" 
-                        class="block w-full text-sm text-gray-500 @error('template_file') border-red-500 @enderror
-                              file:mr-4 file:py-2 file:px-4
-                              file:rounded-md file:border-0
-                              file:text-sm file:font-semibold
-                              file:bg-orange-50 file:text-orange-700
-                              hover:file:bg-orange-100"
-                      >
-                      <p class="mt-2 text-sm text-gray-500">
-                        <i class="fa fa-exclamation-triangle mr-1"></i>
-                        Leave empty to keep the current file. Uploading a new file will replace the existing one.
-                      </p>
-                      @error('template_file')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                      @enderror
-                    </div>
+                    <p class="text-sm text-gray-500">
+                      <i class="fa fa-info-circle mr-1"></i>
+                      The file of a version does not change. To publish another file, <a href="{{ route('templates.versions.create', $template) }}" class="link-lime-text">upload a new version</a>.
+                    </p>
                   @endif
                 </div>
               </div>
@@ -221,30 +205,6 @@
                   </div>
                 </div>
 
-                <!-- Template Status -->
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <i class="fa fa-power-off mr-2 text-slate-600"></i>
-                    Template Status
-                  </h3>
-                  <div class="flex items-start">
-                    <div class="flex items-center h-5">
-                      <input 
-                        type="checkbox" 
-                        name="is_active" 
-                        id="is_active" 
-                        value="1"
-                        {{ old('is_active', $template->is_active ?? true) ? 'checked' : '' }}
-                        class="h-4 w-4 rounded-sm border-gray-300 text-slate-600 focus:ring-slate-500"
-                      >
-                    </div>
-                    <div class="ml-3 text-sm">
-                      <label for="is_active" class="font-medium text-gray-700">Active</label>
-                      <p class="text-gray-500">Inactive templates will not be shown in the template selection.</p>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- Template Information (for edit mode) -->
                 @if(!isset($isCreate) || !$isCreate)
                   <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -255,7 +215,7 @@
                     <div class="space-y-3 text-sm">
                       <div class="flex justify-between">
                         <span class="text-gray-600">Template ID:</span>
-                        <span class="font-medium">#{{ $template->id }}</span>
+                        <span class="font-medium font-mono">{{ $template->id }}</span>
                       </div>
                       <div class="flex justify-between">
                         <span class="text-gray-600">Created:</span>
@@ -273,7 +233,7 @@
                           </span>
                         @else
                           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            Inactive
+                            Archived
                           </span>
                         @endif
                       </div>

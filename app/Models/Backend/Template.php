@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use LogicException;
 
 class Template extends Model
 {
@@ -34,6 +35,7 @@ class Template extends Model
         'filesize',
         'is_active',
         'valid_from',
+        'previous_template_id',
         'created_by',
         'updated_by',
     ];
@@ -47,10 +49,21 @@ class Template extends Model
         'database_entity_id' => 'integer',
         'filesize' => 'integer',
         'is_active' => 'boolean',
+        'previous_template_id' => 'integer',
         'created_by' => 'integer',
         'updated_by' => 'integer',
         'valid_from' => 'date',
     ];
+
+    /**
+     * Templates are archived, never deleted.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (): never {
+            throw new LogicException('Templates are never deleted; archive them instead.');
+        });
+    }
 
     /**
      * Get the database entity that owns the template.
@@ -74,6 +87,14 @@ class Template extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Get the version this one replaced.
+     */
+    public function previousVersion(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'previous_template_id');
     }
 
     /**
