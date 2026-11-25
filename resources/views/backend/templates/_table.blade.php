@@ -52,20 +52,20 @@
             <td class="py-2 px-4 text-center">
               <div class="flex justify-center items-center gap-2 whitespace-nowrap">
                 @if($template->file_path)
-                  <a href="{{ route('templates.download', $template) }}" class="link-lime-text">Download</a>
+                  <a href="{{ route('templates.download', $template) }}" class="link-slate-outline">Download</a>
                 @endif
-                <a href="{{ route('templates.edit', $template) }}" class="link-edit">Edit</a>
+                <a href="{{ route('templates.edit', $template) }}" class="link-amber-outline">Edit</a>
                 @if($loop->first && ! $expanded)
-                  <a href="{{ route('templates.versions.create', $template) }}" class="link-lime-text">New version</a>
+                  <a href="{{ route('templates.versions.create', $template) }}" class="link-lime-outline">New version</a>
                 @endif
                 @if($template->is_active)
                   <form action="{{ route('templates.archive', $template) }}" method="POST" class="inline" onsubmit="return confirm('Archive this version? It will no longer be offered on the public DCT page. Nothing is deleted and it can be restored.');">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" class="link-edit-rose cursor-pointer">Archive</button>
+                    <button type="submit" class="link-rose-outline cursor-pointer">Archive</button>
                   </form>
                 @else
-                  <a href="{{ route('templates.restore.confirm', $template) }}" class="link-lime-text">Restore</a>
+                  <a href="{{ route('templates.restore.confirm', $template) }}" class="link-lime-outline">Restore</a>
                 @endif
               </div>
             </td>
