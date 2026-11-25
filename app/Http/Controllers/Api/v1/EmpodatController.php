@@ -105,7 +105,9 @@ class EmpodatController extends Controller
                 'substance',
                 'matrix',
                 'analyticalMethod',
-                'dataSource',
+                'dataSource.groups.organisation',
+                'dataSource.groups.laboratory1.country',
+                'dataSource.groups.laboratory2.country',
                 'minor',
             ])
             ->where('substance_id', $substance->id)
@@ -142,7 +144,9 @@ class EmpodatController extends Controller
                 'substance',
                 'matrix',
                 'analyticalMethod',
-                'dataSource',
+                'dataSource.groups.organisation',
+                'dataSource.groups.laboratory1.country',
+                'dataSource.groups.laboratory2.country',
                 'minor',
             ])
             ->join('empodat_stations', 'empodat_main.station_id', '=', 'empodat_stations.id')
@@ -318,10 +322,44 @@ class EmpodatController extends Controller
             }
         }
 
-        // Map rating value
+        $this->fillNamesFromGroups($empodat);
+
         if ($empodat->analyticalMethod) {
             $this->remapRatingField($empodat->analyticalMethod);
         }
+    }
+
+    /**
+     * Fill organisation and laboratory names from the data source groups
+     * (eager loaded) when the source columns themselves are empty.
+     */
+    private function fillNamesFromGroups(EmpodatMain $empodat): void
+    {
+        $source = $empodat->dataSource;
+
+        if (! $source || ! $source->relationLoaded('groups') || $source->groups->isEmpty()) {
+            return;
+        }
+
+        $names = [
+            'organisation_name' => $source->groups->map(fn ($group) => $group->organisation?->name),
+            'laboratory_name' => $source->groups->map(fn ($group) => $group->laboratory1?->full_name),
+            'laboratory_name_2' => $source->groups->map(fn ($group) => $group->laboratory2?->full_name),
+        ];
+
+        foreach ($names as $attribute => $values) {
+            if (! empty($source->{$attribute})) {
+                continue;
+            }
+
+            $joined = $values->filter()->unique()->implode('; ');
+
+            if ($joined !== '') {
+                $source->{$attribute} = $joined;
+            }
+        }
+
+        $source->unsetRelation('groups');
     }
 
     private function remapRatingField($analyticalMethod): void

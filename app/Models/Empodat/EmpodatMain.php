@@ -329,7 +329,9 @@ class EmpodatMain extends Model
     }
 
     /**
-     * Scope to filter by data source properties (optimized with JOIN)
+     * Scope to filter by data source properties. Matching source ids are
+     * fetched first (columns on the source or any of its groups) and passed as
+     * values, so the planner can use the data_source_id index for rare ones.
      */
     public function scopeByDataSourceFilters($query, array $typeIds = [], array $labIds = [], array $orgIds = [])
     {
@@ -339,21 +341,39 @@ class EmpodatMain extends Model
             return $query;
         }
 
-        $query = $query->join('empodat_data_sources', 'empodat_main.data_source_id', '=', 'empodat_data_sources.id');
+        $sources = \Illuminate\Support\Facades\DB::table('empodat_data_sources')->select('empodat_data_sources.id');
 
         if (! empty($typeIds)) {
-            $query->whereIn('empodat_data_sources.type_data_source_id', $typeIds);
+            $sources->whereIn('empodat_data_sources.type_data_source_id', $typeIds);
         }
 
         if (! empty($labIds)) {
-            $query->whereIn('empodat_data_sources.laboratory1_id', $labIds);
+            $sources->where(function ($inner) use ($labIds) {
+                $inner->whereIn('empodat_data_sources.laboratory1_id', $labIds)
+                    ->orWhereExists(function ($groups) use ($labIds) {
+                        $groups->selectRaw('1')
+                            ->from('empodat_data_source_groups')
+                            ->whereColumn('empodat_data_source_groups.data_source_id', 'empodat_data_sources.id')
+                            ->whereIn('empodat_data_source_groups.laboratory1_id', $labIds);
+                    });
+            });
         }
 
         if (! empty($orgIds)) {
-            $query->whereIn('empodat_data_sources.organisation_id', $orgIds);
+            $sources->where(function ($inner) use ($orgIds) {
+                $inner->whereIn('empodat_data_sources.organisation_id', $orgIds)
+                    ->orWhereExists(function ($groups) use ($orgIds) {
+                        $groups->selectRaw('1')
+                            ->from('empodat_data_source_groups')
+                            ->whereColumn('empodat_data_source_groups.data_source_id', 'empodat_data_sources.id')
+                            ->whereIn('empodat_data_source_groups.organisation_id', $orgIds);
+                    });
+            });
         }
 
-        return $query->select('empodat_main.*')->distinct();
+        $sourceIds = $sources->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+
+        return $query->whereIn('empodat_main.data_source_id', $sourceIds);
     }
 
     /**

@@ -66,7 +66,7 @@ class EmpodatRecordDisplay
 
         $attributes = $this->stripEnvelope($analyticalMethod->getAttributes());
 
-        unset($attributes['legacy_given_analyte_id'], $attributes['legacy_laboratory_participate_id']);
+        unset($attributes['legacy_given_analyte_id'], $attributes['legacy_laboratory_participate_id'], $attributes['sampling_method_id']);
 
         if ($unit !== null && $unit !== '') {
             foreach (['lod', 'loq'] as $column) {
@@ -139,7 +139,7 @@ class EmpodatRecordDisplay
 
         $fields = $this->build($attributes, $this->dataSourceLookups(), 'data_source');
 
-        return $this->withFullNames($fields, $dataSource);
+        return $this->withGroups($this->withFullNames($fields, $dataSource), $dataSource);
     }
 
     /**
@@ -371,6 +371,48 @@ class EmpodatRecordDisplay
     }
 
     /**
+     * Sources with several groups (organisation, laboratories, contact
+     * person) append each group in position order under the legacy labels;
+     * with more than one group the labels carry the position, e.g.
+     * "Organisation 2". Sources without groups are left untouched.
+     *
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    private function withGroups(array $fields, Model $dataSource): array
+    {
+        $groups = $dataSource->getRelationValue('groups');
+
+        if ($groups === null || $groups->isEmpty()) {
+            return $fields;
+        }
+
+        $numbered = $groups->count() > 1;
+
+        foreach ($groups as $group) {
+            $suffix = $numbered ? ' '.$group->position : '';
+
+            $values = [
+                $this->label('data_source', 'organisation_id') => $group->organisation?->full_name,
+                $this->label('data_source', 'laboratory1_id') => $group->laboratory1?->full_name,
+                $this->label('data_source', 'laboratory2_id') => $group->laboratory2?->full_name,
+                'Contact person - name' => $group->contact?->full_name,
+                'Contact person - e-mail' => $group->contact?->email,
+            ];
+
+            foreach ($values as $label => $value) {
+                if (! $this->hasValue($value)) {
+                    continue;
+                }
+
+                $fields[$label.$suffix] = $value;
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
      * The free-text sibling of a codelist column: `x_id` => `x_other`.
      */
     private function otherColumnFor(string $column): string
@@ -529,7 +571,6 @@ class EmpodatRecordDisplay
             'control_charts_id' => 'list_yes_no_questions',
             'internal_standards_id' => 'list_yes_no_questions',
             'authority_id' => 'list_yes_no_questions',
-            'sampling_method_id' => 'list_sampling_methods',
             'sampling_collection_device_id' => 'list_sampling_collection_devices',
         ];
     }
@@ -612,6 +653,8 @@ class EmpodatRecordDisplay
                 'dloca_id' => 'list_air_locations',
                 'dsmo_id' => 'list_air_sampling_modes',
                 'dscd_id' => 'list_sampling_collection_devices',
+                'dproxy_id' => 'list_air_proxy_pressures',
+                'dcto_id' => 'list_air_concentration_types',
             ],
             'biota' => [
                 'dki_id' => 'list_kingdoms',
