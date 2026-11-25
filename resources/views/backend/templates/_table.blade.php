@@ -1,4 +1,4 @@
-{{-- $groups: versions of each template, the row to show first; the rest is collapsed unless $expanded. --}}
+{{-- $groups: versions of each template, the main one first; archived versions below it are collapsed unless $expanded. --}}
 @php($expanded = $expanded ?? false)
 @php($highlightId = $highlightId ?? null)
 <div class="overflow-x-auto">
@@ -18,19 +18,20 @@
       </tr>
     </thead>
     @foreach ($groups as $versions)
-      <tbody x-data="{ open: @js($expanded) }">
+      @php($collapsedCount = $expanded ? 0 : $versions->skip(1)->where('is_active', false)->count())
+      <tbody x-data="{ open: false }">
         @foreach ($versions as $template)
-          <tr class="@if($template->id === $highlightId) bg-lime-100 @elseif(! $loop->first && ! $expanded) bg-white @elseif($loop->parent->odd) bg-slate-100 @else bg-slate-200 @endif hover:bg-slate-300 transition" @if(! $loop->first && ! $expanded) x-show="open" x-cloak @endif>
+          <tr class="@if($template->id === $highlightId) bg-lime-100 @elseif(! $loop->first && ! $expanded) bg-white @elseif($loop->parent->odd) bg-slate-100 @else bg-slate-200 @endif hover:bg-slate-300 transition" @if(! $loop->first && ! $expanded && ! $template->is_active) x-show="open" x-cloak @endif>
             <td class="py-2 px-4 font-mono">{{ $template->id }}</td>
             <td class="py-2 px-4">
               <a href="{{ route('templates.show', $template) }}" class="link-lime-text font-medium">{{ $template->name ?? 'N/A' }}</a>
               @if($template->description)
                 <div class="text-sm text-gray-600">{{ Str::limit($template->description, 50) }}</div>
               @endif
-              @if($loop->first && ! $expanded && $versions->count() > 1)
+              @if($loop->first && $collapsedCount > 0)
                 <div>
                   <button type="button" class="text-gray-600 hover:text-gray-900 underline cursor-pointer" x-on:click="open = !open">
-                    <span x-text="open ? 'Hide' : 'Show'">Show</span> {{ $versions->count() - 1 }} other {{ Str::plural('version', $versions->count() - 1) }}
+                    <span x-text="open ? 'Hide' : 'Show'">Show</span> {{ $collapsedCount }} archived {{ Str::plural('version', $collapsedCount) }}
                   </button>
                 </div>
               @endif
@@ -64,11 +65,7 @@
                     <button type="submit" class="link-edit-rose cursor-pointer">Archive</button>
                   </form>
                 @else
-                  <form action="{{ route('templates.restore', $template) }}" method="POST" class="inline" onsubmit="return confirm('Restore this version? It becomes the active version of the template; the version active now will be archived.');">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit" class="link-lime-text cursor-pointer">Restore</button>
-                  </form>
+                  <a href="{{ route('templates.restore.confirm', $template) }}" class="link-lime-text">Restore</a>
                 @endif
               </div>
             </td>

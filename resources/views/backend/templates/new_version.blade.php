@@ -11,7 +11,7 @@
           <p class="text-sm text-gray-600 mt-1 mb-6">
             {{ $current->databaseEntity->name ?? 'No database entity' }}: {{ $current->name ?? 'Unnamed Template' }},
             {{ $current->is_active ? 'active' : 'last' }} version {{ $current->version ?? 'N/A' }}.
-            The new version becomes active immediately{{ $current->is_active ? ' and version '.$current->version.' is archived' : '' }}. Nothing is deleted.
+            The new version becomes active immediately. Nothing is deleted.
           </p>
 
           <form action="{{ route('templates.versions.store', $current) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
@@ -59,6 +59,8 @@
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
               @enderror
             </div>
+
+            @include('backend.templates._keep_active')
 
             <div class="flex justify-end items-center gap-2 pt-4 border-t border-gray-200">
               <a href="{{ route('templates.show', $current) }}" class="btn-clear">Cancel</a>

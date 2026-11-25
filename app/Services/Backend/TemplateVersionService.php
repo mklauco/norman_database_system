@@ -14,7 +14,8 @@ use RuntimeException;
 
 /**
  * Versions of DCT templates. Each version is its own row linked to the one it replaced
- * (previous_template_id); at most one version of a template is active. Rows and files are never deleted.
+ * (previous_template_id). One version of a template is active unless an admin keeps more of them active.
+ * Rows and files are never deleted.
  */
 class TemplateVersionService
 {
@@ -65,7 +66,7 @@ class TemplateVersionService
     }
 
     /**
-     * The active version, or the newest one when the template is archived.
+     * The newest active version, or the newest one when the template is archived.
      *
      * @param  Collection<int, Template>  $versions
      */
@@ -101,16 +102,18 @@ class TemplateVersionService
     }
 
     /**
-     * Adds a new active version on top of the template and archives the others.
+     * Adds a new active version on top of the template and archives the others unless they are kept active.
      *
      * @param  array<string, mixed>  $data
      */
-    public function createVersion(Template $template, array $data, UploadedFile $file, ?int $userId): Template
+    public function createVersion(Template $template, array $data, UploadedFile $file, ?int $userId, bool $keepActive = false): Template
     {
-        return DB::transaction(function () use ($template, $data, $file, $userId): Template {
+        return DB::transaction(function () use ($template, $data, $file, $userId, $keepActive): Template {
             $versions = $this->lockedHistory($template);
             $current = $this->current($versions);
-            $this->archiveVersions($versions, $userId);
+            if (! $keepActive) {
+                $this->archiveVersions($versions, $userId);
+            }
 
             return $this->create([
                 ...$data,
@@ -145,12 +148,15 @@ class TemplateVersionService
     }
 
     /**
-     * Makes an archived version active again and archives the version that is active now.
+     * Makes an archived version active again and archives the others unless they are kept active.
      */
-    public function restore(Template $template, ?int $userId): void
+    public function restore(Template $template, ?int $userId, bool $keepActive = false): void
     {
-        DB::transaction(function () use ($template, $userId): void {
-            $this->archiveVersions($this->lockedHistory($template)->where('id', '!=', $template->id), $userId);
+        DB::transaction(function () use ($template, $userId, $keepActive): void {
+            $others = $this->lockedHistory($template)->where('id', '!=', $template->id);
+            if (! $keepActive) {
+                $this->archiveVersions($others, $userId);
+            }
             $template->update(['is_active' => true, 'updated_by' => $userId]);
         });
     }

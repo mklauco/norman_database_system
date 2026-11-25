@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Backend\RestoreTemplateRequest;
 use App\Http\Requests\Backend\StoreTemplateRequest;
 use App\Http\Requests\Backend\StoreTemplateVersionRequest;
 use App\Http\Requests\Backend\UpdateTemplateRequest;
@@ -32,7 +33,10 @@ class TemplateController extends Controller
             ->map(function (Collection $versions): Collection {
                 $current = $this->versions->current($versions);
 
-                return $versions->where('id', '!=', $current->id)->prepend($current)->values();
+                [$active, $archived] = $versions->where('id', '!=', $current->id)
+                    ->partition(fn (Template $version): bool => (bool) $version->is_active);
+
+                return $active->concat($archived)->prepend($current)->values();
             })
             ->partition(fn (Collection $versions): bool => (bool) $versions->first()->is_active)
             ->all();
@@ -96,6 +100,7 @@ class TemplateController extends Controller
         return view('backend.templates.new_version', [
             'current' => $this->versions->current($versions),
             'versions' => $versions,
+            'activeVersions' => $versions->where('is_active', true),
             'nextVersion' => $this->versions->suggestNextVersion($versions),
         ]);
     }
@@ -104,13 +109,16 @@ class TemplateController extends Controller
     {
         $newVersion = $this->versions->createVersion(
             $template,
-            $request->safe()->except('template_file'),
+            $request->safe()->except(['template_file', 'keep_active']),
             $request->file('template_file'),
-            Auth::id()
+            Auth::id(),
+            $request->boolean('keep_active')
         );
 
         return redirect()->route('templates.show', $newVersion)
-            ->with('success', 'New version uploaded, the previous version is archived');
+            ->with('success', $request->boolean('keep_active')
+                ? 'New version uploaded, the previously active versions stay active'
+                : 'New version uploaded, the previous version is archived');
     }
 
     public function archive(Template $template): RedirectResponse
@@ -121,12 +129,28 @@ class TemplateController extends Controller
             ->with('success', 'Template archived');
     }
 
-    public function restore(Template $template): RedirectResponse
+    public function confirmRestore(Template $template): View|RedirectResponse
     {
-        $this->versions->restore($template, Auth::id());
+        if ($template->is_active) {
+            return redirect()->route('templates.show', $template);
+        }
+
+        $template->load('databaseEntity');
+        $activeVersions = $this->versions->history($template)->where('is_active', true);
+
+        return view('backend.templates.restore', compact('template', 'activeVersions'));
+    }
+
+    public function restore(RestoreTemplateRequest $request, Template $template): RedirectResponse
+    {
+        if ($template->is_active) {
+            return redirect()->route('templates.show', $template);
+        }
+
+        $this->versions->restore($template, Auth::id(), $request->boolean('keep_active'));
 
         return redirect()->route('templates.show', $template)
-            ->with('success', 'Version restored, it is the active version now');
+            ->with('success', 'Version restored, it is active now');
     }
 
     /**

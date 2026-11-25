@@ -30,6 +30,7 @@ class StoreTemplateVersionRequest extends FormRequest
             'version' => ['required', 'string', 'max:20', Rule::notIn($versions->history($template)->pluck('version')->filter()->all())],
             'valid_from' => ['nullable', 'date'],
             'template_file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt,zip,rar', 'max:10240'],
+            'keep_active' => ['nullable', 'boolean'],
         ];
     }
 

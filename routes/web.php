@@ -106,12 +106,13 @@ Route::prefix('backend')->middleware('auth')->group(function () {
     // logged-in user can still download an active DCT template (archived ones: admins only); `templates.specific.index` (the
     // per-entity template list linked from every module header) is defined separately further
     // down and is intentionally not role-gated here.
-    // Templates are never deleted: a new version archives the one it replaces.
+    // Templates are never deleted, only archived.
     Route::middleware('role:super_admin|admin')->group(function () {
         Route::resource('templates', TemplateController::class)->except(['destroy']);
         Route::get('templates/{template}/new-version', [TemplateController::class, 'createVersion'])->name('templates.versions.create');
         Route::post('templates/{template}/new-version', [TemplateController::class, 'storeVersion'])->name('templates.versions.store');
         Route::patch('templates/{template}/archive', [TemplateController::class, 'archive'])->name('templates.archive');
+        Route::get('templates/{template}/restore', [TemplateController::class, 'confirmRestore'])->name('templates.restore.confirm');
         Route::patch('templates/{template}/restore', [TemplateController::class, 'restore'])->name('templates.restore');
     });
     Route::get('templates/{template}/download', [TemplateController::class, 'download'])->name('templates.download');

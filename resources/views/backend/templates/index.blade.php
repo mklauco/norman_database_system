@@ -10,7 +10,7 @@
           <div class="mb-6 flex justify-between items-center gap-4">
             <div>
               <h2 class="text-xl font-semibold text-gray-800">DCT Templates</h2>
-              <p class="text-sm text-gray-600 mt-1">To replace a template, use New version: the new file becomes active and the old one is archived. Nothing is ever deleted.</p>
+              <p class="text-sm text-gray-600 mt-1">To replace a template, use New version: the new file becomes active and the old one is archived, unless you choose to keep it active too. Nothing is ever deleted.</p>
             </div>
             <a href="{{ route('templates.create') }}" class="btn-create whitespace-nowrap">
               Add New Template
