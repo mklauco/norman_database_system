@@ -65,14 +65,15 @@ class EmpodatModalShowTest extends TestCase
         );
     }
 
-    public function test_modal_endpoint_returns_full_iso_date_when_minor_has_real_date(): void
+    public function test_modal_endpoint_returns_legacy_date_when_minor_has_real_date(): void
     {
         $id = $this->seedRecord(minorSamplingDate: '2024-11-13 00:00:00', samplingDateYear: 2024);
 
         $response = $this->getJson(route('codsearch.show', $id));
 
         $response->assertOk();
-        $response->assertJsonPath('formatted_sampling_date', '2024-11-13');
+        $response->assertJsonPath('formatted_sampling_date', '13.11.2024');
+        $response->assertJsonPath('sampling_date_display', '13.11.2024');
     }
 
     public function test_modal_endpoint_returns_na_when_no_date_data_available(): void

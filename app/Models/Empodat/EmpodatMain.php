@@ -8,7 +8,8 @@ use App\Models\List\ConcentrationIndicator;
 use App\Models\List\Country;
 use App\Models\List\Matrix;
 use App\Models\Susdat\Substance;
-use Carbon\Carbon;
+use App\Services\Empodat\EmpodatLegacyFormat;
+use App\Services\Empodat\EmpodatRecordDisplay;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -432,11 +433,12 @@ class EmpodatMain extends Model
     /**
      * Scope to filter records based on user permissions and file protection status
      *
-     * Protection rules:
-     * 1. If files.is_deleted = true, only super_admin can see the data
-     * 2. If files.is_protected = true, only logged-in admins (admin, super_admin, empodat roles)
-     *    OR users assigned to the file's project can see the data
-     * 3. Unprotected, non-deleted files are visible to everyone
+     * Visibility rules (legacy NDS is the reference):
+     * 1. Records without a file (file_id IS NULL) are visible to everyone.
+     * 2. If files.is_deleted = true, only super_admin can see the data.
+     * 3. If files.is_protected = true, only logged-in admins (admin, empodat roles)
+     *    OR users assigned to the file's project can see the data.
+     * 4. Unprotected, non-deleted files are visible to everyone.
      */
     public function scopeByUserPermissions($query, $user = null)
     {
@@ -444,67 +446,59 @@ class EmpodatMain extends Model
             $user = auth()->user();
         }
 
-        // Super_admin sees everything (including rows with NULL file_id).
-        // No filter, no JOIN — leave the query untouched so the planner can
-        // pick the best index for whatever other filters are applied.
+        // Super_admin sees everything. No filter, no JOIN — leave the query
+        // untouched so the planner can pick the best index.
         if ($user && $user->hasRole('super_admin')) {
             return $query;
         }
 
-        // For every other role, resolve the set of permitted file ids in a
-        // small sub-query against `files` (≈ hundreds of rows) and constrain
-        // `empodat_main.file_id` to that set. This avoids joining 100M+ rows
-        // of `empodat_main` to `files` just to apply permission filters.
-        //
-        // Side effect: rows with `file_id IS NULL` are excluded, matching the
-        // original INNER JOIN behaviour for non-super_admin users.
-        return $query->whereIn(
-            'empodat_main.file_id',
-            $this->permittedFileIdsSubquery($user),
-        );
+        // Anti-join against the small set of files hidden from this user
+        // (≈ 300 of ≈ 750 rows). NOT EXISTS keeps rows with file_id IS NULL
+        // (no files row matches) and probes empodat_main_file_id_id_idx
+        // instead of scanning empodat_main.
+        return $query->whereNotExists(function ($exists) use ($user): void {
+            $exists->select(\Illuminate\Support\Facades\DB::raw(1))
+                ->from('files as hidden_files')
+                ->whereColumn('hidden_files.id', 'empodat_main.file_id')
+                ->where(function ($hidden) use ($user): void {
+                    $this->applyHiddenFileConditions($hidden, $user);
+                });
+        });
     }
 
     /**
-     * Returns a sub-query Builder yielding the `files.id` values the given
-     * user is allowed to see. Used by scopeByUserPermissions.
+     * Adds the conditions that make a `files` row (alias hidden_files) hidden
+     * from the given user. Used by scopeByUserPermissions.
      */
-    private function permittedFileIdsSubquery($user)
+    private function applyHiddenFileConditions($hidden, $user): void
     {
-        $sub = \Illuminate\Support\Facades\DB::table('files')->select('id');
+        // Deleted files are hidden from every non-super_admin user.
+        $hidden->where('hidden_files.is_deleted', true);
 
-        // Anonymous: only unprotected, non-deleted files.
+        // Admin / empodat role: protected files stay visible.
+        if ($user && ($user->hasRole('admin') || $user->hasRole('empodat'))) {
+            return;
+        }
+
+        // Anonymous: every protected file is hidden.
         if (is_null($user)) {
-            return $sub
-                ->where('is_protected', false)
-                ->where(function ($q) {
-                    $q->where('is_deleted', false)->orWhereNull('is_deleted');
-                });
+            $hidden->orWhere('hidden_files.is_protected', true);
+
+            return;
         }
 
-        // Admin / empodat role: every non-deleted file (protected or not).
-        if ($user->hasRole('admin') || $user->hasRole('empodat')) {
-            return $sub->where(function ($q) {
-                $q->where('is_deleted', false)->orWhereNull('is_deleted');
-            });
-        }
-
-        // Regular authenticated user: non-deleted files that are either
-        // unprotected OR assigned to a project the user belongs to.
+        // Regular authenticated user: protected files are hidden unless
+        // assigned to a project the user belongs to.
         $userId = $user->id;
-
-        return $sub
-            ->where(function ($q) {
-                $q->where('is_deleted', false)->orWhereNull('is_deleted');
-            })
-            ->where(function ($q) use ($userId) {
-                $q->where('is_protected', false)
-                    ->orWhereExists(function ($exists) use ($userId) {
-                        $exists->select(\Illuminate\Support\Facades\DB::raw(1))
-                            ->from('project_user')
-                            ->whereColumn('project_user.project_id', 'files.project_id')
-                            ->where('project_user.user_id', $userId);
-                    });
-            });
+        $hidden->orWhere(function ($protected) use ($userId): void {
+            $protected->where('hidden_files.is_protected', true)
+                ->whereNotExists(function ($member) use ($userId): void {
+                    $member->select(\Illuminate\Support\Facades\DB::raw(1))
+                        ->from('project_user')
+                        ->whereColumn('project_user.project_id', 'hidden_files.project_id')
+                        ->where('project_user.user_id', $userId);
+                });
+        });
     }
 
     /**
@@ -550,75 +544,48 @@ class EmpodatMain extends Model
     }
 
     /**
-     * Get the formatted sampling date.
-     *
-     * The legacy v1 dataset stores '0000-00-00 00:00:00' as a "no real date"
-     * sentinel in `empodat_minor.sampling_date`. The model casts that column
-     * to `datetime`, which makes Carbon emit '-000001-11-30...' for the
-     * sentinel — visible to users as a junk date. Year 0 / sentinel values
-     * are treated as "no date" here, falling back to the year-only field.
+     * Get the formatted sampling date (legacy format), 'N/A' when none.
      *
      * @return string
      */
     public function getFormattedSamplingDateAttribute()
     {
-        $raw = $this->minor?->sampling_date;
-        if ($raw !== null && ! $this->isZeroSamplingDate($raw)) {
-            return Carbon::parse($raw)->format('Y-m-d');
-        }
-
-        $assembled = $this->samplingDateFromParts();
-        if ($assembled !== null) {
-            return $assembled;
-        }
-
-        if ($this->sampling_date_year && (int) $this->sampling_date_year > 0) {
-            return (string) $this->sampling_date_year;
-        }
-
-        return 'N/A';
+        return $this->legacySamplingDate() ?? 'N/A';
     }
 
     /**
-     * Assemble `Y-m-d` from the legacy date parts when the `sampling_date`
-     * datetime is absent.
-     *
-     * Above `empodat_minor.id` ≈ 20 000 000 the legacy system left
-     * `sampling_date` empty and kept the date only as year/month/day parts
-     * (issue #22). `empodat_minor.sampling_date_m` / `_d` are the destination
-     * for those parts; they are empty until the external migrator populates
-     * them, and while they are empty this returns null and the caller falls
-     * back to the year alone, exactly as before.
+     * The sampling date in the legacy format (see EmpodatLegacyFormat);
+     * null for aggregate records and when no year is known. Uses the loaded
+     * `minor` relation, whose raw values are read to bypass the Carbon casts.
      */
-    private function samplingDateFromParts(): ?string
+    public function legacySamplingDate(): ?string
     {
-        $year = (int) ($this->sampling_date_year ?? 0);
-        $month = (int) ($this->minor?->sampling_date_m ?? 0);
-        $day = (int) ($this->minor?->sampling_date_d ?? 0);
+        $minor = $this->minor;
 
-        if ($year <= 0 || $month < 1 || $month > 12 || $day < 1 || $day > 31) {
-            return null;
-        }
-
-        if (! checkdate($month, $day, $year)) {
-            return null;
-        }
-
-        return sprintf('%04d-%02d-%02d', $year, $month, $day);
+        return EmpodatLegacyFormat::samplingDate(
+            $this->sampling_date_year,
+            $minor?->getRawOriginal('sampling_date'),
+            $minor?->getRawOriginal('sampling_date_m'),
+            $minor?->getRawOriginal('sampling_date_d'),
+            $minor?->getRawOriginal('sampling_date_t'),
+            $minor?->getRawOriginal('sampling_date1'),
+            $minor?->getRawOriginal('sampling_date1_y'),
+            $minor?->getRawOriginal('sampling_date1_m'),
+            $minor?->getRawOriginal('sampling_date1_d'),
+            $minor?->getRawOriginal('sampling_date1_t'),
+            $minor?->getRawOriginal('dcod_id'),
+        );
     }
 
     /**
-     * True when the given sampling_date value represents the legacy
-     * "no real date" sentinel — either '0000-00-00 00:00:00' (raw varchar)
-     * or a Carbon instance whose year is <= 0.
+     * The unit of the concentration value in the legacy rule: the record's
+     * own `unit_extra`, else the matrix unit.
      */
-    private function isZeroSamplingDate(mixed $value): bool
+    public function legacyUnit(): ?string
     {
-        if ($value instanceof \DateTimeInterface) {
-            return (int) $value->format('Y') <= 0;
-        }
-        $str = trim((string) $value);
-
-        return $str === '' || str_starts_with($str, '0000-00-00');
+        return EmpodatLegacyFormat::unit(
+            $this->minor?->getRawOriginal('unit_extra'),
+            EmpodatRecordDisplay::plainUnit($this->matrix?->unit),
+        );
     }
 }

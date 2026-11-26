@@ -77,6 +77,7 @@
                 <div class="mb-4">
                     <div class="font-semibold text-base border-b-2 border-lime-500 text-center mb-2">Concentration</div>
                     <div class="space-y-1">
+                        <template x-if="record && (record.concentration_indicator_id != 1 || record.concentration_value_display)">
                         <div class="flex justify-between py-1 px-2 text-sm bg-slate-100 rounded-sm">
                             <div class="font-semibold">Concentration</div>
                             <div>
@@ -88,16 +89,25 @@
                                 </template>
                                 <template x-if="record?.concentration_indicator_id == 1">
                                     <span>
-                                        <span class="font-medium" x-text="record?.concentration_value || 'N/A'"></span>
-                                        <span class="ml-1" x-text="record?.matrix?.display_unit || ''"></span>
+                                        <span class="font-medium" x-text="record?.concentration_value_display ?? record?.concentration_value ?? ''"></span>
+                                        <span class="ml-1" x-text="record?.record_unit ?? record?.matrix?.display_unit ?? ''"></span>
                                     </span>
                                 </template>
                             </div>
                         </div>
-                        <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded-sm">
-                            <div class="font-semibold">Sampling Date</div>
-                            <div x-text="record?.formatted_sampling_date || 'N/A'"></div>
-                        </div>
+                        </template>
+                        <template x-if="record?.matrix_display">
+                            <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded-sm">
+                                <div class="font-semibold">Matrix</div>
+                                <div x-text="record.matrix_display"></div>
+                            </div>
+                        </template>
+                        <template x-if="record?.sampling_date_display">
+                            <div class="flex justify-between py-1 px-2 text-sm bg-slate-200 rounded-sm">
+                                <div class="font-semibold">Sampling date</div>
+                                <div x-text="record.sampling_date_display"></div>
+                            </div>
+                        </template>
                     </div>
                 </div>
 

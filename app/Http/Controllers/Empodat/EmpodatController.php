@@ -107,7 +107,11 @@ class EmpodatController extends Controller
         // EmpodatRecordDisplay and issue #22. The underlying relationships
         // stay on the payload untouched, so EmpodatResource and the CSV
         // export keep seeing raw column values.
-        $unit = EmpodatRecordDisplay::plainUnit($empodat->matrix?->unit);
+        $unit = $display->recordUnit($empodat->minor, EmpodatRecordDisplay::plainUnit($empodat->matrix?->unit));
+        $empodat->record_unit = $unit;
+        $empodat->sampling_date_display = $display->samplingDate($empodat, $empodat->minor);
+        $empodat->concentration_value_display = $display->formatSignificant($empodat->concentration_value);
+        $empodat->matrix_display = $display->matrixName($empodat->matrix, $empodat->minor);
 
         $empodat->station_details = $display->stationFields($empodat->station);
         $empodat->analytical_method_details = $display->analyticalMethodFields($empodat->analyticalMethod, $unit);
