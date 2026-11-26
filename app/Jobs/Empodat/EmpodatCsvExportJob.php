@@ -630,6 +630,10 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
         }
 
         $width = count($index);
+        if (count($row) !== $width + 2) {
+            return $row;
+        }
+
         $month = $row[$width] ?? null;
         $day = $row[$width + 1] ?? null;
         $row = array_slice($row, 0, $width);
