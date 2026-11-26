@@ -432,11 +432,12 @@ class EmpodatMain extends Model
     /**
      * Scope to filter records based on user permissions and file protection status
      *
-     * Protection rules:
-     * 1. If files.is_deleted = true, only super_admin can see the data
-     * 2. If files.is_protected = true, only logged-in admins (admin, super_admin, empodat roles)
-     *    OR users assigned to the file's project can see the data
-     * 3. Unprotected, non-deleted files are visible to everyone
+     * Visibility rules (legacy NDS is the reference):
+     * 1. Records without a file (file_id IS NULL) are visible to everyone.
+     * 2. If files.is_deleted = true, only super_admin can see the data.
+     * 3. If files.is_protected = true, only logged-in admins (admin, empodat roles)
+     *    OR users assigned to the file's project can see the data.
+     * 4. Unprotected, non-deleted files are visible to everyone.
      */
     public function scopeByUserPermissions($query, $user = null)
     {
@@ -444,67 +445,59 @@ class EmpodatMain extends Model
             $user = auth()->user();
         }
 
-        // Super_admin sees everything (including rows with NULL file_id).
-        // No filter, no JOIN — leave the query untouched so the planner can
-        // pick the best index for whatever other filters are applied.
+        // Super_admin sees everything. No filter, no JOIN — leave the query
+        // untouched so the planner can pick the best index.
         if ($user && $user->hasRole('super_admin')) {
             return $query;
         }
 
-        // For every other role, resolve the set of permitted file ids in a
-        // small sub-query against `files` (≈ hundreds of rows) and constrain
-        // `empodat_main.file_id` to that set. This avoids joining 100M+ rows
-        // of `empodat_main` to `files` just to apply permission filters.
-        //
-        // Side effect: rows with `file_id IS NULL` are excluded, matching the
-        // original INNER JOIN behaviour for non-super_admin users.
-        return $query->whereIn(
-            'empodat_main.file_id',
-            $this->permittedFileIdsSubquery($user),
-        );
+        // Anti-join against the small set of files hidden from this user
+        // (≈ 300 of ≈ 750 rows). NOT EXISTS keeps rows with file_id IS NULL
+        // (no files row matches) and probes empodat_main_file_id_id_idx
+        // instead of scanning empodat_main.
+        return $query->whereNotExists(function ($exists) use ($user): void {
+            $exists->select(\Illuminate\Support\Facades\DB::raw(1))
+                ->from('files as hidden_files')
+                ->whereColumn('hidden_files.id', 'empodat_main.file_id')
+                ->where(function ($hidden) use ($user): void {
+                    $this->applyHiddenFileConditions($hidden, $user);
+                });
+        });
     }
 
     /**
-     * Returns a sub-query Builder yielding the `files.id` values the given
-     * user is allowed to see. Used by scopeByUserPermissions.
+     * Adds the conditions that make a `files` row (alias hidden_files) hidden
+     * from the given user. Used by scopeByUserPermissions.
      */
-    private function permittedFileIdsSubquery($user)
+    private function applyHiddenFileConditions($hidden, $user): void
     {
-        $sub = \Illuminate\Support\Facades\DB::table('files')->select('id');
+        // Deleted files are hidden from every non-super_admin user.
+        $hidden->where('hidden_files.is_deleted', true);
 
-        // Anonymous: only unprotected, non-deleted files.
+        // Admin / empodat role: protected files stay visible.
+        if ($user && ($user->hasRole('admin') || $user->hasRole('empodat'))) {
+            return;
+        }
+
+        // Anonymous: every protected file is hidden.
         if (is_null($user)) {
-            return $sub
-                ->where('is_protected', false)
-                ->where(function ($q) {
-                    $q->where('is_deleted', false)->orWhereNull('is_deleted');
-                });
+            $hidden->orWhere('hidden_files.is_protected', true);
+
+            return;
         }
 
-        // Admin / empodat role: every non-deleted file (protected or not).
-        if ($user->hasRole('admin') || $user->hasRole('empodat')) {
-            return $sub->where(function ($q) {
-                $q->where('is_deleted', false)->orWhereNull('is_deleted');
-            });
-        }
-
-        // Regular authenticated user: non-deleted files that are either
-        // unprotected OR assigned to a project the user belongs to.
+        // Regular authenticated user: protected files are hidden unless
+        // assigned to a project the user belongs to.
         $userId = $user->id;
-
-        return $sub
-            ->where(function ($q) {
-                $q->where('is_deleted', false)->orWhereNull('is_deleted');
-            })
-            ->where(function ($q) use ($userId) {
-                $q->where('is_protected', false)
-                    ->orWhereExists(function ($exists) use ($userId) {
-                        $exists->select(\Illuminate\Support\Facades\DB::raw(1))
-                            ->from('project_user')
-                            ->whereColumn('project_user.project_id', 'files.project_id')
-                            ->where('project_user.user_id', $userId);
-                    });
-            });
+        $hidden->orWhere(function ($protected) use ($userId): void {
+            $protected->where('hidden_files.is_protected', true)
+                ->whereNotExists(function ($member) use ($userId): void {
+                    $member->select(\Illuminate\Support\Facades\DB::raw(1))
+                        ->from('project_user')
+                        ->whereColumn('project_user.project_id', 'hidden_files.project_id')
+                        ->where('project_user.user_id', $userId);
+                });
+        });
     }
 
     /**

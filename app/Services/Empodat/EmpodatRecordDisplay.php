@@ -159,14 +159,139 @@ class EmpodatRecordDisplay
         // majority of records the v1 import lost the day and month, so
         // `sampling_date_t` is the only time information that survives, and
         // the zero-sentinel filter already hides it when it is '0:00:00'.
+        // Sampling dates are rendered as one row by samplingDate(); the
+        // record's own unit replaces the concentration unit (recordUnit()).
         unset(
             $attributes['empodat_main_id'],
             $attributes['noexport'],
             $attributes['list_id'],
             $attributes['show_date'],
+            $attributes['unit_extra'],
+            $attributes['sampling_date'],
+            $attributes['sampling_date_t'],
+            $attributes['sampling_date_m'],
+            $attributes['sampling_date_d'],
+            $attributes['sampling_date1'],
+            $attributes['sampling_date1_t'],
+            $attributes['sampling_date1_y'],
+            $attributes['sampling_date1_m'],
+            $attributes['sampling_date1_d'],
         );
 
+        $attributes['dtos_id'] = $this->samplingTypeName($attributes['dtos_id'] ?? null, $attributes['dtos_other'] ?? null);
+        unset($attributes['dtos_other']);
+
         return $this->build($attributes, $this->minorLookups(), 'minor');
+    }
+
+    /**
+     * Legacy "Type of sampling" codelist (`empodat_minor.dtos_id`).
+     */
+    private function samplingTypeName(mixed $id, mixed $other): ?string
+    {
+        $name = match ((int) $id) {
+            1 => 'Active',
+            2 => 'Passive',
+            3 => 'NR',
+            4 => 'Other',
+            default => null,
+        };
+
+        if ($name === null) {
+            return null;
+        }
+
+        $freeText = $this->usableFreeText($other, $id);
+
+        return in_array(strtolower($name), self::PLACEHOLDER_NAMES, true) && $freeText !== null ? $freeText : $name;
+    }
+
+    /**
+     * The unit of the concentration value, LoD and LoQ: the record's own
+     * `empodat_minor.unit_extra` when filled, else the matrix unit. Legacy
+     * does the same.
+     */
+    public function recordUnit(?Model $minor, ?string $matrixUnit): ?string
+    {
+        $own = $minor?->getAttribute('unit_extra');
+
+        if (is_string($own) && trim($own) !== '') {
+            return self::plainUnit($own);
+        }
+
+        return $matrixUnit;
+    }
+
+    /**
+     * The single "Sampling date" value, in the legacy format:
+     * "12.06.2012", "09.08.2010 13:25:00", "July 2019" or "2017", and
+     * "start - stop" when an end date exists. Aggregate records
+     * (`dcod_id` = 2, as in the legacy pop-up) have no sampling date: null is returned.
+     */
+    public function samplingDate(?Model $main, ?Model $minor): ?string
+    {
+        if ($main === null || (int) $minor?->getAttribute('dcod_id') === 2) {
+            return null;
+        }
+
+        $start = $this->datePartsToString(
+            $this->partsFromDatetime($minor?->getAttribute('sampling_date'))
+                ?? [(int) $main->getAttribute('sampling_date_year'), $minor?->getAttribute('sampling_date_m'), $minor?->getAttribute('sampling_date_d')],
+            $minor?->getAttribute('sampling_date_t'),
+        );
+
+        if ($start === null) {
+            return null;
+        }
+
+        $stop = $this->datePartsToString(
+            $this->partsFromDatetime($minor?->getAttribute('sampling_date1'))
+                ?? [$minor?->getAttribute('sampling_date1_y'), $minor?->getAttribute('sampling_date1_m'), $minor?->getAttribute('sampling_date1_d')],
+            $minor?->getAttribute('sampling_date1_t'),
+        );
+
+        return $stop === null || $stop === $start ? $start : $start.' – '.$stop;
+    }
+
+    /**
+     * @return array{0: int, 1: int, 2: int}|null
+     */
+    private function partsFromDatetime(mixed $value): ?array
+    {
+        if (! is_string($value) || preg_match('/^(\d{4})-(\d{2})-(\d{2})/', trim($value), $m) !== 1 || (int) $m[1] < 1) {
+            return null;
+        }
+
+        return [(int) $m[1], (int) $m[2], (int) $m[3]];
+    }
+
+    /**
+     * @param  array{0: mixed, 1: mixed, 2: mixed}  $parts  year, month, day
+     */
+    private function datePartsToString(array $parts, mixed $time): ?string
+    {
+        [$year, $month, $day] = array_map(static fn (mixed $v): int => is_numeric($v) ? (int) $v : 0, $parts);
+
+        if ($year < 1) {
+            return null;
+        }
+
+        if ($month < 1 || $month > 12) {
+            return (string) $year;
+        }
+
+        if ($day < 1 || ! checkdate($month, $day, $year)) {
+            return date('F', mktime(0, 0, 0, $month, 1)).' '.$year;
+        }
+
+        $formatted = sprintf('%02d.%02d.%04d', $day, $month, $year);
+
+        if (is_string($time) && preg_match('/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/', trim($time), $t) === 1
+            && ((int) $t[1] + (int) $t[2] + (int) ($t[3] ?? 0)) > 0) {
+            $formatted .= sprintf(' %02d:%02d:%02d', (int) $t[1], (int) $t[2], (int) ($t[3] ?? 0));
+        }
+
+        return $formatted;
     }
 
     /**
@@ -607,7 +732,6 @@ class EmpodatRecordDisplay
             'dplu_id' => 'list_prevalent_land_uses',
             'dtl_id' => 'list_treatment_less',
             'dtod_id' => null,
-            'dtos_id' => null,
             'dmm_id' => null,
         ];
     }
