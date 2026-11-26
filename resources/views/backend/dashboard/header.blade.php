@@ -13,8 +13,11 @@
   </x-nav-link-header>
   @endhasanyrole
   @hasanyrole('super_admin|admin')
-  <x-nav-link-header :href="route('files.index')" :active="request()->routeIs('files.*')">
+  <x-nav-link-header :href="route('files.index')" :active="request()->routeIs('files.*') && ! request()->routeIs('files.audits.*')">
     Uploaded DCT Files
+  </x-nav-link-header>
+  <x-nav-link-header :href="route('files.audits.index')" :active="request()->routeIs('files.audits.*')">
+    DCT Audit Log
   </x-nav-link-header>
   @endhasanyrole
   @hasanyrole('super_admin|admin')

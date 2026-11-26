@@ -60,11 +60,5 @@
     Batch Conversion
   </x-nav-link-header>
 
-  @role('super_admin')
-    <x-nav-link-header :href="route('substances.missing-names')" :active="request()->routeIs('substances.missing-names')" class="mr-0! whitespace-nowrap">
-      Fetch Missing Names
-    </x-nav-link-header>
-  @endrole
-
 
 </div>

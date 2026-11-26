@@ -37,6 +37,9 @@
               <a href="{{ route('files.export.markdown', $exportParams) }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" title="Download filtered list as Markdown">
                 Export Markdown
               </a>
+              <a href="{{ route('files.audits.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" title="Who changed which file and when">
+                Audit Log
+              </a>
               <a href="{{ route('files.create') }}" class="btn-submit">
                 Upload New File
               </a>
@@ -156,12 +159,18 @@
                     <td class="px-1 py-1 text-right font-mono whitespace-nowrap">{{ $file->main_id_from ? number_format($file->main_id_from, 0, '.', ' ') : '-' }}</td>
                     <td class="px-1 py-1 text-right font-mono whitespace-nowrap">{{ $file->main_id_to ? number_format($file->main_id_to, 0, '.', ' ') : '-' }}</td>
                     <td class="px-1 py-1 text-right font-mono whitespace-nowrap">{{ number_format($file->number_of_records ?? 0, 0, '.', ' ') }}</td>
-                    <td class="px-1 py-1 text-center">{{ $file->is_protected ? 'Yes' : 'No' }}</td>
+                    <td class="px-1 py-1 text-center">
+                      @if($file->is_protected)
+                        <span class="px-1 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-sm">Yes</span>
+                      @else
+                        <span class="px-1 py-0.5 bg-gray-200 text-gray-700 text-xs font-medium rounded-sm">No</span>
+                      @endif
+                    </td>
                     <td class="px-1 py-1 text-center">
                       @if($file->is_deleted)
                         <span class="px-1 py-0.5 bg-red-600 text-white text-xs font-medium rounded-sm">Yes</span>
                       @else
-                        No
+                        <span class="px-1 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-sm">No</span>
                       @endif
                     </td>
                     @php
