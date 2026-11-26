@@ -16,10 +16,16 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileController extends Controller
 {
+    /**
+     * Latest audit entries shown in the History section of a file page.
+     */
+    private const SHOW_PAGE_AUDITS = 20;
+
     /**
      * Allowlist key for the prioritisation rebuild, resolved server-side in
      * config/empodat_suspect_commands.php. Never a command string.
@@ -279,7 +285,10 @@ class FileController extends Controller
         // Load only essential relationships without heavy queries
         $file->load(['template', 'databaseEntity', 'uploader', 'project']);
 
-        return view('backend.files.show', compact('file'));
+        $audits = $file->audits()->with('user')->latest('id')->limit(self::SHOW_PAGE_AUDITS)->get();
+        $auditsTotal = $file->audits()->count();
+
+        return view('backend.files.show', compact('file', 'audits', 'auditsTotal'));
     }
 
     /**
@@ -349,10 +358,7 @@ class FileController extends Controller
 
         // Handle new file upload if provided
         if ($request->hasFile('new_file')) {
-            // Delete old file if exists
-            if ($file->file_path && Storage::disk('public')->exists($file->file_path)) {
-                Storage::disk('public')->delete($file->file_path);
-            }
+            $this->keepReplacedFile($file);
 
             $uploadedFile = $request->file('new_file');
             $originalName = $uploadedFile->getClientOriginalName();
@@ -473,6 +479,29 @@ class FileController extends Controller
             $file->file_path,
             $file->original_name
         );
+    }
+
+    /**
+     * Moves the file being replaced to the private disk (never deleted), so the audit log can still offer it.
+     */
+    private function keepReplacedFile(File $file): void
+    {
+        $path = $file->file_path;
+        $public = Storage::disk('public');
+        $private = Storage::disk('local');
+
+        if (! $path || ! $public->exists($path)) {
+            return;
+        }
+
+        $historyPath = File::historyPath($path);
+        $private->put($historyPath, $public->readStream($path));
+
+        if (! $private->exists($historyPath) || hash_file('sha256', $private->path($historyPath)) !== hash_file('sha256', $public->path($path))) {
+            throw new RuntimeException("The replaced file of file {$file->id} could not be moved to private storage.");
+        }
+
+        $public->delete($path);
     }
 
     /**

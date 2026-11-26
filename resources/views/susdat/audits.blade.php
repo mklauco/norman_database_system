@@ -43,7 +43,7 @@
                     </span>
                   </td>
                   <td class="px-4 py-2">
-                    {{ $audit->user->name ?? 'System' }}
+                    {{ $audit->user?->full_name ?? 'System' }}
                   </td>
                   <td class="px-4 py-2 text-sm">
                     @if($audit->event == 'updated' && $audit->old_values)
