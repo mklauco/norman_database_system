@@ -14,7 +14,10 @@
           @endif
 
           <div class="mb-6 flex justify-between items-center">
-            <h2 class="text-xl font-semibold text-gray-800">DCT Files Audit Log</h2>
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800">DCT Audit Log</h2>
+              <p class="text-sm text-gray-600">All changes to uploaded DCT files: who changed what and when, newest first.</p>
+            </div>
             <a href="{{ route('files.index') }}" class="link-lime-text">&larr; Back to Files</a>
           </div>
 
