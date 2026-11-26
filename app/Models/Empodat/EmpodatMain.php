@@ -8,7 +8,8 @@ use App\Models\List\ConcentrationIndicator;
 use App\Models\List\Country;
 use App\Models\List\Matrix;
 use App\Models\Susdat\Substance;
-use Carbon\Carbon;
+use App\Services\Empodat\EmpodatLegacyFormat;
+use App\Services\Empodat\EmpodatRecordDisplay;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -543,75 +544,48 @@ class EmpodatMain extends Model
     }
 
     /**
-     * Get the formatted sampling date.
-     *
-     * The legacy v1 dataset stores '0000-00-00 00:00:00' as a "no real date"
-     * sentinel in `empodat_minor.sampling_date`. The model casts that column
-     * to `datetime`, which makes Carbon emit '-000001-11-30...' for the
-     * sentinel — visible to users as a junk date. Year 0 / sentinel values
-     * are treated as "no date" here, falling back to the year-only field.
+     * Get the formatted sampling date (legacy format), 'N/A' when none.
      *
      * @return string
      */
     public function getFormattedSamplingDateAttribute()
     {
-        $raw = $this->minor?->sampling_date;
-        if ($raw !== null && ! $this->isZeroSamplingDate($raw)) {
-            return Carbon::parse($raw)->format('Y-m-d');
-        }
-
-        $assembled = $this->samplingDateFromParts();
-        if ($assembled !== null) {
-            return $assembled;
-        }
-
-        if ($this->sampling_date_year && (int) $this->sampling_date_year > 0) {
-            return (string) $this->sampling_date_year;
-        }
-
-        return 'N/A';
+        return $this->legacySamplingDate() ?? 'N/A';
     }
 
     /**
-     * Assemble `Y-m-d` from the legacy date parts when the `sampling_date`
-     * datetime is absent.
-     *
-     * Above `empodat_minor.id` ≈ 20 000 000 the legacy system left
-     * `sampling_date` empty and kept the date only as year/month/day parts
-     * (issue #22). `empodat_minor.sampling_date_m` / `_d` are the destination
-     * for those parts; they are empty until the external migrator populates
-     * them, and while they are empty this returns null and the caller falls
-     * back to the year alone, exactly as before.
+     * The sampling date in the legacy format (see EmpodatLegacyFormat);
+     * null for aggregate records and when no year is known. Uses the loaded
+     * `minor` relation, whose raw values are read to bypass the Carbon casts.
      */
-    private function samplingDateFromParts(): ?string
+    public function legacySamplingDate(): ?string
     {
-        $year = (int) ($this->sampling_date_year ?? 0);
-        $month = (int) ($this->minor?->sampling_date_m ?? 0);
-        $day = (int) ($this->minor?->sampling_date_d ?? 0);
+        $minor = $this->minor;
 
-        if ($year <= 0 || $month < 1 || $month > 12 || $day < 1 || $day > 31) {
-            return null;
-        }
-
-        if (! checkdate($month, $day, $year)) {
-            return null;
-        }
-
-        return sprintf('%04d-%02d-%02d', $year, $month, $day);
+        return EmpodatLegacyFormat::samplingDate(
+            $this->sampling_date_year,
+            $minor?->getRawOriginal('sampling_date'),
+            $minor?->getRawOriginal('sampling_date_m'),
+            $minor?->getRawOriginal('sampling_date_d'),
+            $minor?->getRawOriginal('sampling_date_t'),
+            $minor?->getRawOriginal('sampling_date1'),
+            $minor?->getRawOriginal('sampling_date1_y'),
+            $minor?->getRawOriginal('sampling_date1_m'),
+            $minor?->getRawOriginal('sampling_date1_d'),
+            $minor?->getRawOriginal('sampling_date1_t'),
+            $minor?->getRawOriginal('dcod_id'),
+        );
     }
 
     /**
-     * True when the given sampling_date value represents the legacy
-     * "no real date" sentinel — either '0000-00-00 00:00:00' (raw varchar)
-     * or a Carbon instance whose year is <= 0.
+     * The unit of the concentration value in the legacy rule: the record's
+     * own `unit_extra`, else the matrix unit.
      */
-    private function isZeroSamplingDate(mixed $value): bool
+    public function legacyUnit(): ?string
     {
-        if ($value instanceof \DateTimeInterface) {
-            return (int) $value->format('Y') <= 0;
-        }
-        $str = trim((string) $value);
-
-        return $str === '' || str_starts_with($str, '0000-00-00');
+        return EmpodatLegacyFormat::unit(
+            $this->minor?->getRawOriginal('unit_extra'),
+            EmpodatRecordDisplay::plainUnit($this->matrix?->unit),
+        );
     }
 }

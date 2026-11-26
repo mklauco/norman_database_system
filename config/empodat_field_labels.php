@@ -106,7 +106,6 @@ return [
         'dtos_id' => 'Type of sampling',
         'dmm_id' => 'Aggregation type',
         'altitude' => 'Altitude [m]',
-        'matrix_other' => 'Matrix - further specification',
         'compound' => 'Compound as reported',
         'unit_extra' => 'Additional unit',
         'tier' => 'Tier',

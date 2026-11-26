@@ -223,7 +223,7 @@
                 <th>Concentration</th>
                 <th>Ecosystem/Matrix</th>
                 <th>Country</th>
-                <th>Sampling year</th>
+                <th>Sampling date</th>
                 <th>Sampling station</th>
               </tr>
             </thead>
@@ -260,7 +260,7 @@
                       @endif
                     @else
                       <span
-                        class="font-medium">{{ $e->concentration_value !== null ? number_format($e->concentration_value, 3, '.', '') : 'N/A' }}</span>&nbsp;{{ $e->matrix ? $e->matrix->display_unit ?? '' : '' }}
+                        class="font-medium">{{ $e->concentration_value !== null ? number_format($e->concentration_value, 3, '.', '') : 'N/A' }}</span>&nbsp;{{ $e->legacyUnit() ?? '' }}
                     @endif
                   </td>
                   <td class="p-1 text-center">
@@ -278,7 +278,7 @@
                     @endif
                   </td>
                   <td class="p-1 text-center">
-                    {{ $e->sampling_date_year }}
+                    {{ $e->legacySamplingDate() }}
                   </td>
                   <td class="p-1 text-center">
                     @if ($e->station)

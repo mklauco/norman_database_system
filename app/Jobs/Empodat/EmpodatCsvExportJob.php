@@ -9,6 +9,8 @@ use App\Mail\Empodat\CsvExportReady;
 use App\Models\Backend\ExportDownload;
 use App\Models\Backend\QueryLog;
 use App\Models\Empodat\EmpodatMain;
+use App\Services\Empodat\EmpodatLegacyFormat;
+use App\Services\Empodat\EmpodatRecordDisplay;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -333,6 +335,8 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
                 'empodat_minor.sampling_technique',
                 'empodat_minor.sampling_date',
                 'empodat_minor.sampling_date_t',
+                'empodat_minor.sampling_date_m',
+                'empodat_minor.sampling_date_d',
                 'empodat_minor.sampling_date1_y',
                 'empodat_minor.sampling_date1_m',
                 'empodat_minor.sampling_date1_d',
@@ -397,7 +401,7 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             $record->file_id ?? '',
             $record->matrix_id ?? '',
             $record->matrix_name ?? '',
-            $record->concentration_unit ?? '',
+            self::legacyUnit($record->unit_extra ?? null, $record->concentration_unit ?? null),
             $record->substance_id ?? '',
             $record->substance_name ?? '',
             $record->cas_number ?? '',
@@ -422,7 +426,19 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             $record->unit_extra ?? '',
             $record->tier ?? '',
             $record->sampling_technique ?? '',
-            $record->sampling_date ?? '',
+            self::legacySamplingDate(
+                $record->sampling_date_year ?? null,
+                $record->sampling_date ?? null,
+                $record->sampling_date_m ?? null,
+                $record->sampling_date_d ?? null,
+                $record->sampling_date_t ?? null,
+                $record->sampling_date1 ?? null,
+                $record->sampling_date1_y ?? null,
+                $record->sampling_date1_m ?? null,
+                $record->sampling_date1_d ?? null,
+                $record->sampling_date1_t ?? null,
+                $record->dcod_id ?? null,
+            ),
             $record->sampling_date_t ?? '',
             $record->sampling_date1_y ?? '',
             $record->sampling_date1_m ?? '',
@@ -576,7 +592,9 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
             empodat_minor.dplu_id,
             empodat_minor.noexport,
             empodat_minor.list_id,
-            '{$exportDateLiteral}'::text as export_date
+            '{$exportDateLiteral}'::text as export_date,
+            empodat_minor.sampling_date_m as extra_sampling_date_m,
+            empodat_minor.sampling_date_d as extra_sampling_date_d
         ";
 
         $joins = "
@@ -594,6 +612,71 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
         $joins .= ' LEFT JOIN list_fractions ON '.self::fractionIdSql().' = list_fractions.id';
 
         return "SELECT {$selectColumns} {$joins} ORDER BY filtered.id";
+    }
+
+    /**
+     * Apply the legacy unit and sampling date to one streamed row and drop
+     * the two helper columns (sampling day/month) appended by buildCopyQuery().
+     *
+     * @param  array<int, mixed>  $row
+     * @return array<int, mixed>
+     */
+    protected function formatCopyRow(array $row): array
+    {
+        static $index = null;
+
+        if ($index === null) {
+            $index = array_flip($this->getHeaders());
+        }
+
+        $width = count($index);
+        $month = $row[$width] ?? null;
+        $day = $row[$width + 1] ?? null;
+        $row = array_slice($row, 0, $width);
+
+        $row[$index['Concentration Unit']] = self::legacyUnit($row[$index['Unit Extra']], $row[$index['Concentration Unit']]);
+        $row[$index['Sampling Date']] = self::legacySamplingDate(
+            $row[$index['Sampling Year']],
+            $row[$index['Sampling Date']],
+            $month,
+            $day,
+            $row[$index['Sampling Date T']],
+            $row[$index['Sampling Date1']],
+            $row[$index['Sampling Date1 Y']],
+            $row[$index['Sampling Date1 M']],
+            $row[$index['Sampling Date1 D']],
+            $row[$index['Sampling Date1 T']],
+            $row[$index['DCOD ID']],
+        );
+
+        return $row;
+    }
+
+    /**
+     * CSV value of "Concentration Unit": the record's own unit, else the matrix unit as plain text.
+     */
+    private static function legacyUnit(?string $unitExtra, ?string $matrixUnit): string
+    {
+        return EmpodatLegacyFormat::unit($unitExtra, EmpodatRecordDisplay::plainUnit($matrixUnit)) ?? '';
+    }
+
+    /**
+     * CSV value of "Sampling Date" in the legacy format; empty when none.
+     */
+    private static function legacySamplingDate(
+        mixed $year,
+        mixed $sampleDate,
+        mixed $month,
+        mixed $day,
+        mixed $time,
+        mixed $stopDate,
+        mixed $stopYear,
+        mixed $stopMonth,
+        mixed $stopDay,
+        mixed $stopTime,
+        mixed $dcodId,
+    ): string {
+        return EmpodatLegacyFormat::samplingDate($year, $sampleDate, $month, $day, $time, $stopDate, $stopYear, $stopMonth, $stopDay, $stopTime, $dcodId) ?? '';
     }
 
     /**
@@ -666,7 +749,7 @@ class EmpodatCsvExportJob extends AbstractCsvExportJob
                 }
 
                 foreach ($rows as $row) {
-                    fputcsv($handle, $row);
+                    fputcsv($handle, $this->formatCopyRow($row));
                 }
 
                 $totalRows += count($rows);

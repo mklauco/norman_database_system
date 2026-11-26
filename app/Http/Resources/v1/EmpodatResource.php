@@ -21,6 +21,10 @@ class EmpodatResource extends JsonResource
             'sampling_date_year' => $this->sampling_date_year,
             'formatted_sampling_date' => $this->formatted_sampling_date,
             'concentration_value' => $this->concentration_value,
+            'concentration_unit' => $this->when(
+                $this->relationLoaded('matrix') && $this->relationLoaded('minor'),
+                fn (): ?string => $this->legacyUnit(),
+            ),
             'concentration_indicator' => $this->whenLoaded('concentrationIndicator', fn () => [
                 'id' => $this->concentrationIndicator->id,
                 'name' => $this->concentrationIndicator->name,
@@ -118,7 +122,7 @@ class EmpodatResource extends JsonResource
         $minor = $this->minor;
 
         return array_filter([
-            'sampling_date' => $minor->sampling_date,
+            'sampling_date' => $this->legacySamplingDate(),
             'sampling_time' => $minor->sampling_time ?? null,
             'sample_id' => $minor->sample_id ?? null,
             'replicate' => $minor->replicate ?? null,
