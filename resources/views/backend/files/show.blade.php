@@ -390,6 +390,23 @@
             </div>
           </div>
 
+          <!-- History -->
+          <div class="mt-8">
+            <div class="mb-3 flex justify-between items-center">
+              <h3 class="font-semibold text-lg text-gray-800">History</h3>
+              @if($auditsTotal > $audits->count())
+                <a href="{{ route('files.audits.index', ['file_id' => $file->id]) }}" class="link-lime-text text-sm">
+                  All {{ number_format($auditsTotal, 0, '.', ' ') }} changes &rarr;
+                </a>
+              @endif
+            </div>
+            @if($audits->isNotEmpty())
+              @include('backend.files._audits_table', ['audits' => $audits, 'showFile' => false])
+            @else
+              <p class="text-sm text-gray-500">No changes recorded yet.</p>
+            @endif
+          </div>
+
           <!-- Back Button -->
           <div class="mt-8 pt-6 border-t border-gray-200">
             <a href="{{ route('files.index') }}" class="link-lime-text">

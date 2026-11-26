@@ -7,6 +7,7 @@ use App\Http\Controllers\ARBG\GeneController;
 use App\Http\Controllers\ARBG\GeneStatisticsController;
 use App\Http\Controllers\Backend\Display\DisplayColumnController;
 use App\Http\Controllers\Backend\Display\DisplaySectionController;
+use App\Http\Controllers\Backend\FileAuditController;
 use App\Http\Controllers\Backend\FileController;
 use App\Http\Controllers\Backend\GeneralController;
 use App\Http\Controllers\Backend\NotificationController;
@@ -121,6 +122,8 @@ Route::prefix('backend')->middleware('auth')->group(function () {
     Route::middleware('role:super_admin|admin')->group(function () {
         Route::get('files/export-csv', [FileController::class, 'exportCsv'])->name('files.export.csv');
         Route::get('files/export-markdown', [FileController::class, 'exportMarkdown'])->name('files.export.markdown');
+        Route::get('files/audit-log', [FileAuditController::class, 'index'])->name('files.audits.index');
+        Route::get('files/audit-log/{audit}/previous-file', [FileAuditController::class, 'downloadPrevious'])->whereNumber('audit')->name('files.audits.previous');
         Route::resource('files', FileController::class);
         Route::get('/file-data', [FileController::class, 'getFileData'])->middleware('auth');
     });

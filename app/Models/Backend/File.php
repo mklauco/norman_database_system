@@ -10,11 +10,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use OwenIt\Auditing\Auditable as AuditableTrait;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class File extends Model
+class File extends Model implements Auditable
 {
+    use AuditableTrait;
     use HasFactory;
+
+    /**
+     * Private disk folder that keeps a file replaced in the edit form, under its old file_path.
+     */
+    public const HISTORY_FOLDER = 'files_history';
 
     public const EMPODAT_DATABASE_ENTITY_ID = 2;
 
@@ -278,6 +287,22 @@ class File extends Model
             default:
                 return 'fa fa-file';
         }
+    }
+
+    /**
+     * Changes made by seeders and artisan commands are audited too (config audit.console stays false for other models).
+     */
+    public static function isAuditingEnabled(): bool
+    {
+        return (bool) Config::get('audit.enabled', true);
+    }
+
+    /**
+     * Private-disk path where a replaced file is kept.
+     */
+    public static function historyPath(string $filePath): string
+    {
+        return self::HISTORY_FOLDER.'/'.ltrim($filePath, '/');
     }
 
     /**
