@@ -289,10 +289,15 @@ Route::prefix('susdat')->group(function () {
         Route::get('substances/{substance}/audits', [SubstanceController::class, 'audits'])->whereNumber('substance')->name('substances.audits');
     });
 
-    Route::middleware(['auth', 'role:super_admin'])->group(function () {
-        Route::get('substances-missing-names', [SubstanceController::class, 'missingNames'])->name('substances.missing-names');
-        Route::post('substances-fetch-missing-names', [SubstanceController::class, 'fetchMissingNames'])->name('substances.fetch-missing-names');
-    });
+    // "Fetch Missing Names" (super_admin): listed SUSDAT substances without a name and filled the
+    // names in from the NDS1 SUSDAT API (https://www.norman-network.com/nds/api/susdat/nsid/{nsid}/JSON).
+    // Disabled 2026-11-26: NDS1 SUSDAT is discontinued, so there is nothing left to fetch from.
+    // The controller methods (SubstanceController::missingNames, fetchMissingNames) and the view
+    // (susdat/missing-names.blade.php) are kept; uncomment these routes to bring the page back.
+    // Route::middleware(['auth', 'role:super_admin'])->group(function () {
+    //     Route::get('substances-missing-names', [SubstanceController::class, 'missingNames'])->name('substances.missing-names');
+    //     Route::post('substances-fetch-missing-names', [SubstanceController::class, 'fetchMissingNames'])->name('substances.fetch-missing-names');
+    // });
 
     // Batch Conversion Routes
     Route::get('batch', [App\Http\Controllers\Susdat\BatchConversionController::class, 'index'])->name('susdat.batch.index');
