@@ -133,13 +133,12 @@ class Substance extends Model implements Auditable
     }
 
     /**
-     * Get the prefixed code attribute.
-     *
-     * @return string
+     * Get the prefixed code attribute. Surrounding whitespace (such as a stray
+     * carriage return in the stored code) is dropped, so file paths built from it stay valid.
      */
-    public function getPrefixedCodeAttribute()
+    public function getPrefixedCodeAttribute(): string
     {
-        return 'NS'.$this->code;
+        return 'NS'.trim((string) $this->code);
     }
 
     /**

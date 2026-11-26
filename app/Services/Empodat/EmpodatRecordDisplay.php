@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Empodat;
 
+use App\Models\List\Country;
 use App\Models\List\DataSourceLaboratory;
 use App\Models\List\DataSourceOrganisation;
 use Illuminate\Database\Eloquent\Model;
@@ -108,6 +109,7 @@ class EmpodatRecordDisplay
         unset(
             $attributes['country_id'],
             $attributes['country_other_id'],
+            $attributes['country_other'],
             $attributes['is_deprecated'],
             $attributes['latitude'],
             $attributes['longitude'],
@@ -117,11 +119,63 @@ class EmpodatRecordDisplay
 
         $country = $station->getRelationValue('countryRelation');
 
+        $otherCountry = $this->otherCountryName($station->getAttribute('country_other'), $station->getAttribute('country_other_id'));
+
+        if ($otherCountry !== null) {
+            $fields = ['Name of other country' => $otherCountry] + $fields;
+        }
+
         if ($country !== null) {
             return ['Name of country' => $country->name] + $fields;
         }
 
         return $fields;
+    }
+
+    /**
+     * `empodat_stations.country_other` holds a 2-letter code ("SK"); legacy
+     * shows the country name. Falls back to `country_other_id`, then to the
+     * code itself when it is not in the countries list.
+     */
+    private function otherCountryName(mixed $code, mixed $id): ?string
+    {
+        $code = is_string($code) ? trim($code) : '';
+
+        if ($code !== '') {
+            $name = Country::query()->where('code', $code)->value('name');
+
+            if (is_string($name) && $name !== '') {
+                return $name;
+            }
+        }
+
+        if ($this->isUsableId($id)) {
+            $name = Country::query()->whereKey((int) $id)->value('name');
+
+            if (is_string($name) && $name !== '') {
+                return $name;
+            }
+        }
+
+        return $code !== '' && ! in_array($code, self::ZERO_SENTINELS, true) ? $code : null;
+    }
+
+    /**
+     * The matrix as one value, legacy style: "Waste water - Other: free
+     * text" when `empodat_minor.matrix_other` is filled, else the plain
+     * matrix name.
+     */
+    public function matrixName(?Model $matrix, ?Model $minor): ?string
+    {
+        $name = $matrix?->getAttribute('name');
+
+        if (! is_string($name) || trim($name) === '') {
+            return null;
+        }
+
+        $freeText = $this->usableFreeText($minor?->getAttribute('matrix_other'));
+
+        return $freeText === null ? trim($name) : trim($name).': '.$freeText;
     }
 
     /**
@@ -159,14 +213,89 @@ class EmpodatRecordDisplay
         // majority of records the v1 import lost the day and month, so
         // `sampling_date_t` is the only time information that survives, and
         // the zero-sentinel filter already hides it when it is '0:00:00'.
+        // Sampling dates are rendered as one row by samplingDate(); the
+        // record's own unit replaces the concentration unit (recordUnit()).
         unset(
             $attributes['empodat_main_id'],
             $attributes['noexport'],
             $attributes['list_id'],
             $attributes['show_date'],
+            $attributes['unit_extra'],
+            $attributes['sampling_date'],
+            $attributes['sampling_date_t'],
+            $attributes['sampling_date_m'],
+            $attributes['sampling_date_d'],
+            $attributes['sampling_date1'],
+            $attributes['sampling_date1_t'],
+            $attributes['sampling_date1_y'],
+            $attributes['sampling_date1_m'],
+            $attributes['sampling_date1_d'],
+            $attributes['matrix_other'],
         );
 
+        $attributes['dtos_id'] = $this->samplingTypeName($attributes['dtos_id'] ?? null, $attributes['dtos_other'] ?? null);
+        unset($attributes['dtos_other']);
+
         return $this->build($attributes, $this->minorLookups(), 'minor');
+    }
+
+    /**
+     * Legacy "Type of sampling" codelist (`empodat_minor.dtos_id`).
+     */
+    private function samplingTypeName(mixed $id, mixed $other): ?string
+    {
+        $name = match ((int) $id) {
+            1 => 'Active',
+            2 => 'Passive',
+            3 => 'NR',
+            4 => 'Other',
+            default => null,
+        };
+
+        if ($name === null) {
+            return null;
+        }
+
+        $freeText = $this->usableFreeText($other, $id);
+
+        return in_array(strtolower($name), self::PLACEHOLDER_NAMES, true) && $freeText !== null ? $freeText : $name;
+    }
+
+    /**
+     * The unit of the concentration value, LoD and LoQ: the record's own
+     * `empodat_minor.unit_extra` when filled, else the matrix unit. Legacy
+     * does the same.
+     */
+    public function recordUnit(?Model $minor, ?string $matrixUnit): ?string
+    {
+        return EmpodatLegacyFormat::unit($minor?->getRawOriginal('unit_extra'), $matrixUnit);
+    }
+
+    /**
+     * The single "Sampling date" value, in the legacy format:
+     * "12.06.2012", "09.08.2010 13:25:00", "July 2019" or "2017", and
+     * "start - stop" when an end date exists. Aggregate records
+     * (`dcod_id` = 2, as in the legacy pop-up) have no sampling date: null is returned.
+     */
+    public function samplingDate(?Model $main, ?Model $minor): ?string
+    {
+        if ($main === null) {
+            return null;
+        }
+
+        return EmpodatLegacyFormat::samplingDate(
+            $main->getRawOriginal('sampling_date_year'),
+            $minor?->getRawOriginal('sampling_date'),
+            $minor?->getRawOriginal('sampling_date_m'),
+            $minor?->getRawOriginal('sampling_date_d'),
+            $minor?->getRawOriginal('sampling_date_t'),
+            $minor?->getRawOriginal('sampling_date1'),
+            $minor?->getRawOriginal('sampling_date1_y'),
+            $minor?->getRawOriginal('sampling_date1_m'),
+            $minor?->getRawOriginal('sampling_date1_d'),
+            $minor?->getRawOriginal('sampling_date1_t'),
+            $minor?->getRawOriginal('dcod_id'),
+        );
     }
 
     /**
@@ -177,7 +306,15 @@ class EmpodatRecordDisplay
      */
     public function matrixFields(array $metaData, string $matrixType): array
     {
-        return $this->build($metaData, $this->matrixLookups($matrixType), 'matrix');
+        $lookups = $this->matrixLookups($matrixType);
+
+        foreach ($metaData as $column => $value) {
+            if (! array_key_exists($column, $lookups) && (is_float($value) || (is_string($value) && preg_match('/^-?\d+\.\d+$/', $value) === 1))) {
+                $metaData[$column] = $this->formatNumber($value);
+            }
+        }
+
+        return $this->build($metaData, $lookups, 'matrix');
     }
 
     /**
@@ -471,21 +608,22 @@ class EmpodatRecordDisplay
     /**
      * Whether a value is worth rendering.
      *
-     * Note the asymmetry with isUsableId(): a *float* zero is kept, because
-     * `lod` / `loq` and the matrix measurements are double-precision columns
-     * where 0 is a measurement, not an absent value — 2 185 rows have
-     * `lod = 0`. Integer zero and the legacy string sentinels ('0', '0000',
-     * '0000-00-00 00:00:00', '0:00:00') stay hidden: those columns are
-     * legacy flags and dates where 0 means "not reported".
+     * Legacy hides empty, NULL and zero values alike, so every kind of
+     * zero (int, float, numeric string) and the legacy string sentinels
+     * ('0000', '0000-00-00 00:00:00', '0:00:00') are hidden.
      */
     private function hasValue(mixed $value): bool
     {
-        if ($value === null || $value === '' || $value === 0) {
+        if ($value === null || $value === '' || $value === 0 || $value === 0.0) {
             return false;
         }
 
         if (is_string($value)) {
             $trimmed = trim($value);
+
+            if (is_numeric($trimmed) && (float) $trimmed === 0.0) {
+                return false;
+            }
 
             if ($trimmed === '' || in_array($trimmed, self::ZERO_SENTINELS, true)) {
                 return false;
@@ -517,15 +655,47 @@ class EmpodatRecordDisplay
     }
 
     /**
-     * Trim the float artefacts off LOD/LOQ before the unit is appended.
+     * Legacy rounding for display: integers stay as they are, values below 1
+     * (absolute) get 2 significant digits, values from 1 up get 3. The
+     * thousands separator is a space. Zero and non-numbers give null.
      */
+    public function formatSignificant(mixed $value): ?string
+    {
+        if (! is_numeric($value) || (float) $value === 0.0) {
+            return null;
+        }
+
+        return $this->formatNumber($value);
+    }
+
     private function formatNumber(mixed $value): string
     {
         if (! is_numeric($value)) {
             return (string) $value;
         }
 
-        return rtrim(rtrim(number_format((float) $value, 6, '.', ''), '0'), '.');
+        $number = (float) $value;
+        $abs = abs($number);
+
+        if ($abs === 0.0) {
+            return '0';
+        }
+
+        if ($number === floor($number) && $abs < 1.0e15) {
+            return number_format($number, 0, '.', ' ');
+        }
+
+        $decimals = $abs < 1.0
+            ? 1 - (int) floor(log10($abs))
+            : max(0, 2 - (int) floor(log10($abs)));
+
+        $formatted = number_format(round($number, $decimals), min($decimals, 15), '.', ' ');
+
+        if (str_contains($formatted, '.')) {
+            $formatted = rtrim(rtrim($formatted, '0'), '.');
+        }
+
+        return $formatted;
     }
 
     /**
@@ -607,7 +777,6 @@ class EmpodatRecordDisplay
             'dplu_id' => 'list_prevalent_land_uses',
             'dtl_id' => 'list_treatment_less',
             'dtod_id' => null,
-            'dtos_id' => null,
             'dmm_id' => null,
         ];
     }
