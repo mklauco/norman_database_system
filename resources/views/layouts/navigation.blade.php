@@ -31,7 +31,7 @@
                     @endhasanyrole
                     @endauth
                     
-                    <x-nav-link :href="route('home')" :active="(request()->routeIs('home') || request()->routeIs('databases.index') || request()->is('landing') || request()->is('sle/*') || request()->is('arbg/*') || request()->is('indoor/*') || request()->is('passive/*') || request()->is('prioritisation/*') || request()->is('bioassays/*') || request()->is('sars/*') || request()->is('empodat/*') || request()->is('susdat/*') || request()->is('ecotox/*') || request()->is('factsheets/*'))">
+                    <x-nav-link :href="route('home')" :active="(request()->routeIs('home') || request()->routeIs('databases.index') || request()->is('landing') || request()->is('sle/*') || request()->is('arbg/*') || request()->is('indoor/*') || request()->is('passive/*') || request()->is('prioritisation/*') || request()->is('bioassays/*') || request()->is('sars/*') || request()->is('empodat/*') || request()->is('susdat/*') || request()->is('ecotox/*') || request()->is('factsheets/*') || request()->is('microplastics') || request()->is('microplastics/*'))">
                         {{ __('Database Modules') }}
                     </x-nav-link>
                     
@@ -153,7 +153,7 @@
     
     <!-- Add missing navigation links for mobile -->
     <div class="pt-2 pb-3 space-y-1">
-        <x-responsive-nav-link :href="route('home')" :active="(request()->routeIs('databases.index') || request()->is('landing') || request()->is('sle/*') || request()->is('arbg/*') || request()->is('indoor/*') || request()->is('passive/*') || request()->is('prioritisation/*') || request()->is('bioassays/*') || request()->is('sars/*') || request()->is('empodat/*') || request()->is('susdat/*') || request()->is('ecotox/*') || request()->is('factsheets/*'))">
+        <x-responsive-nav-link :href="route('home')" :active="(request()->routeIs('databases.index') || request()->is('landing') || request()->is('sle/*') || request()->is('arbg/*') || request()->is('indoor/*') || request()->is('passive/*') || request()->is('prioritisation/*') || request()->is('bioassays/*') || request()->is('sars/*') || request()->is('empodat/*') || request()->is('susdat/*') || request()->is('ecotox/*') || request()->is('factsheets/*') || request()->is('microplastics') || request()->is('microplastics/*'))">
             {{ __('Database Modules') }}
         </x-responsive-nav-link>
         

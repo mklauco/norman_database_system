@@ -57,6 +57,7 @@ use App\Http\Controllers\Literature\LiteratureController;
 use App\Http\Controllers\Literature\LiteratureHomeController;
 use App\Http\Controllers\Literature\StatisticsController as LiteratureStatisticsController;
 use App\Http\Controllers\MainAPIController;
+use App\Http\Controllers\Microplastics\MicroplasticsHomeController;
 use App\Http\Controllers\Passive\PassiveController;
 use App\Http\Controllers\Passive\PassiveHomeController;
 use App\Http\Controllers\Passive\StatisticsController as PassiveStatisticsController;
@@ -901,6 +902,10 @@ Route::prefix('hazards')->middleware(['auth', 'role:super_admin'])->group(functi
     Route::post('fetch', [HazardsController::class, 'fetch'])->name('hazards.fetch');
     Route::post('substance-data/fill', [HazardsComptoxSubstanceDataController::class, 'fill'])->name('hazards.substance_data.fill');
     Route::get('countAll', [HazardsHomeController::class, 'countAll'])->name('hazards.countAll');
+});
+
+Route::prefix('microplastics')->middleware(['auth', 'module.access:microplastics,microplastics'])->group(function () {
+    Route::get('/', [MicroplasticsHomeController::class, 'index'])->name('microplastics.home.index');
 });
 
 Route::get('/send-test-email', [EmailTestController::class, 'sendTestEmail'])->middleware('auth');
