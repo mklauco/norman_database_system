@@ -44,7 +44,7 @@ class MicroplasticsSetupSeeder extends Seeder
             DatabaseEntity::query()->create([
                 'name' => 'Microplastics',
                 'description' => 'A database of microplastics in environmental matrices',
-                'image_path' => 'fas fa-microscope',
+                'image_path' => 'fas fa-bottle-water',
                 'code' => 'microplastics',
                 'dashboard_route_name' => 'microplastics.home.index',
                 'last_update' => null,
