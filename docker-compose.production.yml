@@ -25,7 +25,9 @@ services:
       - ./shared:/opt/projects/norman_database_system/shared
       - ./current/_php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - mkassets_docker_network
+      - internal
+      - database
+      - status
 
   task-app-schedule:
     build:
@@ -42,7 +44,8 @@ services:
       - ./shared:/opt/projects/norman_database_system/shared
       - ./current/_php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - mkassets_docker_network
+      - internal
+      - database
 
   task-app-queue-default:
     build:
@@ -65,7 +68,8 @@ services:
       - ./shared:/opt/projects/norman_database_system/shared
       - ./current/_php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - mkassets_docker_network
+      - internal
+      - database
 
   task-app-queue-exports:
     build:
@@ -97,7 +101,8 @@ services:
       - ./shared:/opt/projects/norman_database_system/shared
       - ./current/_php/export-worker.ini:/usr/local/etc/php/conf.d/export-worker.ini
     networks:
-      - mkassets_docker_network
+      - internal
+      - database
 
   task-app-queue-medium:
     build:
@@ -120,7 +125,8 @@ services:
       - ./shared:/opt/projects/norman_database_system/shared
       - ./current/_php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - mkassets_docker_network
+      - internal
+      - database
 
   webserver:
     image: nginx:alpine
@@ -135,8 +141,17 @@ services:
       - ./shared:/opt/projects/norman_database_system/shared
       - ./current/nginx/conf.d/:/etc/nginx/conf.d/
     networks:
-      - mkassets_docker_network
+      - proxy
+      - internal
 
 networks:
-  mkassets_docker_network:
+  proxy:
     external: true
+    name: proxy
+  database:
+    external: true
+    name: database
+  status:
+    external: true
+    name: status
+  internal: {}
