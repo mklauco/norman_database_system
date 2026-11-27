@@ -21,10 +21,13 @@ final class EmpodatLegacyFormat
      * The unit of the concentration value, LoD and LoQ: the record's own
      * `empodat_minor.unit_extra` when filled (as plain text), else the
      * matrix unit as given (pass it through EmpodatRecordDisplay::plainUnit()).
+     * Legacy stores "0" for "no unit of its own" and treats it as empty.
      */
     public static function unit(?string $unitExtra, ?string $matrixUnit): ?string
     {
-        if ($unitExtra !== null && trim($unitExtra) !== '') {
+        $unitExtra = $unitExtra === null ? null : trim($unitExtra);
+
+        if ($unitExtra !== null && $unitExtra !== '' && $unitExtra !== '0') {
             return EmpodatRecordDisplay::plainUnit($unitExtra);
         }
 
